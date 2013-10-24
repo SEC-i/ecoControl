@@ -1,0 +1,48 @@
+<!doctype html>
+<title>Weather</title>
+<div class=page>
+  <h1>Fancy Weather Tool</h1>
+  <small>Powered by wetter.com</small>
+  <div class=metanav>
+  {% if forecast %}
+    <table border="1">
+      <tr>
+        <th>Time</th>
+        <th>06:00 h</th>
+        <th>11:00 h</th>
+        <th>17:00 h</th>
+        <th>23:00 h</th>
+        <th>Overall</th>
+      </tr>
+      <tr>
+        <td>temperature min</td>
+      {% for t in minTemperatures %}
+        <td>{{ t.text|e }}</td>
+      {% endfor %}
+      </tr>
+      <tr>
+        <td>temperature max</td>
+      {% for t in maxTemperatures %}
+        <td>{{ t.text|e }}</td>
+      {% endfor %}
+      </tr>
+      <tr>
+        <td>condition</td>
+      {% for i in range(0,5) %}
+        {% if i == 0 or i == 3 %}
+          <td> <p><img src="./static/n_{{ condition[i].text |e }}_S.png" alt=""></p> </td>
+        {% else %}
+          <td> <p><img src="./static/d_{{ condition[i].text |e }}_S.png" alt=""></p> </td>
+        {% endif %}
+      {% endfor %}
+      </tr>
+      <tr>
+        <td>rain</td>
+      {% for n in condition %}
+        <td>{{ n.text|e }}</td>
+      {% endfor %}
+      </tr>
+    </table>
+  {% endif %}
+  </div>
+</div>
