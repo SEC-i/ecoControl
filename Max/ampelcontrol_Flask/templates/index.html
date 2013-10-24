@@ -1,0 +1,184 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<title>AMeplsteuerung</title>
+	<link rel="stylesheet" href="static/table.css">
+	<script type="text/javascript" src="static/jquery-2.0.3.js"></script>
+	<script type="text/javascript" src="static/jquery.timer.js"></script>
+	<script type="text/javascript">
+	$(document).ready(function() {
+		$('.fadeThis').append('<span class="hover"></span>').each(function () {
+
+			$span=$('> span.hover', this).css('opacity', 0);
+			var ampel = {
+				color: "red",
+				clicked: false,
+				switch_color: function(){
+					if (ampel.color == "red")
+						{ampel.color = "green";}
+					else {ampel.color = "red";} },
+
+				color_bit: function() {
+					if (ampel.color == "green")
+						return 0; 
+					else 
+						return 1;},
+
+				hover_func_in: function () {
+					ampel.clicked = false;
+					$span.stop().fadeTo(500, ampel.color_bit());
+					ampel.switch_color(); },
+
+				hover_func_out: function () {
+					if (ampel.clicked)
+						{ampel.clicked=false; return;}
+					$span.stop().fadeTo(500, ampel.color_bit());
+					ampel.switch_color();},
+
+				post_it_baby: function() {
+						ampel.clicked = true;
+						$.post("/switch",{state:ampel.color});}
+					}
+
+			$(this).hover(ampel.hover_func_in,ampel.hover_func_out);
+			$span.click(ampel.post_it_baby);
+
+
+
+			$('.morse').click(function() { $.get('/morse');}); });
+		
+		var morseCode_play = {
+			idPlaying: null,
+
+			playfunction: function(playerID) {
+				if (morseCode_play.idPlaying == null||morseCode_play.idPlaying==playerID )
+				{
+					$playtoggle = $('#playtoggle'.concat(playerID))
+					if (morseCode_play.idPlaying==null)
+					{
+						
+						morseCode_play.idPlaying = playerID;
+						$playtoggle.addClass('playing');
+						var response = $.post('/morseStart',{playerID:playerID.toString()});
+						var duration = response.responseText;
+						var timer = $.timer(function() { 
+						 	morseCode_play.endPlay(playerID); });
+						 timer.set({ time : duration * 100, autostart : true });
+					}	
+					else
+					{
+						morseCode_play.idPlaying = null;
+						$playtoggle.removeClass('playing');
+						$.post('/morseStop',{playerID:playerID.toString()})
+					}
+				}
+			},
+			endPlay: function(playerID) {
+				morseCode_play.idPlaying = null;
+				$playtoggle = $('#playtoggle'.concat(playerID))
+				$playtoggle.removeClass('playing');
+			}
+		}
+
+		{% for code in morsecodes %}
+		$('#playtoggle{{code['id']}}').click(function() {
+			morseCode_play.playfunction("{{code['id']}}");
+		});
+		{%endfor%}
+
+
+});
+</script>
+
+
+<style type="text/css">
+	* {margin:0;padding:0;list-style:none;}
+	body{font-family:"Trebuchet MS";font-size:13px;padding:2em;}
+	h1{font-size:28px;}
+	div{margin:0 0 2em 0;}
+	p, pre, ul, li{margin:0 0 1em 0;}
+	pre{padding:1em; border:solid 1px #ddd; background:#f8f8f8;}
+
+	/* BEGIN CSS */
+	.fadeThis {
+		position:relative;
+		display:block;
+		height: 181px;
+		width: 83px;
+		background:url(static/ampel.jpg) 0 0 no-repeat;
+	}
+
+	.fadeThis * {
+		display: none;
+	}
+
+	.fadeThis span.hover {
+		position: absolute;
+		top: 0;
+		left: 0;
+		display: block;
+		height: 181px;
+		width: 83px;
+		background:url(static/ampel.jpg) -170px 0px no-repeat;
+	}
+</style>   
+</head>
+<body>
+
+
+	<h1> Testing, attention please</h1>
+	<h2> AmpelControl in Flask </h2>
+
+
+	<p/>
+	<p/>
+
+	
+		<span class="fadeThis">
+			<span> hidden content </span>
+			<span class="hover" style="opacity: 0;"></span>
+
+		</span>
+	
+	
+	<p/>
+	<p/>
+
+
+
+	<!-- <button class="morse"> Morse </button> -->
+	
+
+	<table id="myTable" class="tablesorter"> 
+	<thead> 
+	<tr> 
+	    <th>title</th> 
+	    <th>morse code</th>
+	    <th>duration</th>
+	    <th>play</th>
+	</tr> 
+	</thead> 
+	<tbody> 
+
+	{% for code in morsecodes %}
+	<tr>
+		<td> {{ code['title'] }} </td>
+		<td> {{ code['morsecode'] }}</td>
+		<td> {{ code['duration'] }} </td>
+		<td>	
+			<p class="player ">
+			  <span class="playtoggle" id="playtoggle{{code['id']}}">
+			  </span>
+			</p>
+		</td>
+	</tr>
+	{% endfor %}
+	</tbody>
+	</table>
+
+	<p/> <p/>
+
+	<span> Heute ist der  {{ date }} , aber wen interessierts ? </span>
+</body>
+
+</head>
