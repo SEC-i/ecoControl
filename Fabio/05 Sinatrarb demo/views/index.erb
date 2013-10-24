@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="yes" name="apple-mobile-web-app-capable" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<meta content="initial-scale = 1.0, user-scalable = no" name="viewport" />
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png"/>
+<link rel="icon" type="image/png" href="images/apple-touch-icon.png">
+<title>BP2013H1 Remote Control</title>
+<script src="/js/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="/js/jquery.cookie.js" type="text/javascript" charset="utf-8"></script>
+<script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>
+<link rel="stylesheet" href="/css/basic.css">
+<script>
+var apiURL = "http://172.16.19.114/api/";
+$(document).ready(function(){
+	$("#login").submit(function( event ) {
+		checkLogin();
+		event.preventDefault();
+	});
+
+	if($.cookie('bp2013h1_secret') == undefined){
+		$("#login").show();
+	} else {
+		$("#control").show();
+	}
+	startRefresh();
+});
+
+function checkLogin() {
+	$.post(apiURL + "login/", $( "#loginform" ).serialize(), function(data) {
+		if(data == ""){
+			alert("Login incorrect");
+		}else{
+			$.cookie('bp2013h1_secret', data, { expires: 7 });
+			$("#login").hide();
+			$("#control").fadeIn();
+		}
+	});
+}
+
+function startRefresh() {
+	$.getJSON(apiURL + "uptime/", function(data) {
+		$("#uptime").text("Sys uptime: " + data['uptime'] +", Sys load: " + data['load']);
+	});
+	if($.cookie('bp2013h1_secret') != undefined){
+		$.post(apiURL + "switches/", {'api_key': $.cookie('bp2013h1_secret')}, function(data) {
+			if(data == "0"){
+				alert("api key invalid");
+			}else{
+				// console.log(data);
+		    	for (var i = 1; i < 5; i++) {
+					$("#switch" + i).prop('checked', data[i-1]);
+		    	};
+			}
+		});
+	}
+    setTimeout(startRefresh,2000);
+}
+
+function switchRemote(pSwitch) {
+	$.post(apiURL + "switches/", { switch_number: pSwitch, api_key: $.cookie('bp2013h1_secret')});
+	return false;
+}
+</script>
+</head>
+<body>
+
+<div id="main">
+	<div id="navigation">
+		BP2013H1 Remote Control
+	</div>
+	<div class="spacer"></div>
+	<div id="login" style="display: none;">
+		<div class="item">
+			<form id="loginform">
+				<input class="left" type="password" name="password" id="password" value="" />
+				<input class="right" type="submit" name="submit" value="Login" />
+				<div class="clear"></div>
+			</form>
+			</div>
+	</div>
+	<div id="control" style="display: none;">
+		<div class="item">
+			<div class="left">
+				<div class="left"><img src="/images/light.png" alt="" style="width: 32px; height: 52px;" /></div><div class="left text">Red Light</div>
+			</div>
+			<div class="right">
+				<input id="switch1" name="switch1" onClick="switchRemote(1);" type="checkbox" />
+			</div>
+			<div class="clear"></div>
+		</div>
+		<div class="item">
+			<div class="left">
+				<div class="left"><img src="/images/light.png" alt="" style="width: 32px; height: 52px;" /></div><div class="left text">Green Light</div>
+			</div>
+			<div class="right">
+				<input id="switch2" name="switch2" onClick="switchRemote(2);" type="checkbox" />
+			</div>
+			<div class="clear"></div>
+		</div>
+		<div class="item">
+			<div class="left">
+				<div class="left"><img src="/images/light.png" alt="" style="width: 32px; height: 52px;" /></div><div class="left text">Switch 3</div>
+			</div>
+			<div class="right">
+				<input id="switch3" name="switch3" onClick="switchRemote(3)" type="checkbox" />
+			</div>
+			<div class="clear"></div>
+		</div>
+		<div class="item">
+			<div class="left">
+				<div class="left"><img src="/images/light.png" alt="" style="width: 32px; height: 52px;" /></div><div class="left text">Switch 4</div>
+			</div>
+			<div class="right">
+				<input id="switch4" name="switch4" onClick="switchRemote(4);" type="checkbox" />
+			</div>
+			<div class="clear"></div>
+		</div>
+	</div>
+	<div id="footer">
+		A BP2013H1 project<br ><span id="uptime"></span>
+	</div>
+</div>
+
+</body>
+</html>
