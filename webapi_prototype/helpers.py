@@ -1,5 +1,6 @@
 from flask import make_response
 from functools import update_wrapper
+import calendar
 
 def crossdomain(origin=None):
 	def decorator(f):
@@ -17,5 +18,5 @@ def convertSQLtoList(measurements):
 		"status": item.status,
 		"temperature": float(item.temperature),
 		"electrical_power": float(item.electrical_power),
-		"timestamp": str(item.timestamp)
+		"timestamp": calendar.timegm(item.timestamp.utctimetuple())
 		} for item in measurements]
