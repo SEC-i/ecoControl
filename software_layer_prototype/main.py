@@ -18,8 +18,10 @@ if __name__ == '__main__':
 	(options, args) = parser.parse_args()
 	
 	if(options.with_crawler):
-		#disable debug to avoid multiple threads
-		app.config['DEBUG'] = False
 		Crawler()
+		# disable reloader to avoid multiple threads
+		app.run(host="0.0.0.0", use_reloader=False)
+	else:
+		app.run(host="0.0.0.0")
 
-	app.run(host="0.0.0.0")
+	
