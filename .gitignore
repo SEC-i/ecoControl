@@ -41,3 +41,5 @@ sftp-config.json
 webapi_prototype/sftp-config.json
 
 crawler_prototype/sftp-config.json
+
+*.sublime-workspace
