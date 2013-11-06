@@ -2,10 +2,11 @@
 
 from peewee import *
 from app import db
-from models import *
+from models import Measurement
+from helpers import write_pidfile_or_fail
 
 import threading
-import datetime, time, json, urllib2, sys
+import datetime, time, json, urllib2, sys, os
 
 # crawl data and save sensor data
 def addMeasurement():
@@ -24,13 +25,21 @@ class Crawler(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
 		self.daemon = True
+		#make sure only one instance is running at a time
+		self.unique = True
+		if not write_pidfile_or_fail("/tmp/crawler.pid"):
+			self.unique = False
+		# start thread immediately
 		self.start()
 	def run(self):
-		# add new measurement approx. every minute
-		print " * Crawling..."
-		while(True):
-			addMeasurement()
-			time.sleep(1)
+		if self.unique:
+			# add new measurement approx. every minute
+			print " * Crawling..."
+			while(True):
+				addMeasurement()
+				time.sleep(1)
+		else:
+			print " * Duplicate crawler thread avoided"
 
 if __name__ == '__main__':
 	# instanciate crawler

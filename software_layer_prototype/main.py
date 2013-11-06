@@ -7,9 +7,9 @@ sys.path.insert(0, '..')
 from optparse import OptionParser
 
 from app import app, db
-from models import *
+from models import Measurement
 from views import *
-from crawler import *
+from crawler import Crawler
 
 if __name__ == '__main__':
 	# setting up OptionParser for command line inputs
@@ -19,9 +19,5 @@ if __name__ == '__main__':
 	
 	if(options.with_crawler):
 		Crawler()
-		# disable reloader to avoid multiple threads
-		app.run(host="0.0.0.0", use_reloader=False)
-	else:
-		app.run(host="0.0.0.0")
 
-	
+	app.run(host="0.0.0.0")
