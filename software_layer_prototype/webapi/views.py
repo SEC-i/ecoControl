@@ -1,7 +1,7 @@
 import datetime
 from flask import jsonify
-from app import app
-from helpers import crossdomain, convert_sql_to_list
+from webapi.main import app
+from webapi.helpers import crossdomain, convert_sql_to_list
 from models import Measurement
 
 # display last 10 measurements by default

@@ -1,6 +1,6 @@
 import datetime
 from peewee import *
-from app import db
+from webapi.main import db
 
 # Measurement model
 class Measurement(db.Model):
