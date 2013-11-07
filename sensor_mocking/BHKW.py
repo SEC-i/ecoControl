@@ -1,4 +1,5 @@
 import Device
+from Device import Sensor
 import math
 import time
 from  threading import Thread
@@ -13,19 +14,25 @@ class BHKW(Device.Device):
 
 	
 
- 	def __init__(self):
+ 	def __init__(self,device_id):
+ 		Device.Device.__init__(self,device_id)
+
+
+ 		self.currentWorkload 		=  Sensor(name="workload",id=0,value=0)
+ 		self.currentElectricalPower =  Sensor(name="electricalPower",id=1,value=0)
+ 		self.currentThermalPower 	=  Sensor(name="thermalPower",id=2,value=0)
+ 		self.currentGasInput 		=  Sensor(name="gasInput",id=3,value=0)
+
+ 		#index corresponds to sensor id
+ 		self.sensors = [self.currentWorkload,self.currentElectricalPower,self.currentThermalPower,self.currentGasInput]
+
  		self.givenData = []
  		#workload in percent, other data in kW
  		self.givenData.append(InputData(workload=0,electricalPower=0,thermalPower=0,gasInput=0))
  		self.givenData.append(InputData(workload=25,electricalPower=12.5,thermalPower=20,gasInput=43))
  		self.givenData.append(InputData(workload=50,electricalPower=25,thermalPower=46,gasInput=86))
- 		self.givenData.append(InputData(75,38,64,118))
- 		self.givenData.append(InputData(100,50,81,145))
-
- 		self.currentWorkload = 0
- 		self.currentElectricalPower = 0
- 		self.currentGasInput = 0
- 		self.currentThermalPower = 0
+ 		self.givenData.append(InputData(workload=75,electricalPower=38,thermalPower=64,gasInput=118))
+ 		self.givenData.append(InputData(workload=100,electricalPower=50,thermalPower=81,gasInput=145))
 
 
  		#specificationData
@@ -37,6 +44,7 @@ class BHKW(Device.Device):
  		self.changingWorkloadThread = None
 
 
+
  	def turnOn(self): 		
  		print "turning on BHKW, please wait.."
  		self.setcurrentWorkload(75.0)
@@ -44,6 +52,7 @@ class BHKW(Device.Device):
  	def turnOff(self):
  		print "turning off BHKW, please wait.."
  	 	self.setcurrentWorkload(0.0)
+
 
  	def immediateOff(self):
  		"for testcases"
@@ -66,9 +75,9 @@ class BHKW(Device.Device):
 
 		
 		mu = workload-dataSet1.workload
-		self.currentElectricalPower = cosineInterpolate(dataSet1.electricalPower, dataSet2.electricalPower, mu)
-		self.currentGasInput     = cosineInterpolate(dataSet1.gasInput, dataSet2.gasInput, mu)
-		self.currentThermalPower = cosineInterpolate(dataSet1.thermalPower, dataSet2.thermalPower, mu)
+		self.currentElectricalPower.value = cosineInterpolate(dataSet1.electricalPower, dataSet2.electricalPower, mu)
+		self.currentGasInput.value     = cosineInterpolate(dataSet1.gasInput, dataSet2.gasInput, mu)
+		self.currentThermalPower.value = cosineInterpolate(dataSet1.thermalPower, dataSet2.thermalPower, mu)
 
 
 
@@ -86,21 +95,30 @@ class BHKW(Device.Device):
  		self.changingWorkload = True
  		last_delta = 0
  		delta = 0
- 		while self.currentWorkload != workload and self.changingWorkload == True:
+ 		while self.currentWorkload.value != workload and self.changingWorkload == True:
  			last_delta = delta
- 			delta = TIME_STEP * (random.randint(-2,2) + 10.0 *  sign(workload - self.currentWorkload))
+ 			delta = TIME_STEP * (random.randint(-2,2) + 10.0 *  sign(workload - self.currentWorkload.value))
  			#use two last deltas to determine if value oscilating around certain point
  			#print "delta: ", delta, " added: ", abs(delta + last_delta), " workload: ", self.currentWorkload
  			if abs(delta + last_delta) <  TIME_STEP:
- 				self.currentWorkload = workload
+ 				self.currentWorkload.value = workload
  				self._calculate(workload)
  				break
  			else:
- 				self.currentWorkload += delta
- 				self._calculate(self.currentWorkload)
+ 				self.currentWorkload.value += delta
+ 				self._calculate(self.currentWorkload.value)
  			time.sleep(TIME_STEP)
  		self.changingWorkload = False
 
+ 	def getMappedSensor(self,sID):
+ 		maxValue = max([sensorSet.toList()[sID] for sensorSet in self.givenData])
+ 		minValue = min([sensorSet.toList()[sID] for sensorSet in self.givenData])
+ 		
+ 		for sensor in self.sensors:
+ 			if sensor.id == sID:
+ 				newValue = sensor.value / ((maxValue - minValue) / 100.0)
+ 				return Sensor(name=sensor.name,id=sID,value=newValue)
+ 	
 
 
 
@@ -121,6 +139,8 @@ class InputData:
  			return True
  		else:
  			return False
+ 	def toList(self):
+ 		return [self.workload,self.electricalPower,self.thermalPower,self.gasInput]
 
 def cosineInterpolate(d1,d2,mu):
 	mu /= 25.0
