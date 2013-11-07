@@ -7,8 +7,8 @@ sys.path.insert(0, '..')
 from optparse import OptionParser
 import time
 
-from webapi.main import app, db
-from crawler.main import Crawler
+from webapi.app import app
+from crawler import Crawler
 
 if __name__ == '__main__':
 	# setting up OptionParser for command line inputs

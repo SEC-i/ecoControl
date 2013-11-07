@@ -1,6 +1,6 @@
 import datetime
 from flask import jsonify
-from webapi.main import app
+from webapi import app
 from webapi.helpers import crossdomain, convert_sql_to_list
 from models import Measurement
 
@@ -20,6 +20,18 @@ def showRecentMeasurementsLimit(limit):
 
 # dynamic offset and limit
 @app.route('/api/measurements/<offset>/<limit>/', methods = ['GET'])
+@crossdomain(origin='*')
 def showRecentMeasurementsOffsetLimit(limit, offset):
 	measurements = Measurement.select().order_by(Measurement.mid.desc()).offset(offset).limit(limit)
 	return jsonify(results=convert_sql_to_list(measurements))
+
+@app.route('/api/settings/', methods = ['POST'])
+@crossdomain(origin='*')
+def setSettings():
+	if 'crawler_frequency' in request.form:
+		try:
+			# int(request.form['crawler_frequency'])
+			return "1"
+		except:
+			return "0"
+	return "0"
