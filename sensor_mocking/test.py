@@ -7,7 +7,7 @@ class TestBHKW(unittest.TestCase):
 
     def setUp(self):
         #BHWK.TIME_STEP = 0.1
-        self.BHKW = BHKW.BHKW()
+        self.BHKW = BHKW.BHKW(0)
     
     def tearDown(self):
         self.BHKW.immediateOff()
@@ -47,6 +47,16 @@ class TestBHKW(unittest.TestCase):
         self.BHKW.currentGasInput.value = 145.0 # maximum
         
         self.assertEqual(self.BHKW.getMappedSensor(sID=3).value, 100.0)
+
+    def testRandomVariations(self):
+        self.BHKW.currentWorkload.value = 50.0
+        values = []
+        for i in range(100):
+            values.append(self.BHKW.currentWorkload.value)#should randomly change
+            time.sleep(0.01)
+        self.assertTrue(self.BHKW.currentWorkload.value != 50.0 * 100)
+
+
 
 
 

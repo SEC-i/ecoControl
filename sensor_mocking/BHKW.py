@@ -42,6 +42,11 @@ class BHKW(Device.Device):
  		#internalState
  		self.changingWorkload = False
  		self.changingWorkloadThread = None
+ 		# is only set to false if mainloop is stopped
+ 		self.mainloopRunning = True
+ 		self.mainloop = Thread(target=self.mainloop,args=())
+ 		self.mainloop.start()
+
 
 
 
@@ -79,6 +84,15 @@ class BHKW(Device.Device):
 		self.currentGasInput.value     = cosineInterpolate(dataSet1.gasInput, dataSet2.gasInput, mu)
 		self.currentThermalPower.value = cosineInterpolate(dataSet1.thermalPower, dataSet2.thermalPower, mu)
 
+	def mainloop(self):
+		while self.mainloopRunning:
+			if (self.changingWorkload == False and self.currentWorkload.value > 0.0 ):
+				self.currentWorkload.value += (random.random() * 2.0 - 1.0) * TIME_STEP
+				self.currentWorkload.value  = max(min(self.currentWorkload.value, 100.0), 0.0) #clamp
+				self._calculate(self.currentWorkload.value)
+			time.sleep(TIME_STEP)
+
+
 
 
  	def setcurrentWorkload(self,workload):
@@ -97,7 +111,7 @@ class BHKW(Device.Device):
  		delta = 0
  		while self.currentWorkload.value != workload and self.changingWorkload == True:
  			last_delta = delta
- 			delta = TIME_STEP * (random.randint(-2,2) + 10.0 *  sign(workload - self.currentWorkload.value))
+ 			delta = TIME_STEP * ((random.random() * 2.0 - 1.0) + 10.0 *  sign(workload - self.currentWorkload.value))
  			#use two last deltas to determine if value oscilating around certain point
  			#print "delta: ", delta, " added: ", abs(delta + last_delta), " workload: ", self.currentWorkload
  			if abs(delta + last_delta) <  TIME_STEP:
@@ -118,6 +132,7 @@ class BHKW(Device.Device):
  			if sensor.id == sID:
  				newValue = sensor.value / ((maxValue - minValue) / 100.0)
  				return Sensor(name=sensor.name,id=sID,value=newValue)
+
  	
 
 
@@ -149,3 +164,4 @@ def cosineInterpolate(d1,d2,mu):
 
 def sign(x): 
     return 1 if x >= 0 else -1
+
