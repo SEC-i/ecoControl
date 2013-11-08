@@ -10,5 +10,4 @@ app.config.from_object('config.Configuration')
 # instantiate database wrapper
 db = Database(app)
 
-# def create_tables():
-#     Measurement.create_table()
+
