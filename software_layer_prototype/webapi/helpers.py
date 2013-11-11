@@ -14,11 +14,14 @@ def crossdomain(origin=None):
 	return decorator
 
 # converts SelectQuery to jsonify-able list
-def convert_sql_to_list(measurements):
+def convert_sql_to_list(sensor_entries, sensor_unit):
 	return [{
-		"sensor_id": item.sensor_id,
-		"status": item.status,
-		"temperature": float(item.temperature),
-		"electrical_power": float(item.electrical_power),
-		"timestamp": calendar.timegm(item.timestamp.utctimetuple())
-		} for item in measurements]
+		"value": str(item.value)+" "+sensor_unit,
+		"timestamp": str(item.timestamp) #calendar.timegm(item.timestamp.utctimetuple()) 
+		} for item in sensor_entries]
+
+def convert_sensor_sql_to_list(sensor_entries):
+	return [{
+		"name": item.name,
+		"unit":item.unit
+		} for item in sensor_entries]

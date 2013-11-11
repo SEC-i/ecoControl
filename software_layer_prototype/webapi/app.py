@@ -10,4 +10,3 @@ app.config.from_object('config.Configuration')
 # instantiate database wrapper
 db = Database(app)
 
-

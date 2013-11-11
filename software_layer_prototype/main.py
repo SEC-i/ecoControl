@@ -10,6 +10,8 @@ import time
 from models import *
 from webapi.app import app
 from crawler import Crawler
+import webapi.views
+
 
 if __name__ == '__main__':
 	# setting up OptionParser for command line inputs
@@ -18,13 +20,12 @@ if __name__ == '__main__':
 	parser.add_option("--webapi", action="store_true", dest="webapi_only", default=False, help="Start webapi only")
 	parser.add_option("--create-tables", action="store_true", dest="create_tables", default=False, help="Create tables if they don't exist") 
 	(options, args) = parser.parse_args()
-	
 
 	if options.create_tables:
 		create_tables()
 	
 	# drop tables
-	
+
 	if not options.webapi_only:
 		Crawler()
 		# while true loop let's thread running
@@ -38,6 +39,9 @@ if __name__ == '__main__':
 					sys.exit(1)
 
 	if not options.crawler_only:
-		app.run(host="0.0.0.0")
+		#webapi.views.addURLs(app)
+		#app.run(host="0.0.0.0")
+		app.run()
+		
 
 

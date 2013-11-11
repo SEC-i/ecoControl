@@ -49,10 +49,12 @@ def add_mockup():
 			add_mockupEntry(sensor1.id)
 	
 	actuator = Actuator()
+	print actuator
 	actuator.device_id = device.id
 	actuator.name = "Switch1"
 	actuator.type = "Switch" #eg "switch"
-	#actuator.command = ? # temporary
+	actuator.command = "" # temporary
+	actuator.save()
 
 
 def add_mockupEntry(sens_id):
