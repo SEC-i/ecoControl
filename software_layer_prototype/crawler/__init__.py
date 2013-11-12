@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import threading, time
 from peewee import *
-from crawler.functions import add_measurement
+from crawler.functions import add_CHPUMockMeasurement
 from crawler.helpers import write_pidfile_or_fail
 from config import Configuration
 
@@ -25,7 +25,7 @@ class Crawler(threading.Thread):
 			# add new measurement approx. every minute
 			print " * Crawling..."
 			while(True):
-				add_measurement()
+				add_CHPUMockMeasurement()
 				time.sleep(self.frequency)
 		else:
 			print " * Duplicate crawler thread avoided"
