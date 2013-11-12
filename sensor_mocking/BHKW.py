@@ -8,7 +8,7 @@ import unittest
 import sys
 
 
-TIME_STEP = 0.05
+
 """@doc please read the technical datasheet of vitobloc_200_EM,
 which contains all the data which we are mocking here"""
 class BHKW(Device.Device):
@@ -19,6 +19,7 @@ class BHKW(Device.Device):
  		Device.Device.__init__(self,device_id)
 
  		self.name = "BHKW" + str(device_id)
+ 		self.time_step  =  0.05
 
 
  		self.currentWorkload 		=  Sensor(name="workload",id=0,value=0,unit=r"%")
@@ -42,9 +43,7 @@ class BHKW(Device.Device):
  		self.voltage = 400
  		self.electricalCurrent = 72
 
- 		#internalState
- 		self.changingWorkload = False
- 		self.changingWorkloadThread = None
+
  		# is only set to false if mainloop is stopped
  		self.mainloopRunning = True
  		self.mainloop = Thread(target=self.mainloop,args=())
@@ -70,7 +69,7 @@ class BHKW(Device.Device):
  		self.setcurrentWorkload(0.0)
 
 
- 	def _calculate(self,workload):
+ 	def calculateParameters(self,workload):
 
  		for i in range(len(self.givenData)-1):
  			if workload < self.givenData[i+1]:
@@ -90,48 +89,18 @@ class BHKW(Device.Device):
 	def mainloop(self):
 		while self.mainloopRunning:
 			if (self.changingWorkload == False and self.currentWorkload.value > 0.0 ):
-				self.currentWorkload.value += (random.random() * 2.0 - 1.0) * TIME_STEP
+				self.currentWorkload.value += (random.random() * 2.0 - 1.0) * self.time_step
 				self.currentWorkload.value  = max(min(self.currentWorkload.value, 100.0), 0.0) #clamp
-				self._calculate(self.currentWorkload.value)
+				self.calculateParameters(self.currentWorkload.value)
 			try:
-				time.sleep(TIME_STEP)
+				time.sleep(self.time_step)
 			except KeyboardInterrupt:
 				sys.exit(1)
 
 
 
 
- 	def setcurrentWorkload(self,workload):
- 		
- 		if (self.changingWorkload == True):
- 			self.changingWorkload = False
- 			self.changingWorkloadThread.join()
 
- 		self.changingWorkloadThread = Thread(target=self.smoothSetToWorkload,args=(workload,))
- 		self.changingWorkloadThread.start()
-
-
- 	def smoothSetToWorkload(self,workload):
- 		self.changingWorkload = True
- 		last_delta = 0
- 		delta = 0
- 		while self.currentWorkload.value != workload and self.changingWorkload == True:
- 			last_delta = delta
- 			delta = TIME_STEP * ((random.random() * 2.0 - 1.0) + 10.0 *  sign(workload - self.currentWorkload.value))
- 			#use two last deltas to determine if value oscilating around certain point
- 			#print "delta: ", delta, " added: ", abs(delta + last_delta), " workload: ", self.currentWorkload
- 			if abs(delta + last_delta) <  TIME_STEP:
- 				self.currentWorkload.value = workload
- 				self._calculate(workload)
- 				break
- 			else:
- 				self.currentWorkload.value += delta
- 				self._calculate(self.currentWorkload.value)
- 			try:
-				time.sleep(TIME_STEP)
-			except KeyboardInterrupt:
-				sys.exit(1)
- 		self.changingWorkload = False
 
  	def getMappedSensor(self,sID):
  		maxValue = max([sensorSet.toList()[sID] for sensorSet in self.givenData])
