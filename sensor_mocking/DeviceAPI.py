@@ -1,12 +1,14 @@
 #!flask/bin/python
 from flask import Flask, jsonify, request
 import BHKW
+from PeakLoadBoiler import PlBoiler
 
 app = Flask(__name__)
 
 
 devices = []
 devices.append(BHKW.BHKW(device_id=0))
+devices.append(PlBoiler(device_id=1))
 
 
 @app.route('/device/<int:device_id>/sensor/<int:sensor_id>', methods = ['GET'])
@@ -60,4 +62,4 @@ def hello():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",debug = False)
+    app.run(host="0.0.0.0",debug = True)

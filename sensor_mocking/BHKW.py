@@ -19,7 +19,7 @@ class BHKW(Device.Device):
  		Device.Device.__init__(self,device_id)
 
  		self.name = "BHKW" + str(device_id)
- 		self.time_step  =  0.05
+ 		self.time_step  =  0.08
 
 
  		self.currentWorkload 		=  Sensor(name="workload",id=0,value=0,unit=r"%")
@@ -99,23 +99,6 @@ class BHKW(Device.Device):
 
 
 
-
-
-
- 	def getMappedSensor(self,sID):
- 		maxValue = max([sensorSet.toList()[sID] for sensorSet in self.givenData])
- 		minValue = min([sensorSet.toList()[sID] for sensorSet in self.givenData])
- 		
- 		for sensor in self.sensors:
- 			if sensor.id == sID:
- 				newValue = sensor.value / ((maxValue - minValue) / 100.0)
- 				return Sensor(name=sensor.name,id=sID,value=newValue)
-
- 	
-
-
-
-
 class InputData:
 	def __init__(self,workload,electricalPower,thermalPower,gasInput):
 		self.electricalPower = electricalPower
@@ -139,7 +122,4 @@ def cosineInterpolate(d1,d2,mu):
 	mu /= 25.0
 	mu2 = (1-math.cos(mu*math.pi)) / 2.0
 	return (d1 * (1-mu2) + d2 * mu2)
-
-def sign(x): 
-    return 1 if x >= 0 else -1
 

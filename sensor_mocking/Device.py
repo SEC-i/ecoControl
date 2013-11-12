@@ -1,9 +1,13 @@
+from  threading import Thread
+import random
+import time
 
 class Device(object):
 
 	def __init__(self,device_id):
 		self.device_id = device_id
 		self.givenData = []
+		self.sensors = []
 
 		self.time_step = 0.05
 
@@ -48,6 +52,15 @@ class Device(object):
 				sys.exit(1)
  		self.changingWorkload = False
 
+ 	def getMappedSensor(self,sID):
+ 		maxValue = max([sensorSet.toList()[sID] for sensorSet in self.givenData])
+ 		minValue = min([sensorSet.toList()[sID] for sensorSet in self.givenData])
+ 		
+ 		for sensor in self.sensors:
+ 			if sensor.id == sID:
+ 				newValue = sensor.value / ((maxValue - minValue) / 100.0)
+ 				return Sensor(name=sensor.name,id=sID,value=newValue)
+
 
 
 class Sensor(object):
@@ -57,3 +70,8 @@ class Sensor(object):
 		self.value = value
 		self.name = name
 		self.unit = unit
+
+
+def sign(x): 
+    return 1 if x >= 0 else -1
+
