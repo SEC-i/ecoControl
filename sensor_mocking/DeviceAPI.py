@@ -21,24 +21,21 @@ def get_sensor(device_id,sensor_id):
     } 
     return jsonify( { 'sensor': sensor_data } )
 
-@app.route('/device/<int:device_id>', methods = ['GET','POST'])
-def get_or_set_device(device_id):
-    if request.method == 'POST':
-        if 'workload' in request.form:
-            return set_workload(device_id,request.form['workload'])
-    else:
-        device = next(dev for dev in devices if dev.device_id == device_id)
-        device_data = { "device_id" : device_id }
-        for sensor in device.sensors:
-            #sensor  = device.getMappedSensor(sensor.id)
-            device_data[sensor.name] = sensor.value
-        return jsonify( {"device" : device_data})
+@app.route('/device/<int:device_id>/get', methods = ['GET'])
+def get_data(device_id):
+    device = next(dev for dev in devices if dev.device_id == device_id)
+    device_data = {}
+    for sensor in device.sensors:
+        #sensor  = device.getMappedSensor(sensor.id)
+        device_data[sensor.name] = sensor.value
+    return jsonify( {"device" : device_data})
 
-
-
-def set_workload(device_id,workload):
+@app.route('/device/<int:device_id>/set', methods = ['POST'])
+def set_data(device_id):
+    if 'workload' not in request.form:
+        return "0"
     device = [dev for dev in devices if dev.device_id == device_id ][0]
-    workload = float(workload)
+    workload = float(request.form['workload'])
     
     if workload >= 0 and workload <= 100:
         device.setcurrentWorkload(workload)
@@ -46,7 +43,14 @@ def set_workload(device_id,workload):
     else:
         return "0"
 
-
+@app.route('/device/<int:device_id>/info', methods = ['GET'])
+def get_info(device_id):
+    device = next(dev for dev in devices if dev.device_id == device_id)
+    device_data = {"device_name":device.name}
+    for sensor in device.sensors:
+        #sensor  = device.getMappedSensor(sensor.id)
+        device_data[sensor.name] = sensor.unit
+    return jsonify( {"device" : device_data})
 
 
 @app.route("/")
@@ -56,4 +60,4 @@ def hello():
 
 
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(host="0.0.0.0",debug = False)

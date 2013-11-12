@@ -21,7 +21,8 @@ class Device(object):
 
 class Sensor(object):
 
-	def __init__(self,name,id,value):
+	def __init__(self,name,id,value,unit):
 		self.id = id
 		self.value = value
 		self.name = name
+		self.unit = unit

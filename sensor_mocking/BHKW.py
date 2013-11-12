@@ -5,6 +5,7 @@ import time
 from  threading import Thread
 import random
 import unittest
+import sys
 
 
 TIME_STEP = 0.05
@@ -17,11 +18,13 @@ class BHKW(Device.Device):
  	def __init__(self,device_id):
  		Device.Device.__init__(self,device_id)
 
+ 		self.name = "BHKW" + str(device_id)
 
- 		self.currentWorkload 		=  Sensor(name="workload",id=0,value=0)
- 		self.currentElectricalPower =  Sensor(name="electricalPower",id=1,value=0)
- 		self.currentThermalPower 	=  Sensor(name="thermalPower",id=2,value=0)
- 		self.currentGasInput 		=  Sensor(name="gasInput",id=3,value=0)
+
+ 		self.currentWorkload 		=  Sensor(name="workload",id=0,value=0,unit=r"%")
+ 		self.currentElectricalPower =  Sensor(name="electricalPower",id=1,value=0,unit="kW")
+ 		self.currentThermalPower 	=  Sensor(name="thermalPower",id=2,value=0,unit="kW")
+ 		self.currentGasInput 		=  Sensor(name="gasInput",id=3,value=0,unit="kW")
 
  		#index corresponds to sensor id
  		self.sensors = [self.currentWorkload,self.currentElectricalPower,self.currentThermalPower,self.currentGasInput]
@@ -90,7 +93,10 @@ class BHKW(Device.Device):
 				self.currentWorkload.value += (random.random() * 2.0 - 1.0) * TIME_STEP
 				self.currentWorkload.value  = max(min(self.currentWorkload.value, 100.0), 0.0) #clamp
 				self._calculate(self.currentWorkload.value)
-			time.sleep(TIME_STEP)
+			try:
+				time.sleep(TIME_STEP)
+			except KeyboardInterrupt:
+				sys.exit(1)
 
 
 
@@ -121,7 +127,10 @@ class BHKW(Device.Device):
  			else:
  				self.currentWorkload.value += delta
  				self._calculate(self.currentWorkload.value)
- 			time.sleep(TIME_STEP)
+ 			try:
+				time.sleep(TIME_STEP)
+			except KeyboardInterrupt:
+				sys.exit(1)
  		self.changingWorkload = False
 
  	def getMappedSensor(self,sID):
