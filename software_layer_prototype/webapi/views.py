@@ -5,10 +5,19 @@ from webapi.app import app
 from webapi.helpers import crossdomain, convert_sql_to_list, convert_sensor_sql_to_list
 from models import Sensor, SensorEntry, Device
 
+@app.route('/api/measurements/device/<device_id>/', methods = ['GET']) # later id and name of device given?
+@crossdomain(origin='*')
+def showRecentMeasurements(device_id):
+	sensors = Sensor.select().join(Device).where(Device.id == device_id)
+	result = []
+	for sens in sensors:
+		sensor_dict = {sens.name: convert_sql_to_list(sens.entries.limit(10), sens.unit)}
+		result.append(sensor_dict)
+	return jsonify(results = result)
 
 @app.route('/api/measurements/device/<device_id>/<limit>/', methods = ['GET']) # later id and name of device given?
 @crossdomain(origin='*')
-def showRecentMeasurements(device_id, limit):
+def showRecentMeasurementsLimit(device_id, limit):
 	sensors = Sensor.select().join(Device).where(Device.id == device_id)
 	result = []
 	for sens in sensors:
