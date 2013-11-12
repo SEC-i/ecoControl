@@ -1,8 +1,9 @@
 import json, urllib2
-from models import Measurement
+#from models import Measurement
 
 # crawl data and save sensor data
 def add_measurement():
+	'''
 	url = "http://172.16.19.114/api/sensor/"
 	data = json.load(urllib2.urlopen(url))
 
@@ -12,3 +13,4 @@ def add_measurement():
 	sensor_data.temperature = data['temperature']
 	sensor_data.electrical_power = data['electrical_power']
 	sensor_data.save()
+	'''
