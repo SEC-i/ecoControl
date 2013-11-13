@@ -10,16 +10,19 @@ class WebAPITestCase(unittest.TestCase):
 
 	# def tearDown(self):
 
-	# /api/measurements/ needs to contain 'results'
+	# /api/measurements/device/1/ needs to contain 'results'
 	def testMeasurements(self):
-		rv = self.app.get('/api/measurements/')
+		rv = self.app.get('/api/measurements/device/1/')
 		assert 'results' in json.loads(rv.data)
 
-	# /api/measurements/(0..9)/ need to have (0..9) results
+	# /api/measurements/device/1/(0..9)/ need to have (0..9) results
 	def testMeasurementsLimit(self):
 		for i in range(0,10):
-			rv = self.app.get('/api/measurements/'+str(i)+'/')
-			assert i == len(json.loads(rv.data)['results'])
+			rv = self.app.get('/api/measurements/device/1/'+str(i)+'/')
+			j = 0
+			for sensor in ['workload','thermal power', 'gas input','electrical power']:
+				assert i == len(json.loads(rv.data)['results'][j][sensor])
+				j = j+1
 
 if __name__ == '__main__':
 	unittest.main()
