@@ -2,13 +2,23 @@ import datetime
 from flask import jsonify
 from flask import Flask
 from webapi.app import app
-from webapi.helpers import crossdomain, convert_sql_to_list, convert_sensor_sql_to_list
+from webapi.helpers import crossdomain, convert_sql_to_list
 from models import Sensor, SensorEntry, Device
+import json, urllib2, urllib
 
+@app.route('/api/measurements/device/<device_id>/', methods = ['GET']) # later id and name of device given?
+@crossdomain(origin='*')
+def showRecentMeasurements(device_id):
+	sensors = Sensor.select().join(Device).where(Device.id == device_id)
+	result = []
+	for sens in sensors:
+		sensor_dict = {sens.name: convert_sql_to_list(sens.entries.limit(10), sens.unit)}
+		result.append(sensor_dict)
+	return jsonify(results = result)
 
 @app.route('/api/measurements/device/<device_id>/<limit>/', methods = ['GET']) # later id and name of device given?
 @crossdomain(origin='*')
-def showRecentMeasurements(device_id, limit):
+def showRecentMeasurementsLimit(device_id, limit):
 	sensors = Sensor.select().join(Device).where(Device.id == device_id)
 	result = []
 	for sens in sensors:
@@ -51,12 +61,15 @@ def showMeasurementsForSensorBetweenTimestamps(device_id, sensor_id, from_timest
 	return jsonify(results = result)
 
 
-@app.route('/api/control/device/<device_id>/actuator/<actuator_id>', methods = ['POST'])
+@app.route('/api/control/', methods = ['POST'])
 @crossdomain(origin='*')
 def controlSwitch():
-	if 'id' in request.form and 'status' in request.form:
-		# post to bhk with 'id'
-		return "1"
+	needed_values = ['device_id','actuator_id','command']
+	if 'device_id' in request.form and 'actuator_id' in request.form and 'command' in request.form:
+		data = urllib.urlencode({'workload': 99})
+		response = urllib2.urlopen('http://172.16.22.235:5000/device/0/set', data)
+		html = response.read()
+		return html
 	else:
 		return "0"
 

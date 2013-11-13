@@ -18,13 +18,15 @@ if __name__ == '__main__':
 	parser = OptionParser() 
 	parser.add_option("--crawler", action="store_true", dest="crawler_only", default=False, help="Start crawler only") 
 	parser.add_option("--webapi", action="store_true", dest="webapi_only", default=False, help="Start webapi only")
-	parser.add_option("--create-tables", action="store_true", dest="create_tables", default=False, help="Create tables if they don't exist") 
+	parser.add_option("--create-tables", action="store_true", dest="create_tables", default=False, help="Create tables if they don't exist")
+	parser.add_option("--drop-tables", action="store_true", dest="drop_tables", default=False, help="Drop tables if they exist")  
 	(options, args) = parser.parse_args()
+
+	if options.drop_tables:
+		drop_tables()
 
 	if options.create_tables:
 		create_tables()
-	
-	# drop tables
 
 	if not options.webapi_only:
 		Crawler()
@@ -40,8 +42,9 @@ if __name__ == '__main__':
 
 	if not options.crawler_only:
 		#webapi.views.addURLs(app)
-		#app.run(host="0.0.0.0")
-		app.run()
+		app.run(host="0.0.0.0")
+
+		#app.run()
 		
 
 

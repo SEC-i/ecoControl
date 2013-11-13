@@ -32,36 +32,33 @@ def create_tables():
 	SensorEntry.create_table(fail_silently=True)
 	Actuator.create_table(fail_silently=True)
 
-def add_mockup():
+def drop_tables():
+	SensorEntry.drop_table(fail_silently=True)
+	Sensor.drop_table(fail_silently=True)
+	Actuator.drop_table(fail_silently=True)
+	Device.drop_table(fail_silently=True)
+
+def add_CHPUMock():
 	device = Device()
-	device.name = "BHK"
+	device.name = "BHKW0"
 	device.save()
 	device.update()
 	
-	for info in [("thermal power", "Watt"),("electrical power","Watt"),("workload","%"),("supply temperature", "Grad"),("return temperature", "Grad")]: # gas input?
+	for info in [("electrical power", "kW"),("gas input","kW"),("thermal power","kW"),("workload","%")]:
 		sensor1 = Sensor()
 		sensor1.device_id = device.id
 		sensor1.name = info[0]
 		sensor1.unit = info[1]
 		sensor1.save()
 		sensor1.update()
-		for k in range(10):
-			add_mockupEntry(sensor1.id)
 	
 	actuator = Actuator()
-	print actuator
 	actuator.device_id = device.id
-	actuator.name = "Switch1"
-	actuator.type = "Switch" #eg "switch"
+	actuator.name = "workload control"
+	actuator.type = "scroll bar" #eg "switch"
 	actuator.command = "" # temporary
 	actuator.save()
 
-
-def add_mockupEntry(sens_id):
-	entry = SensorEntry()
-	entry.sensor_id = sens_id
-	entry.value = str(random.uniform(1,50))
-	entry.save()
 	
 
 
