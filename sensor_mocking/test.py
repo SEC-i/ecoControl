@@ -54,7 +54,7 @@ class TestBHKW(unittest.TestCase):
         for i in range(100):
             values.append(self.BHKW.currentWorkload.value)#should randomly change
             time.sleep(0.01)
-        self.assertTrue(self.BHKW.currentWorkload.value != 50.0 * 100)
+        self.assertTrue(self.BHKW.<currentWorkload.value != 50.0 * 100)
 
 
 
