@@ -19,9 +19,3 @@ def convert_sql_to_list(sensor_entries, sensor_unit):
 		"value": str(item.value)+" "+sensor_unit,
 		"timestamp": str(item.timestamp) #calendar.timegm(item.timestamp.utctimetuple()) 
 		} for item in sensor_entries]
-
-def convert_sensor_sql_to_list(sensor_entries):
-	return [{
-		"name": item.name,
-		"unit":item.unit
-		} for item in sensor_entries]

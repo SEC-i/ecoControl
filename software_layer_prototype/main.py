@@ -42,8 +42,8 @@ if __name__ == '__main__':
 
 	if not options.crawler_only:
 		#webapi.views.addURLs(app)
-		#app.run(host="0.0.0.0")
-		app.run()
+		app.run(host="0.0.0.0")
+		#app.run()
 		
 
 

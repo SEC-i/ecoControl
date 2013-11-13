@@ -20,7 +20,7 @@ class WebAPITestCase(unittest.TestCase):
 		for i in range(0,10):
 			rv = self.app.get('/api/measurements/device/1/'+str(i)+'/')
 			j = 0
-			for sensor in ['return temperature','supply temperature', 'workload', 'electrical power', 'thermal power']:
+			for sensor in ['workload','thermal power', 'gas input','electrical power']:
 				assert i == len(json.loads(rv.data)['results'][j][sensor])
 				j = j+1
 
