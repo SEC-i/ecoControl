@@ -2,7 +2,7 @@ import Device
 from Device import Sensor
 
 
-class PlBoiler(Device.Device):
+class PlBoiler(Device.GeneratorDevice):
 	
 	def __init__(self,device_id):
  		Device.Device.__init__(self,device_id)
@@ -20,7 +20,7 @@ class PlBoiler(Device.Device):
 		pass
 
 
-	#def calculateParameters(self)	self. 
-
+	def calculateParameters(self):
+		pass
 
 
