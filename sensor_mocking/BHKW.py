@@ -70,7 +70,7 @@ class BHKW(Device.Device):
 
 
  	def calculateParameters(self,workload):
-
+ 		#get the two datasets in between which the workload resides
  		for i in range(len(self.givenData)-1):
  			if workload < self.givenData[i+1]:
  				dataSet1 = self.givenData[i]
@@ -80,7 +80,7 @@ class BHKW(Device.Device):
  			dataSet1 = self.givenData[-2] #last and second to last
  			dataSet2 = self.givenData[-1]
 
-		
+		# interpolate the values
 		mu = workload-dataSet1.workload
 		self.currentElectricalPower.value = cosineInterpolate(dataSet1.electricalPower, dataSet2.electricalPower, mu)
 		self.currentGasInput.value     = cosineInterpolate(dataSet1.gasInput, dataSet2.gasInput, mu)

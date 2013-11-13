@@ -65,11 +65,12 @@ class Device(object):
 
 class Sensor(object):
 
-	def __init__(self,name,id,value,unit):
+	def __init__(self,name,id,value,unit,maxValue=None):
 		self.id = id
 		self.value = value
 		self.name = name
 		self.unit = unit
+		self.maxValue = maxValue
 
 
 def sign(x): 
