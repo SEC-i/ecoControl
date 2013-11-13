@@ -2,6 +2,7 @@
 from flask import Flask, jsonify, request
 import BHKW
 from PeakLoadBoiler import PlBoiler
+from HeatReservoir import HeatReservoir
 
 app = Flask(__name__)
 
@@ -9,6 +10,7 @@ app = Flask(__name__)
 devices = []
 devices.append(BHKW.BHKW(device_id=0))
 devices.append(PlBoiler(device_id=1))
+devices.append(HeatReservoir(device_id=2))
 
 
 @app.route('/device/<int:device_id>/sensor/<int:sensor_id>', methods = ['GET'])
@@ -62,4 +64,4 @@ def hello():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",debug = True)
+    app.run(host="0.0.0.0",debug = True, port = 5001)

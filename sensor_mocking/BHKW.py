@@ -1,5 +1,6 @@
 import Device
 from Device import Sensor
+from Device import GeneratorDevice
 import math
 import time
 from  threading import Thread
@@ -11,14 +12,14 @@ import sys
 
 """@doc please read the technical datasheet of vitobloc_200_EM,
 which contains all the data which we are mocking here"""
-class BHKW(Device.Device):
+class BHKW(GeneratorDevice):
 
 	
 
  	def __init__(self,device_id):
- 		Device.Device.__init__(self,device_id)
+ 		GeneratorDevice.__init__(self,device_id)
 
- 		self.name = "BHKW" + str(device_id)
+ 		self.name = "BHKW"
  		self.time_step  =  0.08
 
 
@@ -61,12 +62,7 @@ class BHKW(Device.Device):
  	 	self.setcurrentWorkload(0.0)
 
 
- 	def immediateOff(self):
- 		"for testcases"
- 		self.changingWorkload = False
- 		if self.changingWorkloadThread != None:
- 			self.changingWorkloadThread.join()
- 		self.setcurrentWorkload(0.0)
+
 
 
  	def calculateParameters(self,workload):
