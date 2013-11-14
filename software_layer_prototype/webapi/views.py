@@ -66,7 +66,7 @@ def showMeasurementsForSensorBetweenTimestamps(device_id, sensor_id, from_timest
 def controlSwitch():
 	needed_values = ['device_id','actuator_id','command']
 	if 'device_id' in request.form and 'actuator_id' in request.form and 'command' in request.form:
-		data = urllib.urlencode({'workload': 99})
+		data = urllib.urlencode({'workload': request.form('command')})
 		response = urllib2.urlopen('http://172.16.22.235:5000/device/0/set', data)
 		html = response.read()
 		return html
