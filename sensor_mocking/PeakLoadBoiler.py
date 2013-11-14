@@ -2,7 +2,7 @@ import Device
 from Device import Sensor
 
 
-class PlBoiler(Device.Device):
+class PlBoiler(Device.GeneratorDevice):
 	
 	def __init__(self,device_id):
  		Device.Device.__init__(self,device_id)
@@ -11,13 +11,16 @@ class PlBoiler(Device.Device):
  		self.timestep = 0.01
 
 		self.name = "PeakloadBoiler"
-		self.currentWorkload 	= Sensor(name="workload",id=0,value=0,unit=r"%")
-		self.currentTemperature = Sensor(name="Temperature",id=1,value=0,unit="Celsius")
-		self.sensors = [self.currentWorkload,self.currentTemperature]
+		self.currentWorkload 	= Sensor(name="Temperature",id=0,value=0,unit=r"Celsius")
+		self.sensors = [self.currentWorkload]
 
 
 
 	def mainloop(self):
+		pass
+
+
+	def calculateParameters(self):
 		pass
 
 

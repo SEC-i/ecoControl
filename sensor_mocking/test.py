@@ -27,7 +27,7 @@ class TestBHKW(unittest.TestCase):
     def testTurnOff(self):
         #set values directly
         self.BHKW.currentWorkload.value = 20.0
-        self.BHKW._calculate(20.0)
+        self.BHKW.calculateParameters(20.0)
 
         self.BHKW.turnOff()
         # with timestep= 0.01, turning off takes approx 2.7 sec
@@ -37,10 +37,10 @@ class TestBHKW(unittest.TestCase):
 
     def testMeasuredData(self):
         # values from vitobloc_200_EM datasheet
-        self.BHKW._calculate(50.0)
+        self.BHKW.calculateParameters(50.0)
         self.assertEqual(self.BHKW.currentElectricalPower.value,25)
 
-        self.BHKW._calculate(75.0)
+        self.BHKW.calculateParameters(75.0)
         self.assertEqual(self.BHKW.currentThermalPower.value, 64)
 
     def testMapping(self):
@@ -54,7 +54,7 @@ class TestBHKW(unittest.TestCase):
         for i in range(100):
             values.append(self.BHKW.currentWorkload.value)#should randomly change
             time.sleep(0.01)
-        self.assertTrue(self.BHKW.<currentWorkload.value != 50.0 * 100)
+        self.assertTrue(self.BHKW.currentWorkload.value != 50.0 * 100)
 
 
 

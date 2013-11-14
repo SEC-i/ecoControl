@@ -6,18 +6,31 @@ class Device(object):
 
 	def __init__(self,device_id):
 		self.device_id = device_id
+		self.name = "Abstract Device"
 		self.givenData = []
 		self.sensors = []
 
 		self.time_step = 0.05
 
-		 #internalState
- 		self.changingWorkload = False
- 		self.changingWorkloadThread = None
+
 
 	
 
- 	def setcurrentWorkload(self,workload):
+
+
+class GeneratorDevice(Device):
+
+	def __init__(self,device_id):
+		Device.__init__(self,device_id)
+
+		self.name = "Abstract GeneratorDevice"
+
+		#internalState
+ 		self.changingWorkload = False
+ 		self.changingWorkloadThread = None
+
+
+	def setcurrentWorkload(self,workload):
  		
  		if (self.changingWorkload == True):
  			self.changingWorkload = False
@@ -59,17 +72,25 @@ class Device(object):
  		for sensor in self.sensors:
  			if sensor.id == sID:
  				newValue = sensor.value / ((maxValue - minValue) / 100.0)
- 				return Sensor(name=sensor.name,id=sID,value=newValue)
+ 				return Sensor(name=sensor.name,id=sID,value=newValue,unit=sensor.unit)
+
+ 	def immediateOff(self):
+ 		"for testcases"
+ 		self.changingWorkload = False
+ 		if self.changingWorkloadThread != None:
+ 			self.changingWorkloadThread.join()
+ 		self.setcurrentWorkload(0.0)
 
 
 
 class Sensor(object):
 
-	def __init__(self,name,id,value,unit):
+	def __init__(self,name,id,value,unit,maxValue=None):
 		self.id = id
 		self.value = value
 		self.name = name
 		self.unit = unit
+		self.maxValue = maxValue
 
 
 def sign(x): 

@@ -1,5 +1,6 @@
 import Device
 from Device import Sensor
+from Device import GeneratorDevice
 import math
 import time
 from  threading import Thread
@@ -11,14 +12,14 @@ import sys
 
 """@doc please read the technical datasheet of vitobloc_200_EM,
 which contains all the data which we are mocking here"""
-class BHKW(Device.Device):
+class BHKW(GeneratorDevice):
 
 	
 
  	def __init__(self,device_id):
- 		Device.Device.__init__(self,device_id)
+ 		GeneratorDevice.__init__(self,device_id)
 
- 		self.name = "BHKW" + str(device_id)
+ 		self.name = "BHKW"
  		self.time_step  =  0.08
 
 
@@ -61,16 +62,11 @@ class BHKW(Device.Device):
  	 	self.setcurrentWorkload(0.0)
 
 
- 	def immediateOff(self):
- 		"for testcases"
- 		self.changingWorkload = False
- 		if self.changingWorkloadThread != None:
- 			self.changingWorkloadThread.join()
- 		self.setcurrentWorkload(0.0)
+
 
 
  	def calculateParameters(self,workload):
-
+ 		#get the two datasets in between which the workload resides
  		for i in range(len(self.givenData)-1):
  			if workload < self.givenData[i+1]:
  				dataSet1 = self.givenData[i]
@@ -80,7 +76,7 @@ class BHKW(Device.Device):
  			dataSet1 = self.givenData[-2] #last and second to last
  			dataSet2 = self.givenData[-1]
 
-		
+		# interpolate the values
 		mu = workload-dataSet1.workload
 		self.currentElectricalPower.value = cosineInterpolate(dataSet1.electricalPower, dataSet2.electricalPower, mu)
 		self.currentGasInput.value     = cosineInterpolate(dataSet1.gasInput, dataSet2.gasInput, mu)
