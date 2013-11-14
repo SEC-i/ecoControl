@@ -5,5 +5,3 @@ from software_layer_django.webapi.models import Device, Sensor, SensorEntry
 admin.site.register(Device)
 admin.site.register(Sensor)
 admin.site.register(SensorEntry)
-
-
