@@ -122,7 +122,6 @@ function showDiagram(){
                 }
               });
 
-              console.log(electrical_power);
 
               x.domain(d3.extent(data, function(d){ 
                 return d['timestamp']; 

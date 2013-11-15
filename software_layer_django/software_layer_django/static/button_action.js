@@ -1,13 +1,12 @@
 
 
-var base_url = "http://172.16.19.114/api/";
+var base_url = "http://172.16.64.130/api/";
 
-var base_url_get = "http://141.89.75.185/api/"
+var base_url_get = "http://172.16.64.130/api/"
 $(document).ready(function(){
 
  
-  setInterval("updateData()", 50);   
-  console.log('bla');  
+  setInterval("updateData()", 1000);   
 
   showDiagram();
 

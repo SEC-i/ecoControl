@@ -59,10 +59,10 @@ WSGI_APPLICATION = 'software_layer_django.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'djangodb',
+        'NAME': 'bp2013h1_prototype',
         'USER': 'bp2013h1',
         'PASSWORD': 'hirsch',
-        'HOST': '172.16.22.247',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }

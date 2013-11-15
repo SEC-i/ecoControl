@@ -10,7 +10,7 @@ app = Flask(__name__)
 devices = []
 devices.append(BHKW.BHKW(device_id=0))
 devices.append(PlBoiler(device_id=1))
-devices.append(HeatReservoir(device_id=2))
+# devices.append(HeatReservoir(device_id=2))
 
 
 @app.route('/device/<int:device_id>/sensor/<int:sensor_id>', methods = ['GET'])
@@ -64,4 +64,4 @@ def hello():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",debug = True, port = 5001)
+    app.run(host="0.0.0.0",debug = True, port = 9000)
