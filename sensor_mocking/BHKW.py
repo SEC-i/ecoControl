@@ -16,11 +16,11 @@ class BHKW(GeneratorDevice):
 
 	
 
- 	def __init__(self,device_id):
- 		GeneratorDevice.__init__(self,device_id)
+ 	def __init__(self,device_id,time_step=0.14):
+ 		GeneratorDevice.__init__(self,device_id,time_step)
 
  		self.name = "BHKW"
- 		self.time_step  =  0.08
+ 		#self.time_step  =  0.08
 
 
  		self.currentWorkload 		=  Sensor(name="workload",id=0,value=0,unit=r"%")
@@ -46,9 +46,9 @@ class BHKW(GeneratorDevice):
 
 
  		# is only set to false if mainloop is stopped
- 		self.mainloopRunning = True
- 		self.mainloop = Thread(target=self.mainloop,args=())
- 		self.mainloop.start()
+ 		#self.mainloopRunning = True
+ 		#self.mainloop = Thread(target=self.mainloop,args=())
+ 		#self.mainloop.start()
 
 
 
@@ -85,13 +85,20 @@ class BHKW(GeneratorDevice):
 	def mainloop(self):
 		while self.mainloopRunning:
 			if (self.changingWorkload == False and self.currentWorkload.value > 0.0 ):
-				self.currentWorkload.value += (random.random() * 2.0 - 1.0) * self.time_step
+				self.currentWorkload.value += (random.random() * 2.0 - 1.0) * self.time_step * 5.0
 				self.currentWorkload.value  = max(min(self.currentWorkload.value, 100.0), 0.0) #clamp
 				self.calculateParameters(self.currentWorkload.value)
-			try:
-				time.sleep(self.time_step)
-			except KeyboardInterrupt:
-				sys.exit(1)
+			time.sleep(self.time_step)
+
+	def update(self,time_delta):
+		if not super(BHKW, self).update(time_delta):
+			return False
+
+		if (self.changingWorkload == False and self.currentWorkload.value > 0.0 ):
+			self.currentWorkload.value = self.targetWorkload + (random.random() * 2.0 - 1.0) * self.time_step * 10.0
+			self.currentWorkload.value  = max(min(self.currentWorkload.value, 100.0), 0.0) #clamp
+			self.calculateParameters(self.currentWorkload.value)
+
 
 
 

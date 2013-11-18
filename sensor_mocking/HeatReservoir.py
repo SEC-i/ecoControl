@@ -6,8 +6,8 @@ from Device import GeneratorDevice
 """ Heat Reservoir based on Vaillant UNISTOR VIH Q 120 """
 class HeatReservoir(Device.Device):
 
-	def __init__(self,device_id):
- 		GeneratorDevice.__init__(self,device_id)
+	def __init__(self,device_id,time_step=0.05):
+ 		Device.Device.__init__(self,device_id,time_step)
 
  		self.name = "HeatReservoir"
 
@@ -17,14 +17,9 @@ class HeatReservoir(Device.Device):
 		self.currentWarmWaterTemp = Sensor(name="warmwater temperature",id=1,value=0,unit=r"C",maxValue=85)
 		self.currentBoilerWaterTemp = Sensor(name="boilerwater temperature",id=2,value=0,unit=r"C",maxValue=110)
 
+		self.waterInflow1 = 0
+		self.waterInflow2 = 0
+
 		self.sensors = [self.currentPressure,self.currentWarmWaterTemp,self.currentBoilerWaterTemp]
-
-
-
-
-
-
-	#override defualt workload handling (heatreservoir can't set workload)
- 	def calculateParameters(self,workload):
- 		pass
+ 		
 

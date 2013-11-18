@@ -2,59 +2,61 @@ import random
 import unittest
 import BHKW
 import time
+from Simulation import BHKW_Simulation
 
 class TestBHKW(unittest.TestCase):
 
     def setUp(self):
         #BHWK.TIME_STEP = 0.1
-        self.BHKW = BHKW.BHKW(0)
+        self.simulation = BHKW_Simulation()
+        #self.simulation.BHKW = BHKW.BHKW(0)
     
     def tearDown(self):
-        self.BHKW.immediateOff()
+        self.simulation.immediateOff()
 
     def testStartUp(self):
-        self.assertEqual(self.BHKW.currentWorkload.value, 0)
-        self.BHKW.turnOn()
+        self.assertEqual(self.simulation.getWorkload(0), 0)
+        self.simulation.BHKW.turnOn()
         #assert, that BHKW doesnt immediatly work at deisred power
-        self.assertTrue(self.BHKW.currentWorkload.value != 75)
+        self.assertTrue(self.simulation.getWorkload(0) != 75)
         time.sleep(0.1)
         # but workload should still rise a bit
-        self.assertTrue(self.BHKW.currentWorkload.value != 0)
+        self.assertTrue(self.simulation.getWorkload(0) != 0)
 
         #just to avoid interference with other tests
-        self.BHKW.immediateOff()
+        self.simulation.immediateOff()
 
     def testTurnOff(self):
         #set values directly
-        self.BHKW.currentWorkload.value = 20.0
-        self.BHKW.calculateParameters(20.0)
+        self.simulation.BHKW.currentWorkload.value = 20.0
+        self.simulation.BHKW.calculateParameters(20.0)
 
-        self.BHKW.turnOff()
+        self.simulation.BHKW.turnOff()
         # with timestep= 0.01, turning off takes approx 2.7 sec
         time.sleep(3.0)
 
-        self.assertEqual(self.BHKW.currentWorkload.value,0.0)
+        self.assertEqual(self.simulation.BHKW.currentWorkload.value,0.0)
 
     def testMeasuredData(self):
         # values from vitobloc_200_EM datasheet
-        self.BHKW.calculateParameters(50.0)
-        self.assertEqual(self.BHKW.currentElectricalPower.value,25)
+        self.simulation.BHKW.calculateParameters(50.0)
+        self.assertEqual(self.simulation.BHKW.currentElectricalPower.value,25)
 
-        self.BHKW.calculateParameters(75.0)
-        self.assertEqual(self.BHKW.currentThermalPower.value, 64)
+        self.simulation.BHKW.calculateParameters(75.0)
+        self.assertEqual(self.simulation.BHKW.currentThermalPower.value, 64)
 
     def testMapping(self):
-        self.BHKW.currentGasInput.value = 145.0 # maximum
+        self.simulation.BHKW.currentGasInput.value = 145.0 # maximum
         
-        self.assertEqual(self.BHKW.getMappedSensor(sID=3).value, 100.0)
+        self.assertEqual(self.simulation.BHKW.getMappedSensor(sID=3).value, 100.0)
 
     def testRandomVariations(self):
-        self.BHKW.currentWorkload.value = 50.0
+        self.simulation.BHKW.currentWorkload.value = 50.0
         values = []
         for i in range(100):
-            values.append(self.BHKW.currentWorkload.value)#should randomly change
+            values.append(self.simulation.BHKW.currentWorkload.value)#should randomly change
             time.sleep(0.01)
-        self.assertTrue(self.BHKW.currentWorkload.value != 50.0 * 100)
+        self.assertTrue(self.simulation.BHKW.currentWorkload.value != 50.0 * 100)
 
 
 

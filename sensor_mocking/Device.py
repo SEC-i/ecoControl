@@ -4,13 +4,21 @@ import time
 
 class Device(object):
 
-	def __init__(self,device_id):
+	def __init__(self,device_id,time_step):
 		self.device_id = device_id
 		self.name = "Abstract Device"
 		self.givenData = []
 		self.sensors = []
 
-		self.time_step = 0.05
+		self.time_step = time_step
+	
+	def update(self,time_delta):
+		if time_delta < self.time_step:
+			# didnt update
+ 			return False
+ 		else:
+ 			return True
+
 
 
 
@@ -20,24 +28,33 @@ class Device(object):
 
 class GeneratorDevice(Device):
 
-	def __init__(self,device_id):
-		Device.__init__(self,device_id)
+	def __init__(self,device_id,time_step):
+		Device.__init__(self,device_id,time_step)
 
 		self.name = "Abstract GeneratorDevice"
 
 		#internalState
  		self.changingWorkload = False
  		self.changingWorkloadThread = None
+ 		self.targetWorkload  = 0
+ 		self.last_delta = 0
+ 		self.workload_delta = 0
 
 
 	def setcurrentWorkload(self,workload):
  		
- 		if (self.changingWorkload == True):
- 			self.changingWorkload = False
- 			self.changingWorkloadThread.join()
+ 		# if (self.changingWorkload == True):
+ 		# 	self.changingWorkload = False
+ 		# 	self.changingWorkloadThread.join()
 
- 		self.changingWorkloadThread = Thread(target=self.smoothSetToWorkload,args=(workload,))
- 		self.changingWorkloadThread.start()
+ 		# self.changingWorkloadThread = Thread(target=self.smoothSetToWorkload,args=(workload,))
+ 		# self.changingWorkloadThread.start()
+ 		self.last_delta = 0
+ 		self.workload_delta = 0
+
+ 		self.changingWorkload = True
+ 		self.targetWorkload = workload
+ 		pass
 
  	def calculateParameters(self,workload):
  		pass
@@ -59,11 +76,24 @@ class GeneratorDevice(Device):
  			else:
  				self.currentWorkload.value += delta
  				self.calculateParameters(self.currentWorkload.value)
- 			try:
-				time.sleep(self.time_step)
-			except KeyboardInterrupt:
-				sys.exit(1)
+			time.sleep(self.time_step)
  		self.changingWorkload = False
+
+ 	def smoothSetToWorkload_Step(self,time_delta): 		
+ 		if self.currentWorkload.value != self.targetWorkload:
+ 			self.last_delta = self.workload_delta
+ 			self.workload_delta = self.time_step * ((random.random() * 2.0 - 1.0) + 10.0 *  sign(self.targetWorkload - self.currentWorkload.value))
+ 			#use two last deltas to determine if value oscilating around certain point
+ 			if abs(self.workload_delta + self.last_delta) <  self.time_step:
+ 				self.currentWorkload.value = self.targetWorkload
+ 				self.calculateParameters(self.targetWorkload)
+ 				self.changingWorkload = False
+ 				print "finished"
+ 			else:
+ 				self.currentWorkload.value += self.workload_delta
+ 				self.calculateParameters(self.currentWorkload.value)
+ 		return True
+
 
  	def getMappedSensor(self,sID):
  		maxValue = max([sensorSet.toList()[sID] for sensorSet in self.givenData])
@@ -80,6 +110,14 @@ class GeneratorDevice(Device):
  		if self.changingWorkloadThread != None:
  			self.changingWorkloadThread.join()
  		self.setcurrentWorkload(0.0)
+
+ 	def update(self,time_delta):
+ 		if not super(GeneratorDevice, self).update(time_delta):
+ 			return False
+ 		if self.changingWorkload:
+ 			self.smoothSetToWorkload_Step(time_delta)
+ 		return True
+
 
 
 
