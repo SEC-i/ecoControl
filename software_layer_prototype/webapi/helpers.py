@@ -17,5 +17,5 @@ def crossdomain(origin=None):
 def convert_sql_to_list(sensor_entries, sensor_unit):
 	return [{
 		"value": str(item.value)+" "+sensor_unit,
-		"timestamp": str(item.timestamp) #calendar.timegm(item.timestamp.utctimetuple()) 
+		"timestamp": calendar.timegm(item.timestamp.utctimetuple())#str(item.timestamp)  
 		} for item in sensor_entries]

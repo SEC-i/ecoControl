@@ -89,6 +89,6 @@ def set_device(request, device_id):
         workload = request.POST['workload']
         
     postData = [('workload', workload)]
-    urlopen("http://172.16.22.235:5000/device/0/set", urlencode(postData))
+    urlopen("http://172.16.64.130:9000/device/0/set", urlencode(postData))
     
     return create_json_response({"status": "ok"})

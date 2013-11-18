@@ -28,6 +28,7 @@ if __name__ == '__main__':
 	if options.create_tables:
 		create_tables()
 
+	add_CHPUMock()
 	if not options.webapi_only:
 		Crawler()
 		# while true loop let's thread running

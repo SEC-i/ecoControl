@@ -10,7 +10,8 @@ class Device(db.Model):
 class Sensor(db.Model):
 	id = PrimaryKeyField()
 	device_id = ForeignKeyField(Device, related_name='sensors', db_column='device_id')
-	name = CharField()
+	name = CharField() # the name the software layer is using and the frontend knows
+	name_original = CharField() # the name the device is using
 	unit = CharField()
 
 class SensorEntry(db.Model):
@@ -44,11 +45,12 @@ def add_CHPUMock():
 	device.save()
 	device.update()
 	
-	for info in [("electrical power", "kW"),("gas input","kW"),("thermal power","kW"),("workload","%")]:
+	for info in [("electrical power","electricalPower", "kW"),("gas input", "gasInput", "kW"),("thermal power", "thermalPower" ,"kW"),("workload", "workload","%")]:
 		sensor1 = Sensor()
 		sensor1.device_id = device.id
 		sensor1.name = info[0]
-		sensor1.unit = info[1]
+		sensor1.name_original = info[1]
+		sensor1.unit = info[2]
 		sensor1.save()
 		sensor1.update()
 	

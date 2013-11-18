@@ -8,5 +8,5 @@ class Configuration(object):
 		'host': "172.16.22.247",
 		'port': "5432",
 	}
-	DEBUG = True
+	DEBUG = False
 	SECRET_KEY = 'bp2013h1'
