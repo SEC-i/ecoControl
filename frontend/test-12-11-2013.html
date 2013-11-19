@@ -1,0 +1,74 @@
+<!doctype html>
+
+<head>
+  <meta charset="utf-8">
+  <title>BHKW Steuerung</title>
+  <script type="text/javascript" src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+
+  <link href="./style.css"  rel="stylesheet" type="text/css" />
+
+  <script type="text/javascript" src="./button_action.js"></script>
+
+
+</head>
+<body >
+
+    <div>
+         <input id="switch_button" type="checkbox"> BHKW angeschaltet </input>
+    </div>
+
+    <div>
+         <input id="update_button" type="checkbox"> Diagramm alle 5 Sekunden updaten</input>
+    </div>
+   <!--Choose lines -->
+
+<div> 
+____________________________________________________
+</div> 
+
+<div>
+
+  Choose which values you want to see:
+
+    <div style="color:green">
+         <input id="gas_button" type="checkbox" color = "green" > Show gas line</input>
+    </div>
+
+     <div style="color:red">
+         <input class= "choose_line" id="temp_button" type="checkbox" > Show temperature line</input>
+    </div>
+
+     <div style= "color:blue">
+         <input class= "choose_line" id="elec_button" type="checkbox"> Show electrical line</input>
+    </div>
+
+      <div>
+       <button type="button" id="diagram_button">Show Diagram</button >
+     </div>
+
+</div>
+
+
+
+
+
+    <!-- Slider-->
+    <p>
+      <label for="amount">BHKW workload (percentage):</label>
+      <input type="text" id="bhkw_workload" style="border: 0; color: #f6931f; font-weight: bold;" />
+    </p>
+     
+    <div id="slider"></div>
+
+   
+
+
+    <script src="http://d3js.org/d3.v3.js"></script>
+   <script type="text/javascript" src="./diagram.js"></script>
+ 
+
+</body>
+</html>
