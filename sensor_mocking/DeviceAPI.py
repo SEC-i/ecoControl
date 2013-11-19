@@ -3,19 +3,18 @@ from flask import Flask, jsonify, request
 import BHKW
 from PeakLoadBoiler import PlBoiler
 from HeatReservoir import HeatReservoir
+from Simulation import BHKW_Simulation
 
 app = Flask(__name__)
 
 
-devices = []
-devices.append(BHKW.BHKW(device_id=0))
-devices.append(PlBoiler(device_id=1))
+simulation = BHKW_Simulation()
 # devices.append(HeatReservoir(device_id=2))
 
 
 @app.route('/device/<int:device_id>/sensor/<int:sensor_id>', methods = ['GET'])
 def get_sensor(device_id,sensor_id):
-    device = next(dev for dev in devices if dev.device_id == device_id)
+    device = next(dev for dev in simulation.devices if dev.device_id == device_id)
     sensor = device.getMappedSensor(sensor_id)
     sensor_data =  {
         'device_id': device_id,
@@ -27,7 +26,7 @@ def get_sensor(device_id,sensor_id):
 
 @app.route('/device/<int:device_id>/get', methods = ['GET'])
 def get_data(device_id):
-    device = next(dev for dev in devices if dev.device_id == device_id)
+    device = next(dev for dev in simulation.devices  if dev.device_id == device_id)
     device_data = {}
     for sensor in device.sensors:
         #sensor  = device.getMappedSensor(sensor.id)
@@ -38,18 +37,16 @@ def get_data(device_id):
 def set_data(device_id):
     if 'workload' not in request.form:
         return "0"
-    device = [dev for dev in devices if dev.device_id == device_id ][0]
     workload = float(request.form['workload'])
-    
+
     if workload >= 0 and workload <= 100:
-        device.setcurrentWorkload(workload)
-        return "1"
+        return simulation.setWorkload(device_id,workload)
     else:
         return "0"
 
 @app.route('/device/<int:device_id>/info', methods = ['GET'])
 def get_info(device_id):
-    device = next(dev for dev in devices if dev.device_id == device_id)
+    device = next(dev for dev in simulation.devices if dev.device_id == device_id)
     device_data = {"device_name":device.name}
     for sensor in device.sensors:
         #sensor  = device.getMappedSensor(sensor.id)
