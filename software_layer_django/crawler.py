@@ -4,7 +4,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "software_layer_django.settings"
 from software_layer_django.crawler import *
 
 if __name__ == '__main__':
-    Crawler()
+    Crawler(frequency=60)
     # wait until KeyboardInterrupt
     while True:
         try:

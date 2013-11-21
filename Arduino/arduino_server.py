@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import serial, json
+import serial, json, os
 
 import threading, time
 
@@ -9,7 +9,6 @@ ser = serial.Serial("/dev/ttyACM0")
 ser.baudrate = 9600
 
 app = Flask(__name__)
-
 
 class ArduinoWorker(threading.Thread):
 	def __init__(self):
@@ -23,6 +22,14 @@ class ArduinoWorker(threading.Thread):
 			ser_data = ser.readline()
 			try:
 				self.data = json.loads(ser_data)
+				if int(self.data['plant1_value']) > 500:
+					os.system("sudo sispmctl -q -f 1")
+				else:
+					os.system("sudo sispmctl -q -o 1")
+				if int(self.data['plant2_value']) > 500:
+					os.system("sudo sispmctl -q -f 2")
+				else:
+					os.system("sudo sispmctl -q -o 2")
 			except:
 				pass
 
