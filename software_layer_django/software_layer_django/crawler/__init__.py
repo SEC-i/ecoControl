@@ -21,6 +21,7 @@ class Crawler(threading.Thread):
 			print " * Crawling..."
 			while(True):
 				add_SensorEntry()
+                add_ArduinoEntry()
 				time.sleep(self.frequency)
 		else:
 			print " * Duplicate crawler thread avoided"
