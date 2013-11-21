@@ -5,8 +5,9 @@ from HeatReservoir import HeatReservoir
 import time
 from  threading import Thread
 
-class BHKW_Simulation:
+class BHKW_Simulation(Thread):
 	def __init__(self):
+		Thread.__init__(self)
 
 		self.BHKW = BHKW.BHKW(device_id=0)
 		self.PlBoiler = PlBoiler(device_id=1)
@@ -16,13 +17,12 @@ class BHKW_Simulation:
 		self.timeDeltas  = [0,0,0]
 
 		self.timeStep = 0.03
+		self.daemon = True
 
+
+	def run(self):
 		self.mainloopRunning = True
-		self.start()
-
-	def start(self):
-		self.mainloopThread = Thread(target=self.mainloop,args=())
- 		self.mainloopThread.start()
+		self.mainloop()
 
  	def setWorkload(self,device_id,workload):
  		device = [dev for dev in self.devices if dev.device_id == device_id][0]
@@ -49,8 +49,8 @@ class BHKW_Simulation:
 	def immediateOff(self):
  		"for testcases"
  		self.mainloopRunning = False
- 		if self.mainloopThread != None:
- 			self.mainloopThread.join()
+ 		#if self.mainloopThread != None:
+ 		#	self.mainloopThread.join()
 
 
  	def getWorkload(self,device_id):

@@ -9,6 +9,7 @@ class TestBHKW(unittest.TestCase):
     def setUp(self):
         #BHWK.TIME_STEP = 0.1
         self.simulation = BHKW_Simulation()
+        self.simulation.start()
         #self.simulation.BHKW = BHKW.BHKW(0)
     
     def tearDown(self):
@@ -19,7 +20,7 @@ class TestBHKW(unittest.TestCase):
         self.simulation.BHKW.turnOn()
         #assert, that BHKW doesnt immediatly work at deisred power
         self.assertTrue(self.simulation.getWorkload(0) != 75)
-        time.sleep(0.1)
+        time.sleep(1.0)
         # but workload should still rise a bit
         self.assertTrue(self.simulation.getWorkload(0) != 0)
 
