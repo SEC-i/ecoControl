@@ -1,5 +1,4 @@
 import logging
-from urllib import urlopen, urlencode
 
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -89,14 +88,18 @@ def show_entry(request, entry_id):
         return HttpResponse("ValueError")
 
 def set_device(request, device_id):
-    workload = '100'
-    
-    if request.method == 'POST':
-        workload = request.POST['workload']
-        
-    postData = [('workload', workload)]
-    urlopen("http://172.16.64.130:9000/device/0/set", urlencode(postData))
-    
-    logger.debug("Post request triggered by " + request.META['REMOTE_ADDR'])
+    try:
+        device = Device.objects.get(id = int(device_id))
 
-    return create_json_response({"status": "ok"})
+        if request.method == 'POST':
+            driver_name = device.name.lower()
+            logger.debug("Trying to load 'drivers." + driver_name + "'")
+            driver = __import__('drivers.' + driver_name, globals(), locals(), ['handle_post_data'], -1)
+            driver.handle_post_data(request.POST.dict())
+            logger.debug("Post request triggered by " + request.META['REMOTE_ADDR'])
+            return create_json_response({"status": "ok"})
+        else:
+            return create_json_response({"status": "fail"})
+    except ValueError:
+        logger.error("ValueError")
+        return HttpResponse("ValueError")
