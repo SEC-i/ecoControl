@@ -12,7 +12,7 @@ var base_url_get = "http://172.16.64.130/api/" // VM IP
 $(document).ready(function(){
 
  
-  setInterval("updateData()", 1000);   
+  setInterval("updateData()", 60 * 1000);   
   console.log('bla');  
 
 

@@ -76,7 +76,7 @@ function showDiagram(){
 
 
 
-        d3.json(base_url_get+"device/2/entries/limit/200/", function(error, data) {
+        d3.json(base_url_get+"device/2/entries/limit/6000/", function(error, data) {
               var plant1_value = [];
               var plant2_value = [];
               var temperature_value = [];
@@ -91,7 +91,7 @@ function showDiagram(){
                   case 5: plant1_value.push({value: d['value'], timestamp: d['timestamp']}); break;
                   case 6: plant2_value.push({value: d['value'], timestamp: d['timestamp']}); break;
                   case 8: temperature_value.push({value: d['value'], timestamp: d['timestamp']}); break;
-                  case 7: light_value.push({value: parseInt(d['value'])*6, timestamp: d['timestamp']}); break;
+                  case 7: light_value.push({value: d['value'], timestamp: d['timestamp']}); break;
 
                 }
               });
@@ -199,7 +199,7 @@ function showDiagram(){
             .y(function(d) { return y0(d['value']); });
 
 
-         d3.json(base_url_get+"device/2/entries/limit/200/", function(error, data) {
+         d3.json(base_url_get+"device/2/entries/limit/6000/", function(error, data) {
               var plant1_value = [];
               var plant2_value = [];
               var temperature_value = [];
@@ -214,7 +214,7 @@ function showDiagram(){
                   case 5: plant1_value.push({value: d['value'], timestamp: d['timestamp']}); break;
                   case 6: plant2_value.push({value: d['value'], timestamp: d['timestamp']}); break;
                   case 8: temperature_value.push({value: d['value'], timestamp: d['timestamp']}); break;
-                  case 7: light_value.push({value: parseInt(d['value'])*6, timestamp: d['timestamp']}); break;
+                  case 7: light_value.push({value: d['value'], timestamp: d['timestamp']}); break;
 
                 }
               });
