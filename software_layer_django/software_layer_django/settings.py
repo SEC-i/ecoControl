@@ -89,3 +89,60 @@ STATIC_ROOT = ''
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "software_layer_django/static"),
 )
+
+# Logging
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'django': {
+            'level': 'WARNING',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/django.log',
+            'maxBytes': 1024*1024*4, # 4 MB
+            'backupCount': 5,
+            'formatter': 'verbose'
+        },
+        'webapi': {
+            'level': 'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/webapi.log',
+            'maxBytes': 1024*1024*4, # 4 MB
+            'backupCount': 5,
+            'formatter': 'verbose'
+        },
+        'crawler': {
+            'level': 'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/crawler.log',
+            'maxBytes': 1024*1024*4, # 4 MB
+            'backupCount': 5,
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers':['django'],
+            'propagate': True,
+            'level':'DEBUG',
+        },
+        'webapi': {
+            'handlers': ['webapi'],
+            'level': 'DEBUG',
+        },
+        'crawler': {
+            'handlers': ['crawler'],
+            'level': 'DEBUG',
+        },
+    }
+}
