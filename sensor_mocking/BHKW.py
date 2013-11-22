@@ -24,9 +24,9 @@ class BHKW(GeneratorDevice):
 
 
  		self.currentWorkload 		=  Sensor(name="workload",id=0,value=0,unit=r"%")
- 		self.currentElectricalPower =  Sensor(name="electricalPower",id=1,value=0,unit="kW")
- 		self.currentThermalPower 	=  Sensor(name="thermalPower",id=2,value=0,unit="kW")
- 		self.currentGasInput 		=  Sensor(name="gasInput",id=3,value=0,unit="kW")
+ 		self.currentElectricalPower =  Sensor(name="electrical_power",id=1,value=0,unit="kW")
+ 		self.currentThermalPower 	=  Sensor(name="thermal_power",id=2,value=0,unit="kW")
+ 		self.currentGasInput 		=  Sensor(name="gas_input",id=3,value=0,unit="kW")
 
  		#index corresponds to sensor id
  		self.sensors = [self.currentWorkload,self.currentElectricalPower,self.currentThermalPower,self.currentGasInput]

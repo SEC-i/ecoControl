@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import threading, time
-from software_layer_django.crawler.functions import add_SensorEntry
+from software_layer_django.crawler.functions import crawl_and_save_data
 from software_layer_django.crawler.helpers import write_pidfile_or_fail
 
 # Crawler thread class
@@ -20,8 +20,7 @@ class Crawler(threading.Thread):
 			# add new measurement approx. every minute
 			print " * Crawling..."
 			while(True):
-				add_SensorEntry()
-                add_ArduinoEntry()
+				crawl_and_save_data()
 				time.sleep(self.frequency)
 		else:
 			print " * Duplicate crawler thread avoided"
