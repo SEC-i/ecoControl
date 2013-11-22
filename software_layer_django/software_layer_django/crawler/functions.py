@@ -29,4 +29,4 @@ def crawl_and_save_data():
 					sensor_entry.timestamp = time
 					sensor_entry.save()
 	except:
-		logger.error("crawl function failed")
+		logger.error("Crawl function failed")

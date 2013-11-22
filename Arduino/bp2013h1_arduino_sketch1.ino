@@ -49,7 +49,7 @@ void loop() {
         if (incomingByte == 49){ // turn relay on if input was ASCII "1"
             digitalWrite(relay_pin,HIGH);
             Serial.println("{ \"relay_state\": 1 }");
-        } else if (incomingByte == 50) { // turn relay on if input was ASCII "1"
+        } else if (incomingByte == 50) { // turn relay on if input was ASCII "2"
             digitalWrite(relay_pin,LOW);
             Serial.println("{ \"relay_state\": 0 }");
         } else { // otherwise, reply with sensor data

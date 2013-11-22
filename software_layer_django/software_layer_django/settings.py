@@ -134,7 +134,7 @@ LOGGING = {
         'django': {
             'handlers':['django'],
             'propagate': True,
-            'level':'DEBUG',
+            'level':'WARNING',
         },
         'webapi': {
             'handlers': ['webapi'],

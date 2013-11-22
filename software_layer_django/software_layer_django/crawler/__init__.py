@@ -23,15 +23,15 @@ class Crawler(threading.Thread):
 		if self.is_unique_thread:
 			# add new measurement approx. every minute
 			print " * Crawling..."
-			logger.debug("crawler started")
+			logger.debug("Crawler started")
 			while(True):
 				crawl_and_save_data()
 
 				# log function calls if frequency >= 10 seconds
 				if self.frequency>9:
-					logger.debug("crawl function called")
+					logger.debug("Crawl function called")
 				
 				time.sleep(self.frequency)
 		else:
-			logger.debug("duplicate crawler thread avoided")
+			logger.debug("Duplicate crawler thread avoided")
 			print " * Duplicate crawler thread avoided"
