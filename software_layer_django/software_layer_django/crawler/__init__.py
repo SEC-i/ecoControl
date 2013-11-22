@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 import threading, time
-from software_layer_django.crawler.functions import add_SensorEntry
+import logging
+
+from software_layer_django.crawler.functions import crawl_and_save_data
 from software_layer_django.crawler.helpers import write_pidfile_or_fail
+
+logger = logging.getLogger('crawler')
 
 # Crawler thread class
 class Crawler(threading.Thread):
@@ -19,8 +23,15 @@ class Crawler(threading.Thread):
 		if self.is_unique_thread:
 			# add new measurement approx. every minute
 			print " * Crawling..."
+			logger.debug("crawler started")
 			while(True):
-				add_SensorEntry()
+				crawl_and_save_data()
+
+				# log function calls if frequency >= 10 seconds
+				if self.frequency>9:
+					logger.debug("crawl function called")
+				
 				time.sleep(self.frequency)
 		else:
+			logger.debug("duplicate crawler thread avoided")
 			print " * Duplicate crawler thread avoided"

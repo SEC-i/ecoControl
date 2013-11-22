@@ -16,7 +16,7 @@ class BHKW(GeneratorDevice):
 
 	
 
- 	def __init__(self,device_id,time_step=0.14):
+ 	def __init__(self,device_id,time_step=0.10):
  		GeneratorDevice.__init__(self,device_id,time_step)
 
  		self.name = "BHKW"
@@ -24,9 +24,9 @@ class BHKW(GeneratorDevice):
 
 
  		self.currentWorkload 		=  Sensor(name="workload",id=0,value=0,unit=r"%")
- 		self.currentElectricalPower =  Sensor(name="electricalPower",id=1,value=0,unit="kW")
- 		self.currentThermalPower 	=  Sensor(name="thermalPower",id=2,value=0,unit="kW")
- 		self.currentGasInput 		=  Sensor(name="gasInput",id=3,value=0,unit="kW")
+ 		self.currentElectricalPower =  Sensor(name="electrical_power",id=1,value=0,unit="kW")
+ 		self.currentThermalPower 	=  Sensor(name="thermal_power",id=2,value=0,unit="kW")
+ 		self.currentGasInput 		=  Sensor(name="gas_input",id=3,value=0,unit="kW")
 
  		#index corresponds to sensor id
  		self.sensors = [self.currentWorkload,self.currentElectricalPower,self.currentThermalPower,self.currentGasInput]
@@ -85,7 +85,7 @@ class BHKW(GeneratorDevice):
 	def mainloop(self):
 		while self.mainloopRunning:
 			if (self.changingWorkload == False and self.currentWorkload.value > 0.0 ):
-				self.currentWorkload.value += (random.random() * 2.0 - 1.0) * self.time_step * 5.0
+				self.currentWorkload.value += (random.random() * 2.0 - 1.0) * self.time_step * 20.0
 				self.currentWorkload.value  = max(min(self.currentWorkload.value, 100.0), 0.0) #clamp
 				self.calculateParameters(self.currentWorkload.value)
 			time.sleep(self.time_step)
@@ -95,7 +95,7 @@ class BHKW(GeneratorDevice):
 			return False
 
 		if (self.changingWorkload == False and self.currentWorkload.value > 0.0 ):
-			self.currentWorkload.value = self.targetWorkload + (random.random() * 2.0 - 1.0) * self.time_step * 10.0
+			self.currentWorkload.value = self.targetWorkload + (random.random() * 2.0 - 1.0) * self.time_step
 			self.currentWorkload.value  = max(min(self.currentWorkload.value, 100.0), 0.0) #clamp
 			self.calculateParameters(self.currentWorkload.value)
 
