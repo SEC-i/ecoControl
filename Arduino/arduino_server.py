@@ -1,42 +1,42 @@
 #!/usr/bin/python
-import serial, json, os
-
-import threading, time
+import serial, json
 
 from flask import Flask, jsonify, request
 
+# set up serial
 ser = serial.Serial("/dev/ttyACM0")
 ser.baudrate = 9600
 
 app = Flask(__name__)
 
-class ArduinoWorker(threading.Thread):
-	def __init__(self):
-		threading.Thread.__init__(self)
-		self.daemon = True
-		self.data = {}
-		self.start()
-	def run(self):
-		print " * Working..."
-		while(True):
-			ser_data = ser.readline()
-			try:
-				self.data = json.loads(ser_data)
-				if int(self.data['plant1_value']) > 500:
-					os.system("sudo sispmctl -q -f 1")
-				else:
-					os.system("sudo sispmctl -q -o 1")
-				if int(self.data['plant2_value']) > 500:
-					os.system("sudo sispmctl -q -f 2")
-				else:
-					os.system("sudo sispmctl -q -o 2")
-			except:
-				pass
-
-@app.route('/data/', methods = ['GET'])
+@app.route('/get/', methods = ['GET'])
 def get_data():
-	return jsonify(worker.data)
+	try:
+		# send 0 to request data
+		ser.write("0")
+		# read, parse and return data
+		ser_data = ser.readline()
+		return jsonify(json.loads(ser_data))
+	except:
+		return "0"
+
+@app.route('/set/', methods = ['POST'])
+def set_data():
+	# relay_state required
+	if 'relay_state' not in request.form:
+		return "0"
+
+	try:
+		# send 1 to turn on relay, otherwise send 2 to turn it off
+		if request.form['relay_state']=="1":
+			ser.write("1")
+		else:
+			ser.write("2")
+		# read, parse and return data
+		ser_data = ser.readline()
+		return jsonify(json.loads(ser_data))
+	except:
+		return "0"
 	
 if __name__ == '__main__':
-	worker = ArduinoWorker()
-	app.run(host="0.0.0.0",debug = False, use_reloader=False, port = 9002)
+	app.run(host="0.0.0.0",debug = True, port = 9002)
