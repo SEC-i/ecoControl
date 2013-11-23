@@ -24,6 +24,22 @@ def crossdomain(origin=None):
 def showVersion():
     return jsonify( { 'version': version } )
 
+@app.route('/api/get/', methods = ['GET'])
+@crossdomain(origin='*')
+def showGet():
+    currentStates = os.popen("sudo sispmctl -q -n -g all").readlines()
+
+    switches = { 'switch' + str(i+1): currentStates[i][0] for i in range(0,4)}
+
+    cpuValue = os.popen("cat /sys/class/thermal/thermal_zone0/temp").readline()
+	cpuTemperature = str(round((float(cpuValue) / 1000), 1))
+
+	processCount = os.popen("ps -A | wc -l").readline()[:-1]
+	
+	output = dict(switches.items() + { 'cpu_temperature': cpuTemperature, 'process_count': processCount}.items())
+
+	return jsonify(output)
+
 @app.route('/api/login/', methods = ['POST'])
 @crossdomain(origin='*')
 def login():
