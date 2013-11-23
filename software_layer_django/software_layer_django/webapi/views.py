@@ -9,6 +9,9 @@ from models import Device, Sensor, SensorEntry
 logger = logging.getLogger('webapi')
 
 def index(request):
+    return HttpResponse("BP2013H1")
+
+def api_index(request):
     return create_json_response({ 'version':0.1 })
     
 def show_device(request, device_id):

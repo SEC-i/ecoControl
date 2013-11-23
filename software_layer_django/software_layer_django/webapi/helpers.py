@@ -4,7 +4,6 @@ from django.http import HttpResponse
 
 def create_api_response(data):
     response = HttpResponse(data)
-    response['Access-Control-Allow-Origin'] = '*'
     response['Content-Type'] = 'application/json'
     return response
 

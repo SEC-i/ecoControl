@@ -42,10 +42,11 @@ INSTALLED_APPS = (
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-   # 'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'software_layer_django.middleware.cors.XsSharing',
 )
 
 ROOT_URLCONF = 'software_layer_django.urls'
@@ -146,3 +147,10 @@ LOGGING = {
         },
     }
 }
+
+# CORS middleware
+
+XS_SHARING_ALLOWED_ORIGINS = '*'
+XS_SHARING_ALLOWED_METHODS = ['POST', 'GET', 'OPTIONS']
+XS_SHARING_ALLOWED_HEADERS = ['Content-Type', '*']
+XS_SHARING_ALLOWED_CREDENTIALS = 'true'

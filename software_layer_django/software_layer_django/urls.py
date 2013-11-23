@@ -6,7 +6,8 @@ admin.autodiscover()
 from webapi import views
 
 urlpatterns = patterns('',
-    (r'^api/$', views.index), #'software_layer_django.views.index', name='index'),
+    (r'^$', views.index),
+    (r'^api/$', views.api_index), #'software_layer_django.views.index', name='index'),
     (r'^api/devices/(limit/(?P<limit>\d+)/)?$', views.list_devices),
     (r'^api/device/(?P<device_id>\d+)/$', views.show_device),
     (r'^api/device/(?P<device_id>\d+)/sensors/(limit/(?P<limit>\d+)/)?$', views.list_sensors),
