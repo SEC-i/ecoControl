@@ -93,8 +93,12 @@ def set_device(request, device_id):
 
         if request.method == 'POST':
             driver_name = device.name.lower()
-            logger.debug("Trying to load 'drivers." + driver_name + "'")
-            driver = __import__('drivers.' + driver_name, globals(), locals(), ['handle_post_data'], -1)
+            try:
+                logger.debug("Trying to load 'drivers." + driver_name + "'")
+                driver = __import__('drivers.' + driver_name, globals(), locals(), ['handle_post_data'], -1)
+            except ImportError:
+                driver = __import__('drivers.default', globals(), locals(), ['handle_post_data'], -1)
+
             driver.handle_post_data(request.POST.dict())
             logger.debug("Post request triggered by " + request.META['REMOTE_ADDR'])
             return create_json_response({"status": "ok"})
