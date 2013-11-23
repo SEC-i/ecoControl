@@ -2,6 +2,7 @@ import logging
 
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.core.exceptions import ObjectDoesNotExist
 
 from helpers import create_json_response, create_json_response_for_model, create_json_response_for_models
 from models import Device, Sensor, SensorEntry
@@ -21,6 +22,9 @@ def show_device(request, device_id):
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
+    except ObjectDoesNotExist:
+        logger.warning("Device #" + device_id + " does not exists")
+        return HttpResponse("Device #" + device_id + " does not exists")
 
 def list_devices(request, limit):
     try:
@@ -46,6 +50,9 @@ def list_sensors(request, device_id, limit):
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
+    except ObjectDoesNotExist:
+        logger.warning("Device #" + device_id + " does not exists")
+        return HttpResponse("Device #" + device_id + " does not exists")
         
 def show_sensor(request, sensor_id):
     try:
@@ -54,6 +61,9 @@ def show_sensor(request, sensor_id):
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
+    except ObjectDoesNotExist:
+        logger.warning("Sensor #" + sensor_id + " does not exists")
+        return HttpResponse("Sensor #" + sensor_id + " does not exists")
 
     
 def list_sensor_entries(request, sensor_id, limit):
@@ -68,6 +78,9 @@ def list_sensor_entries(request, sensor_id, limit):
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
+    except ObjectDoesNotExist:
+        logger.warning("Sensor #" + sensor_id + " does not exists")
+        return HttpResponse("Sensor #" + sensor_id + " does not exists")
     
 def list_entries(request, device_id, limit):
     try:
@@ -81,6 +94,9 @@ def list_entries(request, device_id, limit):
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
+    except ObjectDoesNotExist:
+        logger.warning("Device #" + device_id + " does not exists")
+        return HttpResponse("Device #" + device_id + " does not exists")
 
 def show_entry(request, entry_id):
     try:
@@ -89,6 +105,9 @@ def show_entry(request, entry_id):
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
+    except ObjectDoesNotExist:
+        logger.warning("Entry #" + entry_id + " does not exists")
+        return HttpResponse("Entry #" + entry_id + " does not exists")
 
 def set_device(request, device_id):
     try:
@@ -110,3 +129,6 @@ def set_device(request, device_id):
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
+    except ObjectDoesNotExist:
+        logger.warning("Device #" + device_id + " does not exists")
+        return HttpResponse("Device #" + device_id + " does not exists")
