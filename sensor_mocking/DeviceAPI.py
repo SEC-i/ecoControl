@@ -22,7 +22,7 @@ def get_sensor(device_id,sensor_id):
         'name': unicode(sensor.name),
         'value': sensor.value
     } 
-    return jsonify( { 'sensor': sensor_data } )
+    return jsonify( sensor_data )
 
 @app.route('/device/<int:device_id>/get', methods = ['GET'])
 def get_data(device_id):
@@ -31,7 +31,7 @@ def get_data(device_id):
     for sensor in device.sensors:
         #sensor  = device.getMappedSensor(sensor.id)
         device_data[sensor.name] = sensor.value
-    return jsonify( {"device" : device_data})
+    return jsonify( device_data )
 
 @app.route('/device/<int:device_id>/set', methods = ['POST'])
 def set_data(device_id):
@@ -51,7 +51,7 @@ def get_info(device_id):
     for sensor in device.sensors:
         #sensor  = device.getMappedSensor(sensor.id)
         device_data[sensor.name] = sensor.unit
-    return jsonify( {"device" : device_data})
+    return jsonify( device_data )
 
 
 @app.route("/")
