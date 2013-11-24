@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -28,10 +29,9 @@ def show_device(request, device_id):
 
 def list_devices(request, limit):
     try:
-        devices = Device.objects.all()
         if not limit:
             limit = 10
-        devices = devices[:int(limit)]
+        devices = Device.objects.all()[:int(limit)]
             
         return create_json_response_for_models(devices)
     except ValueError:
@@ -40,11 +40,10 @@ def list_devices(request, limit):
     
 def list_sensors(request, device_id, limit):
     try:
-        device_id = int(device_id)
-        sensors = Sensor.objects.all().filter(device_id = device_id)
         if not limit:
             limit = 10
-        sensors = sensors[:int(limit)]
+        device_id = int(device_id)
+        sensors = Sensor.objects.all().filter(device_id = device_id)[:int(limit)]
 
         return create_json_response_for_models(sensors)
     except ValueError:
@@ -69,10 +68,9 @@ def show_sensor(request, sensor_id):
 def list_sensor_entries(request, sensor_id, limit):
     try:
         sensor_id = int(sensor_id)
-        entries = SensorEntry.objects.all().filter(sensor_id = sensor_id)
         if not limit:
             limit = 10
-        entries = entries[:int(limit)]
+        entries = SensorEntry.objects.all().filter(sensor_id = sensor_id)[:int(limit)]
             
         return create_json_response_for_models(entries)
     except ValueError:
@@ -82,13 +80,18 @@ def list_sensor_entries(request, sensor_id, limit):
         logger.warning("Sensor #" + sensor_id + " does not exists")
         return HttpResponse("Sensor #" + sensor_id + " does not exists")
     
-def list_entries(request, device_id, limit):
+def list_entries(request, device_id, start, limit):
     try:
         device_id = int(device_id)
         sensors = Sensor.objects.all().filter(device_id = device_id)
         if not limit:
             limit = 10
-        entries = SensorEntry.objects.all().filter(sensor__in = sensors).order_by('-timestamp')[:limit]
+
+        if not start:
+            entries = SensorEntry.objects.all().filter(sensor__in = sensors).order_by('-timestamp')[:int(limit)]
+        else:
+            start_time = datetime.utcfromtimestamp(int(start)/1000.0)
+            entries = SensorEntry.objects.all().filter(sensor__in = sensors, timestamp__gte = start_time).order_by('-timestamp')
         
         return create_json_response_for_models(entries)
     except ValueError:
