@@ -74,11 +74,12 @@ function showDiagram(){
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-
-
-        d3.json(base_url_get+"device/2/entries/limit/6000/", function(error, data) {
+        var yesterday = Math.round(new Date().getTime())-24*60*60*1000;
+        d3.json(base_url_get+"device/2/entries/start/" + yesterday + "/", function(error, data) {
               var plant1_value = [];
               var plant2_value = [];
+              var plant3_value = [];
+              var plant4_value = [];
               var temperature_value = [];
               var light_value = [];
 
@@ -90,13 +91,14 @@ function showDiagram(){
                 switch(d['sensor_id']){
                   case 5: plant1_value.push({value: d['value'], timestamp: d['timestamp']}); break;
                   case 6: plant2_value.push({value: d['value'], timestamp: d['timestamp']}); break;
+                  case 15: plant3_value.push({value: d['value'], timestamp: d['timestamp']}); break;
+                  case 16: plant4_value.push({value: d['value'], timestamp: d['timestamp']}); break;
                   case 8: temperature_value.push({value: d['value'], timestamp: d['timestamp']}); break;
                   case 7: light_value.push({value: d['value'], timestamp: d['timestamp']}); break;
 
                 }
               });
 
-              console.log(plant1_value);
               x.domain(d3.extent(data, function(d){ 
                 return d['timestamp']; 
               }));
@@ -158,8 +160,24 @@ function showDiagram(){
                 svg.append("path")
                   .attr("id", "plant2")
                   .attr("class", "line")
-                  .style("stroke", "red")
+                  .style("stroke", "#87A96B")
                   .attr("d", line(plant2_value))
+                  ;
+
+         
+                svg.append("path")
+                  .attr("id", "plant3")
+                  .attr("class", "line")
+                  .style("stroke", "#29AB87")
+                  .attr("d", line(plant3_value))
+                  ;
+
+         
+                svg.append("path")
+                  .attr("id", "plant4")
+                  .attr("class", "line")
+                  .style("stroke", "#013220")
+                  .attr("d", line(plant4_value))
                   ;
             
            
@@ -173,7 +191,7 @@ function showDiagram(){
                   svg.append("path")
                   .attr("id", "light")
                   .attr("class", "line")
-                  .style("stroke", "yellow")
+                  .style("stroke", "red")
                   .attr("d", line(light_value))
                   ;
             
@@ -199,9 +217,11 @@ function showDiagram(){
             .y(function(d) { return y0(d['value']); });
 
 
-         d3.json(base_url_get+"device/2/entries/limit/6000/", function(error, data) {
+         d3.json(base_url_get+"device/2/entries/limit/10000/", function(error, data) {
               var plant1_value = [];
               var plant2_value = [];
+              var plant3_value = [];
+              var plant4_value = [];
               var temperature_value = [];
               var light_value = [];
 
@@ -213,6 +233,8 @@ function showDiagram(){
                 switch(d['sensor_id']){
                   case 5: plant1_value.push({value: d['value'], timestamp: d['timestamp']}); break;
                   case 6: plant2_value.push({value: d['value'], timestamp: d['timestamp']}); break;
+                  case 15: plant3_value.push({value: d['value'], timestamp: d['timestamp']}); break;
+                  case 16: plant4_value.push({value: d['value'], timestamp: d['timestamp']}); break;
                   case 8: temperature_value.push({value: d['value'], timestamp: d['timestamp']}); break;
                   case 7: light_value.push({value: d['value'], timestamp: d['timestamp']}); break;
 
@@ -236,10 +258,7 @@ function showDiagram(){
 
           // Make the changes
             
-              svg.select("#plant2")   // change the line
-                  .duration(250)
-                  .style("stroke", "red")
-                  .attr("d", line(plant2_value));
+
     
                 
              
@@ -247,6 +266,24 @@ function showDiagram(){
                   .duration(250)
                   .attr("d", line(plant1_value))
                   .style("stroke", "green");
+    
+              svg.select("#plant2")   // change the line
+                  .duration(250)
+                  .style("stroke", "#87A96B")
+                  .attr("d", line(plant2_value));
+             
+              svg.select("#plant3")   // change the line
+                  .duration(250)
+                  .attr("d", line(plant3_value))
+                  .style("stroke", "#29AB87");
+    
+                
+             
+              svg.select("#plant4")   // change the line
+                  .duration(250)
+                  .attr("d", line(plant4_value))
+                  .style("stroke", "#013220");
+
 
           
                  svg.select("#temp")   // change the line
@@ -257,7 +294,7 @@ function showDiagram(){
                  svg.select("#light")   // change the line
                   .duration(250)
                   .attr("d", line(light_value))
-                  .style("stroke", "yellow");
+                  .style("stroke", "red");
               
                 
               svg.select(".x.axis") // change the x axis
