@@ -6,6 +6,8 @@ int relay_pin = 4;
 
 int plant1_value = 0;
 int plant2_value = 0;
+int plant3_value = 0;
+int plant4_value = 0;
 int temperature_value = 0;
 int light_value = 0;
 
@@ -31,8 +33,10 @@ void loop() {
     // read sensor data
     plant1_value = analogRead(A0);
     plant2_value = analogRead(A1);
-    light_value = analogRead(A2);
-    temperature_value = analogRead(A3);
+    plant3_value = analogRead(A2);
+    plant4_value = analogRead(A3);
+    light_value = analogRead(A4);
+    temperature_value = analogRead(A5);
 
     // set led bar accordingly to plant1_value
     led_bar_value = round(plant1_value/80); // min: 0, max: 800
@@ -63,6 +67,10 @@ void loop() {
             Serial.print(plant1_value);
             Serial.print(", \"plant2_value\": ");
             Serial.print(plant2_value);
+            Serial.print(", \"plant3_value\": ");
+            Serial.print(plant3_value);
+            Serial.print(", \"plant4_value\": ");
+            Serial.print(plant4_value);
             Serial.print(", \"light_value\": ");
             Serial.print(light_value);
             Serial.print(", \"temperature_value\": ");
