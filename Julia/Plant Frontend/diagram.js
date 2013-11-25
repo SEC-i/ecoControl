@@ -74,7 +74,7 @@ function showDiagram(){
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        var yesterday = Math.round(new Date().getTime())-24*60*60*1000;
+        var yesterday = new Date().getTime()-24*60*60*1000;
         d3.json(base_url_get+"device/2/entries/start/" + yesterday + "/", function(error, data) {
               var plant1_value = [];
               var plant2_value = [];
