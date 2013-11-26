@@ -27,8 +27,8 @@ class SensorEntry(models.Model):
 
 class SensorDelta(models.Model):
     sensor = models.ForeignKey('Sensor')
-    delta = models.CharField()
-    interval = models.CharField() #in seconds
+    delta = models.CharField(max_length = 200)
+    interval = models.CharField(max_length = 200) #in seconds
     timestamp = models.DateTimeField(auto_now = False)
 
     def to_dict(self):
@@ -36,7 +36,7 @@ class SensorDelta(models.Model):
     
 
 class Task(models.Model):
-    command = models.CharField() #reference to a function
+    command = models.CharField(max_length = 200) #reference to a function
     execution_timestamp = models.DateTimeField(auto_now = False)
     status = models.IntegerField() #on/off for now
     def to_dict(self):
