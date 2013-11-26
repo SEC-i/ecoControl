@@ -1,4 +1,4 @@
-import json, calendar
+import calendar
 
 from django.db import models
 

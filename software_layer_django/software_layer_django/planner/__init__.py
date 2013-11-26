@@ -4,7 +4,7 @@ import threading, time
 import logging
 
 from software_layer_django.planner.functions import *
-from software_layer_django.planner.helpers import write_pidfile_or_fail
+from software_layer_django.helpers import write_pidfile_or_fail
 
 logger = logging.getLogger('planner')
 

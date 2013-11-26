@@ -46,7 +46,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'software_layer_django.middleware.cors.XsSharing',
+    'middleware.cors.XsSharing',
 )
 
 ROOT_URLCONF = 'software_layer_django.urls'
@@ -88,7 +88,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = ''
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "software_layer_django/static"),
+    os.path.join(BASE_DIR, "static"),
 )
 
 # Logging

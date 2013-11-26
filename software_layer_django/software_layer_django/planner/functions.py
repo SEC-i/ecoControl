@@ -1,6 +1,6 @@
 import logging
 
-from software_layer_django.webapi.models import Sensor, SensorEntry, SensorRule, SensorDelta, Task
+from software_layer_django.models import Sensor, SensorEntry, SensorRule, SensorDelta, Task
 
 logger = logging.getLogger('planner')
 
