@@ -130,6 +130,14 @@ LOGGING = {
             'backupCount': 5,
             'formatter': 'verbose'
         },
+        'planner': {
+            'level': 'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/planner.log',
+            'maxBytes': 1024*1024*4, # 4 MB
+            'backupCount': 5,
+            'formatter': 'verbose'
+        },
     },
     'loggers': {
         'django': {
@@ -145,6 +153,11 @@ LOGGING = {
             'handlers': ['crawler'],
             'level': 'DEBUG',
         },
+        'planner': {
+            'handlers': ['planner'],
+            'level': 'DEBUG',
+        },
+
     }
 }
 
