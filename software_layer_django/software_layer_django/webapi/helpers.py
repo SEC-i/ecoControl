@@ -22,3 +22,10 @@ def create_json_response(data):
 
 def create_json_response_from_query(data):
     return create_json_response(list(data.values()))
+
+def create_json_response_for_device(device):
+    return create_json_response( {
+            'id': device.id,
+            'name': device.name,
+            'data_source': device.data_source,
+        })

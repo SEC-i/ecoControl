@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import utc
 
-from helpers import create_json_response, create_json_response_from_query
+from helpers import create_json_response, create_json_response_from_query, create_json_response_for_device
 from models import Device, Sensor, SensorEntry
 
 logger = logging.getLogger('webapi')
@@ -20,7 +20,7 @@ def api_index(request):
 def show_device(request, device_id):
     try:
         device = Device.objects.get(id = int(device_id))
-        return create_json_response_from_query(device)
+        return create_json_response_for_device(device)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -32,7 +32,7 @@ def list_devices(request, limit):
     try:
         if not limit:
             limit = 10
-        devices = Device.objects.all()[:int(limit)]
+        devices = Device.objects.all().order_by('name')[:int(limit)]
             
         return create_json_response_from_query(devices)
     except ValueError:
@@ -44,7 +44,7 @@ def list_sensors(request, device_id, limit):
         if not limit:
             limit = 10
         device_id = int(device_id)
-        sensors = Sensor.objects.filter(device_id = device_id)[:int(limit)]
+        sensors = Sensor.objects.filter(device_id = device_id).order_by('name')[:int(limit)]
 
         return create_json_response_from_query(sensors)
     except ValueError:
