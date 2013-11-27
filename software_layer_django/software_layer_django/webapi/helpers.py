@@ -1,19 +1,24 @@
-#from django.utils import simplejson
 import json
 from django.http import HttpResponse
 
-def create_api_response(data):
-    response = HttpResponse(data)
-    response['Content-Type'] = 'application/json'
-    return response
+class JSONSerializer(json.JSONEncoder):
+    def default(self, obj):
+        import calendar, datetime
+        # Support datetime instances
+        if isinstance(obj, datetime.datetime):
+            if obj.utcoffset() is not None:
+                obj = obj - obj.utcoffset()
+            milliseconds = int(
+                calendar.timegm(obj.timetuple()) * 1000 +
+                obj.microsecond / 1000
+            )
+            return milliseconds
+
+        return json.JSONEncoder.default(self, obj)
 
 def create_json_response(data):
-    return create_api_response(json.dumps(data))
+    response = HttpResponse(json.dumps(data, cls=JSONSerializer), content_type='application/json')
+    return response
 
-def create_json_response_for_model(data):
-    objects = data.to_dict()
-    return create_api_response(json.dumps(objects))
-
-def create_json_response_for_models(data):
-    objects = [ item.to_dict() for item in data]
-    return create_api_response(json.dumps(objects))
+def create_json_response_from_query(data):
+    return create_json_response(list(data.values()))
