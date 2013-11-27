@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>BP2013H1 - Website</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./css/bootstrap.css" rel="stylesheet">
+
+    <!-- jQuery UI core CSS -->
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+
+    <!-- Custom styles -->
+    <link href="./css/basic.css" rel="stylesheet">
+
+    <!-- Just for debugging purposes. Don't actually copy this line! -->
+    <!--[if lt IE 9]><script src="../../docs-assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">BP2013H1</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="#" id="home_button">Home</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Devices <b class="caret"></b></a>
+              <ul class="dropdown-menu" id="device_list"></ul>
+            </li>
+            <li><a href="#" id="settings_button">Settings</a></li>            
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="login_box" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title" id="myModalLabel">Please sign in</h4>
+          </div>
+          <div class="modal-body">
+            <div class="form-signin">
+              <input type="text" class="form-control" placeholder="Username" required autofocus>
+              <input type="password" class="form-control" placeholder="Password" required>
+              <label class="checkbox">
+                <input type="checkbox" value="remember-me"> Remember me
+              </label>
+              <button class="btn btn-lg btn-primary btn-block" type="submit" id="login_submit">Sign in</button>
+            </div>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <div class="container collapse" id="home">
+
+      <!-- Main component for a primary marketing message or call to action -->
+      <div class="jumbotron">
+        <h2>Welcome</h2>
+        <p>This is a prototype.</p>
+      </div>
+
+    </div> <!-- /container -->
+
+    <div class="container collapse" id="devices">
+
+      <!-- Main component for a primary marketing message or call to action -->
+      <div class="jumbotron">
+        <h2 id="device_name">Device</h2>
+        <div class="row">
+          <div class="col-lg-6">
+            Last days: <span id="day_range"></span>
+            <div id="range_slider"></div>
+          </div>
+        </div>
+        <div id="diagram_container"></div>
+      </div>
+
+    </div> <!-- /container -->
+
+    <div class="container collapse" id="settings">
+
+      <!-- Main component for a primary marketing message or call to action -->
+      <div class="jumbotron">
+        <h2>Settings</h2>
+        <p>This is the setting page.</p>
+      </div>
+
+    </div> <!-- /container -->
+
+    <div id="footer" class="collapse">
+      <div class="container">
+        <p class="text-muted credit">Copyright &copy; BP2013H1</p>
+      </div>
+    </div>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <script src="./js/jquery.formatDateTime.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
+    <script src="./js/raphael-min.js"></script>
+    <script src="./js/g.raphael-min.js"></script>
+    <script src="./js/g.line-min.js"></script>
+
+    <script src="./js/diagram.js"></script>
+    <script src="./js/ready.js"></script>
+  </body>
+</html>
