@@ -28,15 +28,27 @@ $(document).ready(function(){
       })
     });
 
+    var max_range = 72;
+
     $("#range_slider").slider({
       range: true,
       min: -168,
       max: 0,
       values: [ -24, 0 ],
       slide: function( event, ui ) {
-        if ( ui.values[0] >= ui.values[1] || (-ui.values[0]) + ui.values[1] > 72 ) {
+        if ( ui.values[0] >= ui.values[1] ) {
             return false;
         }
+
+        if((-ui.values[0]) + ui.values[1] > max_range){
+            // check which handle is in use
+            if($("#range_slider .ui-slider-handle:first" ).hasClass('ui-state-active')){
+                $( "#range_slider" ).slider( "option", "values", [ ui.values[0], ui.values[0]+max_range ] );
+            }else{
+                $( "#range_slider" ).slider( "option", "values", [ ui.values[1]-max_range, ui.values[1] ] );
+            }
+        }
+
         var start_date = new Date();
         start_date.setHours(start_date.getHours() + parseInt(ui.values[0]));
         var end_date = new Date();
