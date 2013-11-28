@@ -51,25 +51,26 @@
             </li>
             <li><a href="#" id="settings_button">Settings</a></li>            
           </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#" id="logout">Logout</a></li>
+          </ul>
         </div><!--/.nav-collapse -->
       </div>
     </div>
 
     <!-- Modal -->
-    <div class="modal fade" id="login_box" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal fade" id="login_box" tabindex="-1" role="dialog" aria-labelledby="sign_in_label" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h4 class="modal-title" id="myModalLabel">Please sign in</h4>
+            <h4 class="modal-title" id="sign_in_label">Please sign in</h4>
           </div>
           <div class="modal-body">
             <div class="form-signin">
-              <input type="text" class="form-control" placeholder="Username" required autofocus>
-              <input type="password" class="form-control" placeholder="Password" required>
-              <label class="checkbox">
-                <input type="checkbox" value="remember-me"> Remember me
-              </label>
+              <input id="login_username" type="text" class="form-control" placeholder="Username" required autofocus>
+              <input id="login_password" type="password" class="form-control" placeholder="Password" required>
               <button class="btn btn-lg btn-primary btn-block" type="submit" id="login_submit">Sign in</button>
+              <br/><div id="login_error"></div>
             </div>
           </div>
         </div><!-- /.modal-content -->
