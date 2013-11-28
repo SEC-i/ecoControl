@@ -90,9 +90,13 @@ function show_login_box(){
 function login_successful(){
     // get devices
     $.get( api_url + "devices/", function( data ) {
-      $.each(data, function(index, value){
-        $("#device_list").append('<li class="device_items" id="device_item_' + value['id'] + '"><a onclick="show_device(' + value['id'] + ', \'' + value['name'] + '\');">' + value['name'] + '</a></li>');
-      })
+        if(data['permission'] != undefined){
+            show_login_box();
+        }else{
+            $.each(data, function(index, value){
+                $("#device_list").append('<li class="device_items" id="device_item_' + value['id'] + '"><a onclick="show_device(' + value['id'] + ', \'' + value['name'] + '\');">' + value['name'] + '</a></li>');
+            });
+        }
     });
 
     hide_all();
