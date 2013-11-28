@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import utc
 
-from helpers import create_json_response, create_json_response_from_query
+from helpers import create_json_response, create_json_response_from_QuerySet
 from models import Device, Sensor, SensorEntry
 
 logger = logging.getLogger('webapi')
@@ -19,8 +19,8 @@ def api_index(request):
     
 def show_device(request, device_id):
     try:
-        device = Device.objects.get(id = int(device_id))
-        return create_json_response_from_query(device)
+        device = Device.objects.filter(id = int(device_id))
+        return create_json_response_from_QuerySet(device)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -32,9 +32,9 @@ def list_devices(request, limit):
     try:
         if not limit:
             limit = 10
-        devices = Device.objects.all()[:int(limit)]
+        devices = Device.objects.all().order_by('name')[:int(limit)]
             
-        return create_json_response_from_query(devices)
+        return create_json_response_from_QuerySet(devices)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -44,9 +44,9 @@ def list_sensors(request, device_id, limit):
         if not limit:
             limit = 10
         device_id = int(device_id)
-        sensors = Sensor.objects.filter(device_id = device_id)[:int(limit)]
+        sensors = Sensor.objects.filter(device_id = device_id).order_by('name')[:int(limit)]
 
-        return create_json_response_from_query(sensors)
+        return create_json_response_from_QuerySet(sensors)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -56,8 +56,8 @@ def list_sensors(request, device_id, limit):
         
 def show_sensor(request, sensor_id):
     try:
-        sensor = Sensor.objects.get(id = int(sensor_id))
-        return create_json_response_from_query(sensor)
+        sensor = Sensor.objects.filter(id = int(sensor_id))
+        return create_json_response_from_QuerySet(sensor)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -73,7 +73,7 @@ def list_sensor_entries(request, sensor_id, limit):
             limit = 10
         entries = SensorEntry.objects.filter(sensor_id = sensor_id)[:int(limit)]
             
-        return create_json_response_from_query(entries)
+        return create_json_response_from_QuerySet(entries)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -100,7 +100,7 @@ def list_entries(request, device_id, start, end, limit):
         if limit:
             entries = entries[:int(limit)]
 
-        return create_json_response_from_query(entries)
+        return create_json_response_from_QuerySet(entries)
 
     except ValueError:
         logger.error("ValueError")
@@ -111,8 +111,8 @@ def list_entries(request, device_id, start, end, limit):
 
 def show_entry(request, entry_id):
     try:
-        entry = SensorEntry.objects.get(id = int(entry_id))
-        return create_json_response_from_query(entry)
+        entry = SensorEntry.objects.filter(id = int(entry_id))
+        return create_json_response_from_QuerySet(entry)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")

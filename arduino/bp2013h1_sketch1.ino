@@ -7,7 +7,7 @@ int relay_pin = 4;
 int plant1_value = 0;
 int plant2_value = 0;
 int plant3_value = 0;
-int plant4_value = 0;
+int voltage_value = 0;
 int temperature_value = 0;
 int light_value = 0;
 
@@ -16,6 +16,7 @@ int B=3975; //B value of the thermistor
 
 int incomingByte = 0; // for incoming serial data
 
+float solar_value = 0.0f;
 float temperature = 0.0f;
 float resistance = 0.0f;
 
@@ -34,7 +35,7 @@ void loop() {
     plant1_value = analogRead(A0);
     plant2_value = analogRead(A1);
     plant3_value = analogRead(A2);
-    plant4_value = analogRead(A3);
+    voltage_value = analogRead(A3);
     light_value = analogRead(A4);
     temperature_value = analogRead(A5);
 
@@ -58,6 +59,9 @@ void loop() {
             Serial.println("{ \"relay_state\": 0 }");
         } else { // otherwise, reply with sensor data
 
+            // voltage mapping
+            solar_value = (10 * (float)voltage_value * 4980)/1023000;
+
             // temperature mapping to celsius
             resistance=(float)(1023-temperature_value)*10000/temperature_value;
             temperature=1/(log(resistance/10000)/B+1/298.15)-273.15;
@@ -69,8 +73,8 @@ void loop() {
             Serial.print(plant2_value);
             Serial.print(", \"plant3_value\": ");
             Serial.print(plant3_value);
-            Serial.print(", \"plant4_value\": ");
-            Serial.print(plant4_value);
+            Serial.print(", \"solar_value\": ");
+            Serial.print(solar_value);
             Serial.print(", \"light_value\": ");
             Serial.print(light_value);
             Serial.print(", \"temperature_value\": ");

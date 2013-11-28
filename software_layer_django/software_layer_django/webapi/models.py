@@ -9,6 +9,7 @@ class Device(models.Model):
 class Sensor(models.Model):
     device = models.ForeignKey('Device')
     name = models.CharField(max_length = 100)
+    key_name = models.CharField(max_length = 100)
     unit = models.CharField(max_length = 50)
     
 class SensorEntry(models.Model):
