@@ -21,11 +21,11 @@ def crawl_and_save_data():
             sensors = Sensor.objects.all().filter(device_id = device.id)
 
             for sensor in sensors:
-                # sensor.name needs to be present in data
-                if sensor.name in data:
+                # sensor.key_name needs to be present in data
+                if sensor.key_name in data:
                     sensor_entry = SensorEntry()
                     sensor_entry.sensor_id = sensor.id
-                    sensor_entry.value = data[sensor.name]
+                    sensor_entry.value = data[sensor.key_name]
                     sensor_entry.timestamp = time
                     sensor_entry.save()
     except:

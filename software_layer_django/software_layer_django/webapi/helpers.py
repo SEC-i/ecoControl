@@ -1,5 +1,6 @@
 import json
 from django.http import HttpResponse
+from django.core import serializers
 
 class JSONSerializer(json.JSONEncoder):
     def default(self, obj):
@@ -20,12 +21,5 @@ def create_json_response(data):
     response = HttpResponse(json.dumps(data, cls=JSONSerializer), content_type='application/json')
     return response
 
-def create_json_response_from_query(data):
+def create_json_response_from_QuerySet(data):
     return create_json_response(list(data.values()))
-
-def create_json_response_for_device(device):
-    return create_json_response( {
-            'id': device.id,
-            'name': device.name,
-            'data_source': device.data_source,
-        })
