@@ -1,5 +1,4 @@
 html, body {
-  height: 100%;
   padding-top: 40px;
 }
 
@@ -8,8 +7,7 @@ html, body {
 }
 
 #footer {
-  height: 60px;
-  padding: 12px;
+  text-align: right;
 }
 
 /* LOGIN VIEW */
