@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import utc
 
@@ -16,8 +17,37 @@ def index(request):
 
 def api_index(request):
     return create_json_response({ 'version':0.1 })
+
+def api_login(request):
+    if request.method == 'POST' and 'username' in request.POST and 'password' in request.POST:
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                return create_json_response({"login": "successful"})
+            else:
+                return create_json_response({"login": "disabled"})
+        else:
+            return create_json_response({"login": "invalid"})
+    else:
+        return create_json_response({"login": "failed"})
+
+def api_logout(request):
+    logout(request)
+    return create_json_response({"logout": "successful"})
+
+def api_status(request):
+    if request.user.is_authenticated():
+        return create_json_response({"login": "active"})
+    else:
+        return create_json_response({"login": "inactive"})
     
 def show_device(request, device_id):
+    if not request.user.is_authenticated():
+        return create_json_response({"permission": "denied"})
+
     try:
         device = Device.objects.filter(id = int(device_id))
         return create_json_response_from_QuerySet(device)
@@ -29,6 +59,9 @@ def show_device(request, device_id):
         return HttpResponse("Device #" + device_id + " does not exists")
 
 def list_devices(request, limit):
+    if not request.user.is_authenticated():
+        return create_json_response({"permission": "denied"})
+
     try:
         if not limit:
             limit = 10
@@ -40,6 +73,9 @@ def list_devices(request, limit):
         return HttpResponse("ValueError")
     
 def list_sensors(request, device_id, limit):
+    if not request.user.is_authenticated():
+        return create_json_response({"permission": "denied"})
+
     try:
         if not limit:
             limit = 10
@@ -55,6 +91,9 @@ def list_sensors(request, device_id, limit):
         return HttpResponse("Device #" + device_id + " does not exists")
         
 def show_sensor(request, sensor_id):
+    if not request.user.is_authenticated():
+        return create_json_response({"permission": "denied"})
+
     try:
         sensor = Sensor.objects.filter(id = int(sensor_id))
         return create_json_response_from_QuerySet(sensor)
@@ -67,6 +106,9 @@ def show_sensor(request, sensor_id):
 
     
 def list_sensor_entries(request, sensor_id, limit):
+    if not request.user.is_authenticated():
+        return create_json_response({"permission": "denied"})
+
     try:
         sensor_id = int(sensor_id)
         if not limit:
@@ -82,6 +124,9 @@ def list_sensor_entries(request, sensor_id, limit):
         return HttpResponse("Sensor #" + sensor_id + " does not exists")
     
 def list_entries(request, device_id, start, end, limit):
+    if not request.user.is_authenticated():
+        return create_json_response({"permission": "denied"})
+
     try:
         device_id = int(device_id)
         sensors = Sensor.objects.filter(device_id = device_id)
@@ -110,6 +155,9 @@ def list_entries(request, device_id, start, end, limit):
         return HttpResponse("Device #" + device_id + " does not exists")
 
 def show_entry(request, entry_id):
+    if not request.user.is_authenticated():
+        return create_json_response({"permission": "denied"})
+
     try:
         entry = SensorEntry.objects.filter(id = int(entry_id))
         return create_json_response_from_QuerySet(entry)
@@ -121,6 +169,9 @@ def show_entry(request, entry_id):
         return HttpResponse("Entry #" + entry_id + " does not exists")
 
 def set_device(request, device_id):
+    # if not request.user.is_authenticated():
+        # return create_json_response({"permission": "denied"})
+
     try:
         device = Device.objects.get(id = int(device_id))
 

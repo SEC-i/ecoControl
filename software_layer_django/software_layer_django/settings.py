@@ -88,7 +88,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = ''
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "static"),
+    os.path.join(BASE_DIR, "../website"),
 )
 
 # Logging
@@ -163,7 +163,7 @@ LOGGING = {
 
 # CORS middleware
 
-XS_SHARING_ALLOWED_ORIGINS = '*'
+XS_SHARING_ALLOWED_ORIGINS = 'http://172.16.64.130'
 XS_SHARING_ALLOWED_METHODS = ['POST', 'GET', 'OPTIONS']
 XS_SHARING_ALLOWED_HEADERS = ['Content-Type', '*']
 XS_SHARING_ALLOWED_CREDENTIALS = 'true'

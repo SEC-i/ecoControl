@@ -1,4 +1,4 @@
-var api_url = "http://www.hpi.uni-potsdam.de/hirschfeld/bachelorprojects/2013H1/api/";
+var api_url = "./../api/";
 
 var device_id = null;
 var range_start = new Date().getTime()-24*60*60*1000;
@@ -6,10 +6,21 @@ var range_end = new Date().getTime();
 
 $(document).ready(function(){
     $("#login_submit").click(function(event) {
-        hide_all();
-        $('#login_box').modal('hide');
-        $('#footer').fadeIn();
-        $("#home").fadeIn();
+        $.post(api_url + "login/", { username: $("#login_username").val(), password: $("#login_password").val(), })
+            .done(function(data) {
+                if(data['login']=="successful"){
+                    login_successful();
+                }else{
+                    login_failed();
+                }
+            });
+    });
+
+    $("#logout").click(function(event) {
+        $.post(api_url + "logout/")
+            .done(function(data) {
+                show_login_box();
+            });
     });
 
     $("#home_button").click(function(event) {
@@ -20,12 +31,6 @@ $(document).ready(function(){
     $("#settings_button").click(function(event) {
         hide_all();
         $("#settings").fadeIn();
-    });
-
-    $.get( api_url + "devices/", function( data ) {
-      $.each(data, function(index, value){
-        $("#device_list").append('<li class="device_items" id="device_item_' + value['id'] + '"><a onclick="show_device(' + value['id'] + ', \'' + value['name'] + '\');">' + value['name'] + '</a></li>');
-      })
     });
 
     var max_range = 72;
@@ -64,11 +69,41 @@ $(document).ready(function(){
 
     set_day_range(new Date(range_start), new Date(range_end));
 
+    $.get( api_url + "status/", function( data ) {
+        if(data['login']=="active"){
+            login_successful();
+        } else {
+            show_login_box();
+        }
+    });
+});
+
+function show_login_box(){
+    $("#login_username").val('');
+    $("#login_password").val('');
+    $("#login_error").html('');
     $('#login_box').modal({
-      backdrop: 'static'
+        backdrop: 'static'
+    });
+}
+
+function login_successful(){
+    // get devices
+    $.get( api_url + "devices/", function( data ) {
+      $.each(data, function(index, value){
+        $("#device_list").append('<li class="device_items" id="device_item_' + value['id'] + '"><a onclick="show_device(' + value['id'] + ', \'' + value['name'] + '\');">' + value['name'] + '</a></li>');
+      })
     });
 
-});
+    hide_all();
+    $('#login_box').modal('hide');
+    $('#footer').fadeIn();
+    $("#home").fadeIn();
+}
+
+function login_failed(){
+    $('#login_error').html('<div class="alert alert-warning">Login details invalid.</div>');
+}
 
 function show_device(id, device_name) {
     device_id = id;
