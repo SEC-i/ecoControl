@@ -6,14 +6,19 @@ var range_end = new Date().getTime();
 
 $(document).ready(function(){
     $("#login_submit").click(function(event) {
-        $.post(api_url + "login/", { username: $("#login_username").val(), password: $("#login_password").val(), })
-            .done(function(data) {
-                if(data['login']=="successful"){
-                    login_successful();
-                }else{
-                    login_failed();
-                }
-            });
+        login_user();
+    });
+
+    $("#login_username").keypress(function(e) {
+        if(e.which == 13) {
+            login_user();
+        }
+    });
+
+    $("#login_password").keypress(function(e) {
+        if(e.which == 13) {
+            login_user();
+        }
     });
 
     $("#logout").click(function(event) {
@@ -87,12 +92,24 @@ function show_login_box(){
     });
 }
 
+function login_user () {
+    $.post(api_url + "login/", { username: $("#login_username").val(), password: $("#login_password").val(), })
+        .done(function(data) {
+            if(data['login']=="successful"){
+                login_successful();
+            }else{
+                login_failed();
+            }
+        });
+}
+
 function login_successful(){
     // get devices
     $.get( api_url + "devices/", function( data ) {
         if(data['permission'] != undefined){
             show_login_box();
         }else{
+            $("#device_list").html(''); // clear device list
             $.each(data, function(index, value){
                 $("#device_list").append('<li class="device_items" id="device_item_' + value['id'] + '"><a onclick="show_device(' + value['id'] + ', \'' + value['name'] + '\');">' + value['name'] + '</a></li>');
             });
