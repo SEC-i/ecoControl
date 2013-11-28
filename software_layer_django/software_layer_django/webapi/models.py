@@ -32,4 +32,4 @@ class SensorRule(models.Model):
     sensor = models.ForeignKey('Sensor')
     threshold = models.CharField(max_length = 200)
     comparison = models.CharField(max_length = 10) #<>=
-    target_function = models.DateTimeField(auto_now = False)
+    target_function = models.CharField(max_length = 200)

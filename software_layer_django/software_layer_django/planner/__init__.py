@@ -3,7 +3,7 @@
 import threading, time
 import logging
 
-from software_layer_django.planner.functions import *
+from functions import *
 from software_layer_django.helpers import write_pidfile_or_fail
 
 logger = logging.getLogger('planner')
@@ -23,7 +23,7 @@ class Planner(threading.Thread):
     def run(self):
         if self.is_unique_thread:
             # add new measurement approx. every minute
-            print " * Crawling..."
+            print " * Planner started..."
             logger.debug("planner started")
             while(True):
                 update_delta()
