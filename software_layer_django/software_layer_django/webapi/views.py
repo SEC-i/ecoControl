@@ -4,8 +4,9 @@ from datetime import datetime
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.timezone import utc
 
-from helpers import create_json_response, create_json_response_for_model, create_json_response_for_models
+from helpers import create_json_response, create_json_response_from_query
 from models import Device, Sensor, SensorEntry
 
 logger = logging.getLogger('webapi')
@@ -19,7 +20,7 @@ def api_index(request):
 def show_device(request, device_id):
     try:
         device = Device.objects.get(id = int(device_id))
-        return create_json_response_for_model(device)
+        return create_json_response_from_query(device)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -33,7 +34,7 @@ def list_devices(request, limit):
             limit = 10
         devices = Device.objects.all()[:int(limit)]
             
-        return create_json_response_for_models(devices)
+        return create_json_response_from_query(devices)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -43,9 +44,9 @@ def list_sensors(request, device_id, limit):
         if not limit:
             limit = 10
         device_id = int(device_id)
-        sensors = Sensor.objects.all().filter(device_id = device_id)[:int(limit)]
+        sensors = Sensor.objects.filter(device_id = device_id)[:int(limit)]
 
-        return create_json_response_for_models(sensors)
+        return create_json_response_from_query(sensors)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -56,7 +57,7 @@ def list_sensors(request, device_id, limit):
 def show_sensor(request, sensor_id):
     try:
         sensor = Sensor.objects.get(id = int(sensor_id))
-        return create_json_response_for_model(sensor)
+        return create_json_response_from_query(sensor)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -70,9 +71,9 @@ def list_sensor_entries(request, sensor_id, limit):
         sensor_id = int(sensor_id)
         if not limit:
             limit = 10
-        entries = SensorEntry.objects.all().filter(sensor_id = sensor_id)[:int(limit)]
+        entries = SensorEntry.objects.filter(sensor_id = sensor_id)[:int(limit)]
             
-        return create_json_response_for_models(entries)
+        return create_json_response_from_query(entries)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -80,20 +81,27 @@ def list_sensor_entries(request, sensor_id, limit):
         logger.warning("Sensor #" + sensor_id + " does not exists")
         return HttpResponse("Sensor #" + sensor_id + " does not exists")
     
-def list_entries(request, device_id, start, limit):
+def list_entries(request, device_id, start, end, limit):
     try:
         device_id = int(device_id)
-        sensors = Sensor.objects.all().filter(device_id = device_id)
-        if not limit:
-            limit = 10
+        sensors = Sensor.objects.filter(device_id = device_id)
+        entries = SensorEntry.objects.filter(sensor__in = sensors)
 
-        if not start:
-            entries = SensorEntry.objects.all().filter(sensor__in = sensors).order_by('-timestamp')[:int(limit)]
-        else:
-            start_time = datetime.utcfromtimestamp(int(start)/1000.0)
-            entries = SensorEntry.objects.all().filter(sensor__in = sensors, timestamp__gte = start_time).order_by('-timestamp')
-        
-        return create_json_response_for_models(entries)
+        if start:
+            start_time = datetime.fromtimestamp(int(start)/1000.0).replace(tzinfo=utc)
+            entries = entries.filter(timestamp__gte = start_time)
+
+        if end:
+            end_time = datetime.fromtimestamp(int(end)/1000.0).replace(tzinfo=utc)
+            entries = entries.filter(timestamp__lte = end_time)
+
+        entries = entries.order_by('-timestamp')
+ 
+        if limit:
+            entries = entries[:int(limit)]
+
+        return create_json_response_from_query(entries)
+
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -104,7 +112,7 @@ def list_entries(request, device_id, start, limit):
 def show_entry(request, entry_id):
     try:
         entry = SensorEntry.objects.get(id = int(entry_id))
-        return create_json_response_for_model(entry)
+        return create_json_response_from_query(entry)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")

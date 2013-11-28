@@ -74,7 +74,7 @@ function showDiagram(){
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        var yesterday = new Date().getTime()-24*60*60*1000;
+        var yesterday = new Date().getTime()-24*7*60*60*1000;
         d3.json(base_url_get+"device/2/entries/start/" + yesterday + "/", function(error, data) {
               var plant1_value = [];
               var plant2_value = [];
@@ -85,7 +85,7 @@ function showDiagram(){
 
 
               data.forEach(function(d) {
-                d['timestamp'] = new Date(d['timestamp']*1000);
+                d['timestamp'] = new Date(d['timestamp']);
 
         
                 switch(d['sensor_id']){
@@ -225,7 +225,7 @@ function showDiagram(){
 
 
               data.forEach(function(d) {
-                d['timestamp'] = new Date(d['timestamp']*1000);
+                d['timestamp'] = new Date(d['timestamp']);
 
         
                 switch(d['sensor_id']){

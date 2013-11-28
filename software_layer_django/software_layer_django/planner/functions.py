@@ -1,6 +1,7 @@
 import logging
+
 from datetime import datetime
-from software_layer_django.models import Sensor, SensorEntry, SensorRule, SensorDelta, Task
+import models
 
 logger = logging.getLogger('planner')
 

@@ -85,7 +85,7 @@ class BHKW(GeneratorDevice):
 	def mainloop(self):
 		while self.mainloopRunning:
 			if (self.changingWorkload == False and self.currentWorkload.value > 0.0 ):
-				self.currentWorkload.value += (random.random() * 2.0 - 1.0) * self.time_step * 20.0
+				self.currentWorkload.value += (random.random() * 20.0 - 1.0) * self.time_step * 20.0
 				self.currentWorkload.value  = max(min(self.currentWorkload.value, 100.0), 0.0) #clamp
 				self.calculateParameters(self.currentWorkload.value)
 			time.sleep(self.time_step)
