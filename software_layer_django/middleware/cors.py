@@ -1,6 +1,5 @@
 # Source: https://gist.github.com/strogonoff/1369619
 
-
 from django import http
  
 try:
@@ -28,7 +27,7 @@ class XsSharing(object):
     def process_request(self, request):
         if 'HTTP_ACCESS_CONTROL_REQUEST_METHOD' in request.META:
             response = http.HttpResponse()
-            response['Access-Control-Allow-Origin']  = XS_SHARING_ALLOWED_ORIGINS 
+            response['Access-Control-Allow-Origin'] = XS_SHARING_ALLOWED_ORIGINS
             response['Access-Control-Allow-Methods'] = ",".join( XS_SHARING_ALLOWED_METHODS ) 
             response['Access-Control-Allow-Headers'] = ",".join( XS_SHARING_ALLOWED_HEADERS )
             response['Access-Control-Allow-Credentials'] = XS_SHARING_ALLOWED_CREDENTIALS
@@ -37,7 +36,12 @@ class XsSharing(object):
         return None
  
     def process_response(self, request, response):
-        response['Access-Control-Allow-Origin']  = XS_SHARING_ALLOWED_ORIGINS 
+
+        if 'HTTP_ORIGIN' in request.META:
+                response['Access-Control-Allow-Origin'] = request.META['HTTP_ORIGIN'] # http_origin trick (insecure!)
+        else:
+            response['Access-Control-Allow-Origin'] = XS_SHARING_ALLOWED_ORIGINS
+
         response['Access-Control-Allow-Methods'] = ",".join( XS_SHARING_ALLOWED_METHODS )
         response['Access-Control-Allow-Headers'] = ",".join( XS_SHARING_ALLOWED_HEADERS )
         response['Access-Control-Allow-Credentials'] = XS_SHARING_ALLOWED_CREDENTIALS
