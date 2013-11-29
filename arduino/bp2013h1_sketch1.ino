@@ -39,9 +39,16 @@ void loop() {
     light_value = analogRead(A4);
     temperature_value = analogRead(A5);
 
-    // set led bar accordingly to plant1_value
-    led_bar_value = round(plant1_value/80); // min: 0, max: 800
+    // voltage mapping
+    solar_value = (10 * (float)voltage_value * 4980)/1023000;
+
+    // set led bar accordingly to solar value
+    led_bar_value = round(solar_value/17.5*10); // solar panel's max voltage 17.5V
     led_bar.set_LED_Range(1,led_bar_value);
+
+    // temperature mapping to celsius
+    resistance=(float)(1023-temperature_value)*10000/temperature_value;
+    temperature=1/(log(resistance/10000)/B+1/298.15)-273.15;
 
     
     if (Serial.available() > 0) { // check if serial input is available
@@ -58,13 +65,6 @@ void loop() {
             digitalWrite(relay_pin,LOW);
             Serial.println("{ \"relay_state\": 0 }");
         } else { // otherwise, reply with sensor data
-
-            // voltage mapping
-            solar_value = (10 * (float)voltage_value * 4980)/1023000;
-
-            // temperature mapping to celsius
-            resistance=(float)(1023-temperature_value)*10000/temperature_value;
-            temperature=1/(log(resistance/10000)/B+1/298.15)-273.15;
             
             // print data in json format
             Serial.print("{ \"plant1_value\": ");
