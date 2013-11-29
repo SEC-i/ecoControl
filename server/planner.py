@@ -1,10 +1,10 @@
 import os, time, sys
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "software_layer_django.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "server.settings")
 
-from software_layer_django.crawler import *
+from server.planner import *
 
 if __name__ == '__main__':
-    Crawler(frequency=60)
+    Planner(frequency=60)
     # wait until KeyboardInterrupt
     while True:
         try:

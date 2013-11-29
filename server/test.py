@@ -67,9 +67,9 @@ class TestPlanner(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "software_layer_django.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "server.settings")
     import planner
-    from software_layer_django.webapi.models import Sensor, SensorEntry, SensorRule, SensorDelta, Task
+    from server.webapi.models import Sensor, SensorEntry, SensorRule, SensorDelta, Task
 
 
     unittest.main()

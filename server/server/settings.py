@@ -1,5 +1,5 @@
 """
-Django settings for software_layer_django project.
+Django settings for server project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.6/topics/settings/
@@ -36,7 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'software_layer_django.webapi',
+    'server.webapi',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -49,9 +49,9 @@ MIDDLEWARE_CLASSES = (
     'middleware.cors.XsSharing',
 )
 
-ROOT_URLCONF = 'software_layer_django.urls'
+ROOT_URLCONF = 'server.urls'
 
-WSGI_APPLICATION = 'software_layer_django.wsgi.application'
+WSGI_APPLICATION = 'server.wsgi.application'
 
 
 # Database
@@ -60,9 +60,9 @@ WSGI_APPLICATION = 'software_layer_django.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'psql',
+        'NAME': 'bp2013h1_prototype',
+        'USER': 'bp2013h1',
+        'PASSWORD': 'hirsch',
         'HOST': 'localhost',
         'PORT': '5432',
     }

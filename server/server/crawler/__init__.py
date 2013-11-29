@@ -2,8 +2,8 @@
 import threading, time
 import logging
 
-from software_layer_django.crawler.functions import crawl_and_save_data
-from software_layer_django.helpers import write_pidfile_or_fail
+from functions import crawl_and_save_data
+from server.helpers import write_pidfile_or_fail
 
 logger = logging.getLogger('crawler')
 

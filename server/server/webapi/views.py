@@ -7,8 +7,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import utc
 
+from server.models import Device, Sensor, SensorEntry
 from helpers import create_json_response, create_json_response_from_QuerySet
-from models import Device, Sensor, SensorEntry
 
 logger = logging.getLogger('webapi')
 

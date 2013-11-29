@@ -2,7 +2,7 @@ import json, urllib2
 import logging
 from datetime import datetime
 
-from software_layer_django.webapi.models import Device, Sensor, SensorEntry
+from server.models import Device, Sensor, SensorEntry
 
 logger = logging.getLogger('crawler')
 

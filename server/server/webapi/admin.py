@@ -1,5 +1,5 @@
 from django.contrib import admin
-from models import Device, Sensor, SensorEntry
+from server.models import Device, Sensor, SensorEntry
 
 # Register models
 admin.site.register(Device)

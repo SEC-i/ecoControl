@@ -1,10 +1,9 @@
-
 #!/usr/bin/env python
 import threading, time
 import logging
 
 from functions import *
-from software_layer_django.helpers import write_pidfile_or_fail
+from server.helpers import write_pidfile_or_fail
 
 logger = logging.getLogger('planner')
 
