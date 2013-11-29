@@ -105,17 +105,29 @@ def show_sensor(request, sensor_id):
         return HttpResponse("Sensor #" + sensor_id + " does not exists")
 
     
-def list_sensor_entries(request, sensor_id, limit):
+def list_sensor_entries(request, sensor_id, start, end, limit):
     if not request.user.is_authenticated():
         return create_json_response({"permission": "denied"})
 
     try:
         sensor_id = int(sensor_id)
-        if not limit:
-            limit = 10
-        entries = SensorEntry.objects.filter(sensor_id = sensor_id)[:int(limit)]
-            
+        entries = SensorEntry.objects.filter(sensor_id = sensor_id)
+
+        if start:
+            start_time = datetime.fromtimestamp(int(start)/1000.0).replace(tzinfo=utc)
+            entries = entries.filter(timestamp__gte = start_time)
+
+        if end:
+            end_time = datetime.fromtimestamp(int(end)/1000.0).replace(tzinfo=utc)
+            entries = entries.filter(timestamp__lte = end_time)
+
+        entries = entries.order_by('-timestamp')
+ 
+        if limit:
+            entries = entries[:int(limit)]
+
         return create_json_response_from_QuerySet(entries)
+
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")

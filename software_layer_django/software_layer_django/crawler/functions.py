@@ -28,5 +28,12 @@ def crawl_and_save_data():
                     sensor_entry.value = data[sensor.key_name]
                     sensor_entry.timestamp = time
                     sensor_entry.save()
+        
+    except urllib2.HTTPError, e:
+        logger.error("URLError in crawl function: " + str(e.code))
+    except urllib2.URLError, e:
+        logger.error("URLError in crawl function: " + str(e.reason))
+    except ValueError:
+        logger.error("Crawl function did not receive a json")
     except:
-        logger.error("Crawl function failed")
+        logger.error("Crawl function failed unexpectedly")

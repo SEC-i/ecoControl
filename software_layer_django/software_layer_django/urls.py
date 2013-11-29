@@ -16,7 +16,7 @@ urlpatterns = patterns('',
     (r'^api/device/(?P<device_id>\d+)/sensors/(limit/(?P<limit>\d+)/)?$', views.list_sensors),
     (r'^api/device/(?P<device_id>\d+)/entries/(start/(?P<start>\d+)/)?(end/(?P<end>\d+)/)?(limit/(?P<limit>\d+)/)?$', views.list_entries),
     (r'^api/sensor/(?P<sensor_id>\d+)/$', views.show_sensor),
-    (r'^api/sensor/(?P<sensor_id>\d+)/entries/(limit/(?P<limit>\d+)/)?$', views.list_sensor_entries),
+    (r'^api/sensor/(?P<sensor_id>\d+)/entries/(start/(?P<start>\d+)/)?(end/(?P<end>\d+)/)?(limit/(?P<limit>\d+)/)?$', views.list_sensor_entries),
     (r'^api/entry/(?P<entry_id>\d+)/$', views.show_entry),
     (r'^api/device/(?P<device_id>\d+)/set/$', views.set_device),
     # Examples:
