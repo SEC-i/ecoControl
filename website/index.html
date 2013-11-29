@@ -92,10 +92,21 @@
       <!-- Main component for a primary marketing message or call to action -->
       <div class="jumbotron">
         <h2 id="device_name">Device</h2>
+
         <div class="row">
           <div class="col-lg-6">
             Last days: <span id="day_range"></span>
             <div id="range_slider"></div>
+          </div>
+          <div class="col-lg-6">
+            <div class="btn-group">
+              <button id="sensor_selection" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                All sensors
+                <span class="caret"></span>
+              </button>
+              <ul id="sensor_list" class="dropdown-menu">
+              </ul>
+            </div>
           </div>
         </div>
         <div id="diagram_container"></div>

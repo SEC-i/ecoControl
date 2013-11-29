@@ -1,6 +1,7 @@
-var api_url = "./../api/";
+var api_url = "http://www.hpi.uni-potsdam.de/hirschfeld/bachelorprojects/2013H1/api/";
 
 var device_id = null;
+var sensor_id = 0;
 var range_start = new Date().getTime()-24*60*60*1000;
 var range_end = new Date().getTime();
 
@@ -128,7 +129,10 @@ function login_failed(){
 
 function show_device(id, device_name) {
     device_id = id;
+    sensor_id = 0;
 
+    $("#sensor_selection").html('All sensors <span class="caret"></span>');
+    
     hide_all();
     $(".device_items").each(function () {
         $(this).removeClass('active');
