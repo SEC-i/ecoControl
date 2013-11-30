@@ -69,6 +69,7 @@ $(document).ready(function(){
       change: function( event, ui ) {
         range_start = new Date().getTime()+60*60*1000*parseInt(ui.values[0]);
         range_end = new Date().getTime()+60*60*1000*parseInt(ui.values[1]);
+        prepare_diagram_menu();
         draw_diagram();
       }
     });
@@ -143,6 +144,7 @@ function show_device(id, device_name) {
     $("#devices").fadeIn();
     $("#device_name").text(device_name);
 
+    prepare_diagram_menu();
     draw_diagram();
 }
 
@@ -153,6 +155,6 @@ function hide_all(){
 }
 
 function set_day_range(start, end){
-    $( "#day_range" ).html( $.formatDateTime('dd.mm.yy hh:00', start) +
-        " to " + $.formatDateTime('dd.mm.yy hh:00', end) );
+    $( "#day_range" ).html( $.formatDateTime('dd.mm.yy g:ii a', start) +
+        " to " + $.formatDateTime('dd.mm.yy g:ii a', end) );
 }
