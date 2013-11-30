@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import utc
 
-from server.models import Device, Sensor, SensorEntry
+from server.models import Actuator, Device, Sensor, SensorEntry
 from helpers import create_json_response, create_json_response_from_QuerySet
 
 logger = logging.getLogger('webapi')
@@ -72,6 +72,24 @@ def list_devices(request, limit):
         logger.error("ValueError")
         return HttpResponse("ValueError")
     
+def list_actuators(request, device_id, limit):
+    if not request.user.is_authenticated():
+        return create_json_response({"permission": "denied"})
+
+    try:
+        if not limit:
+            limit = 10
+        device_id = int(device_id)
+        actuators = Actuator.objects.filter(device_id = device_id).order_by('parameter_name')[:int(limit)]
+
+        return create_json_response_from_QuerySet(actuators)
+    except ValueError:
+        logger.error("ValueError")
+        return HttpResponse("ValueError")
+    except ObjectDoesNotExist:
+        logger.warning("Device #" + device_id + " does not exists")
+        return HttpResponse("Device #" + device_id + " does not exists")
+
 def list_sensors(request, device_id, limit):
     if not request.user.is_authenticated():
         return create_json_response({"permission": "denied"})
@@ -90,6 +108,20 @@ def list_sensors(request, device_id, limit):
         logger.warning("Device #" + device_id + " does not exists")
         return HttpResponse("Device #" + device_id + " does not exists")
         
+def show_actuator(request, actuator_id):
+    if not request.user.is_authenticated():
+        return create_json_response({"permission": "denied"})
+
+    try:
+        actuator = Actuator.objects.filter(id = int(actuator_id))
+        return create_json_response_from_QuerySet(actuator)
+    except ValueError:
+        logger.error("ValueError")
+        return HttpResponse("ValueError")
+    except ObjectDoesNotExist:
+        logger.warning("Actuator #" + actuator_id + " does not exists")
+        return HttpResponse("Actuator #" + actuator_id + " does not exists")
+
 def show_sensor(request, sensor_id):
     if not request.user.is_authenticated():
         return create_json_response({"permission": "denied"})
