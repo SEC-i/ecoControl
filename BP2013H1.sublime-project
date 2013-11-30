@@ -2,8 +2,8 @@
 	"folders":
 	[
 		{
-			"follow_symlinks": true,
-			"path": "/Users/fabio/Repositories/BP2013H1"
+			"follow_symlinks": false,
+			"path": "../BP2013H1"
 		}
 	]
 }

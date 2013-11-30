@@ -30,7 +30,7 @@ class Planner(threading.Thread):
 
                 # log function calls if frequency >= 10 seconds
                 if self.frequency>9:
-                    logger.debug("Crawl function called")
+                    logger.debug("Planner function called")
                 
                 time.sleep(self.frequency)
         else:
