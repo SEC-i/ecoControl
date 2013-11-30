@@ -1,8 +1,7 @@
 import unittest
-import os
-import time
-import datetime
+import os, time, datetime
 
+from server.models import Sensor, SensorEntry, SensorRule
 
 class TestPlanner(unittest.TestCase):
     
@@ -50,26 +49,7 @@ class TestPlanner(unittest.TestCase):
         entry.delete()
         entry2.delete()
         sensor_delta.delete()
-
-
-
         
     def tearDown(self):
         for rule in SensorRule.objects.filter(target_function= "test"):
             rule.delete()
-
-
-
-
-
-
-
-
-
-if __name__ == '__main__':
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "server.settings")
-    import planner
-    from server.webapi.models import Sensor, SensorEntry, SensorRule, SensorDelta, Task
-
-
-    unittest.main()
