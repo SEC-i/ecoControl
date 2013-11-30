@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 
 from server.models import Device, Sensor, SensorEntry
+from helpers import extract_data
 
 logger = logging.getLogger('crawler')
 
@@ -22,12 +23,16 @@ def crawl_and_save_data():
 
             for sensor in sensors:
                 # sensor.key_name needs to be present in data
-                if sensor.key_name in data:
+                try:
+                    value = extract_data(data, sensor.key_name)
+
                     sensor_entry = SensorEntry()
                     sensor_entry.sensor_id = sensor.id
-                    sensor_entry.value = data[sensor.key_name]
+                    sensor_entry.value = value
                     sensor_entry.timestamp = time
                     sensor_entry.save()
+                except KeyError:
+                    logger.debug(sensor.key_name + "not found")
         
     except urllib2.HTTPError, e:
         logger.error("URLError in crawl function: " + str(e.code))
