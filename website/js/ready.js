@@ -75,7 +75,12 @@ $(document).ready(function(){
 
     set_day_range(new Date(range_start), new Date(range_end));
 
-    $.get( api_url + "status/", function( data ) {
+    $.ajax({
+       url: api_url + "status/",
+       xhrFields: {
+          withCredentials: true
+       }
+    }).done(function( data ) {
         if(data['login']=="active"){
             login_successful();
         } else {
@@ -106,7 +111,12 @@ function login_user () {
 
 function login_successful(){
     // get devices
-    $.get( api_url + "devices/", function( data ) {
+    $.ajax({
+       url: api_url + "devices/",
+       xhrFields: {
+          withCredentials: true
+       }
+    }).done(function( data ) {
         if(data['permission'] != undefined){
             show_login_box();
         }else{
