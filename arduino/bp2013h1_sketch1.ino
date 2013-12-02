@@ -16,7 +16,7 @@ int B=3975; //B value of the thermistor
 
 int incomingByte = 0; // for incoming serial data
 
-float solar_value = 0.0f;
+float battery_value = 0.0f;
 float temperature = 0.0f;
 float resistance = 0.0f;
 
@@ -40,10 +40,10 @@ void loop() {
     temperature_value = analogRead(A5);
 
     // voltage mapping
-    solar_value = (10 * (float)voltage_value * 4980)/1023000;
+    battery_value = (10 * (float)voltage_value * 4980)/1023000;
 
     // set led bar accordingly to solar value
-    led_bar_value = round(solar_value/17.5*10); // solar panel's max voltage 17.5V
+    led_bar_value = round(battery_value/17.5*10); // solar panel's max voltage 17.5V
     led_bar.set_LED_Range(1,led_bar_value);
 
     // temperature mapping to celsius
@@ -64,6 +64,11 @@ void loop() {
         } else if (incomingByte == 50) { // turn relay on if input was ASCII "2"
             digitalWrite(relay_pin,LOW);
             Serial.println("{ \"relay_state\": 0 }");
+        } else if (incomingByte == 51) { // turn relay on if input was ASCII "3"
+            digitalWrite(relay_pin,HIGH);
+            Serial.println("{ \"relay_state\": 1 }");
+            delay(20*1000);
+            digitalWrite(relay_pin,LOW);
         } else { // otherwise, reply with sensor data
             
             // print data in json format
@@ -73,8 +78,8 @@ void loop() {
             Serial.print(plant2_value);
             Serial.print(", \"plant3_value\": ");
             Serial.print(plant3_value);
-            Serial.print(", \"solar_value\": ");
-            Serial.print(solar_value);
+            Serial.print(", \"battery_value\": ");
+            Serial.print(battery_value);
             Serial.print(", \"light_value\": ");
             Serial.print(light_value);
             Serial.print(", \"temperature_value\": ");
