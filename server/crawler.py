@@ -4,7 +4,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "server.settings")
 from server.crawler import *
 
 if __name__ == '__main__':
-    Crawler(frequency=60)
+    Crawler()
     # wait until KeyboardInterrupt
     while True:
         try:
