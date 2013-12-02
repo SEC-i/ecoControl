@@ -8,7 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import utc
 
 from server.models import Actuator, Device, Sensor, SensorEntry
-from helpers import create_json_response, create_json_response_from_QuerySet
+from helpers import create_json_response, create_json_response_from_QuerySet, is_in_group
 
 logger = logging.getLogger('webapi')
 
@@ -183,6 +183,9 @@ def list_entries(request, device_id, start, end, limit):
 
         output = []
         for sensor in sensors:
+            if not is_in_group(request.user, sensor.group):
+                continue
+
             entries = SensorEntry.objects.filter(sensor = sensor)
             if start:
                 entries = entries.filter(timestamp__gte = start_time)

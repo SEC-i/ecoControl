@@ -11,7 +11,7 @@ class SimpleTest(unittest.TestCase):
         self.device = Device.objects.create(name="test_name", data_source="http://graph.facebook.com/hassoplattnerinstitute", interval=60)
 
         # Add test sensor
-        self.sensor = Sensor.objects.create(device=self.device, name="test_name", key_name="id", unit="test_unit")
+        self.sensor = Sensor.objects.create(device=self.device, name="test_name", key_name="id", unit="test_unit", group=1)
 
     def test_crawl_and_save_data(self):
         # Execute function
