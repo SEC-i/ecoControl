@@ -12,7 +12,7 @@ class Actuator(models.Model):
 class Device(models.Model):
     name = models.CharField(max_length = 100)
     data_source = models.CharField(max_length = 200)
-    frequency = models.IntegerField()
+    interval = models.IntegerField()
 
     def __unicode__(self):
         return self.name + " (#" + str(self.pk) + ")"
