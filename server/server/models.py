@@ -9,10 +9,16 @@ class Actuator(models.Model):
     value_max = models.IntegerField(default=1)
     input_type = models.CharField(max_length = 50)
 
+    class Meta:
+        permissions = ()
+
 class Device(models.Model):
     name = models.CharField(max_length = 100)
     data_source = models.CharField(max_length = 200)
     interval = models.IntegerField()
+
+    class Meta:
+        permissions = ()
 
     def __unicode__(self):
         return self.name + " (#" + str(self.pk) + ")"
@@ -22,6 +28,10 @@ class Sensor(models.Model):
     name = models.CharField(max_length = 100)
     key_name = models.CharField(max_length = 100)
     unit = models.CharField(max_length = 50)
+    group = models.IntegerField()
+
+    class Meta:
+        permissions = ()
 
     def __unicode__(self):
         return self.name + " (#" + str(self.pk) + ")"
@@ -31,11 +41,17 @@ class SensorEntry(models.Model):
     value = models.CharField(max_length = 200)
     timestamp = models.DateTimeField(auto_now = False)
 
+    class Meta:
+        permissions = ()
+
 class SensorDelta(models.Model):
     sensor = models.ForeignKey('Sensor')
     delta = models.CharField(max_length = 200)
     interval = models.CharField(max_length = 200) #in seconds
     timestamp = models.DateTimeField(auto_now = False)
+
+    class Meta:
+        permissions = ()
 
 class SensorRule(models.Model):
     sensor = models.ForeignKey('Sensor')
@@ -43,8 +59,14 @@ class SensorRule(models.Model):
     comparison = models.CharField(max_length = 10) #<>=
     target_function = models.CharField(max_length = 200)
 
+    class Meta:
+        permissions = ()
+
 class Task(models.Model):
     command = models.CharField(max_length = 200) #reference to a function
     execution_timestamp = models.DateTimeField(auto_now = False)
     status = models.IntegerField() #on/off for now
+
+    class Meta:
+        permissions = ()
 
