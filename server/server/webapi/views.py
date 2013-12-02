@@ -174,37 +174,6 @@ def list_entries(request, device_id, start, end, limit):
     try:
         device_id = int(device_id)
         sensors = Sensor.objects.filter(device_id = device_id)
-        entries = SensorEntry.objects.filter(sensor__in = sensors)
-
-        if start:
-            start_time = datetime.fromtimestamp(int(start)/1000.0).replace(tzinfo=utc)
-            entries = entries.filter(timestamp__gte = start_time)
-
-        if end:
-            end_time = datetime.fromtimestamp(int(end)/1000.0).replace(tzinfo=utc)
-            entries = entries.filter(timestamp__lte = end_time)
-
-        entries = entries.order_by('-timestamp')
- 
-        if limit:
-            entries = entries[:int(limit)]
-
-        return create_json_response_from_QuerySet(entries)
-
-    except ValueError:
-        logger.error("ValueError")
-        return HttpResponse("ValueError")
-    except ObjectDoesNotExist:
-        logger.warning("Device #" + device_id + " does not exists")
-        return HttpResponse("Device #" + device_id + " does not exists")
-
-def list_all_entries(request, device_id, start, end, limit):
-    if not request.user.is_authenticated():
-        return create_json_response({"permission": "denied"})
-
-    try:
-        device_id = int(device_id)
-        sensors = Sensor.objects.filter(device_id = device_id)
 
         start_time = end_time = 0
         if start:

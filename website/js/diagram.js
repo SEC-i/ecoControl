@@ -2,7 +2,7 @@ var series_data = [];
 var chart = null;
 
 function draw_diagram(){
-    $.get( api_url + "device/" + device_id + "/entrieshc/start/" + range_start + "/end/" + range_end + "/")
+    $.get( api_url + "device/" + device_id + "/entries/start/" + range_start + "/end/" + range_end + "/")
         .done(function(data){
 
         series_data = [];
