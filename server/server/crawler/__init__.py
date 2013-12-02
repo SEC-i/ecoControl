@@ -13,6 +13,7 @@ class Crawler(threading.Thread):
         threading.Thread.__init__(self)
         self.daemon = True
         self.frequency = frequency
+        self.iteration = 0
         #make sure only one instance is running at a time
         self.is_unique_thread = True
         if not write_pidfile_or_fail("/tmp/crawler.pid"):
@@ -25,6 +26,7 @@ class Crawler(threading.Thread):
             print " * Crawling..."
             logger.debug("Crawler started")
             while(True):
+                self.iteration+= 1
                 crawl_and_save_data()
 
                 # log function calls if frequency >= 10 seconds
