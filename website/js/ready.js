@@ -113,7 +113,7 @@ function login_successful(){
             device_data = data;
             $("#device_list").html(''); // clear device list
             $.each(device_data, function(index, value){
-                $("#device_list").append('<li class="device_items" id="device_item_' + value['id'] + '" data-toggle="collapse" data-target=".navbar-collapse"><a onclick="show_device(' + value['id'] + ', \'' + value['name'] + '\');">' + value['name'] + '</a></li>');
+                $("#device_list").append('<li class="device_items" id="device_item_' + value['id'] + '"><a onclick="show_device(' + value['id'] + ', \'' + value['name'] + '\');">' + value['name'] + '</a></li>');
             });
         }
     });
