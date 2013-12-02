@@ -10,14 +10,14 @@ logger = logging.getLogger('crawler')
 # crawl data and save sensor entries
 def crawl_and_save_data():
     try:
-        maximum_reached= True
+        maximum_reached = True
         # get all devices
-        devices= Device.objects.all()
+        devices = Device.objects.all()
         for device in devices:
-            if device.interval > self.iteration*self.frequency:
+            if device.interval > self.iteration * self.frequency:
                 maximum_reached= False
             # skip device if frequency doesn't match
-            if device.interval % (self.iteration*self.frequency) != 0:
+            if device.interval % (self.iteration * self.frequency) != 0:
                 pass
             # request data for device
             data = json.load(urllib2.urlopen(device.data_source))
@@ -40,7 +40,7 @@ def crawl_and_save_data():
                 except KeyError:
                     logger.debug(sensor.key_name + "not found")
         if maximum_reached:
-            self.iteration= 0
+            self.iteration = 0
     except urllib2.HTTPError, e:
         logger.error("HTTPError in crawl function: " + str(e.code))
     except urllib2.URLError, e:

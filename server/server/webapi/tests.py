@@ -12,7 +12,7 @@ class SimpleTest(unittest.TestCase):
         User.objects.create_user(username = "test_user", password = "demo123")
 
         # Add test device
-        Device.objects.create(name="test_name", data_source="test_data_source")
+        Device.objects.create(name="test_name", data_source="test_data_source", interval=60)
 
     def setUp(self):
         # Every test needs a client.
@@ -62,5 +62,5 @@ class SimpleTest(unittest.TestCase):
         response = self.client.get('/api/device/' + str(d.id) + '/')
 
         # Check that the response contains the test device
-        self.assertEqual(json.loads(response.content), [{"data_source": "test_data_source", "id": 1, "name": "test_name"}])
+        self.assertEqual(json.loads(response.content), [{"data_source": "test_data_source", "id": 1, "name": "test_name", "interval": 60}])
         

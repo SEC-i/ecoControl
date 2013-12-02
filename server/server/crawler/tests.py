@@ -8,7 +8,7 @@ from helpers import extract_data
 class SimpleTest(unittest.TestCase):
     def setUp(self):
         # Add test device with test data_source
-        self.device = Device.objects.create(name="test_name", data_source="http://graph.facebook.com/hassoplattnerinstitute")
+        self.device = Device.objects.create(name="test_name", data_source="http://graph.facebook.com/hassoplattnerinstitute", interval=60)
 
         # Add test sensor
         self.sensor = Sensor.objects.create(device=self.device, name="test_name", key_name="id", unit="test_unit")
