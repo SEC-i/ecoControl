@@ -88,6 +88,7 @@ $(document).ready(function(){
        }
     }).done(function( data ) {
         if(data['login']=="active"){
+            $("#nav_username").text(data['user']);
             login_successful();
         } else {
             show_login_box();
@@ -115,6 +116,7 @@ function login_user() {
         }
     }).done(function(data) {
             if(data['login']=="successful"){
+                $("#nav_username").text(data['user']);
                 login_successful();
             }else{
                 login_failed();
