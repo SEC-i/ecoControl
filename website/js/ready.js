@@ -133,16 +133,17 @@ function show_device(id, device_name) {
     
     hide_all();
 
-    // $(".device_items").each(function () {
-    //     $(this).removeClass('active');
-    // });
-    // $("#device_item_" + device_id).addClass('active');
-
+    $("#refresh_button").click(function(event) {
+        var range_end = new Date().getTime();
+        $("#sensor_selection").html('');
+        draw_diagram();
+    });
 
     $("#devices").fadeIn();
     $("#device_name").text(device_name);
 
     $("#diagram_container").html('');
+    $("#sensor_selection").html('');
     draw_diagram();
 }
 

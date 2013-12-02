@@ -6,15 +6,13 @@ function draw_diagram(){
         .done(function(data){
 
         series_data = [];
-        $("#sensor_selection").html('');
-
         $.each(data, function(index, value){
             $.each(value['data'], function(data_index, data_value){
                 data_value[0] = new Date(data_value[0]);
                 data_value[1] = parseFloat(data_value[1]);
             });
             
-            $("#sensor_selection").append('<label class="btn btn-primary"><input class="sensor_selection_item" type="checkbox" value="' + index + '"> ' + value['name'] + '</label>');
+            $("#sensor_selection").append('<label class="btn btn-default"><input class="sensor_selection_item" type="checkbox" value="' + index + '"> ' + value['name'] + '</label>');
 
             series_data.push(
                 {
@@ -28,11 +26,13 @@ function draw_diagram(){
         });
 
         $(".sensor_selection_item").change(function(){
-            if($(this).is(":checked")){
-                chart.series[$(this).val()].hide();
-            }else{
-                chart.series[$(this).val()].show()
-            }
+            $(".sensor_selection_item").each(function(){
+                if($(this).is(":checked")){
+                    chart.series[$(this).val()].show();
+                }else{
+                    chart.series[$(this).val()].hide();
+                }
+            });
         });
 
         chart = new Highcharts.StockChart({
