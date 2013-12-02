@@ -1,8 +1,8 @@
 var api_url = "http://www.hpi.uni-potsdam.de/hirschfeld/bachelorprojects/2013H1/api/";
 
+var device_data = null;
 var device_id = null;
-var sensor_id = 0;
-var range_start = new Date().getTime()-24*60*60*1000;
+var range_start = new Date().getTime()-24*2*60*60*1000;
 var range_end = new Date().getTime();
 
 $(document).ready(function(){
@@ -69,7 +69,6 @@ $(document).ready(function(){
       change: function( event, ui ) {
         range_start = new Date().getTime()+60*60*1000*parseInt(ui.values[0]);
         range_end = new Date().getTime()+60*60*1000*parseInt(ui.values[1]);
-        prepare_diagram_menu();
         draw_diagram();
       }
     });
@@ -111,8 +110,9 @@ function login_successful(){
         if(data['permission'] != undefined){
             show_login_box();
         }else{
+            device_data = data;
             $("#device_list").html(''); // clear device list
-            $.each(data, function(index, value){
+            $.each(device_data, function(index, value){
                 $("#device_list").append('<li class="device_items" id="device_item_' + value['id'] + '"><a onclick="show_device(' + value['id'] + ', \'' + value['name'] + '\');">' + value['name'] + '</a></li>');
             });
         }
@@ -130,21 +130,20 @@ function login_failed(){
 
 function show_device(id, device_name) {
     device_id = id;
-    sensor_id = 0;
-
-    $("#sensor_selection").html('All sensors <span class="caret"></span>');
     
     hide_all();
-    $(".device_items").each(function () {
-        $(this).removeClass('active');
-    });
 
-    $("#device_item_" + device_id).addClass('active');
+    $("#refresh_button").click(function(event) {
+        var range_end = new Date().getTime();
+        $("#sensor_selection").html('');
+        draw_diagram();
+    });
 
     $("#devices").fadeIn();
     $("#device_name").text(device_name);
 
-    prepare_diagram_menu();
+    $("#diagram_container").html('');
+    $("#sensor_selection").html('');
     draw_diagram();
 }
 

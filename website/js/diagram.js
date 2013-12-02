@@ -1,100 +1,103 @@
-var sensor_data = null;
-
-function prepare_diagram_menu(){
-    $.get( api_url + "device/" + device_id + "/sensors/", function( data ) {
-        sensor_data = data;
-
-        $("#sensor_list").html('<li class="sensor_items" value="0">' +
-            '<a href="#">All sensors</a></li><li class="divider"></li>'+
-            '<li class="dropdown-header">Individual sensors</li>');
-
-        $.each(data, function(index, value){
-            $("#sensor_list").append('<li class="sensor_items" value="' + value['id'] + '"><a href="#">' + value['name'] + '</a></li>');
-        });
-
-        $(".sensor_items").click(function(event) {
-            sensor_id = $(this).attr('value');
-            $("#sensor_selection").html($('> a', this).text() + ' <span class="caret"></span>');
-            draw_diagram();
-        });
-
-        $("#refresh_button").click(function(event) {
-            range_end = new Date().getTime();
-            draw_diagram();
-        });
-        
-    });
-}
+var series_data = [];
+var chart = null;
 
 function draw_diagram(){
-    var valuesx = [];
-    var valuesy = [];
+    $.get( api_url + "device/" + device_id + "/entrieshc/start/" + range_start + "/end/" + range_end + "/")
+        .done(function(data){
 
-    if(sensor_id > 0){
-        var url = api_url + "sensor/" + sensor_id + "/entries/";
-    }else{
-        var url = api_url + "device/" + device_id + "/entries/";
-    }
+        series_data = [];
+        $.each(data, function(index, value){
+            $.each(value['data'], function(data_index, data_value){
+                data_value[0] = new Date(data_value[0]);
+                data_value[1] = parseFloat(data_value[1]);
+            });
+            
+            $("#sensor_selection").append('<label class="btn btn-default"><input class="sensor_selection_item" type="checkbox" value="' + index + '"> ' + value['name'] + '</label>');
 
-    // add all entries to sensor details
-    $.get( url + "start/" + range_start + "/end/" + range_end + "/", function( data ) {
-        var values_index = 0;
-        $.each(sensor_data, function(sensor_index, sensor_value){
-            $.each(data, function(index, value){
-                if(sensor_value['id'] == value['sensor_id']){
-                    if(valuesx[values_index] == undefined){
-                        valuesx[values_index] = [];
-                    }
-                    if(valuesy[values_index] == undefined){
-                        valuesy[values_index] = [];
-                    }
-                    valuesx[values_index].push(value['timestamp']);
-                    valuesy[values_index].push(value['value']);
+            series_data.push(
+                {
+                    name: value['name'],
+                    data: value['data'],
+                    tooltip: {
+                        valueSuffix: ' ' + value['unit']
+                    },
+                }
+                );
+        });
+
+        $(".sensor_selection_item").change(function(){
+            $(".sensor_selection_item").each(function(){
+                if($(this).is(":checked")){
+                    chart.series[$(this).val()].show();
+                }else{
+                    chart.series[$(this).val()].hide();
                 }
             });
-            if(valuesx[values_index] != undefined){
-                values_index++;
-            }
-        });
-    }).done(function() { // all data ready for diagram
-
-        $("#diagram_container").html('');
-
-        if (valuesx.length == 0 || valuesy.length == 0){
-            $("#diagram_container").html('<p><br /></p><div class="row"><div class="col-lg-6"><div class="alert alert-warning">No data available!</div></div></div>');
-            return false;
-        }
-
-        var r = Raphael("diagram_container");
-
-        var lines = r.linechart(30, 50, 800, 400, valuesx, valuesy,
-                { nostroke: false,
-                    axis: "0 0 1 1",
-                }
-            );
-
-
-        $.each(sensor_data, function(index, value){
-            if (sensor_id > 0){
-                if(sensor_id == value['id']){
-                    r.text(850, 60, "--- " + value['name'] + " in " + value['unit']).attr({
-                        'text-anchor': 'start',
-                        'font-size' : 12,
-                        'fill' : Raphael.g.colors[0],});
-                }
-            } else {
-                r.text(850, 60 + 20 * index, "--- " + value['name'] + " in " + value['unit']).attr({
-                    'text-anchor': 'start',
-                    'font-size' : 12,
-                    'fill' : Raphael.g.colors[index],});
-            }
         });
 
-        // change the x-axis labels 
-        var axisItems = lines.axis[0].text.items;
-        for( var i = 0, l = axisItems.length; i < l; i++ ) {
-           var date = new Date(parseInt(axisItems[i].attr("text")));
-           axisItems[i].attr("text", $.formatDateTime('dd.mm.y hh:ii', date));
-        }
-    });    
+        chart = new Highcharts.StockChart({
+            chart: {
+                renderTo: 'diagram_container',
+                type: 'spline',
+            },
+            rangeSelector: {
+                buttons: [{
+                    type: 'hour',
+                    count: 1,
+                    text: '1h'
+                }, {
+                    type: 'hour',
+                    count: 6,
+                    text: '6h'
+                }, {
+                    type: 'hour',
+                    count: 12,
+                    text: '12h'
+                }, {
+                    type: 'day',
+                    count: 1,
+                    text: '1D'
+                }, {
+                    type: 'all',
+                    count: 1,
+                    text: 'All'
+                }],
+                selected: 2,
+            },
+            xAxis: {
+                type: 'datetime',
+                dateTimeLabelFormats: { // don't display the dummy year
+                    month: '%e. %b',
+                    year: '%b'
+                }
+            },
+            yAxis: {
+                min: 0,
+                plotLines : (device_id==2?[{
+                    value : 500,
+                    color : 'red',
+                    dashStyle : 'shortdash',
+                    width : 1,
+                    label : {
+                        text : 'Water too low'
+                    }
+                }]:[]),
+            },
+            tooltip : {
+                valueDecimals : 2
+            },
+            plotOptions: {
+                series: {
+                    marker: {
+                        enabled: false
+                    },
+                    lineWidth: 1,
+                }
+            },
+            series: series_data,
+            credits: {
+                enabled: false
+            },
+        });
+    });
 }

@@ -31,7 +31,7 @@
   <body>
 
     <!-- Fixed navbar -->
-    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -92,27 +92,16 @@
       <!-- Main component for a primary marketing message or call to action -->
       <div class="jumbotron">
         <h2 id="device_name">Device</h2>
-
-        <div class="row">
-          <div class="col-lg-6">
-            <div class="btn-group">
-              <div class="btn-group">
-                <button id="sensor_selection" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                  All sensors
-                  <span class="caret"></span>
-                </button>
-                <ul id="sensor_list" class="dropdown-menu">
-                </ul>
-              </div>
-              <button id="refresh_button" type="button" class="btn btn-default">Refresh</button>
-            </div>
-          </div>
-        </div>
         <div id="diagram_container"></div>
         <div class="row">
           <div class="col-lg-12">
-            Selected range: <span id="day_range"></span>
-            <div id="range_slider"></div>
+            <div class="btn-toolbar" role="toolbar" style="margin-top: 10px;">
+              <div class="btn-group btn-group-sm">
+                <button id="refresh_button" type="button" class="btn btn-default">Refresh</button>
+              </div>
+              <div id="sensor_selection" class="btn-group btn-group-sm" data-toggle="buttons">
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -143,9 +132,7 @@
     <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
     <script src="./js/jquery.formatDateTime.min.js"></script>
     <script src="./js/bootstrap.min.js"></script>
-    <script src="./js/raphael-min.js"></script>
-    <script src="./js/g.raphael-min.js"></script>
-    <script src="./js/g.line-min.js"></script>
+    <script src="./js/hs/highstock.js"></script>
 
     <script src="./js/diagram.js"></script>
     <script src="./js/ready.js"></script>

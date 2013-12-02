@@ -29,7 +29,7 @@ class Sensor(models.Model):
 class SensorEntry(models.Model):
     sensor = models.ForeignKey('Sensor')
     value = models.CharField(max_length = 200)
-    timestamp = models.DateTimeField(auto_now = True)
+    timestamp = models.DateTimeField(auto_now = False)
 
 class SensorDelta(models.Model):
     sensor = models.ForeignKey('Sensor')

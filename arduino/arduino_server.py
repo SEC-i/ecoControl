@@ -22,21 +22,33 @@ def get_data():
 
 @app.route('/set/', methods = ['POST'])
 def set_data():
-	# relay_state required
-	if 'relay_state' not in request.form:
-		return "0"
 
-	try:
-		# send 1 to turn on relay, otherwise send 2 to turn it off
-		if request.form['relay_state']=="1":
-			ser.write("1")
-		else:
-			ser.write("2")
-		# read, parse and return data
-		ser_data = ser.readline()
-		return jsonify(json.loads(ser_data))
-	except:
-		return "0"
+	if 'water_plants' in request.form:
+		try:
+			# send 3 to turn on relay for 20s
+			if request.form['water_plants']=="1":
+				ser.write("3")
+			# read, parse and return data
+			ser_data = ser.readline()
+			return jsonify(json.loads(ser_data))
+		except:
+			return "0"
+
+	# relay_state required
+	if 'relay_state' in request.form:
+		try:
+			# send 1 to turn on relay, otherwise send 2 to turn it off
+			if request.form['relay_state']=="1":
+				ser.write("1")
+			else:
+				ser.write("2")
+			# read, parse and return data
+			ser_data = ser.readline()
+			return jsonify(json.loads(ser_data))
+		except:
+			return "0"
+
+	return "0"
 	
 if __name__ == '__main__':
 	app.run(host="0.0.0.0",debug = True, port = 9002)
