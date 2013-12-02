@@ -9,7 +9,7 @@ class SimpleTest(unittest.TestCase):
     @classmethod  
     def setUpClass(cls): 
         # Create test user for all tests
-        User.objects.create_user(username = "test_user", password = "demo123")
+        User.objects.create_user(username = "test_user", password = "demo123", first_name="test_fn", last_name="test_ln")
 
         # Add test device
         Device.objects.create(name="test_name", data_source="test_data_source", interval=60)
@@ -36,7 +36,7 @@ class SimpleTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Check that the response equals {"login": "active"}
-        self.assertEqual(json.loads(response.content), {"login": "successful"})
+        self.assertEqual(json.loads(response.content), {"login": "successful", "user": "test_fn test_ln"})
 
         # Issue a GET request.
         response = self.client.get('/api/status/')
@@ -45,7 +45,7 @@ class SimpleTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Check that the response equals {"login": "inactive"}
-        self.assertEqual(json.loads(response.content), {"login": "active"})
+        self.assertEqual(json.loads(response.content), {"login": "active", "user": "test_fn test_ln"})
 
     def test_permission_denied(self):
         # test multipe urls for {"permission": "denied"}

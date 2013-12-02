@@ -26,9 +26,9 @@ def api_login(request):
         if user is not None:
             if user.is_active:
                 login(request, user)
-                return create_json_response({"login": "successful", "user": request.user.username})
+                return create_json_response({"login": "successful", "user": request.user.get_full_name()})
             else:
-                return create_json_response({"login": "disabled", "user": request.user.username})
+                return create_json_response({"login": "disabled", "user": request.user.get_full_name()})
         else:
             return create_json_response({"login": "invalid"})
     else:
@@ -40,7 +40,7 @@ def api_logout(request):
 
 def api_status(request):
     if request.user.is_authenticated():
-        return create_json_response({"login": "active", "user": request.user.username})
+        return create_json_response({"login": "active", "user": request.user.get_full_name()})
     else:
         return create_json_response({"login": "inactive"})
     
