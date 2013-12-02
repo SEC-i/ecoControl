@@ -14,10 +14,10 @@ def crawl_and_save_data():
         # get all devices
         devices= Device.objects.all()
         for device in devices:
-            if device.frequency > self.iteration*self.frequency:
+            if device.interval > self.iteration*self.frequency:
                 maximum_reached= False
             # skip device if frequency doesn't match
-            if device.frequency % (self.iteration*self.frequency) != 0:
+            if device.interval % (self.iteration*self.frequency) != 0:
                 pass
             # request data for device
             data = json.load(urllib2.urlopen(device.data_source))
