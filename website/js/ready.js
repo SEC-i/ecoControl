@@ -23,8 +23,14 @@ $(document).ready(function(){
     });
 
     $("#logout").click(function(event) {
-        $.post(api_url + "logout/")
-            .done(function(data) {
+        $.ajax({
+            type: "POST",
+            url: api_url + "logout/",
+            crossDomain: true,
+            xhrFields: {
+              withCredentials: true
+            }
+        }).done(function(data) {
                 show_login_box();
             });
     });
@@ -98,9 +104,16 @@ function show_login_box(){
     });
 }
 
-function login_user () {
-    $.post(api_url + "login/", { username: $("#login_username").val(), password: $("#login_password").val(), })
-        .done(function(data) {
+function login_user() {
+    $.ajax({
+        type: "POST",
+        url: api_url + "login/",
+        data: { username: $("#login_username").val(), password: $("#login_password").val(), },
+        crossDomain: true,
+        xhrFields: {
+          withCredentials: true
+        }
+    }).done(function(data) {
             if(data['login']=="successful"){
                 login_successful();
             }else{
