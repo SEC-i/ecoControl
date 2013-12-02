@@ -27,7 +27,7 @@ class Crawler(threading.Thread):
             logger.debug("Crawler started")
             while(True):
                 self.iteration+= 1
-                crawl_and_save_data()
+                crawl_and_save_data(self)
 
                 # log function calls if frequency >= 10 seconds
                 if self.frequency>9:

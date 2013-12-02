@@ -2,13 +2,15 @@ import json, urllib2
 import logging
 from datetime import datetime
 
+from django.utils.timezone import utc
+
 from server.models import Device, Sensor, SensorEntry
 from helpers import extract_data
 
 logger = logging.getLogger('crawler')
 
 # crawl data and save sensor entries
-def crawl_and_save_data():
+def crawl_and_save_data(self):
     try:
         maximum_reached = True
         # get all devices
@@ -22,7 +24,7 @@ def crawl_and_save_data():
             # request data for device
             data = json.load(urllib2.urlopen(device.data_source))
             # remember the time of retrieval
-            time = datetime.now()
+            time = datetime.now().replace(tzinfo=utc)
 
             # get device's sensors
             sensors = Sensor.objects.all().filter(device_id = device.id)
@@ -47,5 +49,3 @@ def crawl_and_save_data():
         logger.error("URLError in crawl function: " + str(e.reason))
     except ValueError:
         logger.error("Crawl function did not receive a json")
-    except:
-        logger.error("Crawl function failed unexpectedly")
