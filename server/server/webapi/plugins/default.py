@@ -1,4 +1,5 @@
 import logging
+
 logger = logging.getLogger('webapi')
 
 def handle_post_data(data):

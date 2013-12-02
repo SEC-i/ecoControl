@@ -1,5 +1,6 @@
-from urllib import urlopen, urlencode
 import logging
+from urllib import urlopen, urlencode
+
 logger = logging.getLogger('webapi')
 
 def handle_post_data(data):
@@ -17,7 +18,7 @@ def handle_post_data(data):
                 else:
                     # toggle
                     post_data = [('switch_number', switch_number), ('api_key', "s3cr3t")]
-            logger.error("Raspberrypi driver post: " + urlencode(post_data))
             urlopen("http://localhost:9001/api/switches/", urlencode(post_data))
+            logger.info("Send data to raspberrypi (" + urlencode(post_data) + ")")
         except ValueError:
             logger.error("ValueError in raspberrypi driver")
