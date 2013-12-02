@@ -10,6 +10,9 @@ env:
 install: 
    # Install whatever version of Django that's listed above
    # Travis is currently working on
- - pip install -q Django==$DJANGO_VERSION --use-mirrors
+  - pip install -q Django==$DJANGO_VERSION --use-mirrors
 # Tell Travis how to run the test script itself
-script: python /server/manage.py test server.webapi
+before_script:
+  - cd server
+script:
+  - python manage.py test server.webapi
