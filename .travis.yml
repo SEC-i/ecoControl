@@ -16,3 +16,4 @@ before_script:
   - cd server
 script:
   - python manage.py test server.webapi
+  - python manage.py test server.crawler

@@ -15,7 +15,7 @@ class SimpleTest(unittest.TestCase):
 
     def test_crawl_and_save_data(self):
         # Execute function
-        crawl_and_save_data()
+        crawl_and_save_data(self.device)
 
         # Get latest sensor entry
         sensors_entry = SensorEntry.objects.filter(sensor = self.sensor).latest('timestamp')

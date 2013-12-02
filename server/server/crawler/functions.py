@@ -13,12 +13,15 @@ logger = logging.getLogger('crawler')
 def start_crawling():
     devices = Device.objects.all()
     for device in devices:
-        crawl_and_save_data(device)
+        repeat_crawl_and_save_data(device)
+
+def repeat_crawl_and_save_data(device):
+    # Schedule timer to execute repeat_crawl_and_save_data again
+    Timer(device.interval, repeat_crawl_and_save_data, args=(device,)).start()
+    crawl_and_save_data(device)
 
 # crawl data and save sensor entries
 def crawl_and_save_data(device):
-    # Schedule timer to execute crawl_and_save_data again
-    Timer(device.interval, crawl_and_save_data, args=(device,)).start()
     try:
         # request data for device
         data = json.load(urllib2.urlopen(device.data_source))
