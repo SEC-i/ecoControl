@@ -16,7 +16,7 @@ def index(request):
     return HttpResponse("BP2013H1")
 
 def api_index(request):
-    return create_json_response({ 'version':0.1 })
+    return create_json_response(request, { 'version':0.1 })
 
 def api_login(request):
     if request.method == 'POST' and 'username' in request.POST and 'password' in request.POST:
@@ -26,31 +26,31 @@ def api_login(request):
         if user is not None:
             if user.is_active:
                 login(request, user)
-                return create_json_response({"login": "successful", "user": request.user.get_full_name()})
+                return create_json_response(request, {"login": "successful", "user": request.user.get_full_name()})
             else:
-                return create_json_response({"login": "disabled", "user": request.user.get_full_name()})
+                return create_json_response(request, {"login": "disabled", "user": request.user.get_full_name()})
         else:
-            return create_json_response({"login": "invalid"})
+            return create_json_response(request, {"login": "invalid"})
     else:
-        return create_json_response({"login": "failed"})
+        return create_json_response(request, {"login": "failed"})
 
 def api_logout(request):
     logout(request)
-    return create_json_response({"logout": "successful"})
+    return create_json_response(request, {"logout": "successful"})
 
 def api_status(request):
     if request.user.is_authenticated():
-        return create_json_response({"login": "active", "user": request.user.get_full_name()})
+        return create_json_response(request, {"login": "active", "user": request.user.get_full_name()})
     else:
-        return create_json_response({"login": "inactive"})
+        return create_json_response(request, {"login": "inactive"})
     
 def show_device(request, device_id):
     if not request.user.is_authenticated():
-        return create_json_response({"permission": "denied"})
+        return create_json_response(request, {"permission": "denied"})
 
     try:
         device = Device.objects.filter(id = int(device_id))
-        return create_json_response_from_QuerySet(device)
+        return create_json_response_from_QuerySet(request, device)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -60,21 +60,21 @@ def show_device(request, device_id):
 
 def list_devices(request, limit):
     if not request.user.is_authenticated():
-        return create_json_response({"permission": "denied"})
+        return create_json_response(request, {"permission": "denied"})
 
     try:
         if not limit:
             limit = 10
         devices = Device.objects.all().order_by('name')[:int(limit)]
             
-        return create_json_response_from_QuerySet(devices)
+        return create_json_response_from_QuerySet(request, devices)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
     
 def list_actuators(request, device_id, limit):
     if not request.user.is_authenticated():
-        return create_json_response({"permission": "denied"})
+        return create_json_response(request, {"permission": "denied"})
 
     try:
         if not limit:
@@ -82,7 +82,7 @@ def list_actuators(request, device_id, limit):
         device_id = int(device_id)
         actuators = Actuator.objects.filter(device_id = device_id).order_by('parameter_name')[:int(limit)]
 
-        return create_json_response_from_QuerySet(actuators)
+        return create_json_response_from_QuerySet(request, actuators)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -92,7 +92,7 @@ def list_actuators(request, device_id, limit):
 
 def list_sensors(request, device_id, limit):
     if not request.user.is_authenticated():
-        return create_json_response({"permission": "denied"})
+        return create_json_response(request, {"permission": "denied"})
 
     try:
         if not limit:
@@ -100,7 +100,7 @@ def list_sensors(request, device_id, limit):
         device_id = int(device_id)
         sensors = Sensor.objects.filter(device_id = device_id).order_by('name')[:int(limit)]
 
-        return create_json_response_from_QuerySet(sensors)
+        return create_json_response_from_QuerySet(request, sensors)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -110,11 +110,11 @@ def list_sensors(request, device_id, limit):
         
 def show_actuator(request, actuator_id):
     if not request.user.is_authenticated():
-        return create_json_response({"permission": "denied"})
+        return create_json_response(request, {"permission": "denied"})
 
     try:
         actuator = Actuator.objects.filter(id = int(actuator_id))
-        return create_json_response_from_QuerySet(actuator)
+        return create_json_response_from_QuerySet(request, actuator)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -124,11 +124,11 @@ def show_actuator(request, actuator_id):
 
 def show_sensor(request, sensor_id):
     if not request.user.is_authenticated():
-        return create_json_response({"permission": "denied"})
+        return create_json_response(request, {"permission": "denied"})
 
     try:
         sensor = Sensor.objects.filter(id = int(sensor_id))
-        return create_json_response_from_QuerySet(sensor)
+        return create_json_response_from_QuerySet(request, sensor)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -139,7 +139,7 @@ def show_sensor(request, sensor_id):
     
 def list_sensor_entries(request, sensor_id, start, end, limit):
     if not request.user.is_authenticated():
-        return create_json_response({"permission": "denied"})
+        return create_json_response(request, {"permission": "denied"})
 
     try:
         sensor_id = int(sensor_id)
@@ -158,7 +158,7 @@ def list_sensor_entries(request, sensor_id, start, end, limit):
         if limit:
             entries = entries[:int(limit)]
 
-        return create_json_response_from_QuerySet(entries)
+        return create_json_response_from_QuerySet(request, entries)
 
     except ValueError:
         logger.error("ValueError")
@@ -169,7 +169,7 @@ def list_sensor_entries(request, sensor_id, start, end, limit):
     
 def list_entries(request, device_id, start, end, limit):
     if not request.user.is_authenticated():
-        return create_json_response({"permission": "denied"})
+        return create_json_response(request, {"permission": "denied"})
 
     try:
         device_id = int(device_id)
@@ -216,11 +216,11 @@ def list_entries(request, device_id, start, end, limit):
 
 def show_entry(request, entry_id):
     if not request.user.is_authenticated():
-        return create_json_response({"permission": "denied"})
+        return create_json_response(request, {"permission": "denied"})
 
     try:
         entry = SensorEntry.objects.filter(id = int(entry_id))
-        return create_json_response_from_QuerySet(entry)
+        return create_json_response_from_QuerySet(request, entry)
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
@@ -230,7 +230,7 @@ def show_entry(request, entry_id):
 
 def set_device(request, device_id):
     # if not request.user.is_authenticated():
-        # return create_json_response({"permission": "denied"})
+        # return create_json_response(request, {"permission": "denied"})
 
     try:
         device = Device.objects.get(id = int(device_id))
@@ -245,9 +245,9 @@ def set_device(request, device_id):
 
             plugin.handle_post_data(request.POST.dict())
             logger.debug("Post request triggered by " + request.META['REMOTE_ADDR'])
-            return create_json_response({"status": "ok"})
+            return create_json_response(request, {"status": "ok"})
         else:
-            return create_json_response({"status": "fail"})
+            return create_json_response(request, {"status": "fail"})
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")
