@@ -4,13 +4,17 @@ from django.db import models
 
 class Actuator(models.Model):
     device = models.ForeignKey('Device')
-    parameter_name = models.CharField(max_length = 100)
+    name = models.CharField(max_length = 100)
+    target_parameter = models.CharField(max_length = 100)
     value_min = models.IntegerField(default=0)
     value_max = models.IntegerField(default=1)
     input_type = models.CharField(max_length = 50)
 
     class Meta:
         permissions = ()
+
+    def __unicode__(self):
+        return self.name + " (#" + str(self.pk) + ")"
 
 class Device(models.Model):
     name = models.CharField(max_length = 100)
@@ -43,6 +47,9 @@ class SensorEntry(models.Model):
 
     class Meta:
         permissions = ()
+
+    def __unicode__(self):
+        return str(self.pk) + " (" + self.sensor.name + ")"
 
 class SensorDelta(models.Model):
     sensor = models.ForeignKey('Sensor')

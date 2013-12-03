@@ -80,7 +80,7 @@ def list_actuators(request, device_id, limit):
         if not limit:
             limit = 10
         device_id = int(device_id)
-        actuators = Actuator.objects.filter(device_id = device_id).order_by('parameter_name')[:int(limit)]
+        actuators = Actuator.objects.filter(device_id = device_id).order_by('name')[:int(limit)]
 
         return create_json_response_from_QuerySet(request, actuators)
     except ValueError:
@@ -205,7 +205,7 @@ def list_entries(request, device_id, start, end, limit):
                     'data': list(entries.values_list('timestamp', 'value'))
                 })
 
-        return create_json_response(output)
+        return create_json_response(request, output)
 
     except ValueError:
         logger.error("ValueError")
