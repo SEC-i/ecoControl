@@ -17,3 +17,6 @@ before_script:
 script:
   - python manage.py test server.webapi
   - python manage.py test server.crawler
+  - python manage.py test server.planner
+  - cd ../sensor_mocking
+  - python test.py

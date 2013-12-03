@@ -1,5 +1,5 @@
 import calendar
-
+import datetime
 from django.db import models
 
 class Actuator(models.Model):
@@ -49,6 +49,8 @@ class SensorDelta(models.Model):
     delta = models.CharField(max_length = 200)
     interval = models.CharField(max_length = 200) #in seconds
     timestamp = models.DateTimeField(auto_now = False)
+
+
 
     class Meta:
         permissions = ()
