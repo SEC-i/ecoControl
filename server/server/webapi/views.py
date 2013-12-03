@@ -173,7 +173,7 @@ def list_entries(request, device_id, start, end, limit):
 
     try:
         device_id = int(device_id)
-        sensors = Sensor.objects.filter(device_id = device_id)
+        sensors = Sensor.objects.filter(device_id = device_id).order_by('name')
 
         start_time = end_time = 0
         if start:
