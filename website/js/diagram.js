@@ -30,13 +30,20 @@ function draw_diagram(){
         });
 
         $(".sensor_selection_item").change(function(){
+            var all_unchecked = true;
             $(".sensor_selection_item").each(function(){
                 if($(this).is(":checked")){
                     chart.series[$(this).val()].show();
+                    all_unchecked = false;
                 }else{
                     chart.series[$(this).val()].hide();
                 }
             });
+            if(all_unchecked){
+                $.each(chart.series, function(index, value){
+                    value.show();
+                 });
+            }
         });
 
         chart = new Highcharts.StockChart({
@@ -67,6 +74,7 @@ function draw_diagram(){
                     text: 'All'
                 }],
                 selected: 2,
+                inputEnabled : false,
             },
             xAxis: {
                 type: 'datetime',
