@@ -23,90 +23,90 @@ class BHKW(GeneratorDevice):
  		#self.time_step  =  0.08
 
 
- 		self.currentWorkload 		=  Sensor(name="workload",id=0,value=0,unit=r"%")
- 		self.currentElectricalPower =  Sensor(name="electrical_power",id=1,value=0,unit="kW")
- 		self.currentThermalPower 	=  Sensor(name="thermal_power",id=2,value=0,unit="kW")
- 		self.currentGasInput 		=  Sensor(name="gas_input",id=3,value=0,unit="kW")
+ 		self.current_workload 		=  Sensor(name="workload", id=0, value=0, unit=r"%")
+ 		self.current_electrical_power =  Sensor(name="electrical_power", id=1, value=0, unit="kW")
+ 		self.current_thermal_power 	=  Sensor(name="thermal_power", id=2, value=0, unit="kW")
+ 		self.current_gasinput 		=  Sensor(name="gas_input", id=3, value=0, unit="kW")
 
  		#index corresponds to sensor id
- 		self.sensors = [self.currentWorkload,self.currentElectricalPower,self.currentThermalPower,self.currentGasInput]
+ 		self.sensors = [self.current_workload,self.current_electrical_power,self.current_thermal_power,self.current_gasinput]
 
- 		self.givenData = []
+ 		self.given_data = []
  		#workload in percent, other data in kW
- 		self.givenData.append(InputData(workload=0,electricalPower=0,thermalPower=0,gasInput=0))
- 		self.givenData.append(InputData(workload=25,electricalPower=12.5,thermalPower=20,gasInput=43))
- 		self.givenData.append(InputData(workload=50,electricalPower=25,thermalPower=46,gasInput=86))
- 		self.givenData.append(InputData(workload=75,electricalPower=38,thermalPower=64,gasInput=118))
- 		self.givenData.append(InputData(workload=100,electricalPower=50,thermalPower=81,gasInput=145))
+ 		self.given_data.append(InputData(workload=0, electrical_power=0, thermal_power=0, gasinput=0))
+ 		self.given_data.append(InputData(workload=25, electrical_power=12.5, thermal_power=20, gasinput=43))
+ 		self.given_data.append(InputData(workload=50, electrical_power=25, thermal_power=46, gasinput=86))
+ 		self.given_data.append(InputData(workload=75, electrical_power=38, thermal_power=64, gasinput=118))
+ 		self.given_data.append(InputData(workload=100, electrical_power=50, thermal_power=81, gasinput=145))
 
 
  		#specificationData
  		self.voltage = 400
- 		self.electricalCurrent = 72
+ 		self.electrical_current = 72
 
 
  		# is only set to false if mainloop is stopped
- 		#self.mainloopRunning = True
+ 		#self.mainloop_running = True
  		#self.mainloop = Thread(target=self.mainloop,args=())
  		#self.mainloop.start()
 
 
 
 
- 	def turnOn(self): 		
+ 	def turn_on(self): 		
  		print "turning on BHKW, please wait.."
- 		self.setcurrentWorkload(75.0)
+ 		self.set_current_workload(75.0)
 
- 	def turnOff(self):
+ 	def turn_off(self):
  		print "turning off BHKW, please wait.."
- 	 	self.setcurrentWorkload(0.0)
+ 		self.set_current_workload(0.0)
 
 
 
 
 
- 	def calculateParameters(self,workload):
+ 	def calculate_parameters(self,workload):
  		#get the two datasets in between which the workload resides
- 		for i in range(len(self.givenData)-1):
- 			if workload < self.givenData[i+1]:
- 				dataSet1 = self.givenData[i]
- 				dataSet2 = self.givenData[i+1]
+ 		for i in range(len(self.given_data)-1):
+ 			if workload < self.given_data[i+1]:
+ 				data_set1 = self.given_data[i]
+ 				data_set2 = self.given_data[i+1]
  				break
  		else:
- 			dataSet1 = self.givenData[-2] #last and second to last
- 			dataSet2 = self.givenData[-1]
+ 			data_set1 = self.given_data[-2] #last and second to last
+ 			data_set2 = self.given_data[-1]
 
 		# interpolate the values
-		mu = workload-dataSet1.workload
-		self.currentElectricalPower.value = cosineInterpolate(dataSet1.electricalPower, dataSet2.electricalPower, mu)
-		self.currentGasInput.value     = cosineInterpolate(dataSet1.gasInput, dataSet2.gasInput, mu)
-		self.currentThermalPower.value = cosineInterpolate(dataSet1.thermalPower, dataSet2.thermalPower, mu)
+		mu = workload-data_set1.workload
+		self.current_electrical_power.value = cosine_interpolate(data_set1.electrical_power, data_set2.electrical_power, mu)
+		self.current_gasinput.value     = cosine_interpolate(data_set1.gasinput, data_set2.gasinput, mu)
+		self.current_thermal_power.value = cosine_interpolate(data_set1.thermal_power, data_set2.thermal_power, mu)
 
 	def mainloop(self):
-		while self.mainloopRunning:
-			if (self.changingWorkload == False and self.currentWorkload.value > 0.0 ):
-				self.currentWorkload.value += (random.random() * 20.0 - 1.0) * self.time_step * 20.0
-				self.currentWorkload.value  = max(min(self.currentWorkload.value, 100.0), 0.0) #clamp
-				self.calculateParameters(self.currentWorkload.value)
+		while self.mainloop_running:
+			if (self.changing_workload == False and self.current_workload.value > 0.0 ):
+				self.current_workload.value += (random.random() * 20.0 - 1.0) * self.time_step * 20.0
+				self.current_workload.value  = max(min(self.current_workload.value, 100.0), 0.0) #clamp
+				self.calculate_parameters(self.current_workload.value)
 			time.sleep(self.time_step)
 
 	def update(self,time_delta):
 		if not super(BHKW, self).update(time_delta):
 			return False
 
-		if (self.changingWorkload == False and self.currentWorkload.value > 0.0 ):
-			self.currentWorkload.value = self.targetWorkload + (random.random() * 2.0 - 1.0) * self.time_step
-			self.currentWorkload.value  = max(min(self.currentWorkload.value, 100.0), 0.0) #clamp
-			self.calculateParameters(self.currentWorkload.value)
+		if (self.changing_workload == False and self.current_workload.value > 0.0 ):
+			self.current_workload.value = self.target_workload + (random.random() * 2.0 - 1.0) * self.time_step
+			self.current_workload.value  = max(min(self.current_workload.value, 100.0), 0.0) #clamp
+			self.calculate_parameters(self.current_workload.value)
 
 
 
 
 class InputData:
-	def __init__(self,workload,electricalPower,thermalPower,gasInput):
-		self.electricalPower = electricalPower
- 		self.thermalPower = thermalPower
- 		self.gasInput = gasInput
+	def __init__(self,workload,electrical_power,thermal_power,gasinput):
+		self.electrical_power = electrical_power
+		self.thermal_power = thermal_power
+ 		self.gasinput = gasinput
  		self.workload = workload
  	def __lt__(self,otherInputData):
  		if self.workload < otherInputData:
@@ -119,9 +119,9 @@ class InputData:
  		else:
  			return False
  	def toList(self):
- 		return [self.workload,self.electricalPower,self.thermalPower,self.gasInput]
+ 		return [self.workload,self.electrical_power,self.thermal_power,self.gasinput]
 
-def cosineInterpolate(d1,d2,mu):
+def cosine_interpolate(d1,d2,mu):
 	mu /= 25.0
 	mu2 = (1-math.cos(mu*math.pi)) / 2.0
 	return (d1 * (1-mu2) + d2 * mu2)
