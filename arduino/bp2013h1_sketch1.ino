@@ -15,6 +15,8 @@ int led_bar_value = 0;
 int B=3975; //B value of the thermistor
 
 int incomingByte = 0; // for incoming serial data
+int relay_delay = 0;
+bool relay_delay_counting = false;
 
 float battery_value = 0.0f;
 float temperature = 0.0f;
@@ -67,8 +69,8 @@ void loop() {
         } else if (incomingByte == 51) { // turn relay on if input was ASCII "3"
             digitalWrite(relay_pin,HIGH);
             Serial.println("{ \"relay_state\": 1 }");
-            delay(20*1000);
-            digitalWrite(relay_pin,LOW);
+            relay_delay = 30 *4; //30s
+            relay_delay_counting = true;
         } else { // otherwise, reply with sensor data
             
             // print data in json format
@@ -92,6 +94,15 @@ void loop() {
         digitalWrite(led_pin,LOW);
     } else {
         // delay the loop if there was no input
-        delay(250); 
+        delay(250);
+        if(relay_delay_counting){
+            if(relay_delay > 0){
+                relay_delay--;
+            }else{
+                relay_delay = 0;
+                relay_delay_counting = false;
+                digitalWrite(relay_pin,LOW);
+            }
+        }
     }
 }
