@@ -58,25 +58,16 @@ WSGI_APPLICATION = 'server.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 
-if 'test' in sys.argv:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(os.path.dirname(__file__), 'test.db'),
-            'TEST_NAME': os.path.join(os.path.dirname(__file__), 'test.db'),
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'bp2013h1_prototype',
+        'USER': 'bp2013h1',
+        'PASSWORD': 'hirsch',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'bp2013h1_prototype',
-            'USER': 'bp2013h1',
-            'PASSWORD': 'hirsch',
-            'HOST': 'localhost',
-            'PORT': '5432',
-        }
-    }
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
@@ -95,11 +86,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = ''
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "../website"),
-)
+# STATIC_URL = '/static/'
+# STATIC_ROOT = ''
+# STATICFILES_DIRS = (
+#     os.path.join(BASE_DIR, "../website"),
+# )
 
 # Logging
 
@@ -119,7 +110,7 @@ LOGGING = {
         'django': {
             'level': 'WARNING',
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': './logs/django.log',
+            'filename': '/home/bp2013h1/BP2013H1/server/logs/django.log',
             'maxBytes': 1024*1024*4, # 4 MB
             'backupCount': 5,
             'formatter': 'verbose'
@@ -127,7 +118,7 @@ LOGGING = {
         'webapi': {
             'level': 'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': './logs/webapi.log',
+            'filename': '/home/bp2013h1/BP2013H1/server/logs/webapi.log',
             'maxBytes': 1024*1024*4, # 4 MB
             'backupCount': 5,
             'formatter': 'verbose'
@@ -135,7 +126,7 @@ LOGGING = {
         'crawler': {
             'level': 'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': './logs/crawler.log',
+            'filename': '/home/bp2013h1/BP2013H1/server/logs/crawler.log',
             'maxBytes': 1024*1024*4, # 4 MB
             'backupCount': 5,
             'formatter': 'verbose'
@@ -143,7 +134,7 @@ LOGGING = {
         'planner': {
             'level': 'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': './logs/planner.log',
+            'filename': '/home/bp2013h1/BP2013H1/server/logs/planner.log',
             'maxBytes': 1024*1024*4, # 4 MB
             'backupCount': 5,
             'formatter': 'verbose'
