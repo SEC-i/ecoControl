@@ -119,7 +119,7 @@ LOGGING = {
         'django': {
             'level': 'WARNING',
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': 'logs/django.log',
+            'filename': './logs/django.log',
             'maxBytes': 1024*1024*4, # 4 MB
             'backupCount': 5,
             'formatter': 'verbose'
@@ -127,7 +127,7 @@ LOGGING = {
         'webapi': {
             'level': 'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': 'logs/webapi.log',
+            'filename': './logs/webapi.log',
             'maxBytes': 1024*1024*4, # 4 MB
             'backupCount': 5,
             'formatter': 'verbose'
@@ -135,7 +135,7 @@ LOGGING = {
         'crawler': {
             'level': 'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': 'logs/crawler.log',
+            'filename': './logs/crawler.log',
             'maxBytes': 1024*1024*4, # 4 MB
             'backupCount': 5,
             'formatter': 'verbose'
@@ -143,7 +143,7 @@ LOGGING = {
         'planner': {
             'level': 'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': 'logs/planner.log',
+            'filename': './logs/planner.log',
             'maxBytes': 1024*1024*4, # 4 MB
             'backupCount': 5,
             'formatter': 'verbose'
