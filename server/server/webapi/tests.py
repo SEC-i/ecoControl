@@ -23,7 +23,7 @@ class SimpleTest(unittest.TestCase):
 
     def test_login_inactive(self):
         # Issue a GET request.
-        response = self.client.get('/status/')
+        response = self.client.get('/api/status/')
 
         # Check that the response is 200 OK.
         self.assertEqual(response.status_code, 200)
@@ -42,7 +42,7 @@ class SimpleTest(unittest.TestCase):
         self.assertEqual(json.loads(response.content), {"login": "successful", "user": "test_fn test_ln"})
 
         # Issue a GET request.
-        response = self.client.get('/status/')
+        response = self.client.get('/api/status/')
 
         # Check that the response is 200 OK.
         self.assertEqual(response.status_code, 200)
@@ -52,8 +52,8 @@ class SimpleTest(unittest.TestCase):
 
     def test_permission_denied(self):
         # test multipe urls for {"permission": "denied"}
-        for url in ['devices/', 'device/1/', 'device/1/sensors/', 'device/1/entries/', 'sensor/1/', 'sensor/1/entries/', 'entry/1/', 'device/1/']:
-            response = self.client.get('/' + url)
+        for url in ['/api/devices/', '/api/device/1/', '/api/device/1/sensors/', '/api/device/1/entries/', '/api/sensor/1/', '/api/sensor/1/entries/', '/api/entry/1/', '/api/device/1/']:
+            response = self.client.get(url)
             self.assertEqual(json.loads(response.content), {"permission": "denied"})
 
     def test_add_device(self):
@@ -62,7 +62,7 @@ class SimpleTest(unittest.TestCase):
 
         # Issue GET request for device details
         d = Device.objects.get(name="test_name")
-        response = self.client.get('/device/' + str(d.id) + '/')
+        response = self.client.get('/api/device/' + str(d.id) + '/')
 
         # Check that the response contains the test device
         self.assertEqual(json.loads(response.content), [{"id": 1, "name": "test_name", "interval": 60}])
