@@ -1,4 +1,4 @@
-var api_url = "http://172.16.17.231/api/";
+var api_url = "./api/";
 
 var device_data = null;
 var device_id = null;

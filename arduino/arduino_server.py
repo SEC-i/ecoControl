@@ -2,6 +2,7 @@
 import serial, json
 from urllib import urlopen, urlencode
 from threading import Timer
+import time
 
 from flask import Flask, jsonify, request
 
@@ -11,7 +12,7 @@ ser.baudrate = 9600
 
 # send_data
 interval = 60.0
-target_urls = [] # list target urls here
+target_urls = ["http://172.16.64.130/api/device/2/data/"] # list target urls here
 
 app = Flask(__name__)
 
@@ -65,10 +66,15 @@ def send_data():
     # read, parse and return data
     ser_data = ser.readline()
 
-    post_data = [('data', json.dumps(ser_data))]
+    post_data = [('data', json.dumps(json.loads(ser_data)))]
+
     for url in target_urls:
         urlopen(url, urlencode(post_data))
     
 if __name__ == '__main__':
-    send_data()
+    # Delay first execution of send_data in order to wait for serial to get ready
+    Timer(5.0, send_data).start()
+    
+    # Start flask webserver
     app.run(host="0.0.0.0",debug = True, port = 9002)
+
