@@ -56,8 +56,8 @@ def show_device(request, device_id):
         logger.error("ValueError")
         return HttpResponse("ValueError")
     except ObjectDoesNotExist:
-        logger.warning("Device #" + device_id + " does not exists")
-        return HttpResponse("Device #" + device_id + " does not exists")
+        logger.warning("Device #" + str(device_id) + " does not exists")
+        return HttpResponse("Device #" + str(device_id) + " does not exists")
 
 def list_devices(request, limit):
     if not request.user.is_authenticated():
@@ -88,8 +88,8 @@ def list_actuators(request, device_id, limit):
         logger.error("ValueError")
         return HttpResponse("ValueError")
     except ObjectDoesNotExist:
-        logger.warning("Device #" + device_id + " does not exists")
-        return HttpResponse("Device #" + device_id + " does not exists")
+        logger.warning("Device #" + str(device_id) + " does not exists")
+        return HttpResponse("Device #" + str(device_id) + " does not exists")
 
 def list_sensors(request, device_id, limit):
     if not request.user.is_authenticated():
@@ -106,8 +106,8 @@ def list_sensors(request, device_id, limit):
         logger.error("ValueError")
         return HttpResponse("ValueError")
     except ObjectDoesNotExist:
-        logger.warning("Device #" + device_id + " does not exists")
-        return HttpResponse("Device #" + device_id + " does not exists")
+        logger.warning("Device #" + str(device_id) + " does not exists")
+        return HttpResponse("Device #" + str(device_id) + " does not exists")
         
 def show_actuator(request, actuator_id):
     if not request.user.is_authenticated():
@@ -120,8 +120,8 @@ def show_actuator(request, actuator_id):
         logger.error("ValueError")
         return HttpResponse("ValueError")
     except ObjectDoesNotExist:
-        logger.warning("Actuator #" + actuator_id + " does not exists")
-        return HttpResponse("Actuator #" + actuator_id + " does not exists")
+        logger.warning("Actuator #" + str(actuator_id) + " does not exists")
+        return HttpResponse("Actuator #" + str(actuator_id) + " does not exists")
 
 def show_sensor(request, sensor_id):
     if not request.user.is_authenticated():
@@ -134,8 +134,8 @@ def show_sensor(request, sensor_id):
         logger.error("ValueError")
         return HttpResponse("ValueError")
     except ObjectDoesNotExist:
-        logger.warning("Sensor #" + sensor_id + " does not exists")
-        return HttpResponse("Sensor #" + sensor_id + " does not exists")
+        logger.warning("Sensor #" + str(sensor_id) + " does not exists")
+        return HttpResponse("Sensor #" + str(sensor_id) + " does not exists")
 
     
 def list_sensor_entries(request, sensor_id, start, end, limit):
@@ -165,8 +165,8 @@ def list_sensor_entries(request, sensor_id, start, end, limit):
         logger.error("ValueError")
         return HttpResponse("ValueError")
     except ObjectDoesNotExist:
-        logger.warning("Sensor #" + sensor_id + " does not exists")
-        return HttpResponse("Sensor #" + sensor_id + " does not exists")
+        logger.warning("Sensor #" + str(sensor_id) + " does not exists")
+        return HttpResponse("Sensor #" + str(sensor_id) + " does not exists")
     
 def list_entries(request, device_id, start, end, limit):
     if not request.user.is_authenticated():
@@ -212,8 +212,8 @@ def list_entries(request, device_id, start, end, limit):
         logger.error("ValueError")
         return HttpResponse("ValueError")
     except ObjectDoesNotExist:
-        logger.warning("Device #" + device_id + " does not exists")
-        return HttpResponse("Device #" + device_id + " does not exists")
+        logger.warning("Device #" + str(device_id) + " does not exists")
+        return HttpResponse("Device #" + str(device_id) + " does not exists")
 
 def show_entry(request, entry_id):
     if not request.user.is_authenticated():
@@ -226,8 +226,8 @@ def show_entry(request, entry_id):
         logger.error("ValueError")
         return HttpResponse("ValueError")
     except ObjectDoesNotExist:
-        logger.warning("Entry #" + entry_id + " does not exists")
-        return HttpResponse("Entry #" + entry_id + " does not exists")
+        logger.warning("Entry #" +str( entry_id) + " does not exists")
+        return HttpResponse("Entry #" +str( entry_id) + " does not exists")
 
 def set_device(request, device_id):
     # if not request.user.is_authenticated():
@@ -246,8 +246,8 @@ def set_device(request, device_id):
         logger.error("ValueError")
         return HttpResponse("ValueError")
     except ObjectDoesNotExist:
-        logger.warning("Device #" + device_id + " does not exists")
-        return HttpResponse("Device #" + device_id + " does not exists")
+        logger.warning("Device #" + str(device_id) + " does not exists")
+        return HttpResponse("Device #" + str(device_id) + " does not exists")
 
 
 def receive_device_data(request, device_id):
@@ -266,5 +266,5 @@ def receive_device_data(request, device_id):
         logger.error("ValueError")
         return HttpResponse("ValueError")
     except ObjectDoesNotExist:
-        logger.warning("Device #" + device_id + " does not exists")
-        return HttpResponse("Device #" + device_id + " does not exists")
+        logger.warning("Device #" + str(device_id) + " does not exists")
+        return HttpResponse("Device #" + str(device_id) + " does not exists")
