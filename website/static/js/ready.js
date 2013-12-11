@@ -1,4 +1,4 @@
-var api_url = "http://www.hpi.uni-potsdam.de/hirschfeld/bachelorprojects/2013H1/api/";
+var api_url = "http://172.16.17.231/api/";
 
 var device_data = null;
 var device_id = null;

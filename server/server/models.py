@@ -18,7 +18,6 @@ class Actuator(models.Model):
 
 class Device(models.Model):
     name = models.CharField(max_length = 100)
-    data_source = models.CharField(max_length = 200)
     interval = models.IntegerField()
 
     class Meta:
@@ -75,7 +74,7 @@ class Task(models.Model):
     command = models.CharField(max_length = 200) #reference to a function
     execution_timestamp = models.DateTimeField(auto_now = False)
     status = models.IntegerField() #on/off for now
+    sensor = models.ForeignKey('Sensor')
 
     class Meta:
         permissions = ()
-

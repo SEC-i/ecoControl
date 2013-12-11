@@ -8,12 +8,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import utc
 
 from server.models import Actuator, Device, Sensor, SensorEntry
+from functions import save_device_data, dispatch_device_request
 from helpers import create_json_response, create_json_response_from_QuerySet, is_in_group
 
 logger = logging.getLogger('webapi')
 
 def index(request):
-    return HttpResponse("BP2013H1")
+    return render(request, 'index.html')
 
 def api_index(request):
     return create_json_response(request, { 'version':0.1 })
@@ -236,18 +237,31 @@ def set_device(request, device_id):
         device = Device.objects.get(id = int(device_id))
 
         if request.method == 'POST':
-            plugin_name = device.name.lower()
-            try:
-                logger.debug("Trying to load 'plugins." + plugin_name + "'")
-                plugin = __import__('plugins.' + plugin_name, globals(), locals(), ['handle_post_data'], -1)
-            except ImportError:
-                plugin = __import__('plugins.default', globals(), locals(), ['handle_post_data'], -1)
-
-            plugin.handle_post_data(request.POST.dict())
+            dispatch_device_request(device, request.POST.dict())
             logger.debug("Post request triggered by " + request.META['REMOTE_ADDR'])
             return create_json_response(request, {"status": "ok"})
         else:
-            return create_json_response(request, {"status": "fail"})
+            return create_json_response(request, {"status": "failed"})
+    except ValueError:
+        logger.error("ValueError")
+        return HttpResponse("ValueError")
+    except ObjectDoesNotExist:
+        logger.warning("Device #" + device_id + " does not exists")
+        return HttpResponse("Device #" + device_id + " does not exists")
+
+
+def receive_device_data(request, device_id):
+    # if not request.user.is_authenticated():
+        # return create_json_response(request, {"permission": "denied"})
+
+    try:
+        if request.method == 'POST' and 'data' in request.POST:
+            # Get device to make sure that it exists
+            device = Device.objects.get(id = int(device_id))
+            if save_device_data(device, request.POST['data']):
+                return create_json_response(request, {"status": "ok"})
+
+        return create_json_response(request, {"status": "failed"})
     except ValueError:
         logger.error("ValueError")
         return HttpResponse("ValueError")

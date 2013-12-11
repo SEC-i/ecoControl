@@ -5,6 +5,9 @@ from django.contrib.auth.models import User
 
 from server.models import Device
 
+from functions import save_device_data
+from helpers import extract_data
+
 class SimpleTest(unittest.TestCase):
     @classmethod  
     def setUpClass(cls): 
@@ -12,7 +15,7 @@ class SimpleTest(unittest.TestCase):
         User.objects.create_user(username = "test_user", password = "demo123", first_name="test_fn", last_name="test_ln")
 
         # Add test device
-        Device.objects.create(name="test_name", data_source="test_data_source", interval=60)
+        Device.objects.create(name="test_name", interval=60)
 
     def setUp(self):
         # Every test needs a client.
@@ -29,8 +32,8 @@ class SimpleTest(unittest.TestCase):
         self.assertEqual(json.loads(response.content), {"login": "inactive"})
 
     def test_login_procedure(self):
-        # Issue a GET request.
-        response = self.client.post('/login/', {'username': 'test_user', 'password': 'demo123'})
+        # Issue a POST request.
+        response = self.client.post('/api/login/', {'username': 'test_user', 'password': 'demo123'})
 
         # Check that the response is 200 OK.
         self.assertEqual(response.status_code, 200)
@@ -62,5 +65,35 @@ class SimpleTest(unittest.TestCase):
         response = self.client.get('/device/' + str(d.id) + '/')
 
         # Check that the response contains the test device
-        self.assertEqual(json.loads(response.content), [{"data_source": "test_data_source", "id": 1, "name": "test_name", "interval": 60}])
+        self.assertEqual(json.loads(response.content), [{"id": 1, "name": "test_name", "interval": 60}])
+
+    # def test_save_device_data(self):
+    #     self.client.login(username='test_user', password='demo123')
+    #     response = self.client.post('/api/device/1/', {'data': json.dumps({"test_sensor": 14.5})})
+
+    def test_extract_data(self):
+        # Prepare test dictionary
+        test_data = {
+            'a': 1,
+            'c': 9,
+            'f': {
+                's': 'foo',
+                't': 'bar',
+                'r': {
+                    'foo': 'bar2'
+                },
+            },
+            'z': 'foo1',
+        }
+
+        # Check various combinations
+        self.assertEqual(extract_data(test_data,"a"), 1)
+        self.assertEqual(extract_data(test_data,"f/s"), 'foo')
+        self.assertEqual(extract_data(test_data,"f/{2}"), 'bar')
+        self.assertEqual(extract_data(test_data,"f/r/foo"), 'bar2')
+        self.assertEqual(extract_data(test_data,"z"), 'foo1')
+
+        # Check that extract_data return '' if key not found or any other error
+        self.assertEqual(extract_data(test_data,"r/s/t"), '')
+        self.assertEqual(extract_data(test_data,"//"), '')
         

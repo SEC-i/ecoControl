@@ -10,5 +10,5 @@ if __name__ == '__main__':
         try:
             time.sleep(1)
         except KeyboardInterrupt:
-            print "\nStopping crawler..."
+            print "\nStopping planner...\n"
             sys.exit(1)

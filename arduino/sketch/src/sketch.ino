@@ -45,7 +45,8 @@ void loop() {
     battery_value = (10 * (float)voltage_value * 4980)/1023000;
 
     // set led bar accordingly to solar value
-    led_bar_value = round(battery_value/17.5*10); // solar panel's max voltage 17.5V
+    led_bar_value = round((battery_value-10.0)/4.0*10); // min: 10V max: 14V
+    led_bar_value = max(min(led_bar_value,10),0); // make sure led_bar_value is in range 0-10
     led_bar.set_LED_Range(1,led_bar_value);
 
     // temperature mapping to celsius

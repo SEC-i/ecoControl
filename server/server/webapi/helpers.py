@@ -18,3 +18,17 @@ def is_in_group(user, group_id):
     Takes a user and a group id, and returns `True` if the user is in that group.
     """
     return Group.objects.get(id=group_id).user_set.filter(id=user.id).exists()
+
+def extract_data(dictionary, path):
+    """
+    Returns dictionary[a].values()[2][c] if path="a/{2}/c"
+    """
+    for item in path.split("/"):
+        try:
+            if item[:1]=="{" and item[-1:]=="}":
+                dictionary = dictionary.values()[int(item[1:-1])]
+            else:
+                dictionary = dictionary[item]
+        except:
+            return ""
+    return dictionary
