@@ -1,13 +1,28 @@
 import json
 from django.http import HttpResponse
-from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.models import Group
+from django.core import serializers
+
+class WebAPIEncoder(json.JSONEncoder):
+    def default(self, obj):
+        import calendar, datetime
+        # Support datetime instances
+        if isinstance(obj, datetime.datetime):
+            if obj.utcoffset() is not None:
+                obj = obj - obj.utcoffset()
+            milliseconds = int(
+                calendar.timegm(obj.timetuple()) * 1000 +
+                obj.microsecond / 1000
+            )
+            return milliseconds
+
+        return json.JSONEncoder.default(self, obj)
 
 def create_json_response(request, data):
     if 'callback' in request.GET:
-        response = HttpResponse( request.GET['callback'] + "(" + json.dumps(data, cls=DjangoJSONEncoder) + ");", content_type='application/json')
+        response = HttpResponse( request.GET['callback'] + "(" + json.dumps(data, cls=WebAPIEncoder) + ");", content_type='application/json')
     else:
-        response = HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
+        response = HttpResponse(json.dumps(data, cls=WebAPIEncoder), content_type='application/json')
     return response
 
 def create_json_response_from_QuerySet(request, data):
