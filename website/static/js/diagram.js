@@ -12,7 +12,6 @@ function draw_diagram(){
         series_data = [];
         $.each(data, function(index, value){
             $.each(value['data'], function(data_index, data_value){
-                data_value[0] = new Date(data_value[0]);
                 data_value[1] = parseFloat(data_value[1]);
             });
             
