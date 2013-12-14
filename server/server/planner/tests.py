@@ -1,11 +1,12 @@
 import os
 import time
 from datetime import datetime, timedelta
+
 from django.utils.timezone import utc
-import planner
+from django.test import TestCase
 
 from server.models import Sensor, SensorDelta, SensorEntry, SensorRule, Device, Task
-from django.test import TestCase
+from functions import *
 
 class TestPlanner(TestCase):
     @classmethod  
@@ -39,7 +40,7 @@ class TestPlanner(TestCase):
         self.sensor_delta.interval = 10 #seconds
         self.sensor_delta.timestamp = datetime.now().replace(tzinfo=utc)
         self.sensor_delta.save()
-        #planner.functions.update_delta()
+        #update_delta()
 
     def testRule(self):
         rule = SensorRule()
@@ -50,7 +51,7 @@ class TestPlanner(TestCase):
         rule.target_function = "test"
         rule.save()
 
-        self.assertTrue(planner.functions.check_rules())
+        self.assertTrue(check_rules())
 
         rule.delete()
 
@@ -74,7 +75,7 @@ class TestPlanner(TestCase):
         entry2.save()
 
         # new delta is 700-600 = 100,so sensor_delta should get bigger
-        planner.functions.update_delta()
+        update_delta()
 
         # get the updated sensor_delta (apparantly isnt tracked in sensor_delta)
         sensor_delta_updated = SensorDelta.objects.get(sensor_id= self.sensor_delta.sensor_id).delta
@@ -96,7 +97,7 @@ class TestPlanner(TestCase):
         rule.save()
 
 
-        planner.functions.create_or_update_task(rule, self.sensor_delta)
+        create_or_update_task(rule, self.sensor_delta)
 
         tasks = Task.objects.filter(command= "test")
 
