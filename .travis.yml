@@ -12,11 +12,8 @@ install:
    # Travis is currently working on
   - pip install -q Django==$DJANGO_VERSION --use-mirrors
   - pip install south
-# Tell Travis how to run the test script itself
-before_script:
-  - cd server
 script:
-  - python manage.py test server.webapi
-  - python manage.py test server.planner
+  - cd server
+  - python manage.py test
   - cd ../sensor_mocking
   - python test.py
