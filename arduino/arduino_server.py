@@ -58,7 +58,7 @@ def set_data():
     return "0"
 
 def send_data():
-    # Schedule timer to execute repeat_crawl_and_save_data again
+    # Schedule timer to execute send_data again
     Timer(interval, send_data).start()
 
     # send 0 to request data
@@ -76,5 +76,5 @@ if __name__ == '__main__':
     Timer(5.0, send_data).start()
     
     # Start flask webserver
-    app.run(host="0.0.0.0",debug = True, port = 9002)
+    app.run(host="0.0.0.0",debug = True, port = 9002, use_reloader=False)
 

@@ -159,7 +159,7 @@ function show_device(id, device_name) {
     hide_all();
 
     $("#refresh_button").click(function(event) {
-        var range_end = new Date().getTime();
+        range_end = new Date().getTime();
         $("#sensor_selection").html('');
         draw_diagram();
     });
