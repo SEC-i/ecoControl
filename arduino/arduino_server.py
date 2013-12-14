@@ -58,7 +58,7 @@ def set_data():
     return "0"
 
 def send_data():
-    # Schedule timer to execute repeat_crawl_and_save_data again
+    # Schedule timer to execute send_data again
     Timer(interval, send_data).start()
 
     # send 0 to request data

@@ -11,6 +11,10 @@ app = Flask(__name__)
 simulation = BHKW_Simulation()
 # devices.append(HeatReservoir(device_id=2))
 
+# send_data
+interval = 60.0
+target_urls = ["http://172.16.64.130/api/device/1/data/"] # list target urls here
+
 
 @app.route('/device/<int:device_id>/sensor/<int:sensor_id>', methods = ['GET'])
 def get_sensor(device_id,sensor_id):
@@ -59,7 +63,24 @@ def hello():
     return "nothing here"
 
 
+def send_data():
+    # Schedule timer to execute send_data again
+    Timer(interval, send_data).start()
+
+    device = next(dev for dev in simulation.devices  if dev.device_id == device_id)
+    device_data = {}
+    for sensor in device.sensors:
+        #sensor  = device.get_mapped_sensor(sensor.id)
+        device_data[sensor.name] = sensor.value
+
+    post_data = [('data', json.dumps(device_data))]
+
+    for url in target_urls:
+        urlopen(url, urlencode(post_data))
+
+
 
 if __name__ == '__main__':
     simulation.start()
+    send_data()
     app.run(host="0.0.0.0",debug = True, port = 9000)

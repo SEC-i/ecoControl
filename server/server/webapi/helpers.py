@@ -20,7 +20,10 @@ class WebAPIEncoder(json.JSONEncoder):
 
 def create_json_response(request, data):
     if 'callback' in request.GET:
-        response = HttpResponse( request.GET['callback'] + "(" + json.dumps(data, cls=WebAPIEncoder) + ");", content_type='application/json')
+        response = HttpResponse(
+            "%s(%s);" % (request.GET['callback'], json.dumps(data, cls=WebAPIEncoder)),
+            content_type='application/json'
+        )
     else:
         response = HttpResponse(json.dumps(data, cls=WebAPIEncoder), content_type='application/json')
     return response
