@@ -1,7 +1,12 @@
 import json
+import logging
+
 from django.http import HttpResponse
 from django.contrib.auth.models import Group
 from django.core import serializers
+from django.core.exceptions import PermissionDenied
+
+logger = logging.getLogger('webapi')
 
 class WebAPIEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -35,7 +40,10 @@ def is_in_group(user, group_id):
     """
     Takes a user and a group id, and returns `True` if the user is in that group.
     """
-    return Group.objects.get(id=group_id).user_set.filter(id=user.id).exists()
+    try:
+        return Group.objects.get(id=group_id).user_set.filter(id=user.id).exists()
+    except Group.DoesNotExist:
+        logger.warning("Group #%s does not exsist." % group_id)
 
 def extract_data(dictionary, path):
     """
@@ -50,3 +58,8 @@ def extract_data(dictionary, path):
         except:
             return ""
     return dictionary
+
+def check_user_permissions(request):
+    if not request.user.is_authenticated():
+        raise PermissionDenied
+    
