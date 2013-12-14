@@ -1,4 +1,7 @@
 #!flask/bin/python
+import json
+from urllib import urlopen, urlencode
+from threading import Timer
 from flask import Flask, jsonify, request
 import BHKW
 from PeakLoadBoiler import PlBoiler
@@ -67,7 +70,7 @@ def send_data():
     # Schedule timer to execute send_data again
     Timer(interval, send_data).start()
 
-    device = next(dev for dev in simulation.devices  if dev.device_id == device_id)
+    device = next(dev for dev in simulation.devices  if dev.device_id == 0)
     device_data = {}
     for sensor in device.sensors:
         #sensor  = device.get_mapped_sensor(sensor.id)
