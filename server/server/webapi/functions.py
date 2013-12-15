@@ -2,7 +2,7 @@ import json
 import logging
 from datetime import datetime
 
-from django.utils.timezone import cet
+from django.utils.timezone import utc
 
 from server.models import Sensor, SensorEntry
 from helpers import extract_data
@@ -20,7 +20,7 @@ def save_device_data(device, data):
         logger.debug("Saving data for device #" + str(device.id))
 
         # remember the time of retrieval
-        time = datetime.now().replace(tzinfo=cet)
+        time = datetime.now().replace(tzinfo=utc)
 
         new_entries = []
         for sensor in sensors:

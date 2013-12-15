@@ -5,7 +5,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.http import require_POST
-from django.utils.timezone import cet
+from django.utils.timezone import utc
 
 from server.models import Actuator, Device, Sensor, SensorEntry
 from functions import save_device_data, dispatch_device_request
@@ -70,9 +70,9 @@ def list_entries(request, device_id, start, end):
 
     start_time = end_time = 0
     if start:
-            start_time = datetime.fromtimestamp(int(start)/1000.0).replace(tzinfo=cet)
+            start_time = datetime.fromtimestamp(int(start)/1000.0).replace(tzinfo=utc)
     if end:
-            end_time = datetime.fromtimestamp(int(end)/1000.0).replace(tzinfo=cet)
+            end_time = datetime.fromtimestamp(int(end)/1000.0).replace(tzinfo=utc)
 
     output = []
     for sensor in sensors:
