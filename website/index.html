@@ -10,16 +10,9 @@
     <title>BP2013H1 - Website</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="./static/css/bootstrap.css" rel="stylesheet">
-
-    <!-- jQuery UI core CSS -->
-    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
-
+    <link href="./static/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom styles -->
     <link href="./static/css/basic.css" rel="stylesheet">
-
-    <!-- Just for debugging purposes. Don't actually copy this line! -->
-    <!--[if lt IE 9]><script src="../../docs-assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -29,7 +22,6 @@
   </head>
 
   <body>
-
     <!-- Fixed navbar -->
     <div class="navbar navbar-default navbar-static-top" role="navigation">
       <div class="container">
@@ -59,7 +51,7 @@
       </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Login Modal Box -->
     <div class="modal fade" id="login_box" tabindex="-1" role="dialog" aria-labelledby="sign_in_label" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -78,9 +70,8 @@
       </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
 
+    <!-- Welcome page -->
     <div class="container collapse" id="home">
-
-      <!-- Main component for a primary marketing message or call to action -->
       <div class="jumbotron">
         <h2>Welcome</h2>
         <p>This is a prototype.</p>
@@ -88,9 +79,8 @@
 
     </div> <!-- /container -->
 
+    <!-- Device page -->
     <div class="container collapse" id="devices">
-
-      <!-- Main component for a primary marketing message or call to action -->
       <div class="jumbotron">
         <h2 id="device_name">Device</h2>
         <div id="diagram_container"></div>
@@ -109,9 +99,8 @@
 
     </div> <!-- /container -->
 
+    <!-- Settings page -->
     <div class="container collapse" id="settings">
-
-      <!-- Main component for a primary marketing message or call to action -->
       <div class="jumbotron">
         <h2>Settings</h2>
         <p>This is the setting page.</p>
@@ -119,6 +108,7 @@
 
     </div> <!-- /container -->
 
+    <!-- Footer -->
     <div id="footer" class="collapse">
       <div class="container">
         <p class="text-muted credit">Copyright &copy; BP2013H1</p>
@@ -129,9 +119,9 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <script src="./static/js/jquery-1.10.2.min.js"></script>
     <script src="./static/js/bootstrap.min.js"></script>
+
     <script src="./static/js/hs/highstock.js"></script>
     <script src="./static/js/hs/modules/no-data-to-display.js"></script>
     <script src="./static/js/hs/modules/exporting.js"></script>
