@@ -6,9 +6,6 @@ BP2013H1
 ## arduino
 This folder contains arduino related code for our plant project.
 
-## misc
-This folder contains related content
-
 ## sensor_mocking
 This folder contains our sensor mocks
 
