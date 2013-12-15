@@ -2,7 +2,7 @@ import os
 import time
 from datetime import datetime, timedelta
 
-from django.utils.timezone import utc
+from django.utils.timezone import cet
 from django.test import TestCase
 
 from server.models import Sensor, SensorDelta, SensorEntry, SensorRule, Device, Task
@@ -18,16 +18,16 @@ class TestPlanner(TestCase):
         device = Device.objects.create(name="arduino",interval=60)
         sensor = Sensor.objects.create(name="Plant #2", device=device, key_name="plant2_value", unit="hpi",group=0)
 
-        SensorEntry.objects.create(sensor=sensor,value = 547,timestamp=datetime.now().replace(tzinfo=utc)-timedelta(seconds=10))
-        SensorEntry.objects.create(sensor=sensor,value = 546,timestamp=datetime.now().replace(tzinfo=utc)-timedelta(seconds=9))
-        SensorEntry.objects.create(sensor=sensor,value = 545,timestamp=datetime.now().replace(tzinfo=utc)-timedelta(seconds=8))
-        SensorEntry.objects.create(sensor=sensor,value = 548,timestamp=datetime.now().replace(tzinfo=utc)-timedelta(seconds=7))
-        SensorEntry.objects.create(sensor=sensor,value = 547,timestamp=datetime.now().replace(tzinfo=utc)-timedelta(seconds=6))
-        SensorEntry.objects.create(sensor=sensor,value = 544,timestamp=datetime.now().replace(tzinfo=utc)-timedelta(seconds=5))
-        SensorEntry.objects.create(sensor=sensor,value = 543,timestamp=datetime.now().replace(tzinfo=utc)-timedelta(seconds=4))
-        SensorEntry.objects.create(sensor=sensor,value = 542,timestamp=datetime.now().replace(tzinfo=utc)-timedelta(seconds=3))
-        SensorEntry.objects.create(sensor=sensor,value = 541,timestamp=datetime.now().replace(tzinfo=utc)-timedelta(seconds=2))
-        SensorEntry.objects.create(sensor=sensor,value = 540,timestamp=datetime.now().replace(tzinfo=utc)-timedelta(seconds=1))
+        SensorEntry.objects.create(sensor=sensor,value = 547,timestamp=datetime.now().replace(tzinfo=cet)-timedelta(seconds=10))
+        SensorEntry.objects.create(sensor=sensor,value = 546,timestamp=datetime.now().replace(tzinfo=cet)-timedelta(seconds=9))
+        SensorEntry.objects.create(sensor=sensor,value = 545,timestamp=datetime.now().replace(tzinfo=cet)-timedelta(seconds=8))
+        SensorEntry.objects.create(sensor=sensor,value = 548,timestamp=datetime.now().replace(tzinfo=cet)-timedelta(seconds=7))
+        SensorEntry.objects.create(sensor=sensor,value = 547,timestamp=datetime.now().replace(tzinfo=cet)-timedelta(seconds=6))
+        SensorEntry.objects.create(sensor=sensor,value = 544,timestamp=datetime.now().replace(tzinfo=cet)-timedelta(seconds=5))
+        SensorEntry.objects.create(sensor=sensor,value = 543,timestamp=datetime.now().replace(tzinfo=cet)-timedelta(seconds=4))
+        SensorEntry.objects.create(sensor=sensor,value = 542,timestamp=datetime.now().replace(tzinfo=cet)-timedelta(seconds=3))
+        SensorEntry.objects.create(sensor=sensor,value = 541,timestamp=datetime.now().replace(tzinfo=cet)-timedelta(seconds=2))
+        SensorEntry.objects.create(sensor=sensor,value = 540,timestamp=datetime.now().replace(tzinfo=cet)-timedelta(seconds=1))
 
 
     def setUp(self):
@@ -38,7 +38,7 @@ class TestPlanner(TestCase):
         self.sensor_delta.sensor_id = self.sensor.id
         self.sensor_delta.delta =  0.3
         self.sensor_delta.interval = 10 #seconds
-        self.sensor_delta.timestamp = datetime.now().replace(tzinfo=utc)
+        self.sensor_delta.timestamp = datetime.now().replace(tzinfo=cet)
         self.sensor_delta.save()
         #update_delta()
 
@@ -63,7 +63,7 @@ class TestPlanner(TestCase):
         entry = SensorEntry()
         entry.sensor_id = self.sensor.id
         entry.value = 600
-        entry.timestamp = datetime.now().replace(tzinfo=utc)
+        entry.timestamp = datetime.now().replace(tzinfo=cet)
         entry.save()
 
         time.sleep(1.1)
@@ -71,7 +71,7 @@ class TestPlanner(TestCase):
         entry2 = SensorEntry()
         entry2.sensor_id = self.sensor.id
         entry2.value = 700
-        entry2.timestamp = datetime.now().replace(tzinfo=utc)
+        entry2.timestamp = datetime.now().replace(tzinfo=cet)
         entry2.save()
 
         # new delta is 700-600 = 100,so sensor_delta should get bigger
@@ -103,7 +103,7 @@ class TestPlanner(TestCase):
 
         self.assertTrue(len(tasks)==1)
         #execution is in the future
-        self.assertTrue(tasks[0].execution_timestamp > datetime.now().replace(tzinfo=utc))
+        self.assertTrue(tasks[0].execution_timestamp > datetime.now().replace(tzinfo=cet))
 
 
 

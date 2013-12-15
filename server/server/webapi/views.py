@@ -5,7 +5,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.http import require_POST
-from django.utils.timezone import utc
+from django.utils.timezone import cet
 
 from server.models import Actuator, Device, Sensor, SensorEntry
 from functions import save_device_data, dispatch_device_request
@@ -63,33 +63,28 @@ def list_items(request, model, device_id=None, limit=10):
 
     return create_json_response_from_QuerySet(request, items)
 
-def list_entries(request, device_id, start, end, limit):
+def list_entries(request, device_id, start, end):
     check_user_permissions(request)
 
     sensors = Sensor.objects.filter(device_id = int(device_id)).order_by('name')
 
     start_time = end_time = 0
     if start:
-            start_time = datetime.fromtimestamp(int(start)/1000.0).replace(tzinfo=utc)
+            start_time = datetime.fromtimestamp(int(start)/1000.0).replace(tzinfo=cet)
     if end:
-            end_time = datetime.fromtimestamp(int(end)/1000.0).replace(tzinfo=utc)
+            end_time = datetime.fromtimestamp(int(end)/1000.0).replace(tzinfo=cet)
 
     output = []
     for sensor in sensors:
         if not is_in_group(request.user, sensor.group):
             continue
 
-        entries = SensorEntry.objects.filter(sensor = sensor)
+        entries = SensorEntry.objects.filter(sensor__id = sensor.id)
         if start:
             entries = entries.filter(timestamp__gte = start_time)
 
         if end:
             entries = entries.filter(timestamp__lte = end_time)
-
-        entries = entries.order_by('timestamp')
-
-        if limit:
-            entries = entries[:int(limit)]
 
         output.append({
                 'id': sensor.id,

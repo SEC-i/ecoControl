@@ -1,7 +1,7 @@
 import logging
 
 from datetime import datetime, timedelta
-from django.utils.timezone import utc
+from django.utils.timezone import cet
 from server.models import  Sensor, SensorEntry, SensorRule, SensorDelta, Task, Device
 
 logger = logging.getLogger('planner')
@@ -24,7 +24,7 @@ def update_delta():
 
 
         newest_data = SensorEntry.objects.filter(sensor_id= sensor.id).order_by('-timestamp')[0]
-        date_before_interval = datetime.now().replace(tzinfo=utc) - timedelta(seconds=int(sensor_delta.interval))
+        date_before_interval = datetime.now().replace(tzinfo=cet) - timedelta(seconds=int(sensor_delta.interval))
         #get the first dataSet from the data before the interval
         intervall_ago_data = SensorEntry.objects.filter(sensor_id= sensor.id, timestamp__lte= date_before_interval).order_by('-timestamp')
         
@@ -41,7 +41,7 @@ def update_delta():
             sensor_delta.delta = 0.3 * float(sensor_delta.delta) + 0.7 * current_delta
 
 
-        sensor_delta.timestamp = datetime.now().replace(tzinfo=utc)
+        sensor_delta.timestamp = datetime.now().replace(tzinfo=cet)
         sensor_delta.save()
 
 
@@ -117,7 +117,7 @@ def estimate_date(threshold,sensor_delta, sensor_rule):
     # thresh = current + delta*num_intervals
     num_intervals = (float(sensor_rule.threshold) -  current_value ) / float(sensor_delta.delta)
     estimated_date = datetime.now() + timedelta(seconds=(num_intervals * float(sensor_delta.interval)))
-    return estimated_date.replace(tzinfo=utc)
+    return estimated_date.replace(tzinfo=cet)
 
 
 
@@ -159,7 +159,7 @@ def get_tasks():
 # delta.sensor_id = 1
 # delta.delta = 5.0
 # delta.interval = 60 * 5
-# delta.timestamp = datetime.now().replace(tzinfo=utc)
+# delta.timestamp = datetime.now().replace(tzinfo=cet)
 # delta.save()
 
 

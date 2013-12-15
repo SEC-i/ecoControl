@@ -2,9 +2,12 @@
 import threading, time
 import logging
 
+from django.utils.timezone import cet
+
+from server.helpers import write_pidfile_or_fail
+
 from functions import *
 import commands
-from server.helpers import write_pidfile_or_fail
 
 logger = logging.getLogger('planner')
 
@@ -46,7 +49,7 @@ class Planner(threading.Thread):
                 self.running_tasks.remove(task)
 
         for task in get_tasks():
-            if task.execution_timestamp <= datetime.now().replace(tzinfo=utc) and task.status == 0:
+            if task.execution_timestamp <= datetime.now().replace(tzinfo=cet) and task.status == 0:
                 t = TaskThread(task)
                 self.running_tasks.append(t)
                 logger.debug("execute task" + task.command)
