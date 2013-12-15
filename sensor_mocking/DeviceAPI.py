@@ -70,7 +70,7 @@ def send_data():
     # Schedule timer to execute send_data again
     Timer(interval, send_data).start()
 
-    device = next(dev for dev in simulation.devices  if dev.device_id == 0)
+    device = simulation.bhkw
     device_data = {}
     for sensor in device.sensors:
         #sensor  = device.get_mapped_sensor(sensor.id)
@@ -86,4 +86,4 @@ def send_data():
 if __name__ == '__main__':
     simulation.start()
     send_data()
-    app.run(host="0.0.0.0",debug = True, port = 9000)
+    app.run(host="0.0.0.0",debug = True, port = 9000, use_reloader=False)
