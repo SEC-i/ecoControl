@@ -86,7 +86,7 @@ class TestPlanner(TestCase):
         self.sensor_delta.delete()
 
     def testTaskCreation(self):
-        """create a rule  which has a threshold that is not yet reached and a delta, which will
+        """create a rule which has a threshold that is not yet reached and a delta, which will
         reach the delta in near future"""
         rule = SensorRule()
         rule.sensor_id = self.sensor.id
@@ -99,7 +99,7 @@ class TestPlanner(TestCase):
 
         create_or_update_task(rule, self.sensor_delta)
 
-        tasks = Task.objects.filter(command= "test")
+        tasks = Task.objects.filter(command = "test")
 
         self.assertTrue(len(tasks)==1)
         #execution is in the future
@@ -110,7 +110,7 @@ class TestPlanner(TestCase):
 
         
     def tearDown(self):
-        for rule in SensorRule.objects.filter(target_function= "test"):
+        for rule in SensorRule.objects.filter(target_function = "test"):
             rule.delete()
-        for task in Task.objects.filter(command= "test"):
+        for task in Task.objects.filter(command = "test"):
             task.delete()
