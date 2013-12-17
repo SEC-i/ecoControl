@@ -16,7 +16,7 @@ class WebAPIEncoder(json.JSONEncoder):
         if isinstance(obj, datetime.datetime):
             if obj.utcoffset() is not None:
                 obj = obj - obj.utcoffset()
-            obj = pytz.timezone('CET').localize(obj)
+            obj.replace(tzinfo=pytz.timezone('CET'))
             milliseconds = int(
                 calendar.timegm(obj.timetuple()) * 1000 +
                 obj.microsecond / 1000
