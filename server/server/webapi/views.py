@@ -53,8 +53,11 @@ def show_item(request, item_id, model):
 
     return create_json_response(request, item)
 
-def list_items(request, model, device_id=None, limit=10):
+def list_items(request, model, limit, device_id=None):
     check_user_permissions(request)
+
+    if limit is None:
+        limit = 10
 
     if device_id is None:
         items = model.objects.all().order_by('name')[:int(limit)]
