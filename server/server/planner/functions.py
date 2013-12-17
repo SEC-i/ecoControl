@@ -53,11 +53,11 @@ def update_delta():
             sensor_delta.delta = None
 
         try:
-            latest_data =  SensorEntry.objects.filter(sensor_id= sensor.id).order_by('-timestamp')[0]
+            latest_data =  SensorEntry.objects.filter(sensor_id= sensor.id).latest('timestamp')
             
             date_before_interval = datetime.utcnow().replace(tzinfo=utc) - timedelta(seconds=int(sensor_delta.interval))
             #get the first dataSet from the data before the interval
-            intervall_ago_data = SensorEntry.objects.filter(sensor_id= sensor.id, timestamp__lte= date_before_interval).order_by('-timestamp')[0]
+            intervall_ago_data = SensorEntry.objects.filter(sensor_id= sensor.id, timestamp__lte= date_before_interval).latest('timestamp')
  
 
             current_delta  = float(latest_data.value) - float(intervall_ago_data.value)
