@@ -8,7 +8,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write('Starting planner thread...')
-        Planner(frequency=60)
+        Planner()
         # wait until KeyboardInterrupt
         while True:
             try:
