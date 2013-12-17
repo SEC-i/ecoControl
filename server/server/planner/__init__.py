@@ -14,7 +14,7 @@ logger = logging.getLogger('planner')
 
 # Planner thread class
 class Planner(threading.Thread):
-    def __init__(self, frequency=60):
+    def __init__(self, frequency=10*60):
         threading.Thread.__init__(self)
         self.daemon = True
         self.frequency = frequency
