@@ -51,10 +51,10 @@ class SimpleTest(unittest.TestCase):
         self.assertEqual(json.loads(response.content), {"login": "active", "user": "test_fn test_ln"})
 
     def test_permission_denied(self):
-        # test multipe urls for {"permission": "denied"}
-        for url in ['/api/devices/', '/api/device/1/', '/api/device/1/sensors/', '/api/device/1/entries/', '/api/sensor/1/', '/api/sensor/1/entries/', '/api/entry/1/', '/api/device/1/']:
+        # test multipe protected urls
+        for url in ['/api/devices/', '/api/device/1/actuators/', '/api/device/1/sensors/', '/api/device/1/entries/', '/api/device/1/', '/api/sensor/1/', '/api/entry/1/']:
             response = self.client.get(url)
-            self.assertEqual(json.loads(response.content), {"permission": "denied"})
+            self.assertEqual(response.status_code, 403) 
 
     def test_add_device(self):
         # Log in client
@@ -65,7 +65,7 @@ class SimpleTest(unittest.TestCase):
         response = self.client.get('/api/device/' + str(d.id) + '/')
 
         # Check that the response contains the test device
-        self.assertEqual(json.loads(response.content), [{"id": 1, "name": "test_name", "interval": 60}])
+        self.assertEqual(json.loads(response.content), [{"id": d.id, "name": d.name, "interval": d.interval}])
 
     # def test_save_device_data(self):
     #     self.client.login(username='test_user', password='demo123')

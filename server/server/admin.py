@@ -1,5 +1,5 @@
 from django.contrib import admin
-from server.models import *
+from models import *
 
 # Register models
 admin.site.register(Actuator)

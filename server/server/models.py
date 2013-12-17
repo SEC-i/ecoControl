@@ -56,8 +56,6 @@ class SensorDelta(models.Model):
     interval = models.CharField(max_length = 200) #in seconds
     timestamp = models.DateTimeField(auto_now = False)
 
-
-
     class Meta:
         permissions = ()
 

@@ -31,18 +31,20 @@ function draw_diagram(){
         $(".sensor_selection_item").change(function(){
             var all_unchecked = true;
             $(".sensor_selection_item").each(function(){
-                if($(this).is(":checked")){
-                    chart.series[$(this).val()].show();
+                // set visibility without redraw
+                chart.series[$(this).val()].setVisible($(this).is(":checked"), false)
+                // check if all buttons have been unchecked
+                if($(this).is(":checked")){  
                     all_unchecked = false;
-                }else{
-                    chart.series[$(this).val()].hide();
                 }
             });
             if(all_unchecked){
-                $.each(chart.series, function(index, value){
-                    value.show();
+                $.each(chart.series, function(index, series){
+                    series.setVisible(true, false);
                  });
             }
+            // finally redraw chart
+            chart.redraw()
         });
 
         chart = new Highcharts.StockChart({
