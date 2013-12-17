@@ -7,7 +7,7 @@ int relay_pin = 4;
 int plant1_value = 0;
 int plant2_value = 0;
 int plant3_value = 0;
-int voltage_value = 0;
+long voltage_value = 0;
 int temperature_value = 0;
 int light_value = 0;
 
@@ -41,8 +41,18 @@ void loop() {
     light_value = analogRead(A4);
     temperature_value = analogRead(A5);
 
+    // voltage probing (takes 2s)
+    long sum=0;
+    for(int i=0;i<1000;i++)
+    {  
+        sum=voltage_value+sum;
+        voltage_value=analogRead(A3);
+        delay(2);
+    }   
+    sum=sum/1000;
+
     // voltage mapping
-    battery_value = (10 * (float)voltage_value * 4980)/1023000;
+    battery_value = 10*sum*4980/(1023.00*1000) * 12.96/14.07; // voltmeter used to determine last factor
 
     // set led bar accordingly to solar value
     led_bar_value = round((battery_value-10.0)/4.0*10); // min: 10V max: 14V
@@ -70,7 +80,7 @@ void loop() {
         } else if (incomingByte == 51) { // turn relay on if input was ASCII "3"
             digitalWrite(relay_pin,HIGH);
             Serial.println("{ \"relay_state\": 1 }");
-            relay_delay = 30 *4; //30s
+            relay_delay = 30 /2; //30s
             relay_delay_counting = true;
         } else { // otherwise, reply with sensor data
             
@@ -94,8 +104,6 @@ void loop() {
         delay(100);
         digitalWrite(led_pin,LOW);
     } else {
-        // delay the loop if there was no input
-        delay(250);
         if(relay_delay_counting){
             if(relay_delay > 0){
                 relay_delay--;
