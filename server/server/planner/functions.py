@@ -21,7 +21,7 @@ def update_delta():
         try:
             latest_data =  SensorEntry.objects.filter(sensor_id= sensor.id).order_by('-timestamp')[0]
             
-            date_before_interval = datetime.now().replace(tzinfo=utc) - timedelta(seconds=int(sensor_delta.interval))
+            date_before_interval = datetime.utcnow().replace(tzinfo=utc) - timedelta(seconds=int(sensor_delta.interval))
             #get the first dataSet from the data before the interval
             intervall_ago_data = SensorEntry.objects.filter(sensor_id= sensor.id, timestamp__lte= date_before_interval).order_by('-timestamp')[0]
  
@@ -35,7 +35,7 @@ def update_delta():
                 #weight the deltas
                 sensor_delta.delta = 0.3 * float(sensor_delta.delta) + 0.7 * current_delta
 
-            sensor_delta.timestamp = datetime.now().replace(tzinfo=utc)
+            sensor_delta.timestamp = datetime.utcnow().replace(tzinfo=utc)
             sensor_delta.save()
         except SensorEntry.DoesNotExist:
             continue
@@ -105,7 +105,7 @@ def estimate_date(threshold,sensor_delta, sensor_rule):
         latest_value = float(latest_entry.value)
         # thresh = current + delta*num_intervals
         num_intervals = (float(sensor_rule.threshold) -  latest_value ) / float(sensor_delta.delta)
-        estimated_date = datetime.now() + timedelta(seconds = (num_intervals * float(sensor_delta.interval)))
+        estimated_date = datetime.utcnow() + timedelta(seconds = (num_intervals * float(sensor_delta.interval)))
         return estimated_date.replace(tzinfo=utc)
     except SensorEntry.DoesNotExist:
         logger.debug("no sensor entries available for estimation")
@@ -117,3 +117,35 @@ def timedelta_to_seconds(time_delta):
     return float(time_delta.days * 3600 * 24 + time_delta.seconds + round(time_delta.microseconds / (10**6)))
 
 
+
+#some datafilling for a fresh database
+# dev = Device()
+# dev.name = "arduino"
+# dev.data_source = u"http://172.16.19.114:9002/get/"
+# dev.interval = 30
+# dev.save()
+
+# sens = Sensor()
+# sens.key_name = "plant2_value"
+# sens.device_id = 1
+# sens.name = "Plant #2"
+# sens.unit = "hpi"
+# sens.group = 0
+# sens.save()
+# for rule in SensorRule.objects.all():
+#     rule.delete()
+
+# rule = SensorRule()
+# rule.sensor_id = 1
+# rule.threshold = 598
+# rule.target_function = "water_plants"
+# rule.comparison = "<"
+# rule.save()
+
+# delta = SensorDelta()
+# delta.id = 1
+# delta.sensor_id = 1
+# delta.delta = 5.0
+# delta.interval = 60 * 5
+# delta.timestamp = datetime.utcnow().replace(tzinfo=utc)
+# delta.save()
