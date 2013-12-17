@@ -34,27 +34,11 @@ def simple_battery_check():
 
         if summed_value < 11.0:
             raspberrypi.handle_post_data({'switch_number':1, 'switch_state':'on'}) #switch on charger
-        else if summed_value > 13.0:
+        elif summed_value > 13.0:
             raspberrypi.handle_post_data({'switch_number':1, 'switch_state':'off'}) #switch off charger
     
     except SensorEntry.DoesNotExist:
         pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # crawl data and save sensor entries
 def update_delta():
@@ -165,37 +149,3 @@ def estimate_date(threshold,sensor_delta, sensor_rule):
 
 def timedelta_to_seconds(time_delta):
     return float(time_delta.days * 3600 * 24 + time_delta.seconds + round(time_delta.microseconds / (10**6)))
-
-
-
-#some datafilling for a fresh database
-# dev = Device()
-# dev.name = "arduino"
-# dev.data_source = u"http://172.16.19.114:9002/get/"
-# dev.interval = 30
-# dev.save()
-
-# sens = Sensor()
-# sens.key_name = "plant2_value"
-# sens.device_id = 1
-# sens.name = "Plant #2"
-# sens.unit = "hpi"
-# sens.group = 0
-# sens.save()
-# for rule in SensorRule.objects.all():
-#     rule.delete()
-
-# rule = SensorRule()
-# rule.sensor_id = 1
-# rule.threshold = 598
-# rule.target_function = "water_plants"
-# rule.comparison = "<"
-# rule.save()
-
-# delta = SensorDelta()
-# delta.id = 1
-# delta.sensor_id = 1
-# delta.delta = 5.0
-# delta.interval = 60 * 5
-# delta.timestamp = datetime.utcnow().replace(tzinfo=utc)
-# delta.save()
