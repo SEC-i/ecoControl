@@ -25,14 +25,20 @@ class Planner(threading.Thread):
         # start thread immediately
         self.start()
         self.running_tasks = []
+
     def run(self):
         if self.is_unique_thread:
             print " * Planner started..."
             logger.debug("planner started")
+            
+
+
             while(True):
-                update_delta()
-                check_rules()
-                self.check_and_execute_tasks()
+                simple_moisture_check()
+                simple_battery_check()
+                #update_delta()
+                #check_rules()
+                #self.check_and_execute_tasks()
                 # log function calls if frequency >= 10 seconds
                 if self.frequency>9:
                     logger.debug("Planner function called")
@@ -54,6 +60,9 @@ class Planner(threading.Thread):
                 t = TaskThread(task)
                 self.running_tasks.append(t)
                 logger.debug("execute task" + task.command)
+
+
+
 
 class TaskThread(threading.Thread):
     def __init__(self,task):

@@ -3,8 +3,58 @@ import logging
 from datetime import datetime, timedelta
 from django.utils.timezone import utc
 from server.models import  Sensor, SensorEntry, SensorRule, SensorDelta, Task, Device
+from server.webapi.plugins import arduino,raspberrypi
 
 logger = logging.getLogger('planner')
+
+
+def simple_moisture_check():
+    sensor_ids = [1,2,3] #plant ids
+    try:
+        sensor_entries = SensorEntry.objects.filter(sensor__in = sensor_ids).order_by("-timestamp")[:3]
+        summed_value = 0.0
+        for sensor_entry in sensor_entries:
+            summed_value += float(sensor_entry.value)
+        summed_value /= 3.0
+
+        if summed_value < 500:
+            arduino.handle_post_data({'water_plants':1}) #send a POST to arduino
+    
+    except SensorEntry.DoesNotExist:
+        pass
+
+
+def simple_battery_check():
+    try:
+        sensor_entries = SensorEntry.objects.filter(sensor_id = 4).order_by("-timestamp")[:3]
+        summed_value = 0.0
+        for sensor_entry in sensor_entries:
+            summed_value += float(sensor_entry.value)
+        summed_value /= 3.0
+
+        if summed_value < 11.0:
+            raspberrypi.handle_post_data({'switch_number':1, 'switch_state':'on'}) #switch on charger
+        else if summed_value > 13.0:
+            raspberrypi.handle_post_data({'switch_number':1, 'switch_state':'off'}) #switch off charger
+    
+    except SensorEntry.DoesNotExist:
+        pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # crawl data and save sensor entries
 def update_delta():
