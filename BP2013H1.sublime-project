@@ -3,7 +3,7 @@
 	[
 		{
 			"follow_symlinks": false,
-			"path": "../BP2013H1"
+			"path": "."
 		}
 	]
 }

@@ -19,6 +19,7 @@ class Actuator(models.Model):
 class Device(models.Model):
     name = models.CharField(max_length = 100)
     interval = models.IntegerField()
+    control_unit_url = models.URLField()
 
     class Meta:
         permissions = ()
