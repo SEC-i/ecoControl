@@ -24,19 +24,20 @@
 	 <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
 	 <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
 	 <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
-	 <script type="text/javascript" src="http://www.pureexample.com/js/lib/jquery.ui.touch-punch.min.js"></script>
 
 	<script type="text/javascript" src="js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="js/scripts.js"></script>
 
 	<style>
-			  .draggable { width: 300px; height: 80px; padding: 0.5em; }
-			  .draggable_widgets{ width: 295px; height: 50px; padding: 0.5em; }
-			  .snappable { width: 300px; height: 60px; padding: 0.5em; border: 4px dotted gray; }
-			  #rule_container { width: 505px; height: 250px; padding: 0.5em; border: 3px dotted gray; }
-			  .hovered { background: #aaa;}
-			  #rule_creation_container {height: 250px; background: #aaa; border: 3px black;};
-			  
+	  	.draggable { width: 300px; height: 80px; padding: 0.5em; }
+	  	.draggable_widgets{ width: 295px; height: 50px; padding: 0.5em; }
+	  	.snappable { width: 300px; height: 60px; padding: 0.5em; border: 1px gray; }
+	  	#rule_container { width: 505px; height: 250px; padding: 0.5em; border: 3px dotted gray; }
+	  	.hovered { background: #aaa;}
+	  	#rule_creation_container {height: 250px; background: #aaa; border: 3px black;};
+
+		#sortable1 li, #sortable2 li { margin: 0 5px 5px 5px; padding: 5px; font-size: 1.2em; width: 120px; }
+
 			  
 			   
 	</style>
@@ -51,10 +52,10 @@
 		handle_draggables();
 
 		function handle_rule_drop( event, ui ) {
+			 ui.draggable.detach().appendTo($(this));
 			 ui.draggable.position( { of: $(this), my: 'left top', at: 'left top' } );
-			 ui.draggable.appendTo($(this.parent));
 			 rule_drop_count+=1;
-			 $(".panel-body").append(create_snappable());
+			 $("#ruleset_panel").append(create_snappable());
 			 handle_draggables();	
 
 		};
@@ -71,7 +72,6 @@
 
 
 		function handle_draggables (){
-
 			$(".draggable").draggable({
 				snap: ".snappable",
 				snapMode: "inner",
@@ -89,7 +89,12 @@
 		};
 
 		function create_snappable(event, ui){
-			return('<div id="snappable_'+rule_drop_count+'"class="snappable"></div>');
+			return('<div id="snappable_panel_{0}" class="panel panel-primary"> \
+				    	<div class="panel-heading">Rule {0}</div> \
+			          	<div id="snappable_{0}" class="snappable"> \
+    						drag rule here \
+  						</div> \
+			    	</div>'.format(rule_drop_count+1));
 		};
 
 
@@ -136,6 +141,16 @@
 						<div>\
 					</div>')
 
+		};
+
+		String.prototype.format = String.prototype.f = function() {
+		    var s = this,
+		        i = arguments.length;
+
+		    while (i--) {
+		        s = s.replace(new RegExp('\\{' + i + '\\}', 'gm'), arguments[i]);
+		    }
+		    return s;
 		};
 	});
 
@@ -236,7 +251,7 @@
 		<!--
 		<div class="container-fluid" id="rule_container">				
 		</div> rule container --> 
-
+		
 		<div class= "container" >
 			<div class="row">
 		 
@@ -255,20 +270,19 @@
 			 
 
 				 <div id="collapse0" class="accordion-body collapse">
-				    <div class="panel-body">
-
-			          	<div id="snappable_0"class="snappable">
-
-			          		
-
-						 
-						</div>
-			    	</div>
+				 	<div id="ruleset_panel" class="panel panel-default">
+					    <div id="snappable_panel_0"class="panel panel-primary">
+					    	<div class="panel-heading">Rule 1</div>
+				          	<div id="snappable_0" class="snappable">
+	    						drag rule here
+	  						</div>
+				      		<!-- <div id="snappable_0"class="snappable"> -->
+				    	</div>
+				    </div>
 				 </div>
 
 			</div>
 		</div>
-
 
 	
 </body>
