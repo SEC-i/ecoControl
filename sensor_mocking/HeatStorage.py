@@ -6,14 +6,14 @@ milliseconds_per_hour = 1000 * 60 * 60
 
 class HeatStorage(Device.Device):
 
-	def __init__(self, device_id):
- 		Device.Device.__init__(self, device_id)
+    def __init__(self, device_id):
+        Device.Device.__init__(self, device_id)
 
- 		self.name = "HeatStorage"
+        self.name = "HeatStorage"
 
-		self.storage_capacity = 500 #l
+        self.storage_capacity = 500 #l
 
-		self.sensors = {"temperature":Sensor(name="temperature", id=0, value=0, unit=r"C", max_value=100)}
+        self.sensors = {"temperature":Sensor(name="temperature", id=0, value=0, unit=r"C", max_value=100)}
         self.target_temperature = 90
         self.input_power = 0
         self.output_power = 0
@@ -37,5 +37,5 @@ class HeatStorage(Device.Device):
         power = temperature_delta * self.c * self.storage_capacity
         return power
 
- 		
+        
 

@@ -5,8 +5,8 @@ from Device import GeneratorDevice
 
 class PlBoiler(GeneratorDevice):
 	
-	def __init__(self, device_id, time_step=0.04):
- 		GeneratorDevice.__init__(self, device_id, time_step)
+	def __init__(self, device_id):
+ 		GeneratorDevice.__init__(self, device_id)
 
  		#faster timestep, PLBoiler changes its temperature faster than BHKW
  		#self.timestep = 0.01
