@@ -37,19 +37,7 @@ class BHKW(GeneratorDevice):
         self.given_data.append({"workload":25, "electrical_power":12.5, "thermal_power":20, "gasinput":43})
         self.given_data.append({"workload":50, "electrical_power":25, "thermal_power":46, "gasinput":86})
         self.given_data.append({"workload":75, "electrical_power":38, "thermal_power":64, "gasinput":118})
-        self.given_data.append({"workload":100, "electrical_power":50, "thermal_power":81, "gasinput":145})
-
-
-
-
-    def turn_on(self):      
-        print "turning on BHKW, please wait.."
-        self.set_current_workload(75.0)
-
-    def turn_off(self):
-        print "turning off BHKW, please wait.."
-        self.set_current_workload(0.0)
-
+        self.given_data.append({"workload":99, "electrical_power":50, "thermal_power":81, "gasinput":145})
 
 
     def find_bounding_datasets(self,value,type):
@@ -68,8 +56,9 @@ class BHKW(GeneratorDevice):
 
     def calculate_parameters(self,value,type):
         data_set1,data_set2 = self.find_bounding_datasets(value,type)
-
+        
         mu = self.sensors[type].value-data_set1[type]
+        print "calc " + type + " "+ str(data_set1) + " " + str(data_set2) + " " + str(mu)
         ret_dict = {}
 
         #return interpolated values from datasheet
@@ -81,8 +70,9 @@ class BHKW(GeneratorDevice):
 
 
     def update(self,time_delta,heat_storage):
-        needed_thermal_power = heat_storage.get_power_demand()
+        needed_thermal_power = heat_storage.get_power_demand(time_delta)
         self.target_workload = self.calculate_parameters(needed_thermal_power,"thermal_power")["workload"]
+        print "target workload: " + str(self.target_workload)
         self.smooth_set_step(time_delta)
         new_values = self.calculate_parameters(self.current_workload,"workload")
         
@@ -92,6 +82,8 @@ class BHKW(GeneratorDevice):
                 self.sensors[key].value = new_values[key] 
 
         heat_storage.set_power(self.sensors["thermal_power"].value)
+        print "bhkw_temp: " + str(self.sensors["thermal_power"].value)
+        print "bhkw_workload: " + str(self.sensors["workload"].value)
 
 
 
@@ -99,4 +91,3 @@ def cosine_interpolate(d1,d2,mu):
     mu /= 25.0
     mu2 = (1-math.cos(mu*math.pi)) / 2.0
     return (d1 * (1-mu2) + d2 * mu2)
-

@@ -7,7 +7,7 @@ class Device(object):
     def __init__(self, device_id):
         self.device_id = device_id
         self.name = "Abstract Device"
-        self.sensors = []
+        self.sensors = {}
     
     def update(self, time_delta):
         pass
@@ -74,4 +74,3 @@ class Sensor(object):
 
 def sign(x): 
     return 1 if x >= 0 else -1
-

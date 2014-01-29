@@ -13,12 +13,12 @@ class HeatStorage(Device.Device):
 
         self.storage_capacity = 500 #l
 
-        self.sensors = {"temperature":Sensor(name="temperature", id=0, value=0, unit=r"C", max_value=100)}
+        self.sensors = {"temperature":Sensor(name="temperature", id=0, value=18, unit=r"C", max_value=100)}
         self.target_temperature = 90
         self.input_power = 0
         self.output_power = 0
         #specific heat capacity
-        self.c = 0.00116#kwh/l * K
+        self.c = 0.00116 # kwh/l * K
 
     def set_power(self,power):
         self.input_power = power
@@ -32,10 +32,10 @@ class HeatStorage(Device.Device):
         #compute water temperature from power
         self.sensors["temperature"].value +=  power_delta * time_delta_hour / (self.storage_capacity * self.c)
 
-    def get_power_demand(self):
+        print "heat_storage: " + str(self.sensors["temperature"].value)
+
+    def get_power_demand(self, time_delta):
         temperature_delta = self.target_temperature - self.sensors["temperature"].value
         power = temperature_delta * self.c * self.storage_capacity
-        return power
-
-        
-
+        time_delta_hour = time_delta / milliseconds_per_hour
+        return power / time_delta_hour
