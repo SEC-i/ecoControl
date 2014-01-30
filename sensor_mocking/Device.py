@@ -27,14 +27,13 @@ class GeneratorDevice(Device):
         self.changing_workload_thread = None
         self.target_workload  = 0
         self.last_delta = 0
-        self.workload_delta = 0
 
     def smooth_set_step(self, time_delta):      
-        if self.current_workload != self.target_workload:
+        if self.sensors["workload"].value != self.target_workload:
             rand = (random.random() * 2.0 - 1.0)
-            slope = 10.0 *  sign(self.target_workload - self.current_workload)
-            self.workload_delta = time_delta * (rand + slope )
-            self.current_workload += self.workload_delta
+            slope = 10.0 *  sign(self.target_workload - self.sensors["workload"].value)
+            workload_delta = time_delta * (rand + slope )
+            self.sensors["workload"].value += workload_delta
         return True
 
 

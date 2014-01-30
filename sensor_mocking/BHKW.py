@@ -28,12 +28,10 @@ class BHKW(GeneratorDevice):
                         "electrical_power":Sensor(name="electrical_power", id=1, value=0, unit="kW"),
                         "thermal_power":Sensor(name="thermal_power", id=2, value=0, unit="kW"),
                         "gasinput":Sensor(name="gas_input", id=3, value=0, unit="kW") }
-        
-        self.current_workload  = self.sensors["workload"].value
 
-        
+
         self.given_data = []
-        #workload in percent, other data in kW
+        # workload in percent, other data in kW
         self.given_data.append({"workload":0, "electrical_power":0, "thermal_power":0, "gasinput":0})
         self.given_data.append({"workload":25, "electrical_power":12.5, "thermal_power":20, "gasinput":43})
         self.given_data.append({"workload":50, "electrical_power":25, "thermal_power":46, "gasinput":86})
@@ -42,7 +40,7 @@ class BHKW(GeneratorDevice):
 
 
     def find_bounding_datasets(self,value,type):
-        #get the two datasets in between which the workload resides
+        # get the two datasets in between which the workload resides
         for i in range(len(self.given_data)-1):
             if value < self.given_data[i+1][type]:
                 data_set1 = self.given_data[i]
@@ -57,9 +55,8 @@ class BHKW(GeneratorDevice):
 
     def calculate_parameters(self,value,type):
         data_set1,data_set2 = self.find_bounding_datasets(value,type)
-        
-        mu = self.sensors[type].value-data_set1[type]
-        
+        print "calc" + str(value) + " " + str(data_set1)
+        mu = value-data_set1[type]
         print "calc " + type + " "+ str(data_set1) + " " + str(data_set2) + " " + str(mu)
         ret_dict = {}
 
@@ -69,7 +66,7 @@ class BHKW(GeneratorDevice):
                 interp_value = cosine_interpolate(data_set1[key], data_set2[key], mu)
                 ret_dict[key] = interp_value
             else:
-                ret_dict[type]= value
+                ret_dict[key]= value
         return ret_dict
 
 
@@ -78,15 +75,12 @@ class BHKW(GeneratorDevice):
         self.target_workload = self.calculate_parameters(needed_thermal_power,"thermal_power")["workload"]
         print "target workload: " + str(self.target_workload)
         self.smooth_set_step(time_delta)
-       
-        new_values = self.calculate_parameters(self.current_workload,"workload")
-        print "new_values: " + str(new_values)
-        
+        new_values = self.calculate_parameters(self.sensors["workload"].value,"workload")
+        print "new values" + str(new_values)
         #set values for current simulation step
         for key in new_values:
             if (key != "workload"):
                 self.sensors[key].value = new_values[key] 
-
 
         heat_storage.set_power(self.sensors["thermal_power"].value)
         print "bhkw_temp: " + str(self.sensors["thermal_power"].value)
