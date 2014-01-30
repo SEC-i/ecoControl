@@ -2,7 +2,7 @@ import Device
 from Device import Sensor
 
 milliseconds_per_hour = 1000 * 60 * 60
-heat_capacity_air = 1.005
+heat_capacity_air = 1.005 / 3600 / 1.204 #kwh / m^3
 
 
 class Heating(Device.Device):
@@ -18,17 +18,18 @@ class Heating(Device.Device):
         self.power = 2.150 #kW
 
     def update(self, time_delta, heat_storage):
+        time_delta_hour = time_delta / milliseconds_per_hour
         self.heat_loss(time_delta)
         print "heating: " + str(self.sensors["temperature"].value)
         if self.sensors["temperature"].value < self.target_temperature:
-            heat_storage.consume_power(self.power)
+            heat_storage.consume_energy(self.power * time_delta_hour)
             self.heat_room(time_delta)
         
 
     def heat_loss(self, time_delta):
         time_delta_hour = time_delta / milliseconds_per_hour
         # assume cooling of power/2
-        energy = (self.power/2) * time_delta_hour
+        energy = (self.power/10) * time_delta_hour
         temperature_delta = energy / (self.room_volume * heat_capacity_air)
 
         self.sensors["temperature"].value -= temperature_delta

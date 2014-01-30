@@ -2,7 +2,6 @@ import Device
 from Device import Sensor
 from Device import GeneratorDevice
 
-milliseconds_per_hour = 1000 * 60 * 60
 
 class HeatStorage(Device.Device):
 
@@ -13,29 +12,27 @@ class HeatStorage(Device.Device):
 
         self.storage_capacity = 500 #l
 
-        self.sensors = {"temperature":Sensor(name="temperature", id=0, value=18, unit=r"C", max_value=100)}
+        self.sensors = {"temperature":Sensor(name="temperature", id=0, value=48, unit=r"C", max_value=100)}
         self.target_temperature = 90
-        self.input_power = 0
-        self.output_power = 0
+        self.input_energy = 0
+        self.output_energy = 0
         #specific heat capacity
         self.c = 0.00116 # kwh/l * K
 
-    def set_power(self,power):
-        self.input_power = power
+    def add_energy(self,energy):
+        self.input_energy = energy
 
-    def consume_power(self,power):
-        self.output_power = power
+    def consume_energy(self,energy):
+        self.output_energy = energy
 
     def update(self,time_delta):
-        time_delta_hour = time_delta / milliseconds_per_hour
-        power_delta =  self.input_power - self.output_power
-        #compute water temperature from power
-        self.sensors["temperature"].value +=  power_delta * time_delta_hour / (self.storage_capacity * self.c)
+        energy_delta =  self.input_energy - self.output_energy
+        #compute water temperature from energy
+        self.sensors["temperature"].value +=  energy_delta / (self.storage_capacity * self.c)
 
         print "heat_storage: " + str(self.sensors["temperature"].value)
 
-    def get_power_demand(self, time_delta):
+    def get_energy_demand(self):
         temperature_delta = self.target_temperature - self.sensors["temperature"].value
-        power = temperature_delta * self.c * self.storage_capacity
-        time_delta_hour = time_delta / milliseconds_per_hour
-        return power / time_delta_hour
+        energy = temperature_delta * self.c * self.storage_capacity
+        return energy

@@ -8,7 +8,7 @@ import random
 import unittest
 import sys
 
-
+milliseconds_per_hour = 1000 * 60 * 60
 
 """@doc please read the technical datasheet of vitobloc_200_EM,
 which contains all the data which we are mocking here"""
@@ -55,9 +55,7 @@ class BHKW(GeneratorDevice):
 
     def calculate_parameters(self,value,type):
         data_set1,data_set2 = self.find_bounding_datasets(value,type)
-        print "calc" + str(value) + " " + str(data_set1)
         mu = value-data_set1[type]
-        print "calc " + type + " "+ str(data_set1) + " " + str(data_set2) + " " + str(mu)
         ret_dict = {}
 
         #return interpolated values from datasheet
@@ -71,19 +69,21 @@ class BHKW(GeneratorDevice):
 
 
     def update(self,time_delta,heat_storage):
-        needed_thermal_power = heat_storage.get_power_demand(time_delta)
-        self.target_workload = self.calculate_parameters(needed_thermal_power,"thermal_power")["workload"]
+        time_delta_hour = time_delta / milliseconds_per_hour
+        
+        needed_thermal_energy = heat_storage.get_energy_demand()
+        self.target_workload = self.calculate_parameters(needed_thermal_energy / time_delta_hour,"thermal_power")["workload"]
         print "target workload: " + str(self.target_workload)
         self.smooth_set_step(time_delta)
         new_values = self.calculate_parameters(self.sensors["workload"].value,"workload")
-        print "new values" + str(new_values)
+       # print "new values" + str(new_values)
         #set values for current simulation step
         for key in new_values:
             if (key != "workload"):
-                self.sensors[key].value = new_values[key] 
+                self.sensors[key].value = new_values[key]
 
-        heat_storage.set_power(self.sensors["thermal_power"].value)
-        print "bhkw_temp: " + str(self.sensors["thermal_power"].value)
+        heat_storage.add_energy(self.sensors["thermal_power"].value * time_delta_hour)
+       # print "bhkw_temp: " + str(self.sensors["thermal_power"].value)
         print "bhkw_workload: " + str(self.sensors["workload"].value)
 
 

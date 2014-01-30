@@ -30,10 +30,13 @@ class GeneratorDevice(Device):
 
     def smooth_set_step(self, time_delta):      
         if self.sensors["workload"].value != self.target_workload:
-            rand = (random.random() * 2.0 - 1.0)
-            slope = 10.0 *  sign(self.target_workload - self.sensors["workload"].value)
-            workload_delta = time_delta * (rand + slope )
+            change_speed = 0.001
+            rand = change_speed * (random.random() * 2.0 - 1.0)
+            slope = change_speed * sign(self.target_workload - self.sensors["workload"].value)
+            workload_delta = (rand + slope ) * time_delta
             self.sensors["workload"].value += workload_delta
+            # clamp to 0-99
+            self.sensors["workload"].value = max(min(self.sensors["workload"].value, 99),0)
         return True
 
 
@@ -41,7 +44,7 @@ class GeneratorDevice(Device):
         max_value = max([sensor_set.toList()[sID] for sensor_set in self.given_data])
         min_value = min([sensor_set.toList()[sID] for sensor_set in self.given_data])
         
-        for sensor in self.sensors:
+        for key,sensor in self.sensors.items():
             if sensor.id == sID:
                 new_value = sensor.value / ((max_value - min_value) / 100.0)
                 return Sensor(name=sensor.name, id=sID, value=new_value, unit=sensor.unit)

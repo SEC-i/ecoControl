@@ -2,27 +2,41 @@
 import json
 from urllib import urlopen, urlencode
 from threading import Timer
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response
+from functools import update_wrapper
 import BHKW
-from PeakLoadBoiler import PlBoiler
-from HeatReservoir import HeatReservoir
-from Simulation import BHKW_Simulation
+#from PeakLoadBoiler import PlBoiler
+from HeatStorage import HeatStorage
+from Simulation import Simulation
+from Heating import Heating
 
 app = Flask(__name__)
 
 
-simulation = BHKW_Simulation()
+simulation = Simulation(5)
 # devices.append(HeatReservoir(device_id=2))
 
 # send_data
 interval = 60.0
 target_urls = ["http://172.16.64.130/api/device/1/data/"] # list target urls here
 
+def crossdomain(origin=None):
+    def decorator(f):
+        def wrapped_function(*args, **kwargs):
+            resp = make_response(f(*args, **kwargs))
+            h = resp.headers
+            h['Access-Control-Allow-Origin'] = origin
+            return resp
+        return update_wrapper(wrapped_function, f)
+    return decorator
+
 
 @app.route('/device/<int:device_id>/sensor/<int:sensor_id>', methods = ['GET'])
+@crossdomain(origin='*')
 def get_sensor(device_id,sensor_id):
     device = next(dev for dev in simulation.devices if dev.device_id == device_id)
-    sensor = device.get_mapped_sensor(sensor_id)
+    sensor = next(sens for key,sens in device.sensors.items() if sens.id == sensor_id)
+    #sensor = device.get_mapped_sensor(sensor_id)
     sensor_data =  {
         'device_id': device_id,
         "sensor_id": sensor_id, 
@@ -32,36 +46,41 @@ def get_sensor(device_id,sensor_id):
     return jsonify( sensor_data )
 
 @app.route('/device/<int:device_id>/get', methods = ['GET'])
+@crossdomain(origin='*')
 def get_data(device_id):
     device = next(dev for dev in simulation.devices  if dev.device_id == device_id)
     device_data = {}
-    for sensor in device.sensors:
+    for key,sensor in device.sensors.items():
         #sensor  = device.get_mapped_sensor(sensor.id)
         device_data[sensor.name] = sensor.value
     return jsonify( device_data )
 
 @app.route('/device/<int:device_id>/set', methods = ['POST'])
+@crossdomain(origin='*')
 def set_data(device_id):
-    if 'workload' not in request.form:
+    if 'room_temperature' not in request.form:
         return "0"
-    workload = float(request.form['workload'])
+    temperature = float(request.form['room_temperature'])
 
-    if workload >= 0 and workload <= 100:
-        return simulation.set_workload(device_id, workload)
+    if temperature >= 10 and temperature <= 30:
+        simulation.set_heating(temperature)
+        return "1"
     else:
         return "0"
 
 @app.route('/device/<int:device_id>/info', methods = ['GET'])
+@crossdomain(origin='*')
 def get_info(device_id):
     device = next(dev for dev in simulation.devices if dev.device_id == device_id)
     device_data = {"device_name":device.name}
-    for sensor in device.sensors:
+    for key, sensor in device.sensors.items():
         #sensor  = device.get_mapped_sensor(sensor.id)
         device_data[sensor.name] = sensor.unit
     return jsonify( device_data )
 
 
 @app.route("/")
+@crossdomain(origin='*')
 def hello():
     return "nothing here"
 
@@ -72,7 +91,7 @@ def send_data():
 
     device = simulation.bhkw
     device_data = {}
-    for sensor in device.sensors:
+    for key, sensor in device.sensors.items():
         #sensor  = device.get_mapped_sensor(sensor.id)
         device_data[sensor.name] = sensor.value
 
@@ -85,5 +104,5 @@ def send_data():
 
 if __name__ == '__main__':
     simulation.start()
-    send_data()
+    #send_data()
     app.run(host="0.0.0.0",debug = True, port = 9000, use_reloader=False)
