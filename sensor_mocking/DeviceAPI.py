@@ -58,15 +58,19 @@ def get_data(device_id):
 @app.route('/device/<int:device_id>/set', methods = ['POST'])
 @crossdomain(origin='*')
 def set_data(device_id):
-    if 'room_temperature' not in request.form:
-        return "0"
-    temperature = float(request.form['room_temperature'])
-
-    if temperature >= 10 and temperature <= 30:
-        simulation.set_heating(temperature)
+    # set heating temperature
+    if "room_temperature" in request.form:
+        temperature = float(request.form['room_temperature'])
+        if temperature >= 10 and temperature <= 30:
+            simulation.set_heating(temperature)
+            return "1"
+    # set electrical consumption
+    if "energy_consumption" in request.form:
+        energy = float(request.form['energy_consumption'])
+        simulation.set_electrical_consumption(energy)
         return "1"
-    else:
-        return "0"
+
+    return "0"
 
 @app.route('/device/<int:device_id>/info', methods = ['GET'])
 @crossdomain(origin='*')

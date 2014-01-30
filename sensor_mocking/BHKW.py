@@ -86,6 +86,9 @@ class BHKW(GeneratorDevice):
        # print "bhkw_temp: " + str(self.sensors["thermal_power"].value)
         print "bhkw_workload: " + str(self.sensors["workload"].value)
 
+    def get_electrical_power(self):
+        return self.sensors["electrical_power"].value
+
 
 
 def cosine_interpolate(d1,d2,mu):

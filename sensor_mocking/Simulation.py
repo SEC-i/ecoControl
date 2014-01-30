@@ -3,6 +3,7 @@ import BHKW
 from PeakLoadBoiler import PlBoiler
 from HeatStorage import HeatStorage
 from Heating import Heating
+from ElectricConsumer import ElectricConsumer
 import time
 from  threading import Thread
 
@@ -13,12 +14,13 @@ class Simulation(Thread):
         #self.peakload_boiler = PlBoiler(device_id=1)
         self.heat_storage = HeatStorage(device_id=1)
         self.heating = Heating(device_id=2)
+        self.electric_consumer = ElectricConsumer(device_id=3)
         # update frequency
         self.time_step = 0.5
         # simulation speed
         self.step_size = step_size
         self.daemon = True
-        self.devices = [self.bhkw, self.heat_storage, self.heating]
+        self.devices = [self.bhkw, self.heat_storage, self.heating, self.electric_consumer]
 
 
     def run(self):
@@ -36,6 +38,7 @@ class Simulation(Thread):
             time_delta_sim = float(time_delta * self.step_size)
             
             self.bhkw.update(time_delta_sim, self.heat_storage)
+            self.electric_consumer.update(time_delta_sim, self.bhkw)
             self.heating.update(time_delta_sim, self.heat_storage)
             self.heat_storage.update(time_delta_sim)
 
@@ -45,3 +48,6 @@ class Simulation(Thread):
 
     def set_heating(self, temperature):
         self.heating.target_temperature = temperature
+
+    def set_electrical_consumption(self, energy):
+        self.electric_consumer.sensors["energy_consumption"].value = energy
