@@ -28,7 +28,7 @@ class Heating(Device.Device):
 
     def heat_loss(self, time_delta):
         time_delta_hour = time_delta / milliseconds_per_hour
-        # assume cooling of power/2
+        # assume cooling of power/10
         energy = (self.power/10) * time_delta_hour
         temperature_delta = energy / (self.room_volume * heat_capacity_air)
 

@@ -73,7 +73,6 @@ class BHKW(GeneratorDevice):
         
         needed_thermal_energy = heat_storage.get_energy_demand()
         self.target_workload = self.calculate_parameters(needed_thermal_energy / time_delta_hour,"thermal_power")["workload"]
-        print "target workload: " + str(self.target_workload)
         self.smooth_set_step(time_delta)
         new_values = self.calculate_parameters(self.sensors["workload"].value,"workload")
        # print "new values" + str(new_values)
@@ -83,8 +82,6 @@ class BHKW(GeneratorDevice):
                 self.sensors[key].value = new_values[key]
 
         heat_storage.add_energy(self.sensors["thermal_power"].value * time_delta_hour)
-       # print "bhkw_temp: " + str(self.sensors["thermal_power"].value)
-        print "bhkw_workload: " + str(self.sensors["workload"].value)
 
     def get_electrical_power(self):
         return self.sensors["electrical_power"].value
