@@ -33,13 +33,6 @@ class Heating(Device.Device):
             self.heat_room(time_delta)
         
 
-<<<<<<< HEAD
-    def heat_loss(self, time_delta):
-        time_delta_hour = time_delta / milliseconds_per_hour
-        # assume cooling of power/10
-        energy = (self.power/10) * time_delta_hour
-        temperature_delta = energy / (self.room_volume * heat_capacity_air)
-=======
     # def heat_loss(self, time_delta):
     #     time_delta_hour = time_delta / milliseconds_per_hour
     #     # assume cooling of power/2
@@ -57,7 +50,6 @@ class Heating(Device.Device):
     #     temperature = self.sensors["temperature"].value
     #     normalized_room_temp = (gas_constant * temperature)/(air_pressure * self.room_volume * heat_capacity_air)
     #     self.sensors["temperature"].value =  normalized_room_temp * energy_room * time_delta_hour
->>>>>>> b4dda98692d95c51472e3008e931861caf253a25
 
 
     def heat_room(self, time_delta):
@@ -71,9 +63,8 @@ class Heating(Device.Device):
 
     def heat_loss(self, time_delta):
         time_delta_hour = time_delta / milliseconds_per_hour
-        # assume cooling of power/2
+        # assume cooling of power/10
         energy = (self.power/10) * time_delta_hour
         temperature_delta = energy / (self.room_volume * heat_capacity_air)
 
         self.sensors["temperature"].value -= temperature_delta
-
