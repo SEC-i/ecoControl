@@ -17,6 +17,8 @@ class BHKW(GeneratorDevice):
         GeneratorDevice.__init__(self,device_id)
 
         self.name = "BHKW"
+        # workload is modulated starting from this value
+        self.modulation = 50 
 
         # self.current_electrical_power =  Sensor(name="electrical_power", id=1, value=0, unit="kW")
         # self.current_thermal_power    =  Sensor(name="thermal_power", id=2, value=0, unit="kW")
@@ -67,15 +69,22 @@ class BHKW(GeneratorDevice):
                 ret_dict[key]= value
         return ret_dict
 
+    def modulating(self):
+        if self.target_workload > self.modulation:
+            return
+        elif self.target_workload > (self.modulation/2):
+            self.target_workload = self.modulation
+        else:
+            self.target_workload = 0
 
     def update(self,time_delta,heat_storage):
         time_delta_hour = time_delta / milliseconds_per_hour
         
         needed_thermal_energy = heat_storage.get_energy_demand()
         self.target_workload = self.calculate_parameters(needed_thermal_energy / time_delta_hour,"thermal_power")["workload"]
+        self.modulating()
         self.smooth_set_step(time_delta)
         new_values = self.calculate_parameters(self.sensors["workload"].value,"workload")
-       # print "new values" + str(new_values)
         #set values for current simulation step
         for key in new_values:
             if (key != "workload"):
@@ -85,7 +94,6 @@ class BHKW(GeneratorDevice):
 
     def get_electrical_power(self):
         return self.sensors["electrical_power"].value
-
 
 
 def cosine_interpolate(d1,d2,mu):
