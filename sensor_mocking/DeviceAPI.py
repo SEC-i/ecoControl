@@ -13,7 +13,7 @@ from Heating import Heating
 app = Flask(__name__)
 
 
-simulation = Simulation(5)
+simulation = Simulation(30)
 # devices.append(HeatReservoir(device_id=2))
 
 # send_data
@@ -34,9 +34,8 @@ def crossdomain(origin=None):
 @app.route('/device/<int:device_id>/sensor/<int:sensor_id>', methods = ['GET'])
 @crossdomain(origin='*')
 def get_sensor(device_id,sensor_id):
-    device = next(dev for dev in simulation.devices if dev.device_id == device_id)
-    sensor = next(sens for key,sens in device.sensors.items() if sens.id == sensor_id)
-    #sensor = device.get_mapped_sensor(sensor_id)
+    device = simulation.devices[device_id]
+    sensor = device.sensors[sensor_id]
     sensor_data =  {
         'device_id': device_id,
         "sensor_id": sensor_id, 
@@ -48,12 +47,20 @@ def get_sensor(device_id,sensor_id):
 @app.route('/device/<int:device_id>/get', methods = ['GET'])
 @crossdomain(origin='*')
 def get_data(device_id):
-    device = next(dev for dev in simulation.devices  if dev.device_id == device_id)
+    device = simulation.devices[device_id]
     device_data = {}
     for key,sensor in device.sensors.items():
-        #sensor  = device.get_mapped_sensor(sensor.id)
         device_data[sensor.name] = sensor.value
     return jsonify( device_data )
+
+@app.route('/device/<int:device_id>/info', methods = ['GET'])
+@crossdomain(origin='*')
+def get_info(device_id):
+    device = simulation.devices[device_id]
+    device_data = {"device_name":device.name}
+    for key, sensor in device.sensors.items():
+        device_data[sensor.name] = sensor.unit
+    return jsonify(device_data)
 
 @app.route('/device/<int:device_id>/set', methods = ['POST'])
 @crossdomain(origin='*')
@@ -71,17 +78,6 @@ def set_data(device_id):
         return "1"
 
     return "0"
-
-@app.route('/device/<int:device_id>/info', methods = ['GET'])
-@crossdomain(origin='*')
-def get_info(device_id):
-    device = next(dev for dev in simulation.devices if dev.device_id == device_id)
-    device_data = {"device_name":device.name}
-    for key, sensor in device.sensors.items():
-        #sensor  = device.get_mapped_sensor(sensor.id)
-        device_data[sensor.name] = sensor.unit
-    return jsonify( device_data )
-
 
 @app.route("/")
 @crossdomain(origin='*')
