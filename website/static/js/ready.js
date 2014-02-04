@@ -208,7 +208,6 @@ function prepare_simulation_diagram(){
                 }).done(function(data3){
                     $.ajax({
                        url: api_url + "device/6/entries/start/" + range_start + "/end/" + range_end + "/",
-                       data: $.extend(data3, dataDetails),
                        xhrFields: {
                           withCredentials: true
                        }
