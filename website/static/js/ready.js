@@ -48,11 +48,6 @@ $(document).ready(function(){
         hide_all();
         $("#simulation").fadeIn();
 
-        $.get( "./static/img/demo.svg", function( data ) {
-            var svg_item = document.importNode(data.documentElement,true);
-            $("#simulation_container").append(svg_item);
-        }, "xml");
-
         $.getJSON( simulation_api_url + "device/0/info", function( data ) {
             bhkw_info = data;
         });
@@ -74,6 +69,12 @@ $(document).ready(function(){
         }, 1000);
 
     });
+
+    // load simulation svg
+    $.get( "./static/img/demo.svg", function( data ) {
+        var svg_item = document.importNode(data.documentElement,true);
+        $("#simulation_container").append(svg_item);
+    }, "xml");
 
     check_login_status();
 });
@@ -139,6 +140,7 @@ function login_successful(){
        }
     }).done(function( data ) {
         device_data = data;
+        device_data.push({"id":"simulation","value":"Simulation"});
         $("#device_list").html(''); // clear device list
         $.each(device_data, function(index, value){
             $("#device_list").append('<li class="device_items" id="device_item_' + value['id'] + '"><a onclick="show_device(' + value['id'] + ', \'' + value['name'] + '\');">' + value['name'] + '</a></li>');
@@ -163,7 +165,7 @@ function show_device(id, device_name) {
     $("#refresh_button").click(function(event) {
         range_end = new Date().getTime();
         $("#sensor_selection").html('');
-        draw_diagram();
+        prepare_diagram();
     });
 
     $("#devices").fadeIn();
@@ -171,7 +173,62 @@ function show_device(id, device_name) {
 
     $("#diagram_container").html('');
     $("#sensor_selection").html('');
-    draw_diagram();
+    
+    if(id == "simulation"){
+        prepare_simulation_diagram();
+    }else{
+        prepare_diagram(device_id);
+    }
+}
+
+function prepare_simulation_diagram(){
+    $.ajax({
+       url: api_url + "device/1/entries/start/" + range_start + "/end/" + range_end + "/",
+       xhrFields: {
+          withCredentials: true
+       }
+    }).done(function(data0){
+        $.ajax({
+           url: api_url + "device/3/entries/start/" + range_start + "/end/" + range_end + "/",
+           data: $.extend(data0, dataDetails),
+           xhrFields: {
+              withCredentials: true
+           }
+        }).done(function(data1){
+            $.ajax({
+               url: api_url + "device/4/entries/start/" + range_start + "/end/" + range_end + "/",
+               data: $.extend(data1, dataDetails),
+               xhrFields: {
+                  withCredentials: true
+               }
+            }).done(function(data2){
+                $.ajax({
+                   url: api_url + "device/5/entries/start/" + range_start + "/end/" + range_end + "/",
+                   data: $.extend(data2, dataDetails),
+                   xhrFields: {
+                      withCredentials: true
+                   }
+                }).done(function(data3){
+                    $.ajax({
+                       url: api_url + "device/6/entries/start/" + range_start + "/end/" + range_end + "/",
+                       data: $.extend(data3, dataDetails),
+                       xhrFields: {
+                          withCredentials: true
+                       }
+                    }).done(function(data){draw_diagram(data);});
+                });
+            });
+        });
+    });
+}
+
+function prepare_diagram(device_id){
+    $.ajax({
+       url: api_url + "device/" + device_id + "/entries/start/" + range_start + "/end/" + range_end + "/",
+       xhrFields: {
+          withCredentials: true
+       }
+    }).done(function(data){draw_diagram(data);});
 }
 
 function refresh_simulation(){
