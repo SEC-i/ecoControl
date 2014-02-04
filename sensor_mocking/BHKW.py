@@ -72,7 +72,7 @@ class BHKW(GeneratorDevice):
     def modulating(self):
         if self.target_workload > self.modulation:
             return
-        elif self.target_workload > (self.modulation/2):
+        elif self.target_workload > (self.modulation * 0.8):
             self.target_workload = self.modulation
         else:
             self.target_workload = 0

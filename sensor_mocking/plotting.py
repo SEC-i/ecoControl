@@ -24,7 +24,7 @@ class Plotting(object):
         # evenly sampled time at xxx intervals
         self.t = np.arange(0.0, SIMULATED_TIME, TIME_STEP*STEP_SIZE)        
         #cut to the actual length of simulation data
-        self.t = self.t[0:len(self.data[2]["temperature HeatStorage"])]         
+        self.t = self.t[0:len(self.data[1]["workload BHKW0"])]
         
         self.plot_dataset(1, "Energy Conversion")
         plt.show(block=False)

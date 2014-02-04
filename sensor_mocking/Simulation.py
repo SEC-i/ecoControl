@@ -13,8 +13,13 @@ class Simulation(Thread):
         self.bhkw = BHKW.BHKW(device_id=0)
         self.peakload_boiler = PLB(device_id=4)
         self.heat_storage = HeatStorage(device_id=1)
-        self.heating = Heating(device_id=2)
         self.electric_consumer = ElectricConsumer(device_id=3)
+
+        self.heating = []
+        self.heating.append(Heating(device_id=2))
+        self.heating.append(Heating(device_id=5))
+        self.heating.append(Heating(device_id=6))
+        
         # update frequency
         self.time_step = time_step
         # simulation speed
@@ -22,26 +27,23 @@ class Simulation(Thread):
         self.daemon = True
         self.devices = {self.bhkw.device_id:self.bhkw,
                         self.heat_storage.device_id:self.heat_storage,
-                        self.heating.device_id:self.heating,
                         self.electric_consumer.device_id:self.electric_consumer,
                         self.peakload_boiler.device_id:self.peakload_boiler}
         
-        self.plotting = plotting
-        self.plotting_data = {}
-        self.duration = duration#
+        for heating in self.heating:
+            self.devices[heating.device_id] = heating
         
-        for key,device in self.devices.items():
-            for key,sensor in device.sensors.items():
-                if sensor.graph_id != None:
-                    if sensor.graph_id not in self.plotting_data:
-                        self.plotting_data[sensor.graph_id] = {"unit":sensor.unit} 
-                    self.plotting_data[sensor.graph_id][sensor.name] = []
+        
+        self.plotting = plotting
+        self.duration = duration
+        if self.plotting:
+            self.init_plotting()
+
 
 
     def run(self):
         self.mainloop_running = True
         self.mainloop()
-
 
     def mainloop(self):
         print "simulating..."
@@ -60,7 +62,8 @@ class Simulation(Thread):
             self.bhkw.update(time_delta_sim, self.heat_storage)
             self.peakload_boiler.update(time_delta_sim, self.heat_storage)
             self.electric_consumer.update(time_delta_sim, self.bhkw)
-            self.heating.update(time_delta_sim, self.heat_storage)
+            for heating in self.heating:
+                heating.update(time_delta_sim, self.heat_storage)
             self.heat_storage.update(time_delta_sim)
             count += 1
             
@@ -79,15 +82,29 @@ class Simulation(Thread):
         self.mainloop_running = False
 
     def set_heating(self, temperature):
-        self.heating.target_temperature = temperature
+        for heating in self.heating:
+            heating.target_temperature = temperature
 
     def set_electrical_consumption(self, energy):
         self.electric_consumer.sensors["energy_consumption"].value = energy
+    
+    
+    def init_plotting(self):
+        self.plotting_data = {}
         
+        
+        for key,device in self.devices.items():
+            for key,sensor in device.sensors.items():
+                if sensor.graph_id != None:
+                    if sensor.graph_id not in self.plotting_data:
+                        self.plotting_data[sensor.graph_id] = {"unit":sensor.unit}
+                    key_name = sensor.name + str(device.device_id)
+                    self.plotting_data[sensor.graph_id][key_name] = []        
     
     def plot(self):
         for key,device in self.devices.items():
             for key,sensor in device.sensors.items():
                 if sensor.graph_id != None:
-                    self.plotting_data[sensor.graph_id][sensor.name].append(sensor.value)
+                    key_name = sensor.name + str(device.device_id)
+                    self.plotting_data[sensor.graph_id][key_name].append(sensor.value)
                 
