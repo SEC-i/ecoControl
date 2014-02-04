@@ -82,7 +82,7 @@ def list_entries(request, device_id, start, end):
         if not is_in_group(request.user, sensor.group):
             continue
 
-        entries = SensorEntry.objects.filter(sensor__id = sensor.id)
+        entries = SensorEntry.objects.filter(sensor__id = sensor.id).order_by('timestamp')
         if start:
             entries = entries.filter(timestamp__gte = start_time)
 
