@@ -13,7 +13,7 @@ class PLB(GeneratorDevice):
         # research needed!
         self.gas_input = 20 # kw
         self.thermal_power = 18 #kw
-        self.sensors = {"workload":Sensor(name="workload PLB", id=0, value=0, unit=r"Bool")}
+        self.sensors = {"workload":Sensor(name="workload PLB", id=0, value=0, unit=r"Bool",graph_id=1)}
 
     def update(self,time_delta,heat_storage):
         time_delta_hour = time_delta / milliseconds_per_hour

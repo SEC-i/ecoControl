@@ -12,7 +12,7 @@ class HeatStorage(Device.Device):
 
         self.storage_capacity = 500 #l
 
-        self.sensors = {"temperature":Sensor(name="temperature heatStorage", id=0, value=40, unit=r"C", max_value=100,graph_id=2)}
+        self.sensors = {"temperature":Sensor(name="temperature HeatStorage", id=0, value=40, unit=r"C", max_value=100,graph_id=2)}
         self.target_temperature = 90
         self.input_energy = 0
         self.output_energy = 0

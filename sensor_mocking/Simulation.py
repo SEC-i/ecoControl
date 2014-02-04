@@ -8,7 +8,7 @@ import time
 from  threading import Thread
 
 class Simulation(Thread):
-    def __init__(self,step_size=1,plotting=False,duration=None):
+    def __init__(self,step_size=1,time_step=0.01,plotting=False,duration=None):
         Thread.__init__(self)
         self.bhkw = BHKW.BHKW(device_id=0)
         self.peakload_boiler = PLB(device_id=4)
@@ -16,7 +16,7 @@ class Simulation(Thread):
         self.heating = Heating(device_id=2)
         self.electric_consumer = ElectricConsumer(device_id=3)
         # update frequency
-        self.time_step = 0.01
+        self.time_step = time_step
         # simulation speed
         self.step_size = step_size
         self.daemon = True
@@ -44,13 +44,17 @@ class Simulation(Thread):
 
 
     def mainloop(self):
+        print "simulating..."
         self.start_time = time.time()
+        count = 0
+        time_loss = 0
         while self.mainloop_running:
             
-            cur_time_millis = int(round(time.time() * 1000))
-            time.sleep(self.time_step)
+            cur_time_millis = time.time() * 1000
+            time.sleep(self.time_step - min(time_loss,self.time_step))
 
-            time_delta = int(round(time.time() * 1000)) - cur_time_millis
+            t0 = time.time()
+            time_delta = time.time() * 1000 - cur_time_millis
             time_delta_sim = float(time_delta * self.step_size)
             
             self.bhkw.update(time_delta_sim, self.heat_storage)
@@ -58,12 +62,16 @@ class Simulation(Thread):
             self.electric_consumer.update(time_delta_sim, self.bhkw)
             self.heating.update(time_delta_sim, self.heat_storage)
             self.heat_storage.update(time_delta_sim)
-            
+            count += 1
             
             if self.plotting:
                 self.plot()
+            
+            time_loss = time.time() - t0
                 
             if self.duration != None and (time.time() - self.start_time) > self.duration:
+                print "simulation finished"
+                print count
                 return
 
     def immediate_off(self):
