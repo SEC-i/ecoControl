@@ -13,7 +13,7 @@ from Heating import Heating
 app = Flask(__name__)
 
 
-simulation = Simulation(900)
+simulation = Simulation(100)
 # devices.append(HeatReservoir(device_id=2))
 
 # send_data
