@@ -25,6 +25,5 @@ class PLB(GeneratorDevice):
                 
             self.sensors["workload"].value = 1
             heat_storage.add_energy(self.thermal_power * time_delta_hour)
-            print "PPPLLLBBB"
         else:
             self.sensors["workload"].value = 0

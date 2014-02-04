@@ -101,7 +101,11 @@ def send_data():
 
         post_data = [('data', json.dumps(device_data))]
 
-        urlopen(target_urls[device.device_id], urlencode(post_data))
+        try:
+            urlopen(target_urls[device.device_id], urlencode(post_data))
+        except KeyError:
+            # Not all heatings are saved in the db
+            pass
 
 
 

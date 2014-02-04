@@ -36,7 +36,7 @@ class Heating(Device.Device):
     def update(self, time_delta, heat_storage):
         time_delta_hour = time_delta / milliseconds_per_hour
         self.heat_loss(time_delta)
-        print "room temperature: " + str(self.sensors["temperature"].value)
+        #print "room temperature: " + str(self.sensors["temperature"].value)
         if self.sensors["temperature"].value < self.target_temperature:
             heat_storage.consume_energy(self.power / 1000 * time_delta_hour)
             self.heat_room(time_delta)

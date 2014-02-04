@@ -30,8 +30,6 @@ class HeatStorage(Device.Device):
         #compute water temperature from energy
         self.sensors["temperature"].value +=  energy_delta / (self.storage_capacity * self.c)
 
-        print "heat_storage: " + str(self.sensors["temperature"].value)
-
     def get_energy_demand(self):
         temperature_delta = self.target_temperature - self.sensors["temperature"].value
         energy = temperature_delta * self.c * self.storage_capacity
