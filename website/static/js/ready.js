@@ -212,7 +212,7 @@ function prepare_simulation_diagram(){
                           withCredentials: true
                        }
                     }).done(function(data4){
-                        $.extend(data0,data1,data2,data3,data4);
+                        $.merge(data0, $.merge(data1, $.merge(data2, $.merge(data3, data4))));
                         draw_diagram(data0);
                     });
                 });
