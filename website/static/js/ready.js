@@ -190,21 +190,18 @@ function prepare_simulation_diagram(){
     }).done(function(data0){
         $.ajax({
            url: api_url + "device/3/entries/start/" + range_start + "/end/" + range_end + "/",
-           data: $.extend(data0, dataDetails),
            xhrFields: {
               withCredentials: true
            }
         }).done(function(data1){
             $.ajax({
                url: api_url + "device/4/entries/start/" + range_start + "/end/" + range_end + "/",
-               data: $.extend(data1, dataDetails),
                xhrFields: {
                   withCredentials: true
                }
             }).done(function(data2){
                 $.ajax({
                    url: api_url + "device/5/entries/start/" + range_start + "/end/" + range_end + "/",
-                   data: $.extend(data2, dataDetails),
                    xhrFields: {
                       withCredentials: true
                    }
@@ -215,7 +212,10 @@ function prepare_simulation_diagram(){
                        xhrFields: {
                           withCredentials: true
                        }
-                    }).done(function(data){draw_diagram(data);});
+                    }).done(function(data4){
+                        $.extend(data0,data1,data2,data3,data4);
+                        draw_diagram(data0);
+                    });
                 });
             });
         });
