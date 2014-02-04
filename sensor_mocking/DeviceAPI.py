@@ -18,7 +18,12 @@ simulation = Simulation(900)
 
 # send_data
 interval = 60.0
-target_urls = ["http://172.16.64.130/api/device/1/data/"] # list target urls here
+# device id -> target url
+target_urls = { 0:"http://172.16.64.130/api/device/1/data/",
+                1:"http://172.16.64.130/api/device/4/data/",
+                2:"http://172.16.64.130/api/device/3/data/",
+                3:"http://172.16.64.130/api/device/5/data/",
+                4:"http://172.16.64.130/api/device/6/data/"}
 
 def crossdomain(origin=None):
     def decorator(f):
@@ -89,20 +94,18 @@ def send_data():
     # Schedule timer to execute send_data again
     Timer(interval, send_data).start()
 
-    device = simulation.bhkw
-    device_data = {}
-    for key, sensor in device.sensors.items():
-        #sensor  = device.get_mapped_sensor(sensor.id)
-        device_data[sensor.name] = sensor.value
+    for device in simulation.devices.values():
+        device_data = {}
+        for sensor in device.sensors.values():
+            device_data[sensor.name] = sensor.value
 
-    post_data = [('data', json.dumps(device_data))]
+        post_data = [('data', json.dumps(device_data))]
 
-    for url in target_urls:
-        urlopen(url, urlencode(post_data))
+        urlopen(target_urls[device.device_id], urlencode(post_data))
 
 
 
 if __name__ == '__main__':
     simulation.start()
-    #send_data()
+    send_data()
     app.run(host="0.0.0.0",debug = True, port = 9000, use_reloader=False)
