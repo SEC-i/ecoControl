@@ -27,7 +27,7 @@ class Heating(Device.Device):
         #self.energy = 
 
         # J / K, approximation for 5m^3 wall, spec heat capacity brick = 0.84 J/(g * K)
-        heat_cap_brick =  9 * 10**6
+        heat_cap_brick =  9 * 10**5
 
         self.heat_capacity = heat_capacity_air * self.room_volume + heat_cap_brick
 
@@ -35,7 +35,7 @@ class Heating(Device.Device):
 
     def update(self, time_delta, heat_storage):
         time_delta_hour = time_delta / milliseconds_per_hour
-        #self.heat_loss(time_delta)
+        self.heat_loss(time_delta)
         print "room temperature: " + str(self.sensors["temperature"].value)
         if self.sensors["temperature"].value < self.target_temperature:
             heat_storage.consume_energy(self.power / 1000 * time_delta_hour)
