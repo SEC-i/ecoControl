@@ -9,6 +9,22 @@ html, body {
   text-align: right;
 }
 
+.svg-container {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  padding-bottom: 75%;
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+.svg-container svg {
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 /* LOGIN VIEW */
 .form-signin {
   max-width: 330px;

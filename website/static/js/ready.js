@@ -1,9 +1,17 @@
 var api_url = "http://www.hpi.uni-potsdam.de/hirschfeld/bachelorprojects/2013H1/api/";
+var simulation_api_url = "http://www.hpi.uni-potsdam.de/hirschfeld/bachelorprojects/2013H1/simulation/";
 
 var device_data = null;
 var device_id = null;
 var range_start = new Date().getTime()-24*2*60*60*1000;
 var range_end = new Date().getTime();
+
+// simulation-related
+var bhkw_info = null;
+var hs_info = null;
+var rad_info = null;
+var electric_consumer_info = null;
+var plb_info = null;
 
 $(document).ready(function(){
     // Login events
@@ -36,9 +44,35 @@ $(document).ready(function(){
         $("#home").fadeIn();
     });
 
-    $("#settings_button").click(function(event) {
+    $("#simulation_button").click(function(event) {
         hide_all();
-        $("#settings").fadeIn();
+        $("#simulation").fadeIn();
+
+        $.get( "./static/img/demo.svg", function( data ) {
+            var svg_item = document.importNode(data.documentElement,true);
+            $("#scheme_container").append(svg_item);
+        }, "xml");
+
+        $.getJSON( simulation_api_url + "device/0/info", function( data ) {
+            bhkw_info = data;
+        });
+        $.getJSON( simulation_api_url + "device/1/info", function( data ) {
+            hs_info = data;
+        });
+        $.getJSON( simulation_api_url + "device/2/info", function( data ) {
+            rad_info = data;
+        });
+        $.getJSON( simulation_api_url + "device/3/info", function( data ) {
+            electric_consumer_info = data;
+        });
+        $.getJSON( simulation_api_url + "device/4/info", function( data ) {
+            plb_info = data;
+        });
+
+        setInterval(function(){
+            refresh_simulation();
+        }, 1000);
+
     });
 
     check_login_status();
@@ -74,7 +108,7 @@ function show_login_box(){
 function hide_all(){
     $("#home").hide();
     $("#devices").hide();
-    $("#settings").hide();
+    $("#simulation").hide();
 }
 
 function login_user() {
@@ -140,3 +174,46 @@ function show_device(id, device_name) {
     draw_diagram();
 }
 
+function refresh_simulation(){
+    $.getJSON( simulation_api_url + "device/0/get", function( data ) {
+        update_simulation(data,"bhkw");
+    });
+    $.getJSON( simulation_api_url + "device/1/get", function( data ) {
+        update_simulation(data,"hs");
+    });
+    $.getJSON( simulation_api_url + "device/2/get", function( data ) {
+        update_simulation(data,"rad");
+    });
+    $.getJSON( simulation_api_url + "device/3/get", function( data ) {
+        update_simulation(data,"elec");
+    });
+    $.getJSON( simulation_api_url + "device/4/get", function( data ) {
+        update_simulation(data,"plb");
+    });
+}
+
+function update_simulation(data,namespace){
+    if($("#simulation").is(":visible")){
+        $.each(data, function(item_id, value) {
+            var item = $('#' + namespace + "_" + item_id);
+            if (item.length) {
+                item.text(Math.floor(parseFloat(value)*1000)/1000 + " " + get_unit(item_id, namespace));
+            }
+        });
+    }
+}
+
+function get_unit(item_id ,namespace){
+    switch(namespace){
+        case "bhkw":
+            return bhkw_info[item_id];
+        case "hs":
+            return hs_info[item_id];
+        case "rad":
+            return rad_info[item_id];
+        case "elec":
+            return electric_consumer_info[item_id];
+        case "plb":
+            return plb_info[item_id];
+    }
+}

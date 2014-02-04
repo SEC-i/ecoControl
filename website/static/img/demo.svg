@@ -1,0 +1,57 @@
+<svg viewBox="0 80 800 600" preserveAspectRatio="xMinYMin meet" xmlns="http://www.w3.org/2000/svg">
+ <!-- Created with SVG-edit - http://svg-edit.googlecode.com/ -->
+ <title></title>
+ <g>
+  <title></title>
+  <line id="svg_21" y2="360" x2="222" y1="360" x1="257" stroke-linecap="null" stroke-linejoin="round" stroke-width="4" stroke="#00007f" fill="none"/>
+  <line transform="rotate(89.39049530029297 393.012451171875,359.67010498046875) " id="svg_19" y2="426.694652" x2="393.012443" y1="292.645539" x1="393.012443" stroke-linecap="null" stroke-linejoin="round" stroke-width="5" stroke="#7c0000" fill="none"/>
+  <line id="svg_8" y2="461.999999" x2="292" y1="412" x1="292" stroke-linecap="null" stroke-linejoin="round" stroke-width="5" stroke="#007f00" fill="none"/>
+  <g id="bhkw">
+   <rect ry="11" rx="11" id="bhkw_back" height="130" width="86" y="284" x="251" stroke-width="2" stroke="#000000" fill="#cccccc"/>
+   <rect id="bhkw_front" ry="4" rx="4" height="139" width="72" y="278.5" x="258" stroke-linecap="null" stroke-linejoin="round" stroke-width="2" stroke="#000000" fill="#e5e5e5"/>
+  </g>
+  <line id="svg_7" y2="463" x2="649.000007" y1="463" x1="290.000029" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#7f0000" fill="none"/>
+  <line id="svg_9" y2="463.999999" x2="649" y1="422" x1="649" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#7f0000" fill="none"/>
+  <line id="svg_10" y2="502" x2="292" y1="460" x1="292" stroke-linecap="null" stroke-linejoin="round" stroke-width="5" stroke="#007f00" fill="none"/>
+  <line id="svg_22" y2="360.999998" x2="222" y1="193.999997" x1="222" stroke-linecap="null" stroke-linejoin="round" stroke-width="4" stroke="#00007f" fill="none"/>
+  <ellipse ry="1" id="svg_25" cy="194" cx="123" stroke-linecap="null" stroke-linejoin="round" stroke-width="4" stroke="#00007f" fill="none"/>
+  <line id="svg_27" y2="195" x2="502" y1="281" x1="502" stroke-linecap="null" stroke-linejoin="round" stroke-width="4" stroke="#7f0000" fill="none"/>
+  <path id="svg_34" d="m222,297.807678l-10,10.384644l20,0l-10,-10.384644z" stroke-linecap="null" stroke-linejoin="round" stroke-width="2" stroke="#00007f" fill="#aaaaff"/>
+  <path transform="rotate(90 405,359.00000000000006) " id="svg_3_35" d="m405,353.807678l-10,10.384644l20,0l-10,-10.384644z" stroke-linecap="null" stroke-linejoin="round" stroke-width="2" stroke="#7f0000" fill="#ffaaaa"/>
+  <path id="svg_39" transform="rotate(1.6846842765808105 291.999999999999,451.9999999999992) " d="m292,446.807678l-10,10.384644l20,0l-10,-10.384644z" stroke-linecap="null" stroke-linejoin="round" stroke-width="2" stroke="#007f00" fill="#aaffaa"/>
+  <path id="svg_42" d="m502,233.807693l-10,10.384613l20,0l-10,-10.384613z" stroke-linecap="null" stroke-linejoin="round" stroke-width="2" stroke="#7f0000" fill="#ffaaaa"/>
+  <text id="svg_45" xml:space="preserve" text-anchor="middle" font-family="Sans-serif" font-size="24" y="383.5" x="506" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#7f0000" fill="#999999">HS</text>
+  <text id="bhkw_gas_input" transform="matrix(0.7141466435024171,0,0,0.7141466435024171,112.20669328799261,137.8245991611082) " font-style="normal" font-weight="normal" xml:space="preserve" text-anchor="middle" font-family="Sans-serif" font-size="24" y="539.347358" x="253.159902" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#7f0000" fill="#007f00">bhkw_gas_input</text>
+  <text id="temp_out_bhkw" transform="matrix(0.7141466435024171,0,0,0.7141466435024171,112.20669328799261,137.8245991611082) " font-style="normal" font-weight="normal" xml:space="preserve" text-anchor="middle" font-family="Sans-serif" font-size="24" y="180.880192" x="348.376411" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#7f0000" fill="#7f0000"/>
+  <text id="bhkw_thermal_power" transform="matrix(0.7141466435024171,0,0,0.7141466435024171,112.20669328799261,137.8245991611082) " font-style="normal" font-weight="normal" xml:space="preserve" text-anchor="middle" font-family="Sans-serif" font-size="24" y="344.71209" x="405.787589" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#7f0000" fill="#7f0000">bhkw_thermal_power</text>
+  <text id="plb_workload" transform="matrix(0.7141466435024171,0,0,0.7141466435024171,112.20669328799261,137.8245991611082) " font-style="normal" font-weight="normal" xml:space="preserve" text-anchor="middle" font-family="Sans-serif" font-size="24" y="344.71209" x="705.787589" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#7f0000" fill="#7f0000">plb_workload</text>
+  <text id="bhkw_electrical_power" transform="matrix(0.7141466435024171,0,0,0.7141466435024171,112.20669328799261,137.8245991611082) " font-style="normal" font-weight="normal" xml:space="preserve" text-anchor="middle" font-family="Sans-serif" font-size="24" y="130.471969" x="90.333688" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#00007f" fill="#00007f">bhkw_electrical_power</text>
+
+  <text id="elec_electric_consumption" transform="matrix(0.7141466435024171,0,0,0.7141466435024171,112.20669328799261,137.8245991611082) " font-style="normal" font-weight="normal" xml:space="preserve" text-anchor="middle" font-family="Sans-serif" font-size="24" y="0.471969" x="90.333688" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#00007f" fill="#00007f">elec_electric_consumption</text>
+
+  <text id="elec_energy_infeed" transform="matrix(0.7141466435024171,0,0,0.7141466435024171,112.20669328799261,137.8245991611082) " font-style="normal" font-weight="normal" xml:space="preserve" text-anchor="middle" font-family="Sans-serif" font-size="24" y="40.471969" x="90.333688" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#00007f" fill="#00007f">elec_energy_infeed</text>
+
+  <text id="elec_energy_external" transform="matrix(0.7141466435024171,0,0,0.7141466435024171,112.20669328799261,137.8245991611082) " font-style="normal" font-weight="normal" xml:space="preserve" text-anchor="middle" font-family="Sans-serif" font-size="24" y="80.471969" x="90.333688" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#00007f" fill="#00007f">elec_energy_external</text>
+
+  <text id="rad_temperature" transform="matrix(0.7141466435024171,0,0,0.7141466435024171,112.20669328799261,137.8245991611082) " font-style="normal" font-weight="normal" xml:space="preserve" text-anchor="middle" font-family="Sans-serif" font-size="24" y="89.862011" x="638.236927" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#7f0000" fill="#7f0000">rad_temperature</text>
+   <text id="hs_temperature" transform="matrix(0.7141466435024171,0,0,0.7141466435024171,112.20669328799261,137.8245991611082) " font-style="normal" font-weight="normal" xml:space="preserve" text-anchor="middle" font-family="Sans-serif" font-size="24" y="180.862011" x="638.236927" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#7f0000" fill="#7f0000">hs_temperature</text>
+  <line fill="none" stroke="#b2b2b2" stroke-width="2" x1="85.999978" y1="476" x2="715.000013" y2="472" id="svg_1" stroke-dasharray="5,5"/>
+  <line id="svg_16" y2="207" x2="703" y1="213" x1="71" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="5,5" stroke-width="2" stroke="#b2b2b2" fill="none"/>
+  <g id="heat_storage">
+   <g id="svg_40">
+    <ellipse id="svg_13" ry="21" rx="43" cy="382" cx="504" stroke-linecap="null" stroke-linejoin="round" stroke-width="2" stroke="#000000" fill="#e5e5e5"/>
+    <rect id="svg_14" height="78" width="86" y="300" x="461" stroke-linecap="null" stroke-linejoin="round" stroke-width="2" stroke="#000000" fill="#e5e5e5"/>
+   </g>
+   <ellipse ry="21" rx="43" id="svg_12" cy="299" cx="504" stroke-linecap="null" stroke-linejoin="round" stroke-width="2" stroke="#000000" fill="#cccccc"/>
+  </g>
+  <g id="consumer">
+   <rect id="svg_15" height="22" width="57" y="139" x="473" stroke-linecap="null" stroke-linejoin="null" stroke-width="2" stroke="#cccccc" fill="#cccccc"/>
+   <rect ry="9" rx="9" id="svg_5" height="92.999998" width="16" y="96.000002" x="466" stroke-linecap="null" stroke-linejoin="null" stroke-width="2" stroke="#191919" fill="#cccccc"/>
+   <rect id="svg_6" ry="9" rx="9" height="92.999998" width="16" y="96.500002" x="494" stroke-linecap="null" stroke-linejoin="null" stroke-width="2" stroke="#191919" fill="#cccccc"/>
+   <rect id="svg_11" ry="9" rx="9" height="92.999998" width="16" y="96.500002" x="522" stroke-linecap="null" stroke-linejoin="null" stroke-width="2" stroke="#191919" fill="#cccccc"/>
+  </g>
+  <text id="svg_44" xml:space="preserve" text-anchor="middle" font-family="Sans-serif" font-size="24" y="403.108696" x="304.399999" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#7f0000" fill="#999999" transform="matrix(0.9027777910232544,0,0,0.8518518805503845,17.6944420337677,61.85183987021446) ">BHKW</text>
+  <ellipse id="svg_18" ry="14" rx="40.500003" cy="377" cx="504.999998" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#000000" fill="#e5e5e5"/>
+  <text id="svg_17" xml:space="preserve" text-anchor="middle" font-family="Sans-serif" font-size="24" y="377.328806" x="539.786183" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#7f0000" fill="#999999" transform="matrix(0.9027777910232544,0,0,0.8518518805503845,17.6944420337677,61.85183987021446) ">HS</text>
+ </g>
+</svg>
