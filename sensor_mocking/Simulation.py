@@ -8,7 +8,7 @@ import time
 from  threading import Thread
 
 class Simulation(Thread):
-    def __init__(self,step_size):
+    def __init__(self,step_size=1,plotting=False,duration=None):
         Thread.__init__(self)
         self.bhkw = BHKW.BHKW(device_id=0)
         self.peakload_boiler = PLB(device_id=4)
@@ -16,7 +16,7 @@ class Simulation(Thread):
         self.heating = Heating(device_id=2)
         self.electric_consumer = ElectricConsumer(device_id=3)
         # update frequency
-        self.time_step = 0.5
+        self.time_step = 0.01
         # simulation speed
         self.step_size = step_size
         self.daemon = True
@@ -25,6 +25,17 @@ class Simulation(Thread):
                         self.heating.device_id:self.heating,
                         self.electric_consumer.device_id:self.electric_consumer,
                         self.peakload_boiler.device_id:self.peakload_boiler}
+        
+        self.plotting = plotting
+        self.plotting_data = {}
+        self.duration = duration#
+        
+        for key,device in self.devices.items():
+            for key,sensor in device.sensors.items():
+                if sensor.graph_id != None:
+                    if sensor.graph_id not in self.plotting_data:
+                        self.plotting_data[sensor.graph_id] = {"unit":sensor.unit} 
+                    self.plotting_data[sensor.graph_id][sensor.name] = []
 
 
     def run(self):
@@ -33,6 +44,7 @@ class Simulation(Thread):
 
 
     def mainloop(self):
+        self.start_time = time.time()
         while self.mainloop_running:
             
             cur_time_millis = int(round(time.time() * 1000))
@@ -46,6 +58,13 @@ class Simulation(Thread):
             self.electric_consumer.update(time_delta_sim, self.bhkw)
             self.heating.update(time_delta_sim, self.heat_storage)
             self.heat_storage.update(time_delta_sim)
+            
+            
+            if self.plotting:
+                self.plot()
+                
+            if self.duration != None and (time.time() - self.start_time) > self.duration:
+                return
 
     def immediate_off(self):
         "for testcases"
@@ -56,3 +75,11 @@ class Simulation(Thread):
 
     def set_electrical_consumption(self, energy):
         self.electric_consumer.sensors["energy_consumption"].value = energy
+        
+    
+    def plot(self):
+        for key,device in self.devices.items():
+            for key,sensor in device.sensors.items():
+                if sensor.graph_id != None:
+                    self.plotting_data[sensor.graph_id][sensor.name].append(sensor.value)
+                

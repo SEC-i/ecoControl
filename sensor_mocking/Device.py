@@ -66,12 +66,13 @@ class GeneratorDevice(Device):
 
 class Sensor(object):
 
-    def __init__(self,name,id,value,unit,max_value=None):
+    def __init__(self,name,id,value,unit,max_value=None,graph_id=None):
         self.id = id
         self.value = value
         self.name = name
         self.unit = unit
         self.max_value = max_value
+        self.graph_id = graph_id
 
 
 def sign(x): 

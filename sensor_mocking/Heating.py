@@ -13,8 +13,8 @@ class Heating(Device.Device):
     def __init__(self, device_id):
         self.device_id = device_id
         self.name = "Heating"
-        self.sensors = {"temperature":Sensor(name="temperature",id=0,value=20, unit=r"C"),
-                        "temperature_outside":Sensor(name="temperature_outside",id=1,value=5,unit=r"C")}
+        self.sensors = {"temperature":Sensor(name="temperature heating",id=0,value=20, unit=r"C",graph_id=2),
+                        "temperature_outside":Sensor(name="temperature_outside",id=1,value=5,unit=r"C",graph_id=2)}
         self.target_temperature = 30
         # Type 22, 1.4m X 0.5m
         # W/m to 22 C = 90 W
@@ -36,7 +36,6 @@ class Heating(Device.Device):
     def update(self, time_delta, heat_storage):
         time_delta_hour = time_delta / milliseconds_per_hour
         self.heat_loss(time_delta)
-        print "room temperature: " + str(self.sensors["temperature"].value)
         if self.sensors["temperature"].value < self.target_temperature:
             heat_storage.consume_energy(self.power / 1000 * time_delta_hour)
             self.heat_room(time_delta)

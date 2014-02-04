@@ -26,10 +26,10 @@ class BHKW(GeneratorDevice):
 
         #index corresponds to sensor id
 
-        self.sensors = {"workload":Sensor(name="workload", id=0, value=0, unit=r"%"),
-                        "electrical_power":Sensor(name="electrical_power", id=1, value=0, unit="kW"),
-                        "thermal_power":Sensor(name="thermal_power", id=2, value=0, unit="kW"),
-                        "gasinput":Sensor(name="gas_input", id=3, value=0, unit="kW") }
+        self.sensors = {"workload":Sensor(name="workload BHKW", id=0, value=0, unit=r"%",graph_id=1),
+                        "electrical_power":Sensor(name="electrical_power BHKW", id=1, value=0, unit="kW",graph_id=1),
+                        "thermal_power":Sensor(name="thermal_power BHKW", id=2, value=0, unit="kW",graph_id=1),
+                        "gasinput":Sensor(name="gas_input BHKW", id=3, value=0, unit="kW",graph_id=1) }
 
 
         self.given_data = []
