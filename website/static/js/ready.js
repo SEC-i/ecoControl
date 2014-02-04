@@ -50,7 +50,7 @@ $(document).ready(function(){
 
         $.get( "./static/img/demo.svg", function( data ) {
             var svg_item = document.importNode(data.documentElement,true);
-            $("#scheme_container").append(svg_item);
+            $("#simulation_container").append(svg_item);
         }, "xml");
 
         $.getJSON( simulation_api_url + "device/0/info", function( data ) {
