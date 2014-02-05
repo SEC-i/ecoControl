@@ -40,3 +40,5 @@ nosetests.xml
 
 *.sublime-workspace
 *.log
+
+sftp-config-alt2.json
