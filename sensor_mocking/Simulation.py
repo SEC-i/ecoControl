@@ -48,7 +48,6 @@ class Simulation(Thread):
     def mainloop(self):
         print "simulating..."
         self.start_time = time.time()
-        count = 0
         time_loss = 0
         while self.mainloop_running:
             
@@ -74,7 +73,6 @@ class Simulation(Thread):
                 
             if self.duration != None and (time.time() - self.start_time) > self.duration:
                 print "simulation finished"
-                print count
                 return
 
     def immediate_off(self):
