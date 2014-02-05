@@ -104,6 +104,24 @@
       <div class="jumbotron">
         <h2>Simulation</h2>
         <div class="row">
+          <div class="col-sm-offset-3 col-sm-3">
+            <form id="form_consumption" role="form" class="form-inline">
+              <div class="form-group">
+                <input type="text" class="form-control" id="electric_consumption" placeholder="Electric Consumption">
+              </div>
+              <button type="submit" class="btn btn-primary" id="consumption_button">Set</button>
+            </form>
+          </div>
+          <div class="col-sm-offset-1 col-sm-3">
+            <form id="form_temperature" role="form" class="form-inline">
+              <div class="form-group">
+                <input type="text" class="form-control" id="room_temperature" placeholder="Room Temperature">
+              </div>
+              <button type="submit" class="btn btn-primary" id="temperature_button">Set</button>
+            </form>
+          </div>
+        </div>
+        <div class="row">
           <div class="col-sm-12">
             <div id="simulation_container" class="svg-container"></div>
           </div>

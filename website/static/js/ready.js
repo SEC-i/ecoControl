@@ -76,6 +76,26 @@ $(document).ready(function(){
         $("#simulation_container").append(svg_item);
     }, "xml");
 
+    $("#form_consumption").submit(function(){
+        $.post( simulation_api_url + "device/3/set", { electric_consumption: $("#electric_consumption").val() }).done(function(){
+            $("#consumption_button").removeClass("btn-primary").addClass("btn-success");
+            setTimeout(function(){
+                $("#consumption_button").removeClass("btn-success").addClass("btn-primary");
+            },1000);
+        });
+        event.preventDefault();
+    });
+
+    $("#form_temperature").submit(function(){
+        $.post( simulation_api_url + "device/2/set", { room_temperature: $("#room_temperature").val() }).done(function(){
+            $("#temperature_button").removeClass("btn-primary").addClass("btn-success");
+            setTimeout(function(){
+                $("#temperature_button").removeClass("btn-success").addClass("btn-primary");
+            },1000);
+        });
+        event.preventDefault();
+    });
+
     check_login_status();
 });
 
@@ -231,32 +251,32 @@ function prepare_diagram(device_id){
 }
 
 function refresh_simulation(){
-    $.getJSON( simulation_api_url + "device/0/get", function( data ) {
-        update_simulation(data,"bhkw");
-    });
-    $.getJSON( simulation_api_url + "device/1/get", function( data ) {
-        update_simulation(data,"hs");
-    });
-    $.getJSON( simulation_api_url + "device/2/get", function( data ) {
-        update_simulation(data,"rad");
-    });
-    $.getJSON( simulation_api_url + "device/3/get", function( data ) {
-        update_simulation(data,"elec");
-    });
-    $.getJSON( simulation_api_url + "device/4/get", function( data ) {
-        update_simulation(data,"plb");
-    });
+    if($("#simulation").is(":visible")){
+        $.getJSON( simulation_api_url + "device/0/get", function( data ) {
+            update_simulation(data,"bhkw");
+        });
+        $.getJSON( simulation_api_url + "device/1/get", function( data ) {
+            update_simulation(data,"hs");
+        });
+        $.getJSON( simulation_api_url + "device/2/get", function( data ) {
+            update_simulation(data,"rad");
+        });
+        $.getJSON( simulation_api_url + "device/3/get", function( data ) {
+            update_simulation(data,"elec");
+        });
+        $.getJSON( simulation_api_url + "device/4/get", function( data ) {
+            update_simulation(data,"plb");
+        });
+    }
 }
 
 function update_simulation(data,namespace){
-    if($("#simulation").is(":visible")){
-        $.each(data, function(item_id, value) {
-            var item = $('#' + namespace + "_" + item_id);
-            if (item.length) {
-                item.text(Math.floor(parseFloat(value)*1000)/1000 + " " + get_unit(item_id, namespace));
-            }
-        });
-    }
+    $.each(data, function(item_id, value) {
+        var item = $('#' + namespace + "_" + item_id);
+        if (item.length) {
+            item.text(Math.floor(parseFloat(value)*1000)/1000 + " " + get_unit(item_id, namespace));
+        }
+    });
 }
 
 function get_unit(item_id ,namespace){
