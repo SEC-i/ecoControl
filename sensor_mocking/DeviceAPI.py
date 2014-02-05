@@ -78,8 +78,8 @@ def set_data(device_id):
             simulation.set_heating(temperature)
             return "1"
     # set electrical consumption
-    if "electrical_consumption" in request.form:
-        energy = float(request.form['electrical_consumption'])
+    if "electric_consumption" in request.form:
+        energy = float(request.form['electric_consumption'])
         simulation.set_electrical_consumption(energy)
         return "1"
 
