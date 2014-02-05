@@ -85,8 +85,8 @@ class Simulation(Thread):
         for heating in self.heating:
             heating.target_temperature = temperature
 
-    def set_electrical_consumption(self, energy):
-        self.electric_consumer.sensors["electric_consumption"].value = energy
+    def set_electric_consumption(self, power):
+        self.electric_consumer.sensors["electric_consumption"].value = power
     
     
     def init_plotting(self):
