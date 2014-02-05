@@ -1,5 +1,6 @@
 import Device
 from Device import Sensor
+import random
 
 milliseconds_per_hour = 1000 * 60 * 60
 #J /( m^3 * K)
@@ -19,8 +20,9 @@ class Heating(Device.Device):
         # Type 22, 1.4m X 0.5m
         # W/m to 22 C = 90 W
         # room: 2x5x2.1m
-        self.room_volume = 2 * 5 * 2.1
-        self.power = 2150 #W
+        self.room_volume = 3 * 5 * 3
+        self.max_power = 2000 #W
+        self.current_power = 0
         self.window_surface = 5 #m^2
         #heat transfer coefficient normal glas window, W/(m^2 * K)
         self.k = 5.9
@@ -36,8 +38,19 @@ class Heating(Device.Device):
     def update(self, time_delta, heat_storage):
         time_delta_hour = time_delta / milliseconds_per_hour
         self.heat_loss(time_delta)
+        
+        change_speed = 0.01
+        rand = change_speed * (random.random() * 2.0 - 1.0)
+        slope = change_speed * sign(self.target_temperature - self.sensors["temperature"].value)
+        power_delta = (rand + slope ) * time_delta_hour
+
+        self.current_power += power_delta
+        self.current_power =  max(min(self.current_power, self.max_power),0)
+        
+        
+        
         if self.sensors["temperature"].value < self.target_temperature:
-            heat_storage.consume_energy(self.power / 1000 * time_delta_hour)
+            heat_storage.consume_energy(self.current_power / 1000 * time_delta_hour)
             self.heat_room(time_delta)
         
 
@@ -56,10 +69,17 @@ class Heating(Device.Device):
         # 0.8 denotes heating power to thermal energy efficiency
         heating_efficiency = 0.8 / (self.heat_capacity)
         
-        temperature_delta = self.power *   heating_efficiency * time_delta_seconds
+
+        
+        
+        temperature_mapping = (self.target_temperature) / 30.0
+        
+        temperature_delta = self.current_power *   heating_efficiency * time_delta_seconds
 
         self.sensors["temperature"].value += temperature_delta
 
+def sign(x): 
+    return 1 if x >= 0 else -1
 
 
     # def heat_loss(self, time_delta):

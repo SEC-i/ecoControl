@@ -20,9 +20,8 @@ class PLB(GeneratorDevice):
         time_delta_hour = time_delta / milliseconds_per_hour
         needed_thermal_energy = heat_storage.get_energy_demand()
         # comparison from overall energy demand (kwh) and power (kw) of an hour doesnt require time quotient
-        # 81 -> maximal thermal power from BHKW
-        if needed_thermal_energy > 81 or \
-            heat_storage.sensors["temperature"].value < 60:
+        # 12.5 -> maximal thermal power from BHKW
+        if needed_thermal_energy >  12.5:
                 
             self.power_on()
             heat_storage.add_energy(self.thermal_power * time_delta_hour)

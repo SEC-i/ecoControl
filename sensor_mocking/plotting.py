@@ -6,7 +6,7 @@ from Simulation import Simulation
 from Heating import Heating
 
 
-SIMULATED_TIME = 5 * 3600
+SIMULATED_TIME = 10 * 3600
 SIMULATION_DURATION = 10
 
 STEP_SIZE = SIMULATED_TIME / SIMULATION_DURATION
