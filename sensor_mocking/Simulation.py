@@ -11,7 +11,7 @@ class Simulation(Thread):
     def __init__(self,step_size=1,time_step=0.01,plotting=False,duration=None):
         Thread.__init__(self)
         self.bhkw = BHKW.BHKW(device_id=0)
-        self.peakload_boiler = PLB(device_id=4)
+        self.peakload_boiler = PLB(device_id=4, power=45) # PLB of pamiru48
         self.heat_storage = HeatStorage(device_id=1)
         self.electric_consumer = ElectricConsumer(device_id=3)
 
@@ -107,4 +107,3 @@ class Simulation(Thread):
                 if sensor.graph_id != None:
                     key_name = sensor.name + str(device.device_id)
                     self.plotting_data[sensor.graph_id][key_name].append(sensor.value)
-                

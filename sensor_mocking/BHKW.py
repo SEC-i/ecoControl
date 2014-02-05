@@ -18,13 +18,9 @@ class BHKW(GeneratorDevice):
 
         self.name = "BHKW"
         # workload is modulated starting from this value
-        self.modulation = 50 
+        # ecoPower from 1,3 kw el or 4 kw th -> about 30% workload
+        self.modulation = 30 
 
-        # self.current_electrical_power =  Sensor(name="electrical_power", id=1, value=0, unit="kW")
-        # self.current_thermal_power    =  Sensor(name="thermal_power", id=2, value=0, unit="kW")
-        # self.current_gasinput         =  Sensor(name="gas_input", id=3, value=0, unit="kW")
-
-        #index corresponds to sensor id
 
         self.sensors = {"workload":Sensor(name="workload BHKW", id=0, value=0, unit=r"%",graph_id=1),
                         "electrical_power":Sensor(name="electrical_power BHKW", id=1, value=0, unit="kW",graph_id=1),
@@ -34,11 +30,20 @@ class BHKW(GeneratorDevice):
 
         self.given_data = []
         # workload in percent, other data in kW
+        #self.given_data.append({"workload":0, "electrical_power":0, "thermal_power":0, "gasinput":0})
+        #self.given_data.append({"workload":25, "electrical_power":12.5, "thermal_power":20, "gasinput":43})
+        #self.given_data.append({"workload":50, "electrical_power":25, "thermal_power":46, "gasinput":86})
+        #self.given_data.append({"workload":75, "electrical_power":38, "thermal_power":64, "gasinput":118})
+        #self.given_data.append({"workload":99, "electrical_power":50, "thermal_power":81, "gasinput":145})
+
+        # use smaller bhkw of pamiru48: Vaillant ecoPower 4.7
+        # gas input based on maximum 90% efficiency scaling down like vitobloc
+        # electric/thermal power scaled down almost linear
         self.given_data.append({"workload":0, "electrical_power":0, "thermal_power":0, "gasinput":0})
-        self.given_data.append({"workload":25, "electrical_power":12.5, "thermal_power":20, "gasinput":43})
-        self.given_data.append({"workload":50, "electrical_power":25, "thermal_power":46, "gasinput":86})
-        self.given_data.append({"workload":75, "electrical_power":38, "thermal_power":64, "gasinput":118})
-        self.given_data.append({"workload":99, "electrical_power":50, "thermal_power":81, "gasinput":145})
+        self.given_data.append({"workload":25, "electrical_power":1.18, "thermal_power":3.13, "gasinput":5.75})
+        self.given_data.append({"workload":50, "electrical_power":2.35, "thermal_power":7, "gasinput":11.27})
+        self.given_data.append({"workload":75, "electrical_power":3.53, "thermal_power":10, "gasinput":15.73})
+        self.given_data.append({"workload":99, "electrical_power":4.7, "thermal_power":12.5, "gasinput":19.1})
 
 
     def find_bounding_datasets(self,value,type):
@@ -72,8 +77,8 @@ class BHKW(GeneratorDevice):
     def modulating(self):
         if self.target_workload > self.modulation:
             return
-        elif self.target_workload > (self.modulation * 0.8):
-            self.target_workload = self.modulation
+       # elif self.target_workload > (self.modulation * 0.8):
+       #     self.target_workload = self.modulation
         else:
             self.target_workload = 0
 
