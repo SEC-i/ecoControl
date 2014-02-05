@@ -15,22 +15,28 @@ TIME_STEP = 0.005
 
 class Plotting(object):
     def __init__(self):
-        simulation = Simulation(step_size=STEP_SIZE,time_step=TIME_STEP,plotting=True,duration=SIMULATION_DURATION)
-        simulation.start()
-        simulation.join()
+        self.simulation = Simulation(step_size=STEP_SIZE,time_step=TIME_STEP,plotting=True,duration=SIMULATION_DURATION)
+        self.simulation.start()
+        self.simulation.join()
         
 
-        self.data = simulation.plotting_data
+        self.data = self.simulation.plotting_data
         # evenly sampled time at xxx intervals
         self.t = np.arange(0.0, SIMULATED_TIME, TIME_STEP*STEP_SIZE)        
         #cut to the actual length of simulation data
-        self.t = self.t[0:len(self.data[1]["workload0"])]
+        self.t = self.t[0:len(self.data[1]["workload.0"])]
         
         self.plot_dataset(1, "Energy Conversion")
         plt.show(block=False)
         self.plot_dataset(2, "Temperatures")
         plt.show(block=True)    
-        
+    
+    def get_line_name(self,concat_name):
+        parts = concat_name.split(".")
+        dev_id = int(parts[1])
+        device = self.simulation.devices[dev_id]
+        sensor = self.simulation.get_sensor(dev_id,sensor_name=parts[0])
+        return sensor.name + " of " + device.name +  " in " +  sensor.unit
 
 
     def plot_dataset(self,data_id,title):
@@ -40,7 +46,7 @@ class Plotting(object):
         
         for name,sensorvals in self.data[data_id].items():
             if name != "unit":
-                line_label = name + " in " +  self.data[data_id]["unit"]
+                line_label = self.get_line_name(name)
                 ax.plot(self.t,sensorvals,label=line_label)
         
         # Now add the legend with some customizations.

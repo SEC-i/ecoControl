@@ -20,15 +20,17 @@ class HeatStorage(Device.Device):
         self.c = 0.00116 # kwh/l * K
 
     def add_energy(self,energy):
-        self.input_energy = energy
+        self.input_energy += energy
 
     def consume_energy(self,energy):
-        self.output_energy = energy
+        self.output_energy += energy
 
     def update(self,time_delta):
         energy_delta =  self.input_energy - self.output_energy
         #compute water temperature from energy
         self.sensors["temperature"].value +=  energy_delta / (self.storage_capacity * self.c)
+        self.input_energy = 0
+        self.output_energy = 0
 
     def get_energy_demand(self):
         temperature_delta = self.target_temperature - self.sensors["temperature"].value

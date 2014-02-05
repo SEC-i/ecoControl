@@ -18,7 +18,7 @@ class Simulation(Thread):
         self.heating = []
         self.heating.append(Heating(device_id=2))
         self.heating.append(Heating(device_id=5))
-        self.heating.append(Heating(device_id=6))
+        self.heating.append(Heating(device_id=6))        
         
         # update frequency
         self.time_step = time_step
@@ -84,6 +84,21 @@ class Simulation(Thread):
 
     def set_electric_consumption(self, power):
         self.electric_consumer.sensors["electric_consumption"].value = power
+        
+        
+    def get_sensor(self,device_id,sensor_id=None,sensor_name=None):
+        dev = self.devices[device_id]
+        if sensor_id!=None:
+            for key,sens in dev.sensors.items():
+                if sensor_id == sens.id:
+                    return sens
+        elif sensor_name != None:
+            for key,sens in dev.sensors.items():
+                if sensor_name == sens.name:
+                    return sens
+        return None  
+                
+                
     
     
     def init_plotting(self):
@@ -95,12 +110,12 @@ class Simulation(Thread):
                 if sensor.graph_id != None:
                     if sensor.graph_id not in self.plotting_data:
                         self.plotting_data[sensor.graph_id] = {"unit":sensor.unit}
-                    key_name = sensor.name + str(device.device_id)
+                    key_name = sensor.name + "." +  str(device.device_id)
                     self.plotting_data[sensor.graph_id][key_name] = []        
     
     def plot(self):
         for key,device in self.devices.items():
             for key,sensor in device.sensors.items():
                 if sensor.graph_id != None:
-                    key_name = sensor.name + str(device.device_id)
+                    key_name = sensor.name + "." + str(device.device_id)
                     self.plotting_data[sensor.graph_id][key_name].append(sensor.value)
