@@ -64,7 +64,6 @@ class Simulation(Thread):
             for heating in self.heating:
                 heating.update(time_delta_sim, self.heat_storage)
             self.heat_storage.update(time_delta_sim)
-            count += 1
             
             if self.plotting:
                 self.plot()
