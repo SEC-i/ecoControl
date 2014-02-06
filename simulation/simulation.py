@@ -93,9 +93,9 @@ class Simulation(Thread):
         "for testcases"
         self.mainloop_running = False
 
-    def fast_forward(self, timedelta):
+    def fast_forward(self, seconds):
         self.init_fast_motion()
-        self.remaining_time = timedelta.total_seconds() * 1000
+        self.remaining_time = seconds * 1000
         while self.remaining_time > 0:
             sleep(0.1)
         return self.fast_motion_values
@@ -150,15 +150,11 @@ class Simulation(Thread):
     def init_fast_motion(self):
         for key,device in self.devices.items():
             for key,sensor in device.sensors.items():
-                if sensor.graph_id != None:
-                    if sensor.graph_id not in self.fast_motion_values:
-                        self.fast_motion_values[sensor.graph_id] = {}
-                    key_name = sensor.name + "." +  str(device.device_id)
-                    self.fast_motion_values[sensor.graph_id][key_name] = []
+                if device.device_id not in self.fast_motion_values:
+                    self.fast_motion_values[device.device_id] = {}
+                self.fast_motion_values[device.device_id][sensor.name] = []
 
     def add_sensor_data(self):
         for key,device in self.devices.items():
             for key,sensor in device.sensors.items():
-                if sensor.graph_id != None:
-                    key_name = sensor.name + "." + str(device.device_id)
-                    self.fast_motion_values[sensor.graph_id][key_name].append(sensor.value)
+                self.fast_motion_values[device.device_id][sensor.name].append(sensor.value)

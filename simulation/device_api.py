@@ -1,4 +1,6 @@
 #!flask/bin/python
+from datetime import timedelta
+
 from flask import Flask, jsonify, request, make_response, render_template
 from functools import update_wrapper
 app = Flask(__name__)
@@ -61,18 +63,17 @@ def set_data():
     if "electric_consumption" in request.form:
         power = float(request.form['electric_consumption'])
         simulation.set_electric_consumption(power)
-        return "1"
-    
-    if "temperature_outside" in request.form:
-        temeprature = float(request.form['temperature_outside'])
-        simulation.set_electric_consumption(power)
-        return "1"    
+        return "1"   
 
     # set outside temperature
     if "outside_temperature" in request.form:
         temperature = float(request.form['outside_temperature'])
         simulation.set_outside_temperature(temperature)
         return "1"
+
+    if "fast_forward" in request.form:
+        time_interval = int(request.form['fast_forward'])
+        return jsonify(simulation.fast_forward(time_interval))
 
     return "0"
 

@@ -72,6 +72,22 @@
               </div>
               <div id="diagram_container" class="panel-collapse collapse in">
                 <div class="panel-body text-center">
+                  <div class="row">
+                    <div class="col-sm-offset-9 col-sm-3">
+                      <form id="form_ff" role="form" class="form-inline">
+                        <div class="form-group">
+                          <select class="form-control" id="fast_forward_selection">
+                            <option value="1800">30 min</option>
+                            <option value="3600">1 hour</option>
+                            <option value="43200">12 hours</option>
+                            <option value="86400">1 day</option>
+                            <option value="172800">2 days</option>
+                          </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="ff_button">Go!</button>
+                      </form>
+                    </div>
+                  </div>
                   <div id="simulation_diagram"></div>
                 </div>
               </div>

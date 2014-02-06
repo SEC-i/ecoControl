@@ -1,5 +1,8 @@
 var devices_info = null;
 var series_data = [];
+var fast_forward_active = false;
+
+var current_time = new Date();
 
 $(function(){
     $.get( "/static/img/simulation.svg", function( data ) {
@@ -25,7 +28,7 @@ $(function(){
     }).done(function(){
         $.getJSON( "/api/data/", function( data ) {
             var i = 0;
-            var timestamp = (new Date()).getTime();
+            var timestamp = simulation_time();
             $.each(data, function(device_id, device_data) {
                 $.each(device_data, function(sensor_name, value){
                     if(["name", "energy_external", "energy_infeed"].indexOf(sensor_name) == -1){
@@ -38,7 +41,7 @@ $(function(){
             initialize_diagram();
             setInterval(function(){
                 refresh()
-            }, 500);
+            }, 2000);
         });
     });
 
@@ -46,10 +49,12 @@ $(function(){
 });
 
 function refresh(){
-    $.getJSON( "/api/data/", function( data ) {
-        update_scheme(data);
-        update_diagram(data);
-    });
+    if(!fast_forward_active){
+        $.getJSON( "/api/data/", function( data ) {
+            update_scheme(data);
+            update_diagram(data);
+        });
+    }
 }
 
 function update_scheme(data){
@@ -83,19 +88,53 @@ function get_namespace_for_id(id){
     }
 }
 
-function update_diagram(data){
+function update_diagram(data, multiple){
     var chart = $('#simulation_diagram').highcharts();
     var i = 0;
-    var timestamp = (new Date()).getTime();
+    var timestamp = simulation_time();
+    var max_additional_seconds = 0;
     $.each(data, function(device_id, device_data) {
         $.each(device_data, function(sensor_name, value){
             if(["name", "energy_external", "energy_infeed"].indexOf(sensor_name) == -1){
-                chart.series[i].addPoint([timestamp, parseFloat(value)], false);
+                if(multiple != undefined && multiple == true){
+                    max_additional_seconds = Math.max(value.length, max_additional_seconds);
+                    for (var j = 0; j < value.length; j++) {
+                        chart.series[i].addPoint([future_time(timestamp, j), parseFloat(value[j])], false);
+                    }
+                }else{
+                    chart.series[i].addPoint([timestamp, parseFloat(value)], false);
+                }
                 i++;
             }
         });
     });
+    if(multiple != undefined && multiple == true){
+        simulation_time(max_additional_seconds);
+    }
     chart.redraw();
+}
+
+function future_time(timestamp, seconds){
+    return new Date(timestamp + seconds * 1000).getTime();
+}
+
+function simulation_time(additional_seconds){
+    additional_seconds = typeof additional_seconds !== 'undefined' ? additional_seconds : 1;
+
+    current_time = new Date(current_time.getTime() + additional_seconds * 1000);
+    return current_time.getTime();
+}
+
+function fast_forward(){
+    fast_forward_active = true;
+    $.post( "/api/set/", { fast_forward: $("#fast_forward_selection").val() }, function( data ){
+        $("#ff_button").removeClass("btn-primary").addClass("btn-success");
+
+        update_diagram(data, true);
+
+        $("#ff_button").removeClass("btn-success").addClass("btn-primary");
+        fast_forward_active = false;
+    });
 }
 
 function initialize_buttons(){
@@ -116,6 +155,11 @@ function initialize_buttons(){
                 $("#temperature_button").removeClass("btn-success").addClass("btn-primary");
             },1000);
         });
+        event.preventDefault();
+    });
+
+    $("#form_ff").submit(function(){
+        fast_forward();
         event.preventDefault();
     });
 }
@@ -162,6 +206,7 @@ function initialize_diagram(){
                 type: 'all',
                 text: 'All'
             }],
+            inputEnabled: false,
             selected: 0
         },
         
