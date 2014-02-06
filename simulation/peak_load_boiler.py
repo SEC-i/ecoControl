@@ -1,6 +1,4 @@
-import Device
-from Device import Sensor
-from Device import GeneratorDevice
+from device import Sensor, GeneratorDevice
 
 milliseconds_per_hour = 1000 * 60 * 60
 

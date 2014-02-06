@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from HeatStorage import HeatStorage
-from Simulation import Simulation
-from Heating import Heating
+from heat_storage import HeatStorage
+from simulation import Simulation
+from heating import Heating
 
 
 SIMULATED_TIME = 10 * 3600

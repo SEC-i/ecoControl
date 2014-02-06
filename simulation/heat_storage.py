@@ -1,7 +1,4 @@
-import Device
-from Device import Sensor
-from Device import GeneratorDevice
-
+from device import Sensor, GeneratorDevice
 
 class HeatStorage(Device.Device):
 

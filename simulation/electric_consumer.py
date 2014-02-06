@@ -1,5 +1,4 @@
-import Device
-from Device import Sensor
+from device import Sensor
 
 milliseconds_per_hour = 1000 * 60 * 60
 

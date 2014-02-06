@@ -4,11 +4,11 @@ from urllib import urlopen, urlencode
 from threading import Timer
 from flask import Flask, jsonify, request, make_response
 from functools import update_wrapper
-import BHKW
+import bhkw
 #from PeakLoadBoiler import PlBoiler
-from HeatStorage import HeatStorage
-from Simulation import Simulation
-from Heating import Heating
+from heat_storage import HeatStorage
+from simulation import Simulation
+from heating import Heating
 
 
 app = Flask(__name__)

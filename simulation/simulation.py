@@ -1,11 +1,11 @@
-import Device
-import BHKW
-from PeakLoadBoiler import PLB
-from HeatStorage import HeatStorage
-from Heating import Heating
-from ElectricConsumer import ElectricConsumer
+import device
+import bhkw
+from peak_load_boiler import PLB
+from heat_storage import HeatStorage
+from heating import Heating
+from electric_consumer import ElectricConsumer
 import time
-from  threading import Thread
+from threading import Thread
 
 class Simulation(Thread):
     def __init__(self,step_size=1,time_step=0.01,plotting=False,duration=None):
