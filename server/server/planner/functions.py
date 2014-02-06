@@ -3,8 +3,42 @@ import logging
 from datetime import datetime, timedelta
 from django.utils.timezone import utc
 from server.models import  Sensor, SensorEntry, SensorRule, SensorDelta, Task, Device
+from server.webapi.plugins import arduino,raspberrypi
 
 logger = logging.getLogger('planner')
+
+
+def simple_moisture_check():
+    sensor_ids = [1,2,3] #plant ids
+    try:
+        sensor_entries = SensorEntry.objects.filter(sensor__in = sensor_ids).order_by("-timestamp")[:3]
+        summed_value = 0.0
+        for sensor_entry in sensor_entries:
+            summed_value += float(sensor_entry.value)
+        summed_value /= 3.0
+
+        if summed_value < 500:
+            arduino.handle_post_data({'water_plants':1}) #send a POST to arduino
+    
+    except SensorEntry.DoesNotExist:
+        pass
+
+
+def simple_battery_check():
+    try:
+        sensor_entries = SensorEntry.objects.filter(sensor_id = 4).order_by("-timestamp")[:3]
+        summed_value = 0.0
+        for sensor_entry in sensor_entries:
+            summed_value += float(sensor_entry.value)
+        summed_value /= 3.0
+
+        if summed_value < 11.0:
+            raspberrypi.handle_post_data({'switch_number':1, 'switch_state':'on'}) #switch on charger
+        elif summed_value > 13.0:
+            raspberrypi.handle_post_data({'switch_number':1, 'switch_state':'off'}) #switch off charger
+    
+    except SensorEntry.DoesNotExist:
+        pass
 
 # crawl data and save sensor entries
 def update_delta():
@@ -19,11 +53,11 @@ def update_delta():
             sensor_delta.delta = None
 
         try:
-            latest_data =  SensorEntry.objects.filter(sensor_id= sensor.id).order_by('-timestamp')[0]
+            latest_data =  SensorEntry.objects.filter(sensor_id= sensor.id).latest('timestamp')
             
             date_before_interval = datetime.utcnow().replace(tzinfo=utc) - timedelta(seconds=int(sensor_delta.interval))
             #get the first dataSet from the data before the interval
-            intervall_ago_data = SensorEntry.objects.filter(sensor_id= sensor.id, timestamp__lte= date_before_interval).order_by('-timestamp')[0]
+            intervall_ago_data = SensorEntry.objects.filter(sensor_id= sensor.id, timestamp__lte= date_before_interval).latest('timestamp')
  
 
             current_delta  = float(latest_data.value) - float(intervall_ago_data.value)
@@ -115,37 +149,3 @@ def estimate_date(threshold,sensor_delta, sensor_rule):
 
 def timedelta_to_seconds(time_delta):
     return float(time_delta.days * 3600 * 24 + time_delta.seconds + round(time_delta.microseconds / (10**6)))
-
-
-
-#some datafilling for a fresh database
-# dev = Device()
-# dev.name = "arduino"
-# dev.data_source = u"http://172.16.19.114:9002/get/"
-# dev.interval = 30
-# dev.save()
-
-# sens = Sensor()
-# sens.key_name = "plant2_value"
-# sens.device_id = 1
-# sens.name = "Plant #2"
-# sens.unit = "hpi"
-# sens.group = 0
-# sens.save()
-# for rule in SensorRule.objects.all():
-#     rule.delete()
-
-# rule = SensorRule()
-# rule.sensor_id = 1
-# rule.threshold = 598
-# rule.target_function = "water_plants"
-# rule.comparison = "<"
-# rule.save()
-
-# delta = SensorDelta()
-# delta.id = 1
-# delta.sensor_id = 1
-# delta.delta = 5.0
-# delta.interval = 60 * 5
-# delta.timestamp = datetime.utcnow().replace(tzinfo=utc)
-# delta.save()

@@ -41,7 +41,7 @@
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Devices <b class="caret"></b></a>
               <ul class="dropdown-menu" id="device_list"></ul>
             </li>
-            <li><a href="#" id="settings_button">Settings</a></li>            
+            <li><a href="#" id="simulation_button">Simulation</a></li>            
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li><a href="#" id="nav_username"></a></li>
@@ -99,11 +99,33 @@
 
     </div> <!-- /container -->
 
-    <!-- Settings page -->
-    <div class="container collapse" id="settings">
+    <!-- Simulation page -->
+    <div class="container collapse" id="simulation">
       <div class="jumbotron">
-        <h2>Settings</h2>
-        <p>This is the setting page.</p>
+        <h2>Simulation</h2>
+        <div class="row">
+          <div class="col-sm-offset-3 col-sm-3">
+            <form id="form_consumption" role="form" class="form-inline">
+              <div class="form-group">
+                <input type="text" class="form-control" id="electric_consumption" placeholder="Electric Consumption">
+              </div>
+              <button type="submit" class="btn btn-primary" id="consumption_button">Set</button>
+            </form>
+          </div>
+          <div class="col-sm-offset-1 col-sm-3">
+            <form id="form_temperature" role="form" class="form-inline">
+              <div class="form-group">
+                <input type="text" class="form-control" id="room_temperature" placeholder="Room Temperature">
+              </div>
+              <button type="submit" class="btn btn-primary" id="temperature_button">Set</button>
+            </form>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div id="simulation_container" class="svg-container"></div>
+          </div>
+        </div>
       </div>
 
     </div> <!-- /container -->
