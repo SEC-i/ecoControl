@@ -65,7 +65,7 @@ class SimpleTest(unittest.TestCase):
         response = self.client.get('/api/device/' + str(d.id) + '/')
 
         # Check that the response contains the test device
-        self.assertEqual(json.loads(response.content), [{"id": d.id, "name": d.name, "interval": d.interval}])
+        self.assertEqual(json.loads(response.content), [{"id": d.id, "control_unit_url": "", "name": d.name, "interval": d.interval}])
 
     # def test_save_device_data(self):
     #     self.client.login(username='test_user', password='demo123')
