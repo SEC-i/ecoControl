@@ -31,7 +31,7 @@ class HeatStorage(Device):
         self.output_energy = 0
         if self.sensors["temperature"].value >= self.target_temperature:
             self.rising = False
-        elif not self.rising and self.sensors["temperature"].value < self.target_temperature - 30:
+        elif not self.rising and self.sensors["temperature"].value < self.target_temperature - 10:
             self.rising = True
 
     def get_energy_demand(self):
