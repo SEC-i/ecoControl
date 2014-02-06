@@ -57,11 +57,7 @@ def set_data():
         if temperature >= 10 and temperature <= 30:
             simulation.set_heating(temperature)
             return "1"
-<<<<<<< HEAD
-
     # set electrical consumption
-=======
->>>>>>> 2d4c104b6d0652be81810429c9cdc9939d067cd2
     if "electric_consumption" in request.form:
         power = float(request.form['electric_consumption'])
         simulation.set_electric_consumption(power)
@@ -97,8 +93,6 @@ def get_info(device_id):
     for key, sensor in device.sensors.items():
         device_data[sensor.name] = sensor.unit
     return jsonify(device_data)
-
-
 
 if __name__ == '__main__':
     simulation.start()
