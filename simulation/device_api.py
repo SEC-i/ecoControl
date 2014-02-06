@@ -77,11 +77,15 @@ def set_data(device_id):
         if temperature >= 10 and temperature <= 30:
             simulation.set_heating(temperature)
             return "1"
-    # set electrical consumption
     if "electric_consumption" in request.form:
         power = float(request.form['electric_consumption'])
         simulation.set_electric_consumption(power)
         return "1"
+    
+    if "temperature_outside" in request.form:
+        temeprature = float(request.form['temperature_outside'])
+        simulation.set_electric_consumption(power)
+        return "1"    
 
     return "0"
 
