@@ -104,6 +104,10 @@ class Simulation(Thread):
     def set_heating(self, temperature):
         for heating in self.heating:
             heating.target_temperature = temperature
+    
+    def set_outside_temperature(self, temperature):
+        for heating in self.heating:
+            heating.sensors["temperature_outside"] = temperature    
 
     def set_electric_consumption(self, power):
         self.electric_consumer.sensors["electric_consumption"].value = power
