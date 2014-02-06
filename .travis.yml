@@ -20,5 +20,5 @@ install:
 script:
   - cd server
   - python manage.py test
-  - cd ../sensor_mocking
+  - cd ../simulation
   - python test.py

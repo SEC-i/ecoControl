@@ -1,8 +1,8 @@
 import random
 import unittest
-import BHKW
+import bhkw
 import time
-from Simulation import BHKW_Simulation
+from simulation import BHKW_Simulation
 
 class TestBHKW(unittest.TestCase):
 
