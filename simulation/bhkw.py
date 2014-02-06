@@ -42,6 +42,9 @@ class BHKW(GeneratorDevice):
         self.given_data.append({"workload":50, "electrical_power":2.35, "thermal_power":7, "gasinput":11.27})
         self.given_data.append({"workload":75, "electrical_power":3.53, "thermal_power":10, "gasinput":15.73})
         self.given_data.append({"workload":99, "electrical_power":4.7, "thermal_power":12.5, "gasinput":19.1})
+        
+        #0 = follow thermal, 1 = follow electric
+        self.mode = 1
 
 
     def find_bounding_datasets(self,value,type):
@@ -80,11 +83,17 @@ class BHKW(GeneratorDevice):
         else:
             self.target_workload = 0
 
-    def update(self,time_delta,heat_storage):
+    def update(self,time_delta,heat_storage,electric_consumer):
         time_delta_hour = time_delta / milliseconds_per_hour
         
-        needed_thermal_energy = heat_storage.get_energy_demand()
-        self.target_workload = self.calculate_parameters(needed_thermal_energy / time_delta_hour,"thermal_power")["workload"]
+        if self.mode == 0:
+            needed_thermal_energy = heat_storage.get_energy_demand()
+            self.target_workload = self.calculate_parameters(needed_thermal_energy / time_delta_hour,"thermal_power")["workload"]
+        else:
+            self.target_workload = self.calculate_parameters(electric_consumer.get_power_demand(),"electrical_power")["workload"]
+            if heat_storage.get_temperature() > heat_storage.target_temperature:
+                self.target_workload = 0
+        
         self.modulating()
         self.smooth_set_step(time_delta)
         new_values = self.calculate_parameters(self.sensors["workload"].value,"workload")
@@ -92,8 +101,11 @@ class BHKW(GeneratorDevice):
         for key in new_values:
             if (key != "workload"):
                 self.sensors[key].value = new_values[key]
-
-        heat_storage.add_energy(self.sensors["thermal_power"].value * time_delta_hour)
+        
+        if self.mode == 0:
+            heat_storage.add_energy(self.sensors["thermal_power"].value * time_delta_hour)
+        else:
+            heat_storage.add_energy(self.sensors["electrical_power"].value * time_delta_hour)
 
     def get_electrical_power(self):
         return self.sensors["electrical_power"].value

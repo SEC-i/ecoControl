@@ -74,15 +74,15 @@ class Simulation(Thread):
 
             if self.plotting:
                 self.plot()
+            
             # terminate plotting
-            #elapsed = datetime.utcnow() - self.start_time + datetime.timedelta(seconds=self.forwarded_time).total_seconds()
-            #if self.duration != None and elapsed > self.duration:
+            if self.duration != None and time()-self.start_time > self.duration:
 
-                #print "simulation finished"
-                #return
+                print "simulation finished"
+                return
 
     def update_devices(self, time_delta):
-        self.bhkw.update(time_delta, self.heat_storage)
+        self.bhkw.update(time_delta, self.heat_storage,self.electric_consumer)
         self.peakload_boiler.update(time_delta, self.heat_storage)
         self.electric_consumer.update(time_delta, self.bhkw)
         for heating in self.heating:
