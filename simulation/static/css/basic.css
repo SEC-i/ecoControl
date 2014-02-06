@@ -1,0 +1,22 @@
+html, body {
+}
+
+#footer {
+  text-align: right;
+}
+
+.svg_container {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  padding-bottom: 70%;
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+.svg_container svg {
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  left: 0;
+}

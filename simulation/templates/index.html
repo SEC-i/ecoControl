@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>BP2013H1 - Simulation</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./static/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles -->
+    <link href="./static/css/basic.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <!-- Simulation page -->
+    <div class="container" id="home">
+      <div class="page-header">
+        <h1>Simulation</h1>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="panel-group" id="accordion">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" data-parent="#accordion" href="#scheme_container">
+                    Scheme
+                  </a>
+                </h4>
+              </div>
+              <div id="scheme_container" class="panel-collapse collapse out">
+                <div class="panel-body">
+                  <div class="row">
+                    <div class="col-sm-offset-3 col-sm-3">
+                      <form id="form_consumption" role="form" class="form-inline">
+                        <div class="form-group">
+                          <input type="text" class="form-control" id="electric_consumption" placeholder="Electric Consumption">
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="consumption_button">Set</button>
+                      </form>
+                    </div>
+                    <div class="col-sm-offset-1 col-sm-3">
+                      <form id="form_temperature" role="form" class="form-inline">
+                        <div class="form-group">
+                          <input type="text" class="form-control" id="room_temperature" placeholder="Room Temperature">
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="temperature_button">Set</button>
+                      </form>
+                    </div>
+                  </div>
+                  <div id="simulation_scheme" class="svg_container"></div>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" data-parent="#accordion" href="#diagram_container">
+                    Diagram
+                  </a>
+                </h4>
+              </div>
+              <div id="diagram_container" class="panel-collapse collapse in">
+                <div class="panel-body text-center">
+                  <div id="simulation_diagram"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> <!-- /container -->
+
+    <!-- Footer -->
+    <div id="footer" class="collapse">
+      <div class="container">
+        <p class="text-muted credit">Copyright &copy; BP2013H1</p>
+      </div>
+    </div>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="./static/js/jquery-1.10.2.min.js"></script>
+    <script src="./static/js/bootstrap.min.js"></script>
+
+    <script src="./static/js/hs/highstock.js"></script>
+    <script src="./static/js/hs/modules/no-data-to-display.js"></script>
+    <script src="./static/js/hs/modules/exporting.js"></script>
+
+    <script src="./static/js/ready.js"></script>
+  </body>
+</html>
