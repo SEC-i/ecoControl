@@ -1,3 +1,7 @@
+# Tell Travis to only test master branch
+branches:
+  only:
+    - master
 # Tell Travis you want a Python environment to test in
 language: python
 # List the versions of Python you'd like to test against
