@@ -62,10 +62,10 @@ class Simulation(Thread):
 
             time_delta = time() - step_start_time
             while self.remaining_time > 0:
-                self.forwarded_time += self.step_size
-                self.remaining_time -= self.step_size
-                self.update_devices(float(1000 * self.step_size))
-                self.add_sensor_data()
+                self.remaining_time -= 1
+                self.update_devices(1000)
+                if remaining_time % 10 == 0:
+                    self.add_sensor_data()
 
             time_step_ms = float(time_delta * 1000 * self.step_size)
             self.update_devices(time_step_ms)
@@ -95,7 +95,7 @@ class Simulation(Thread):
 
     def fast_forward(self, seconds):
         self.init_fast_motion()
-        self.remaining_time = seconds * 1000
+        self.remaining_time = seconds
         while self.remaining_time > 0:
             sleep(0.1)
         return self.fast_motion_values
