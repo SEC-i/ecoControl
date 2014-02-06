@@ -15,20 +15,20 @@ class Heating(Device):
         self.name = "Heating"
         self.sensors = {"temperature":Sensor(name="temperature",id=0,value=20, unit=r"C",graph_id=2),
                         "temperature_outside":Sensor(name="temperature_outside",id=1,value=5,unit=r"C",graph_id=0)}
-        self.target_temperature = 30
+        self.target_temperature = 25
         # Type 22, 1.4m X 0.5m
         # W/m to 22 C = 90 W
         # room: 2x5x2.1m
         self.room_volume = 3 * 5 * 3
-        self.max_power = 2000 #W
+        self.max_power = 4000 #W
         self.current_power = 0
         self.window_surface = 5 #m^2
         #heat transfer coefficient normal glas window, W/(m^2 * K)
         self.k = 5.9
         #self.energy = 
 
-        # J / K, approximation for 5m^3 wall, spec heat capacity brick = 0.84 J/(g * K)
-        heat_cap_brick =  9 * 10**5
+        # J / K, approximation for 15m^2walls, 0.2m thickness, walls, ceiling, spec heat capacity brick = 1360 KJ/(m^3 * K)
+        heat_cap_brick =  1360 * 100 * (4*3*5 * 0.2)
 
         self.heat_capacity = heat_capacity_air * self.room_volume + heat_cap_brick
 
@@ -38,19 +38,17 @@ class Heating(Device):
         time_delta_hour = time_delta / milliseconds_per_hour
         self.heat_loss(time_delta)
         
-        change_speed = 0.01
+        change_speed = 0.001
         rand = change_speed * (random.random() * 2.0 - 1.0)
         slope = change_speed * sign(self.target_temperature - self.sensors["temperature"].value)
-        power_delta = (rand + slope ) * time_delta_hour
+        power_delta = (rand + slope ) * time_delta
 
         self.current_power += power_delta
         self.current_power =  max(min(self.current_power, self.max_power),0)
         
         
-        
-        if self.sensors["temperature"].value < self.target_temperature:
-            heat_storage.consume_energy(self.current_power / 1000 * time_delta_hour)
-            self.heat_room(time_delta)
+        heat_storage.consume_energy(self.current_power / 1000 * time_delta_hour)
+        self.heat_room(time_delta)
         
 
     def heat_loss(self, time_delta):
@@ -66,10 +64,7 @@ class Heating(Device):
     def heat_room(self, time_delta):
         time_delta_seconds = time_delta / 1000
         # 0.8 denotes heating power to thermal energy efficiency
-        heating_efficiency = 0.8 / (self.heat_capacity)
-        
-
-        
+        heating_efficiency = 0.8 / (self.heat_capacity)        
         
         temperature_mapping = (self.target_temperature) / 30.0
         

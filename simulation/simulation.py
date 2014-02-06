@@ -1,16 +1,17 @@
-import device
-import bhkw
+from datetime import datetime
+from time import time, sleep
+from threading import Thread
+
+from bhkw import BHKW
 from peak_load_boiler import PLB
 from heat_storage import HeatStorage
 from heating import Heating
 from electric_consumer import ElectricConsumer
-import time
-from threading import Thread
 
 class Simulation(Thread):
     def __init__(self,step_size=1,time_step=0.01,plotting=False,duration=None):
         Thread.__init__(self)
-        self.bhkw = bhkw.BHKW(device_id=0)
+        self.bhkw = BHKW(device_id=0)
         self.peakload_boiler = PLB(device_id=4, power=45) # PLB of pamiru48
         self.heat_storage = HeatStorage(device_id=1)
         self.electric_consumer = ElectricConsumer(device_id=3)
@@ -18,12 +19,16 @@ class Simulation(Thread):
         self.heating = []
         self.heating.append(Heating(device_id=2))
         self.heating.append(Heating(device_id=5))
-        self.heating.append(Heating(device_id=6))        
+        self.heating.append(Heating(device_id=6))
         
         # update frequency
         self.time_step = time_step
         # simulation speed
         self.step_size = step_size
+        self.remaining_time = 0 #ms
+        self.forwarded_time = 0
+        self.fast_motion_values = {}
+                
         self.daemon = True
         self.devices = {self.bhkw.device_id:self.bhkw,
                         self.heat_storage.device_id:self.heat_storage,
@@ -33,13 +38,12 @@ class Simulation(Thread):
         for heating in self.heating:
             self.devices[heating.device_id] = heating
         
+        self.init_fast_motion()
         
         self.plotting = plotting
-        self.duration = duration
+        self.duration = duration #seconds
         if self.plotting:
             self.init_plotting()
-
-
 
     def run(self):
         self.mainloop_running = True
@@ -47,40 +51,63 @@ class Simulation(Thread):
 
     def mainloop(self):
         print "simulating..."
-        self.start_time = time.time()
+        self.start_time = time()
         time_loss = 0
         while self.mainloop_running:
             
-            cur_time_millis = time.time() * 1000
-            time.sleep(self.time_step - min(time_loss,self.time_step))
+            step_start_time = time()
+            sleep(self.time_step - min(time_loss,self.time_step))
 
-            t0 = time.time()
-            time_delta = time.time() * 1000 - cur_time_millis
-            time_delta_sim = float(time_delta * self.step_size)
+            t0 = time()
+
+            time_delta = time() - step_start_time
+            while self.remaining_time > 0:
+                self.forwarded_time += self.step_size
+                self.remaining_time -= self.step_size
+                self.update_devices(float(1000 * self.step_size))
+                self.add_sensor_data()
+
+            time_step_ms = float(time_delta * 1000 * self.step_size)
+            self.update_devices(time_step_ms)
             
-            self.bhkw.update(time_delta_sim, self.heat_storage)
-            self.peakload_boiler.update(time_delta_sim, self.heat_storage)
-            self.electric_consumer.update(time_delta_sim, self.bhkw)
-            for heating in self.heating:
-                heating.update(time_delta_sim, self.heat_storage)
-            self.heat_storage.update(time_delta_sim)
-            
+            time_loss = time() - t0
+
             if self.plotting:
                 self.plot()
-            
-            time_loss = time.time() - t0
-                
-            if self.duration != None and (time.time() - self.start_time) > self.duration:
-                print "simulation finished"
-                return
+            # terminate plotting
+            #elapsed = datetime.utcnow() - self.start_time + datetime.timedelta(seconds=self.forwarded_time).total_seconds()
+            #if self.duration != None and elapsed > self.duration:
+
+                #print "simulation finished"
+                #return
+
+    def update_devices(self, time_delta):
+        self.bhkw.update(time_delta, self.heat_storage)
+        self.peakload_boiler.update(time_delta, self.heat_storage)
+        self.electric_consumer.update(time_delta, self.bhkw)
+        for heating in self.heating:
+            heating.update(time_delta, self.heat_storage)
+        self.heat_storage.update(time_delta)
 
     def immediate_off(self):
         "for testcases"
         self.mainloop_running = False
 
+    def fast_forward(self, timedelta):
+        self.init_fast_motion()
+        self.remaining_time = timedelta.total_seconds() * 1000
+        while self.remaining_time > 0:
+            sleep(0.1)
+        return self.fast_motion_values
+        
+
     def set_heating(self, temperature):
         for heating in self.heating:
             heating.target_temperature = temperature
+    
+    def set_outside_temperature(self, temperature):
+        for heating in self.heating:
+            heating.sensors["temperature_outside"] = temperature    
 
     def set_electric_consumption(self, power):
         self.electric_consumer.sensors["electric_consumption"].value = power
@@ -119,3 +146,19 @@ class Simulation(Thread):
                 if sensor.graph_id != None:
                     key_name = sensor.name + "." + str(device.device_id)
                     self.plotting_data[sensor.graph_id][key_name].append(sensor.value)
+
+    def init_fast_motion(self):
+        for key,device in self.devices.items():
+            for key,sensor in device.sensors.items():
+                if sensor.graph_id != None:
+                    if sensor.graph_id not in self.fast_motion_values:
+                        self.fast_motion_values[sensor.graph_id] = {}
+                    key_name = sensor.name + "." +  str(device.device_id)
+                    self.fast_motion_values[sensor.graph_id][key_name] = []
+
+    def add_sensor_data(self):
+        for key,device in self.devices.items():
+            for key,sensor in device.sensors.items():
+                if sensor.graph_id != None:
+                    key_name = sensor.name + "." + str(device.device_id)
+                    self.fast_motion_values[sensor.graph_id][key_name].append(sensor.value)
