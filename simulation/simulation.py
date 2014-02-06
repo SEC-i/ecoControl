@@ -67,7 +67,7 @@ class Simulation(Thread):
                 self.update_devices(float(1000 * self.step_size))
                 self.add_sensor_data()
 
-            time_step_ms = float(time_delta * 1000 * self.step_size)
+            time_step_ms = float(time_delta * 1000 * self.step_size) # 4000 * 0.01 * 1000#
             self.update_devices(time_step_ms)
             
             time_loss = time() - t0

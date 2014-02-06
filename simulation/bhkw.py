@@ -91,11 +91,11 @@ class BHKW(GeneratorDevice):
             self.target_workload = self.calculate_parameters(needed_thermal_energy / time_delta_hour,"thermal_power")["workload"]
         else:
             self.target_workload = self.calculate_parameters(electric_consumer.get_power_demand(),"electrical_power")["workload"]
+            #ensure heatstorage is not overheated
             if heat_storage.get_temperature() > heat_storage.target_temperature:
                 self.target_workload = 0
-        
         self.modulating()
-        self.smooth_set_step(time_delta)
+        self.smooth_set_step(time_delta)            
         new_values = self.calculate_parameters(self.sensors["workload"].value,"workload")
         #set values for current simulation step
         for key in new_values:

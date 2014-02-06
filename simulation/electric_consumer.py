@@ -6,7 +6,7 @@ class ElectricConsumer(Device):
     def __init__(self, device_id):
         self.device_id = device_id
         self.name = "Electric Consumer"
-        self.sensors = {"electric_consumption":Sensor(name="electric_consumption", id=0, value=3, unit=r"kW"),
+        self.sensors = {"electric_consumption":Sensor(name="electric_consumption", id=0, value=5, unit=r"kW"),
                         "energy_infeed":Sensor(name="energy_infeed", id=1, value=0, unit=r"kWh"),
                         "energy_external":Sensor(name="energy_external", id=2, value=0, unit=r"kWh")}
         self.bhkw_energy = 0
