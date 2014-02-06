@@ -1,9 +1,9 @@
-from device import Sensor, GeneratorDevice
+from device import Device, Sensor, GeneratorDevice
 
-class HeatStorage(Device.Device):
+class HeatStorage(Device):
 
     def __init__(self, device_id):
-        Device.Device.__init__(self, device_id)
+        Device.__init__(self, device_id)
 
         self.name = "HeatStorage"
 

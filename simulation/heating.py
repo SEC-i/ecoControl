@@ -1,4 +1,4 @@
-from device import Sensor
+from device import Device, Sensor
 import random
 
 milliseconds_per_hour = 1000 * 60 * 60
@@ -9,7 +9,7 @@ heat_capacity_air = 1290
 #and http://www.inference.phy.cam.ac.uk/is/papers/DanThermalModellingBuildings.pdf
 
 
-class Heating(Device.Device):
+class Heating(Device):
     def __init__(self, device_id):
         self.device_id = device_id
         self.name = "Heating"

@@ -1,8 +1,8 @@
-from device import Sensor
+from device import Device, Sensor
 
 milliseconds_per_hour = 1000 * 60 * 60
 
-class ElectricConsumer(Device.Device):
+class ElectricConsumer(Device):
     def __init__(self, device_id):
         self.device_id = device_id
         self.name = "Electric Consumer"
