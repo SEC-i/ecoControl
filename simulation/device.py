@@ -30,7 +30,7 @@ class GeneratorDevice(Device):
 
     def smooth_set_step(self, time_delta):      
         if self.sensors["workload"].value != self.target_workload:
-            change_speed = 1
+            change_speed = 0.2
             rand = change_speed * (random.random() * 2.0 - 1.0) * 0.1
             slope = change_speed * sign(self.target_workload - self.sensors["workload"].value)
             workload_delta = (rand + slope ) * time_delta

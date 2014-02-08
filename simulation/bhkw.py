@@ -37,14 +37,13 @@ class BHKW(GeneratorDevice):
         # use smaller bhkw of pamiru48: Vaillant ecoPower 4.7
         # gas input based on maximum 90% efficiency scaling down like vitobloc
         # electric/thermal power scaled down almost linear
-        self.given_data.append({"workload":0, "electrical_power":0, "thermal_power":0, "gasinput":0})
-        self.given_data.append({"workload":25, "electrical_power":1.18, "thermal_power":3.13, "gasinput":5.75})
+        self.given_data.append({"workload":31, "electrical_power":1.5, "thermal_power":4.7, "gasinput":5.75})
         self.given_data.append({"workload":50, "electrical_power":2.35, "thermal_power":7, "gasinput":11.27})
         self.given_data.append({"workload":75, "electrical_power":3.53, "thermal_power":10, "gasinput":15.73})
         self.given_data.append({"workload":99, "electrical_power":4.7, "thermal_power":12.5, "gasinput":19.1})
         
         #0 = follow thermal, 1 = follow electric
-        self.mode = 0
+        self.mode = 1
 
 
     def find_bounding_datasets(self,value,type):
@@ -62,9 +61,14 @@ class BHKW(GeneratorDevice):
 
 
     def calculate_parameters(self,value,type):
+        #return 0 initialized dict if value is under threshold
+        if value < self.given_data[0][type]:
+            return {key: 0 for (key, value) in self.given_data[0].items()}
+        
+        ret_dict = {}
         data_set1,data_set2 = self.find_bounding_datasets(value,type)
         mu = value-data_set1[type]
-        ret_dict = {}
+        
 
         #return interpolated values from datasheet
         for key in self.sensors:

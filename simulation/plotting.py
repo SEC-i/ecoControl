@@ -7,34 +7,34 @@ from simulation import Simulation
 from heating import Heating
 
 
-SIMULATED_TIME = 12 * 3600
+SIMULATED_TIME = 17 * 3600
 SIMULATION_DURATION = 10
 
 STEP_SIZE = SIMULATED_TIME / SIMULATION_DURATION
 #timestep now denotes, how often values are written for plotting, internal shorter timesteos are used
-TIME_STEP = 0.01
+TIME_STEP = 0.005
 
 
 class Plotting(object):
     def __init__(self):
         self.simulation = Simulation(step_size=STEP_SIZE,time_step=TIME_STEP,plotting=True,duration=SIMULATION_DURATION)
         self.simulation.start()
-        time.sleep(4)
-        self.simulation.fast_forward(5*3600,1000)
+#         time.sleep(4)
+#         self.simulation.fast_forward(5*3600,1000)
         self.simulation.join()
         
 
         self.data = self.simulation.plotting_data
         
         # evenly sampled time at xxx intervals
-        ff_start = SIMULATED_TIME * 4/10.0
-        t0 = np.arange(0.0,ff_start ,STEP_SIZE * TIME_STEP)
-        t1 = np.arange(ff_start ,ff_start+5*3600,self.simulation.ff_step)
-        t2 = np.arange(ff_start+5*3600,SIMULATED_TIME*2,STEP_SIZE * TIME_STEP)
-        self.t = np.append(np.append(t0,t1),t2)    
+#         ff_start = SIMULATED_TIME * 4/10.0
+#         t0 = np.arange(0.0,ff_start ,STEP_SIZE * TIME_STEP)
+#         t1 = np.arange(ff_start ,ff_start+5*3600,self.simulation.ff_step)
+#         t2 = np.arange(ff_start+5*3600,SIMULATED_TIME*2,STEP_SIZE * TIME_STEP)
+#         self.t = np.append(np.append(t0,t1),t2)    
         
         
-        #self.t = np.arange(0.0,SIMULATION_DURATION,STEP_SIZE * TIME_STEP)
+        self.t = np.arange(0.0,SIMULATED_TIME,STEP_SIZE * TIME_STEP)
         #cut to the actual length of simulation data
         self.t = self.t[0:len(self.data[1]["workload.0"])]
 #         self.t = range(0,val_len)
