@@ -1,6 +1,6 @@
 from device import Sensor, GeneratorDevice
 
-milliseconds_per_hour = 1000 * 60 * 60
+seconds_per_hour = 60 * 60
 
 class PLB(GeneratorDevice):
 
@@ -15,7 +15,7 @@ class PLB(GeneratorDevice):
                         "thermal_power":Sensor(name="thermal_power", id=2, value=0, unit=r"kw",graph_id=1)}
 
     def update(self,time_delta,heat_storage):
-        time_delta_hour = time_delta / milliseconds_per_hour
+        time_delta_hour = time_delta / seconds_per_hour
         needed_thermal_energy = heat_storage.get_energy_demand()
         # comparison from overall energy demand (kwh) and power (kw) of an hour doesnt require time quotient
         # 12.5 -> maximal thermal power from BHKW

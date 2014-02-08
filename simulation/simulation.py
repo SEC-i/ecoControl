@@ -69,8 +69,8 @@ class Simulation(Thread):
                 self.fast_forward_loop()
                 step_start_time = clock()
             
-            time_step_ms = float(time_delta * 1000 * self.step_size) # 4000 * 0.01 * 1000#
-            self.update_devices(time_step_ms)
+            sim_step_time = float(time_delta * self.step_size) #in secs
+            self.update_devices(sim_step_time)
             
 
             if self.plotting and time_since_plot >= self.time_step:
@@ -111,7 +111,7 @@ class Simulation(Thread):
         t0 = clock()
         while self.ff_remaining_sim_time > 0:
             self.ff_remaining_sim_time -= internal_step
-            self.update_devices(internal_step * 1000)
+            self.update_devices(internal_step)
             internal_steps += internal_step
             if internal_steps >= self.ff_step:
                 if self.plotting:

@@ -1,6 +1,6 @@
 from device import Device, Sensor
 
-milliseconds_per_hour = 1000 * 60 * 60
+seconds_per_hour = 60 * 60
 
 class ElectricConsumer(Device):
     def __init__(self, device_id):
@@ -12,7 +12,7 @@ class ElectricConsumer(Device):
         self.bhkw_energy = 0
 
     def update(self, time_delta, bhkw):
-        time_delta_hour = time_delta / milliseconds_per_hour
+        time_delta_hour = time_delta / seconds_per_hour
         
         energy_delta = self.bhkw_energy - self.sensors["electric_consumption"].value * time_delta_hour
         # bhkw produces less energy than we need

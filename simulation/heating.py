@@ -1,7 +1,7 @@
 from device import Device, Sensor
 import random
 
-milliseconds_per_hour = 1000 * 60 * 60
+seconds_per_hour = 60 * 60
 #J /( m^3 * K)
 heat_capacity_air = 1290
 
@@ -35,10 +35,11 @@ class Heating(Device):
 
 
     def update(self, time_delta, heat_storage):
-        time_delta_hour = time_delta / milliseconds_per_hour
+        time_delta_hour = time_delta / seconds_per_hour
         self.heat_loss(time_delta)
         
-        change_speed = 0.001
+        #slow rise and  fall of heating
+        change_speed = 1
         rand = change_speed * (random.random() * 2.0 - 1.0)
         slope = change_speed * sign(self.target_temperature - self.sensors["temperature"].value)
         power_delta = (rand + slope ) * time_delta
@@ -52,23 +53,21 @@ class Heating(Device):
         
 
     def heat_loss(self, time_delta):
-        time_delta_seconds = time_delta / 1000
         # assume cooling of power/2
         d = self.sensors["temperature"].value - self.sensors["temperature_outside"].value
         #in Watt
         cooling_rate  =(self.window_surface * self.k / self.heat_capacity)
 
-        self.sensors["temperature"].value -=  d * cooling_rate * time_delta_seconds
+        self.sensors["temperature"].value -=  d * cooling_rate * time_delta
 
 
     def heat_room(self, time_delta):
-        time_delta_seconds = time_delta / 1000
         # 0.8 denotes heating power to thermal energy efficiency
         heating_efficiency = 0.8 / (self.heat_capacity)        
         
         temperature_mapping = (self.target_temperature) / 30.0
         
-        temperature_delta = self.current_power *   heating_efficiency * time_delta_seconds
+        temperature_delta = self.current_power *   heating_efficiency * time_delta
 
         self.sensors["temperature"].value += temperature_delta
 
