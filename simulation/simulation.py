@@ -42,6 +42,8 @@ class Simulation(Thread):
         
         self.plotting = plotting
         self.duration = duration #seconds
+        self.ff_remaining_sim_time = 0
+        self.stat_info = {}
         if self.plotting:
             self.init_plotting()
 
@@ -59,17 +61,14 @@ class Simulation(Thread):
         while self.mainloop_running:
             
             time_delta = step_end_time - step_start_time
-            time_since_plot += time_delta
             step_start_time =clock()
+            time_since_plot += time_delta
             #sleep(self.time_step - min(time_loss,self.time_step))
 
-
-            while self.remaining_time > 0:
-                self.remaining_time -= 1
-                self.update_devices(1000)
-                if remaining_time % 10 == 0:
-                    self.add_sensor_data()
-
+            if self.ff_remaining_sim_time != 0:
+                self.fast_forward_loop()
+                step_start_time = clock()
+            
             time_step_ms = float(time_delta * 1000 * self.step_size) # 4000 * 0.01 * 1000#
             self.update_devices(time_step_ms)
             
@@ -97,12 +96,31 @@ class Simulation(Thread):
         "for testcases"
         self.mainloop_running = False
 
-    def fast_forward(self, seconds):
+    def fast_forward(self, seconds,num_values):
+        #simulation duration in real-time
         self.init_fast_motion()
-        self.remaining_time = seconds
-        while self.remaining_time > 0:
+        self.ff_remaining_sim_time = seconds
+        self.ff_step = self.ff_remaining_sim_time / num_values
+        while self.ff_remaining_sim_time > 0:
             sleep(0.1)
         return self.fast_motion_values
+    
+    def fast_forward_loop(self):
+        internal_step = self.ff_step * 0.1
+        internal_steps = 0
+        t0 = clock()
+        while self.ff_remaining_sim_time > 0:
+            self.ff_remaining_sim_time -= internal_step
+            self.update_devices(internal_step * 1000)
+            internal_steps += internal_step
+            if internal_steps >= self.ff_step:
+                if self.plotting:
+                    self.plot()
+                else:
+                    self.add_sensor_data()
+                internal_steps = 0
+        
+        self.stat_info["fast_forward_duration"] = clock() - t0
         
 
     def set_heating(self, temperature):
@@ -115,6 +133,7 @@ class Simulation(Thread):
 
     def set_electric_consumption(self, power):
         self.electric_consumer.sensors["electric_consumption"].value = power
+        
         
         
     def get_sensor(self,device_id,sensor_id=None,sensor_name=None):
