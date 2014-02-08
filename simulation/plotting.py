@@ -10,6 +10,7 @@ SIMULATED_TIME = 12 * 3600
 SIMULATION_DURATION = 10
 
 STEP_SIZE = SIMULATED_TIME / SIMULATION_DURATION
+#timestep now denotes, how often values are written for plotting, internal shorter timesteos are used
 TIME_STEP = 0.005
 
 
@@ -21,9 +22,8 @@ class Plotting(object):
         
 
         self.data = self.simulation.plotting_data
-        val_len = len(self.data[1]["workload.0"])
         # evenly sampled time at xxx intervals
-        self.t = np.arange(0.0, SIMULATED_TIME, SIMULATED_TIME / float(val_len))        
+        self.t = np.arange(0.0, SIMULATED_TIME,STEP_SIZE * TIME_STEP)        
         #cut to the actual length of simulation data
         self.t = self.t[0:len(self.data[1]["workload.0"])]
         

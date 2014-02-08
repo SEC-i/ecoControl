@@ -52,13 +52,14 @@ class Simulation(Thread):
     def mainloop(self):
         print "simulating..."
         self.start_time = time()
-        time_loss = 0
         step_start_time = time()
         sleep(0.002)
         step_end_time = time()
+        time_since_plot = 0
         while self.mainloop_running:
             
             time_delta = step_end_time - step_start_time
+            time_since_plot += time_delta
             step_start_time =clock()
             #sleep(self.time_step - min(time_loss,self.time_step))
 
@@ -73,8 +74,9 @@ class Simulation(Thread):
             self.update_devices(time_step_ms)
             
 
-            if self.plotting:
+            if self.plotting and time_since_plot >= self.time_step:
                 self.plot()
+                time_since_plot = 0
             
             # terminate plotting
             if self.duration != None and time()-self.start_time > self.duration:
