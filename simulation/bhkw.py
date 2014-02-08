@@ -43,7 +43,7 @@ class BHKW(GeneratorDevice):
         self.given_data.append({"workload":99, "electrical_power":4.7, "thermal_power":12.5, "gasinput":19.1})
         
         #0 = follow thermal, 1 = follow electric
-        self.mode = 1
+        self.mode = 0
 
 
     def find_bounding_datasets(self,value,type):

@@ -18,8 +18,9 @@ class Simulation(Thread):
 
         self.heating = []
         self.heating.append(Heating(device_id=2))
-        self.heating.append(Heating(device_id=5))
-        self.heating.append(Heating(device_id=6))
+        
+        for i in range(5,11):
+            self.heating.append(Heating(device_id=i))
         
         # update frequency
         self.time_step = time_step
