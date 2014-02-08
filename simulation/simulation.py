@@ -1,5 +1,5 @@
 from datetime import datetime
-from time import time, sleep
+from time import time, sleep,clock
 from threading import Thread
 
 from bhkw import BHKW
@@ -52,37 +52,41 @@ class Simulation(Thread):
     def mainloop(self):
         print "simulating..."
         self.start_time = time()
-        time_loss = 0
+        step_start_time = time()
+        sleep(0.002)
+        step_end_time = time()
+        time_since_plot = 0
         while self.mainloop_running:
             
-            step_start_time = time()
-            sleep(self.time_step - min(time_loss,self.time_step))
+            time_delta = step_end_time - step_start_time
+            time_since_plot += time_delta
+            step_start_time =clock()
+            #sleep(self.time_step - min(time_loss,self.time_step))
 
-            t0 = time()
 
-            time_delta = time() - step_start_time
             while self.remaining_time > 0:
                 self.remaining_time -= 1
                 self.update_devices(1000)
                 if remaining_time % 10 == 0:
                     self.add_sensor_data()
 
-            time_step_ms = float(time_delta * 1000 * self.step_size)
+            time_step_ms = float(time_delta * 1000 * self.step_size) # 4000 * 0.01 * 1000#
             self.update_devices(time_step_ms)
             
-            time_loss = time() - t0
 
-            if self.plotting:
+            if self.plotting and time_since_plot >= self.time_step:
                 self.plot()
+                time_since_plot = 0
+            
             # terminate plotting
-            #elapsed = datetime.utcnow() - self.start_time + datetime.timedelta(seconds=self.forwarded_time).total_seconds()
-            #if self.duration != None and elapsed > self.duration:
+            if self.duration != None and time()-self.start_time > self.duration:
 
-                #print "simulation finished"
-                #return
+                print "simulation finished"
+                return
+            step_end_time = clock()
 
     def update_devices(self, time_delta):
-        self.bhkw.update(time_delta, self.heat_storage)
+        self.bhkw.update(time_delta, self.heat_storage,self.electric_consumer)
         self.peakload_boiler.update(time_delta, self.heat_storage)
         self.electric_consumer.update(time_delta, self.bhkw)
         for heating in self.heating:
