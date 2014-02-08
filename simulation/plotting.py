@@ -6,7 +6,7 @@ from simulation import Simulation
 from heating import Heating
 
 
-SIMULATED_TIME = 24 * 3600
+SIMULATED_TIME = 12 * 3600
 SIMULATION_DURATION = 10
 
 STEP_SIZE = SIMULATED_TIME / SIMULATION_DURATION
@@ -21,8 +21,9 @@ class Plotting(object):
         
 
         self.data = self.simulation.plotting_data
+        val_len = len(self.data[1]["workload.0"])
         # evenly sampled time at xxx intervals
-        self.t = np.arange(0.0, SIMULATED_TIME, TIME_STEP*STEP_SIZE)        
+        self.t = np.arange(0.0, SIMULATED_TIME, SIMULATED_TIME / float(val_len))        
         #cut to the actual length of simulation data
         self.t = self.t[0:len(self.data[1]["workload.0"])]
         

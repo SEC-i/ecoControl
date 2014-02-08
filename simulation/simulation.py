@@ -1,5 +1,5 @@
 from datetime import datetime
-from time import time, sleep
+from time import time, sleep,clock
 from threading import Thread
 
 from bhkw import BHKW
@@ -53,14 +53,16 @@ class Simulation(Thread):
         print "simulating..."
         self.start_time = time()
         time_loss = 0
+        step_start_time = time()
+        sleep(0.002)
+        step_end_time = time()
         while self.mainloop_running:
             
-            step_start_time = time()
-            sleep(self.time_step - min(time_loss,self.time_step))
+            time_delta = step_end_time - step_start_time
+            step_start_time =clock()
+            #sleep(self.time_step - min(time_loss,self.time_step))
 
-            t0 = time()
 
-            time_delta = time() - step_start_time
             while self.remaining_time > 0:
                 self.forwarded_time += self.step_size
                 self.remaining_time -= self.step_size
@@ -70,7 +72,6 @@ class Simulation(Thread):
             time_step_ms = float(time_delta * 1000 * self.step_size) # 4000 * 0.01 * 1000#
             self.update_devices(time_step_ms)
             
-            time_loss = time() - t0
 
             if self.plotting:
                 self.plot()
@@ -80,6 +81,7 @@ class Simulation(Thread):
 
                 print "simulation finished"
                 return
+            step_end_time = clock()
 
     def update_devices(self, time_delta):
         self.bhkw.update(time_delta, self.heat_storage,self.electric_consumer)
