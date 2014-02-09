@@ -4,6 +4,8 @@ var fast_forward_active = false;
 
 var current_time = new Date();
 
+var fast_forward_accuracy = 10;
+
 $(function(){
     $.get( "/static/img/simulation.svg", function( data ) {
         var svg_item = document.importNode(data.documentElement,true);
@@ -115,13 +117,13 @@ function update_diagram(data, multiple){
 }
 
 function future_time(timestamp, seconds){
-    return new Date(timestamp + seconds * 1000).getTime();
+    return new Date(timestamp + seconds * 1000/fast_forward_accuracy).getTime();
 }
 
 function simulation_time(additional_seconds){
     additional_seconds = typeof additional_seconds !== 'undefined' ? additional_seconds : 1;
 
-    current_time = new Date(current_time.getTime() + additional_seconds * 1000);
+    current_time = new Date(current_time.getTime() + additional_seconds * 1000/fast_forward_accuracy);
     return current_time.getTime();
 }
 
