@@ -97,7 +97,7 @@ class Simulation(Thread):
         "for testcases"
         self.mainloop_running = False
 
-    def fast_forward(self, seconds,num_values):
+    def fast_forward(self, seconds, num_values):
         #simulation duration in real-time
         self.init_fast_motion()
         self.ff_remaining_sim_time = seconds
