@@ -7,12 +7,12 @@ var current_time = new Date();
 var fast_forward_accuracy = 10;
 
 $(function(){
-    $.get( "/static/img/simulation.svg", function( data ) {
+    $.get( "./static/img/simulation.svg", function( data ) {
         var svg_item = document.importNode(data.documentElement,true);
         $("#simulation_scheme").append(svg_item);
     }, "xml");
 
-    $.getJSON( "/api/info/", function( info ) {
+    $.getJSON( "./api/info/", function( info ) {
         devices_info = info;
         $.each(info, function(device_id, device_data) {
             $.each(device_data, function(sensor_name, unit){
@@ -28,7 +28,7 @@ $(function(){
             });
         });
     }).done(function(){
-        $.getJSON( "/api/data/", function( data ) {
+        $.getJSON( "./api/data/", function( data ) {
             var i = 0;
             var timestamp = simulation_time();
             $.each(data, function(device_id, device_data) {
@@ -52,7 +52,7 @@ $(function(){
 
 function refresh(){
     if(!fast_forward_active){
-        $.getJSON( "/api/data/", function( data ) {
+        $.getJSON( "./api/data/", function( data ) {
             update_scheme(data);
             update_diagram(data);
         });
@@ -129,7 +129,7 @@ function simulation_time(additional_seconds){
 
 function fast_forward(){
     fast_forward_active = true;
-    $.post( "/api/set/", { fast_forward: $("#fast_forward_selection").val() }, function( data ){
+    $.post( "./api/set/", { fast_forward: $("#fast_forward_selection").val() }, function( data ){
         $("#ff_button").removeClass("btn-primary").addClass("btn-success");
 
         update_diagram(data, true);
@@ -141,7 +141,7 @@ function fast_forward(){
 
 function initialize_buttons(){
     $("#form_consumption").submit(function(){
-        $.post( "/api/set/", { electric_consumption: $("#electric_consumption").val() }).done(function(){
+        $.post( "./api/set/", { electric_consumption: $("#electric_consumption").val() }).done(function(){
             $("#consumption_button").removeClass("btn-primary").addClass("btn-success");
             setTimeout(function(){
                 $("#consumption_button").removeClass("btn-success").addClass("btn-primary");
@@ -151,7 +151,7 @@ function initialize_buttons(){
     });
 
     $("#form_temperature").submit(function(){
-        $.post( "/api/set/", { room_temperature: $("#room_temperature").val() }).done(function(){
+        $.post( "./api/set/", { room_temperature: $("#room_temperature").val() }).done(function(){
             $("#temperature_button").removeClass("btn-primary").addClass("btn-success");
             setTimeout(function(){
                 $("#temperature_button").removeClass("btn-success").addClass("btn-primary");
