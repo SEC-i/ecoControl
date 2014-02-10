@@ -23,7 +23,8 @@ class Simulation(Thread):
         # simulation speed
         self.step_size = step_size
         self.remaining_time = 0 #ms
-        self.forwarded_time = 0
+        self.forwarded_seconds = 0
+        self.total_forwarded_seconds = 0
         self.fast_motion_values = {}
                 
         self.daemon = True
@@ -59,9 +60,6 @@ class Simulation(Thread):
             # update target temperature
             self.set_heating(self.get_current_target_temperature())
 
-            if self.ff_remaining_sim_time != 0:
-                self.fast_forward_loop()
-            
             sim_step_time = float(time_delta * self.step_size) #in secs
             self.update_devices(sim_step_time)
             
@@ -90,12 +88,13 @@ class Simulation(Thread):
     def fast_forward(self, seconds, num_values):
         #simulation duration in real-time
         self.init_fast_motion()
-        self.ff_remaining_sim_time = seconds
+        self.ff_remaining_sim_time = self.forwarded_seconds = seconds
         self.ff_step = self.ff_remaining_sim_time / num_values
-        while self.ff_remaining_sim_time > 0:
-            sleep(0.1)
-        # update forwarded_time
-        self.forwarded_time += seconds
+        self.ff_start = time()
+        # start ff loop
+        self.fast_forward_loop()
+        # update total_forwarded_seconds
+        self.total_forwarded_seconds += seconds
         return self.fast_motion_values
     
     def fast_forward_loop(self):
@@ -104,6 +103,7 @@ class Simulation(Thread):
         t0 = clock()
         while self.ff_remaining_sim_time > 0:
             self.ff_remaining_sim_time -= internal_step
+            self.set_heating(self.get_current_target_temperature(ff = True))
             self.update_devices(internal_step)
             internal_steps += internal_step
             if internal_steps >= self.ff_step:
@@ -173,25 +173,32 @@ class Simulation(Thread):
             for key,sensor in device.sensors.items():
                 self.fast_motion_values[device.device_id][sensor.name].append(sensor.value)
 
-    def get_current_target_temperature(self):
-        current_day_seconds = (time()-self.start_time + self.forwarded_time) % (60*60*24)
-        current_hour = current_day_seconds / (60*60)
+    def get_current_target_temperature(self, ff = False):
+        if(ff):
+            time_fast_forward_start = (self.ff_start-self.start_time)
+            time_already_fast_forwarded = (self.forwarded_seconds-self.ff_remaining_sim_time)
+            current_day_seconds = ( time_fast_forward_start + time_already_fast_forwarded + self.total_forwarded_seconds) % (60*60*24)
+            current_hour = current_day_seconds / (60*60)
+        else:
+            current_day_seconds = (time()-self.start_time + self.total_forwarded_seconds) % (60*60*24)
+            current_hour = current_day_seconds / (60*60)
+
         if(current_hour<6):
             return 16.0
         elif(current_hour<8):
             return 18.0
         elif(current_hour<10):
-            return 20.0
+            return 18.5
         elif(current_hour<12):
-            return 21.0
+            return 19.0
         elif(current_hour<14):
-            return 22.0
+            return 20.0
         elif(current_hour<16):
-            return 23.0
-        elif(current_hour<18):
-            return 24.0
-        elif(current_hour<20):
             return 21.0
+        elif(current_hour<18):
+            return 25.0
+        elif(current_hour<20):
+            return 24.0
         elif(current_hour<22):
             return 20.0
         else:
