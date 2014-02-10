@@ -69,6 +69,8 @@ function update_scheme(data){
             }
         });
     });
+    var temp_time = current_time.toString();
+    $("#current_time").text(temp_time.substring(0, temp_time.length - 15));
 }
 
 function get_namespace_for_id(id){

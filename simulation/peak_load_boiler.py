@@ -27,7 +27,7 @@ class PLB(GeneratorDevice):
             self.power_off()
 
     def power_on(self):
-        self.sensors["workload"].value = 100
+        self.sensors["workload"].value = 99
         self.sensors["gas_input"].value = self.gas_input
         self.sensors["thermal_power"].value = self.thermal_power
 
