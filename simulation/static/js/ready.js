@@ -4,6 +4,8 @@ var fast_forward_active = false;
 
 var current_time = new Date();
 
+var blacklist = ["name", "energy_external", "energy_infeed", "thermal_power", "gas_input", "electrical_power"];
+
 $(function(){
     $.get( "./static/img/simulation.svg", function( data ) {
         var svg_item = document.importNode(data.documentElement,true);
@@ -14,7 +16,7 @@ $(function(){
         devices_info = info;
         $.each(info, function(device_id, device_data) {
             $.each(device_data, function(sensor_name, unit){
-                if(["name", "energy_external", "energy_infeed"].indexOf(sensor_name) == -1){
+                if(blacklist.indexOf(sensor_name) == -1){
                     series_data.push({
                         name: device_data['name'] + " " + sensor_name,
                         data: [],
@@ -31,7 +33,7 @@ $(function(){
             var timestamp = simulation_time();
             $.each(data, function(device_id, device_data) {
                 $.each(device_data, function(sensor_name, value){
-                    if(["name", "energy_external", "energy_infeed"].indexOf(sensor_name) == -1){
+                    if(blacklist.indexOf(sensor_name) == -1){
                         series_data[i]['data'].push([timestamp, parseFloat(value)]);
                         i++;
                     }
@@ -95,7 +97,7 @@ function update_diagram(data, time_delta){
     var max_additional_seconds = 0;
     $.each(data, function(device_id, device_data) {
         $.each(device_data, function(sensor_name, value){
-            if(["name", "energy_external", "energy_infeed"].indexOf(sensor_name) == -1){
+            if(blacklist.indexOf(sensor_name) == -1){
                 if(time_delta != undefined && time_delta > 0){
                     var value_len = value.length;
                     max_additional_seconds = Math.max(value_len, max_additional_seconds);
@@ -188,12 +190,12 @@ function initialize_diagram(){
                 type: 'minute',
                 text: '10M'
             }, {
-                count: 1,
-                type: 'hour',
+                count: 60,
+                type: 'minute',
                 text: '1H'
             }, {
-                count: 12,
-                type: 'hour',
+                count: 60*12,
+                type: 'minute',
                 text: '12H'
             }, {
                 count: 1,
@@ -207,7 +209,6 @@ function initialize_diagram(){
                 type: 'all',
                 text: 'All'
             }],
-            inputEnabled: false,
             selected: 0
         },
         
