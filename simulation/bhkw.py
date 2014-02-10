@@ -6,7 +6,7 @@ import random
 import unittest
 import sys
 
-seconds_per_hour = 60 * 60
+seconds_per_hour = 60 * 60.0
 
 """@doc please read the technical datasheet of vitobloc_200_EM,
 which contains all the data which we are mocking here"""
@@ -89,7 +89,7 @@ class BHKW(GeneratorDevice):
 
     def update(self,time_delta,heat_storage,electric_consumer):
         time_delta_hour = time_delta / seconds_per_hour
-        
+
         if self.mode == 0:
             needed_thermal_energy = heat_storage.get_energy_demand()
             self.target_workload = self.calculate_parameters(needed_thermal_energy / time_delta_hour,"thermal_power")["workload"]

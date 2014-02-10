@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 
 from simulation import Simulation
-simulation = Simulation(100)
+simulation = Simulation(100.0)
 
 def crossdomain(origin=None):
     def decorator(f):
@@ -73,7 +73,7 @@ def set_data():
 
     if "fast_forward" in request.form:
         time_interval = int(request.form['fast_forward'])
-        return jsonify(simulation.fast_forward(time_interval, 1000))
+        return jsonify(simulation.fast_forward(time_interval, 1000.0))
 
     return "0"
 

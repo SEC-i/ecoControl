@@ -55,20 +55,15 @@ class Simulation(Thread):
     def mainloop(self):
         print "simulating..."
         self.start_time = time()
-        step_start_time = time()
-        sleep(0.002)
-        step_end_time = time()
         time_since_plot = 0
         while self.mainloop_running:
             
-            time_delta = step_end_time - step_start_time
-            step_start_time =clock()
+            time_delta = 0.00002 # it's a kind of magic
             time_since_plot += time_delta
             #sleep(self.time_step - min(time_loss,self.time_step))
 
             if self.ff_remaining_sim_time != 0:
                 self.fast_forward_loop()
-                step_start_time = clock()
             
             sim_step_time = float(time_delta * self.step_size) #in secs
             self.update_devices(sim_step_time)
@@ -83,7 +78,6 @@ class Simulation(Thread):
 
                 print "simulation finished"
                 return
-            step_end_time = clock()
 
     def update_devices(self, time_delta):
         self.bhkw.update(time_delta, self.heat_storage,self.electric_consumer)
