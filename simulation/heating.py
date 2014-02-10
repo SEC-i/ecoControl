@@ -6,7 +6,7 @@ seconds_per_hour = 60 * 60
 heat_capacity_air = 1290
 
 # let's use 15 heating systems
-amount_of_heating_systems = 30
+amount_of_heating_systems = 22
 
 #formulas from http://www.model.in.tum.de/um/research/groups/ai/fki-berichte/postscript/fki-227-98.pdf
 #and http://www.inference.phy.cam.ac.uk/is/papers/DanThermalModellingBuildings.pdf
