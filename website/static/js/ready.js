@@ -70,32 +70,6 @@ $(document).ready(function(){
 
     });
 
-    // load simulation svg
-    $.get( "./static/img/demo.svg", function( data ) {
-        var svg_item = document.importNode(data.documentElement,true);
-        $("#simulation_container").append(svg_item);
-    }, "xml");
-
-    $("#form_consumption").submit(function(){
-        $.post( simulation_api_url + "device/3/set", { electric_consumption: $("#electric_consumption").val() }).done(function(){
-            $("#consumption_button").removeClass("btn-primary").addClass("btn-success");
-            setTimeout(function(){
-                $("#consumption_button").removeClass("btn-success").addClass("btn-primary");
-            },1000);
-        });
-        event.preventDefault();
-    });
-
-    $("#form_temperature").submit(function(){
-        $.post( simulation_api_url + "device/2/set", { room_temperature: $("#room_temperature").val() }).done(function(){
-            $("#temperature_button").removeClass("btn-primary").addClass("btn-success");
-            setTimeout(function(){
-                $("#temperature_button").removeClass("btn-success").addClass("btn-primary");
-            },1000);
-        });
-        event.preventDefault();
-    });
-
     check_login_status();
 });
 
@@ -201,46 +175,6 @@ function show_device(id, device_name) {
     }
 }
 
-function prepare_simulation_diagram(){
-    $.ajax({
-       url: api_url + "device/1/entries/start/" + range_start + "/end/" + range_end + "/",
-       xhrFields: {
-          withCredentials: true
-       }
-    }).done(function(data0){
-        $.ajax({
-           url: api_url + "device/3/entries/start/" + range_start + "/end/" + range_end + "/",
-           xhrFields: {
-              withCredentials: true
-           }
-        }).done(function(data1){
-            $.ajax({
-               url: api_url + "device/4/entries/start/" + range_start + "/end/" + range_end + "/",
-               xhrFields: {
-                  withCredentials: true
-               }
-            }).done(function(data2){
-                $.ajax({
-                   url: api_url + "device/5/entries/start/" + range_start + "/end/" + range_end + "/",
-                   xhrFields: {
-                      withCredentials: true
-                   }
-                }).done(function(data3){
-                    $.ajax({
-                       url: api_url + "device/6/entries/start/" + range_start + "/end/" + range_end + "/",
-                       xhrFields: {
-                          withCredentials: true
-                       }
-                    }).done(function(data4){
-                        $.merge(data0, $.merge(data1, $.merge(data2, $.merge(data3, data4))));
-                        draw_diagram(data0);
-                    });
-                });
-            });
-        });
-    });
-}
-
 function prepare_diagram(device_id){
     $.ajax({
        url: api_url + "device/" + device_id + "/entries/start/" + range_start + "/end/" + range_end + "/",
@@ -248,48 +182,4 @@ function prepare_diagram(device_id){
           withCredentials: true
        }
     }).done(function(data){draw_diagram(data);});
-}
-
-function refresh_simulation(){
-    if($("#simulation").is(":visible")){
-        $.getJSON( simulation_api_url + "device/0/get", function( data ) {
-            update_simulation(data,"bhkw");
-        });
-        $.getJSON( simulation_api_url + "device/1/get", function( data ) {
-            update_simulation(data,"hs");
-        });
-        $.getJSON( simulation_api_url + "device/2/get", function( data ) {
-            update_simulation(data,"rad");
-        });
-        $.getJSON( simulation_api_url + "device/3/get", function( data ) {
-            update_simulation(data,"elec");
-        });
-        $.getJSON( simulation_api_url + "device/4/get", function( data ) {
-            update_simulation(data,"plb");
-        });
-    }
-}
-
-function update_simulation(data,namespace){
-    $.each(data, function(item_id, value) {
-        var item = $('#' + namespace + "_" + item_id);
-        if (item.length) {
-            item.text(Math.floor(parseFloat(value)*1000)/1000 + " " + get_unit(item_id, namespace));
-        }
-    });
-}
-
-function get_unit(item_id ,namespace){
-    switch(namespace){
-        case "bhkw":
-            return bhkw_info[item_id];
-        case "hs":
-            return hs_info[item_id];
-        case "rad":
-            return rad_info[item_id];
-        case "elec":
-            return electric_consumer_info[item_id];
-        case "plb":
-            return plb_info[item_id];
-    }
 }
