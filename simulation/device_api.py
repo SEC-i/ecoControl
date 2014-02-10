@@ -73,7 +73,7 @@ def set_data():
 
     if "fast_forward" in request.form:
         time_interval = int(request.form['fast_forward'])
-        return jsonify(simulation.fast_forward(time_interval, 1000.0))
+        return jsonify(simulation.fast_forward(time_interval, 2000.0))
 
     return "0"
 

@@ -4,8 +4,6 @@ var fast_forward_active = false;
 
 var current_time = new Date();
 
-var fast_forward_accuracy = 10;
-
 $(function(){
     $.get( "./static/img/simulation.svg", function( data ) {
         var svg_item = document.importNode(data.documentElement,true);
@@ -90,7 +88,7 @@ function get_namespace_for_id(id){
     }
 }
 
-function update_diagram(data, multiple){
+function update_diagram(data, time_delta){
     var chart = $('#simulation_diagram').highcharts();
     var i = 0;
     var timestamp = simulation_time();
@@ -98,10 +96,11 @@ function update_diagram(data, multiple){
     $.each(data, function(device_id, device_data) {
         $.each(device_data, function(sensor_name, value){
             if(["name", "energy_external", "energy_infeed"].indexOf(sensor_name) == -1){
-                if(multiple != undefined && multiple == true){
-                    max_additional_seconds = Math.max(value.length, max_additional_seconds);
+                if(time_delta != undefined && time_delta > 0){
+                    var value_len = value.length;
+                    max_additional_seconds = Math.max(value_len, max_additional_seconds);
                     for (var j = 0; j < value.length; j++) {
-                        chart.series[i].addPoint([future_time(timestamp, j), parseFloat(value[j])], false);
+                        chart.series[i].addPoint([future_time(timestamp, time_delta, j, value_len), parseFloat(value[j])], false);
                     }
                 }else{
                     chart.series[i].addPoint([timestamp, parseFloat(value)], false);
@@ -110,20 +109,20 @@ function update_diagram(data, multiple){
             }
         });
     });
-    if(multiple != undefined && multiple == true){
-        simulation_time(max_additional_seconds);
+    if(time_delta != undefined && time_delta > 0){
+        simulation_time(max_additional_seconds + time_delta);
     }
     chart.redraw();
 }
 
-function future_time(timestamp, seconds){
-    return new Date(timestamp + seconds * 1000/fast_forward_accuracy).getTime();
+function future_time(timestamp, time_delta, seconds, total_seconds){
+    return new Date(timestamp + time_delta * seconds/total_seconds * 1000).getTime();
 }
 
 function simulation_time(additional_seconds){
     additional_seconds = typeof additional_seconds !== 'undefined' ? additional_seconds : 1;
 
-    current_time = new Date(current_time.getTime() + additional_seconds * 1000/fast_forward_accuracy);
+    current_time = new Date(current_time.getTime() + additional_seconds * 1000);
     return current_time.getTime();
 }
 
@@ -132,7 +131,7 @@ function fast_forward(){
     $.post( "./api/set/", { fast_forward: $("#fast_forward_selection").val() }, function( data ){
         $("#ff_button").removeClass("btn-primary").addClass("btn-success");
 
-        update_diagram(data, true);
+        update_diagram(data, $("#fast_forward_selection").val(), true);
 
         $("#ff_button").removeClass("btn-success").addClass("btn-primary");
         fast_forward_active = false;
