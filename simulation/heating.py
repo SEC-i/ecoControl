@@ -5,6 +5,9 @@ seconds_per_hour = 60 * 60
 #J /( m^3 * K)
 heat_capacity_air = 1290
 
+# let's use 15 heating systems
+amount_of_heating_systems = 30
+
 #formulas from http://www.model.in.tum.de/um/research/groups/ai/fki-berichte/postscript/fki-227-98.pdf
 #and http://www.inference.phy.cam.ac.uk/is/papers/DanThermalModellingBuildings.pdf
 
@@ -19,10 +22,10 @@ class Heating(Device):
         # Type 22, 1.4m X 0.5m
         # W/m to 22 C = 90 W
         # room: 2x5x2.1m
-        self.room_volume = 3 * 5 * 3
-        self.max_power = 4000 #W
+        self.room_volume = 3 * 5 * 3 * amount_of_heating_systems
+        self.max_power = 4000 * amount_of_heating_systems #W
         self.current_power = 0
-        self.window_surface = 5 #m^2
+        self.window_surface = 5 * amount_of_heating_systems#m^2
         #heat transfer coefficient normal glas window, W/(m^2 * K)
         self.k = 5.9
         # J / K, approximation for 15m^2walls, 0.2m thickness, walls, ceiling, spec heat capacity brick = 1360 KJ/(m^3 * K)

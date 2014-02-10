@@ -12,15 +12,11 @@ class Simulation(Thread):
     def __init__(self,step_size=1,time_step=0.01,plotting=False,duration=None):
         Thread.__init__(self)
         self.bhkw = BHKW(device_id=0)
-        self.peakload_boiler = PLB(device_id=4, power=45) # PLB of pamiru48
+        self.peakload_boiler = PLB(device_id=4, power=4.5) # PLB of pamiru48
         self.heat_storage = HeatStorage(device_id=1)
         self.electric_consumer = ElectricConsumer(device_id=3)
 
-        self.heating = []
-        self.heating.append(Heating(device_id=2))
-        
-        for i in range(5,11):
-            self.heating.append(Heating(device_id=i))
+        self.heating = Heating(device_id=2)
         
         # update frequency
         self.time_step = time_step
@@ -34,10 +30,8 @@ class Simulation(Thread):
         self.devices = {self.bhkw.device_id:self.bhkw,
                         self.heat_storage.device_id:self.heat_storage,
                         self.electric_consumer.device_id:self.electric_consumer,
-                        self.peakload_boiler.device_id:self.peakload_boiler}
-        
-        for heating in self.heating:
-            self.devices[heating.device_id] = heating
+                        self.peakload_boiler.device_id:self.peakload_boiler,
+                        self.heating.device_id:self.heating}
         
         self.init_fast_motion()
         
@@ -62,6 +56,9 @@ class Simulation(Thread):
             time_since_plot += time_delta
             #sleep(self.time_step - min(time_loss,self.time_step))
 
+            # update target temperature
+            self.set_heating(self.get_current_target_temperature())
+
             if self.ff_remaining_sim_time != 0:
                 self.fast_forward_loop()
             
@@ -83,8 +80,7 @@ class Simulation(Thread):
         self.bhkw.update(time_delta, self.heat_storage,self.electric_consumer)
         self.peakload_boiler.update(time_delta, self.heat_storage)
         self.electric_consumer.update(time_delta, self.bhkw)
-        for heating in self.heating:
-            heating.update(time_delta, self.heat_storage)
+        self.heating.update(time_delta, self.heat_storage)
         self.heat_storage.update(time_delta)
 
     def immediate_off(self):
@@ -98,6 +94,8 @@ class Simulation(Thread):
         self.ff_step = self.ff_remaining_sim_time / num_values
         while self.ff_remaining_sim_time > 0:
             sleep(0.1)
+        # update forwarded_time
+        self.forwarded_time += seconds
         return self.fast_motion_values
     
     def fast_forward_loop(self):
@@ -119,12 +117,10 @@ class Simulation(Thread):
         
 
     def set_heating(self, temperature):
-        for heating in self.heating:
-            heating.target_temperature = temperature
+        self.heating.target_temperature = temperature
     
     def set_outside_temperature(self, temperature):
-        for heating in self.heating:
-            heating.sensors["temperature_outside"] = temperature    
+        self.heating.sensors["temperature_outside"] = temperature    
 
     def set_electric_consumption(self, power):
         self.electric_consumer.sensors["electric_consumption"].value = power
@@ -176,3 +172,27 @@ class Simulation(Thread):
         for key,device in self.devices.items():
             for key,sensor in device.sensors.items():
                 self.fast_motion_values[device.device_id][sensor.name].append(sensor.value)
+
+    def get_current_target_temperature(self):
+        current_day_seconds = (time()-self.start_time + self.forwarded_time) % (60*60*24)
+        current_hour = current_day_seconds / (60*60)
+        if(current_hour<6):
+            return 16.0
+        elif(current_hour<8):
+            return 18.0
+        elif(current_hour<10):
+            return 20.0
+        elif(current_hour<12):
+            return 21.0
+        elif(current_hour<14):
+            return 22.0
+        elif(current_hour<16):
+            return 23.0
+        elif(current_hour<18):
+            return 24.0
+        elif(current_hour<20):
+            return 21.0
+        elif(current_hour<22):
+            return 20.0
+        else:
+            return 18.0

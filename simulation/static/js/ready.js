@@ -65,7 +65,7 @@ function update_scheme(data){
         $.each(device_data, function(key, value){
             var item = $('#' + namespace + "_" + key);
             if (item.length) {
-                item.text(Math.floor(parseFloat(value)*1000)/1000 + " " + devices_info[device_id][key]);
+                item.text(Math.floor(parseFloat(value)*100)/100 + " " + devices_info[device_id][key]);
             }
         });
     });
@@ -94,13 +94,11 @@ function update_diagram(data, time_delta){
     var chart = $('#simulation_diagram').highcharts();
     var i = 0;
     var timestamp = simulation_time();
-    var max_additional_seconds = 0;
     $.each(data, function(device_id, device_data) {
         $.each(device_data, function(sensor_name, value){
             if(blacklist.indexOf(sensor_name) == -1){
-                if(time_delta != undefined && time_delta > 0){
+                if(typeof time_delta !== 'undefined'){
                     var value_len = value.length;
-                    max_additional_seconds = Math.max(value_len, max_additional_seconds);
                     for (var j = 0; j < value.length; j++) {
                         chart.series[i].addPoint([future_time(timestamp, time_delta, j, value_len), parseFloat(value[j])], false);
                     }
@@ -111,8 +109,9 @@ function update_diagram(data, time_delta){
             }
         });
     });
+
     if(time_delta != undefined && time_delta > 0){
-        simulation_time(max_additional_seconds + time_delta);
+        simulation_time(time_delta);
     }
     chart.redraw();
 }
