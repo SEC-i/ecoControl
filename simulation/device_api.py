@@ -28,7 +28,7 @@ def index():
 @crossdomain(origin='*')
 def get_simulation_data():
     output = {}
-    for i in simulation.devices:
+    for i in range(5):
         device = simulation.devices[i]
         device_data = {}
         for key, sensor in device.sensors.items():
