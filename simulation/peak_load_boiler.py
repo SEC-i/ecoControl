@@ -10,7 +10,7 @@ class PLB(GeneratorDevice):
         self.name = "Peakload Boiler"
         self.gas_input = power # kw
         self.thermal_power = self.gas_input * 0.8 #kw efficiency up to 90 % are possible
-        self.sensors = {"workload":Sensor(name="workload", id=0, value=0, unit=r"Bool",graph_id=1),
+        self.sensors = {"workload":Sensor(name="workload", id=0, value=0, unit=r"%",graph_id=1),
                         "gas_input":Sensor(name="gas_input", id=1, value=0, unit=r"kw",graph_id=1),
                         "thermal_power":Sensor(name="thermal_power", id=2, value=0, unit=r"kw",graph_id=1)}
 
@@ -27,7 +27,7 @@ class PLB(GeneratorDevice):
             self.power_off()
 
     def power_on(self):
-        self.sensors["workload"].value = 1
+        self.sensors["workload"].value = 100
         self.sensors["gas_input"].value = self.gas_input
         self.sensors["thermal_power"].value = self.thermal_power
 
