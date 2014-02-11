@@ -185,12 +185,11 @@ class Simulation(Thread):
 
     def get_current_target_temperature(self, ff = False):
         if(ff):
-            time_fast_forward_start = (self.ff_start-self.start_time)
             time_already_fast_forwarded = (self.forwarded_seconds-self.ff_remaining_sim_time)
-            current_day_seconds = ( time_fast_forward_start + time_already_fast_forwarded + self.total_forwarded_seconds) % (60*60*24)
+            current_day_seconds = ( self.ff_start + time_already_fast_forwarded + self.total_forwarded_seconds) % (60*60*24)
             current_hour = current_day_seconds / (60*60)
         else:
-            current_day_seconds = (time()-self.start_time + self.total_forwarded_seconds) % (60*60*24)
+            current_day_seconds = (time() + self.total_forwarded_seconds) % (60*60*24)
             current_hour = current_day_seconds / (60*60)
 
         if(current_hour<6):
