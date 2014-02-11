@@ -17,7 +17,7 @@ class Heating(Device):
         self.device_id = device_id
         self.name = "Heating"
         self.sensors = {"temperature":Sensor(name="temperature",id=0,value=20, unit=r"C",graph_id=2),
-                        "temperature_outside":Sensor(name="temperature_outside",id=1,value=5,unit=r"C",graph_id=0)}
+                        "temperature_outside":Sensor(name="temperature_outside",id=1,value=5,unit=r"C",graph_id=2)}
         self.target_temperature = 25
         # Type 22, 1.4m X 0.5m
         # W/m to 22 C = 90 W

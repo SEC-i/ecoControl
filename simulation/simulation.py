@@ -1,6 +1,6 @@
 from datetime import datetime
 from time import time, sleep,clock
-from threading import Thread
+from threading import Thread,Lock
 
 from bhkw import BHKW
 from peak_load_boiler import PLB
@@ -38,7 +38,7 @@ class Simulation(Thread):
         
         self.plotting = plotting
         self.duration = duration #seconds
-        self.fast_forwarding = False
+        self.mainloop_lock = Lock()
         self.ff_remaining_sim_time = 0
         self.stat_info = {}
         if self.plotting:
@@ -64,29 +64,23 @@ class Simulation(Thread):
             step_start_time =clock()
             time_since_plot += time_delta
 
-
-            # update target temperature
-            self.set_heating(self.get_current_target_temperature())
-
-            sim_step_time = float(time_delta * self.step_size) #in secs
-            self.update_devices(sim_step_time)
-            
-
-            if self.plotting and time_since_plot >= self.time_step:
-                self.plot()
-                time_since_plot = 0
+            #lock acess to devices 
+            with self.mainloop_lock:
+                # update target temperature
+                self.set_heating(self.get_current_target_temperature())
+                sim_step_time = float(time_delta * self.step_size) #in secs
+                self.update_devices(sim_step_time)
+    
+                if self.plotting and time_since_plot >= self.time_step:
+                    self.plot()
+                    time_since_plot = 0
             
             # terminate plotting
             if self.duration != None and time()-self.start_time > self.duration:
 
                 print "simulation finished"
                 return
-
-            # terminate plotting
-            if self.duration != None and time()-self.start_time > self.duration:
-
-                print "simulation finished"
-                return
+            
             step_end_time = clock()
 
     def update_devices(self, time_delta):
@@ -106,10 +100,9 @@ class Simulation(Thread):
         self.ff_remaining_sim_time = self.forwarded_seconds = seconds
         self.ff_step = self.ff_remaining_sim_time / num_values
         self.ff_start = time()
-        # start ff loop (in simulation thread)
-        self.fast_forwarding = True
-        self.fast_forward_loop()
-        self.fast_forwarding = False
+        # start ff loop and lock mainloop thread
+        with self.mainloop_lock:
+            self.fast_forward_loop()
         # update total_forwarded_seconds
         self.total_forwarded_seconds += seconds
         return self.fast_motion_values
