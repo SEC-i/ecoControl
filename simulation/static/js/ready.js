@@ -153,7 +153,7 @@ function initialize_buttons(){
     });
 
     $("#form_temperature").submit(function(){
-        $.post( "./api/set/", { room_temperature: $("#room_temperature").val() }).done(function(){
+        $.post( "./api/set/", { outside_temperature: $("#outside_temperature").val() }).done(function(){
             $("#temperature_button").removeClass("btn-primary").addClass("btn-success");
             setTimeout(function(){
                 $("#temperature_button").removeClass("btn-success").addClass("btn-primary");

@@ -5,8 +5,8 @@ seconds_per_hour = 60 * 60
 #J /( m^3 * K)
 heat_capacity_air = 1290
 
-# let's use 15 heating systems
-amount_of_heating_systems = 22
+# let's use 30 heating systems
+amount_of_heating_systems = 30
 
 #formulas from http://www.model.in.tum.de/um/research/groups/ai/fki-berichte/postscript/fki-227-98.pdf
 #and http://www.inference.phy.cam.ac.uk/is/papers/DanThermalModellingBuildings.pdf
@@ -17,7 +17,7 @@ class Heating(Device):
         self.device_id = device_id
         self.name = "Heating"
         self.sensors = {"temperature":Sensor(name="temperature",id=0,value=20, unit=r"C",graph_id=2),
-                        "temperature_outside":Sensor(name="temperature_outside",id=1,value=5,unit=r"C",graph_id=2)}
+                        "temperature_outside":Sensor(name="temperature_outside",id=1,value=10,unit=r"C",graph_id=2)}
         self.target_temperature = 25
         # Type 22, 1.4m X 0.5m
         # W/m to 22 C = 90 W
