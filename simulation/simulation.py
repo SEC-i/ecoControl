@@ -38,6 +38,7 @@ class Simulation(Thread):
         
         self.plotting = plotting
         self.duration = duration #seconds
+        self.fast_forwarding = False
         self.ff_remaining_sim_time = 0
         self.stat_info = {}
         if self.plotting:
@@ -51,11 +52,18 @@ class Simulation(Thread):
         print "simulating..."
         self.start_time = time()
         time_since_plot = 0
+        #fill the parameters with starting values
+        step_start_time = 0
+        step_end_time = 0.00002
         while self.mainloop_running:
             
-            time_delta = 0.00002 # it's a kind of magic
+            time_delta = step_end_time - step_start_time
+            if time_delta <= 0.0000001:
+                # minimal time passed
+                time_delta = 0.0001
+            step_start_time =clock()
             time_since_plot += time_delta
-            #sleep(self.time_step - min(time_loss,self.time_step))
+
 
             # update target temperature
             self.set_heating(self.get_current_target_temperature())
@@ -74,6 +82,13 @@ class Simulation(Thread):
                 print "simulation finished"
                 return
 
+            # terminate plotting
+            if self.duration != None and time()-self.start_time > self.duration:
+
+                print "simulation finished"
+                return
+            step_end_time = clock()
+
     def update_devices(self, time_delta):
         self.bhkw.update(time_delta, self.heat_storage,self.electric_consumer)
         self.peakload_boiler.update(time_delta, self.heat_storage)
@@ -91,8 +106,10 @@ class Simulation(Thread):
         self.ff_remaining_sim_time = self.forwarded_seconds = seconds
         self.ff_step = self.ff_remaining_sim_time / num_values
         self.ff_start = time()
-        # start ff loop
+        # start ff loop (in simulation thread)
+        self.fast_forwarding = True
         self.fast_forward_loop()
+        self.fast_forwarding = False
         # update total_forwarded_seconds
         self.total_forwarded_seconds += seconds
         return self.fast_motion_values
