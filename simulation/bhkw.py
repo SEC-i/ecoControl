@@ -18,12 +18,15 @@ class BHKW(GeneratorDevice):
         # workload is modulated starting from this value
         # ecoPower from 1,3 kw el or 4 kw th -> about 30% workload
         self.modulation = 30 
+        self.gas_cost = 0.0654 #per kWH
+        
 
 
         self.sensors = {"workload":Sensor(name="workload", id=0, value=0, unit=r"%",graph_id=1),
                         "electrical_power":Sensor(name="electrical_power", id=1, value=0, unit="kW",graph_id=1),
                         "thermal_power":Sensor(name="thermal_power", id=2, value=0, unit="kW",graph_id=1),
-                        "gasinput":Sensor(name="gas_input", id=3, value=0, unit="kW",graph_id=1) }
+                        "gasinput":Sensor(name="gas_input", id=3, value=0, unit="kW",graph_id=1),
+                        "gas_cost_sum":Sensor(name="gas_cost_sum",id=4,value=0,unit="Euro")}
 
 
         self.given_data = []
@@ -108,6 +111,7 @@ class BHKW(GeneratorDevice):
         
         heat_storage.add_energy(self.sensors["thermal_power"].value * time_delta_hour)
         electric_consumer.add_electric_energy(self.sensors["electrical_power"].value * time_delta_hour)
+        self.sensors["gas_cost_sum"] += self.gas_cost * self.sensors["gasinput"].value * time_delta_hour
 
     def get_electrical_power(self):
         return self.sensors["electrical_power"].value
