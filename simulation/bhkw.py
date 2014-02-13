@@ -74,7 +74,7 @@ class BHKW(GeneratorDevice):
         
 
         #return interpolated values from datasheet
-        for key in self.sensors:
+        for key in self.given_data[0]:
             if (key!= type):
                 interp_value = cosine_interpolate(data_set1[key], data_set2[key], mu)
                 ret_dict[key] = interp_value
@@ -111,7 +111,7 @@ class BHKW(GeneratorDevice):
         
         heat_storage.add_energy(self.sensors["thermal_power"].value * time_delta_hour)
         electric_consumer.add_electric_energy(self.sensors["electrical_power"].value * time_delta_hour)
-        self.sensors["gas_cost_sum"] += self.gas_cost * self.sensors["gasinput"].value * time_delta_hour
+        self.sensors["gas_cost_sum"].value += self.gas_cost * self.sensors["gasinput"].value * time_delta_hour
 
     def get_electrical_power(self):
         return self.sensors["electrical_power"].value

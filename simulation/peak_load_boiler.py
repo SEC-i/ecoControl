@@ -28,7 +28,7 @@ class PLB(GeneratorDevice):
         else:
             self.power_off()
         
-        self.sensors["gas_cost_sum"] += self.gas_cost * self.sensors["gas_input"].value * time_delta_hour
+        self.sensors["gas_cost_sum"].value += self.gas_cost * self.sensors["gas_input"].value * time_delta_hour
 
     def power_on(self):
         self.sensors["workload"].value = 99
