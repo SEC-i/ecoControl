@@ -14,7 +14,7 @@ class PLB(GeneratorDevice):
         self.sensors = {"workload":Sensor(name="workload", id=0, value=0, unit=r"%",graph_id=1),
                         "gas_input":Sensor(name="gas_input", id=1, value=0, unit=r"kw",graph_id=1),
                         "thermal_power":Sensor(name="thermal_power", id=2, value=0, unit=r"kw",graph_id=1),
-                        "gas_cost_sum":Sensor(name="gas_cost_sum",id=3,value=0,unit="Euro")}
+                        "gas_cost":Sensor(name="gas_cost",id=3,value=0,unit="Euro")}
 
     def update(self,time_delta,heat_storage):
         time_delta_hour = time_delta / seconds_per_hour
@@ -28,7 +28,7 @@ class PLB(GeneratorDevice):
         else:
             self.power_off()
         
-        self.sensors["gas_cost_sum"].value += self.gas_cost * self.sensors["gas_input"].value * time_delta_hour
+        self.sensors["gas_cost"].value += self.gas_cost * self.sensors["gas_input"].value * time_delta_hour
 
     def power_on(self):
         self.sensors["workload"].value = 99

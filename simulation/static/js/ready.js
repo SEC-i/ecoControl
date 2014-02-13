@@ -4,7 +4,7 @@ var fast_forward_active = false;
 
 var current_time = new Date();
 
-var blacklist = ["name", "energy_external", "energy_infeed", "thermal_power", "gas_input", "electrical_power"];
+var blacklist = ["name", "energy_external", "energy_infeed", "thermal_power", "gas_input", "electrical_power", "gas_cost", "infeed_reward","consumption_reward", "external_cost"];
 
 $(function(){
     $.get( "./static/img/simulation.svg", function( data ) {
