@@ -106,10 +106,8 @@ class BHKW(GeneratorDevice):
             if (key != "workload"):
                 self.sensors[key].value = new_values[key]
         
-        if self.mode == 0:
-            heat_storage.add_energy(self.sensors["thermal_power"].value * time_delta_hour)
-        else:
-            heat_storage.add_energy(self.sensors["electrical_power"].value * time_delta_hour)
+        heat_storage.add_energy(self.sensors["thermal_power"].value * time_delta_hour)
+        electric_consumer.add_electric_energy(self.sensors["electrical_power"].value * time_delta_hour)
 
     def get_electrical_power(self):
         return self.sensors["electrical_power"].value

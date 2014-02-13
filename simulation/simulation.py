@@ -135,6 +135,23 @@ class Simulation(Thread):
     def set_electric_consumption(self, power):
         self.electric_consumer.sensors["electric_consumption"].value = power
         
+    def set_workload_bhkw(self,percent):
+        self.bhkw.sensors["workload"].value = percent
+        
+    def set_target_temperature_heat_storage(self,temperature):
+        self.heat_storage.target_temperature = temperature
+    
+    def set_workload_plb(self,percent):
+        if percent > 0:
+            percent = 99
+        else:
+            percent = 0
+        
+        self.peak_load_boiler.sensors["workload"].value = percent
+    
+    
+    
+        
         
         
     def get_sensor(self,device_id,sensor_id=None,sensor_name=None):
@@ -212,3 +229,8 @@ class Simulation(Thread):
             return 20.0
         else:
             return 18.0
+        
+
+
+def clamp(minVal,maxVal,value):
+    return max(minVal,min(maxVal,value))

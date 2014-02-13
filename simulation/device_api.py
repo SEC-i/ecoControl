@@ -59,17 +59,31 @@ def set_data():
         if temperature >= 10 and temperature <= 30:
             simulation.set_heating(temperature)
             return "1"
-    # set electrical consumption
+        
     if "electric_consumption" in request.form:
         power = float(request.form['electric_consumption'])
         simulation.set_electric_consumption(power)
         return "1"   
 
-    # set outside temperature
     if "outside_temperature" in request.form:
         temperature = float(request.form['outside_temperature'])
         simulation.set_outside_temperature(temperature)
         return "1"
+    
+    if "target_temperature_heat_storage" in request.form:
+        temperature = float(request.form['target_temperature_heat_storage'])
+        simulation.set_target_temperature_heat_storage(temperature)
+        return "1"
+    
+    if "workload_bhkw" in request.form:
+        workload = float(request.form['workload_bhkw'])
+        simulation.set_workload_bhkw(workload)
+        return "1"   
+    
+    if "workload_plb" in request.form:
+        workload = float(request.form['workload_plb'])
+        simulation.set_workload_plb(workload)
+        return "1"       
 
     if "fast_forward" in request.form:
         time_interval = int(request.form['fast_forward'])
