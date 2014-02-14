@@ -7,8 +7,7 @@ var systems_units = {
     plb_workload: '%',
     plb_thermal_power: 'kW',
     plb_total_gas_consumption: 'kWh',
-    thermal_consumption: 'kW',
-    time: 'seconds'
+    thermal_consumption: 'kW'
 };
 
 var series_data = [{
@@ -95,7 +94,11 @@ function update_scheme(data){
     $.each(data, function(key, value) {
         var item = $('#' + key);
         if (item.length) {
-            item.text(value + " " + systems_units[key]);
+            if(key == "time"){
+                item.text(format_date(new Date(parseFloat(value) * 1000)));
+            }else{
+                item.text(value + " " + systems_units[key]);
+            }
         }
     });
 }
@@ -113,6 +116,11 @@ function update_diagram(data){
     });
 
     chart.redraw();
+}
+
+function format_date(date){
+    date = date.toString();
+    return date.substring(0, date.length - 15);
 }
 
 function get_timestamp(string){
