@@ -1,4 +1,5 @@
 from threading import Thread
+import time
 
 from flask import Flask, jsonify, make_response, render_template, request
 from functools import update_wrapper
@@ -7,6 +8,8 @@ app = Flask(__name__)
 
 
 from simulation import env, heat_storage, bhkw, plb, thermal
+
+start_time = time.time()
 
 def crossdomain(origin=None):
     def decorator(f):
@@ -37,7 +40,7 @@ def index():
 @crossdomain(origin='*')
 def get_data():
     return jsonify({
-        'time': env.now,
+        'time': start_time + env.now,
         'bhkw_workload': round(bhkw.get_workload(), 2),
         'bhkw_electrical_power': round(bhkw.get_electrical_power(), 2),
         'bhkw_thermal_power': round(bhkw.get_thermal_power(), 2),
@@ -88,5 +91,6 @@ def set_data():
 
 if __name__ == '__main__':
     sim = Simulation(env)
+    env.quiet = True
     sim.start()
     app.run(host="0.0.0.0",debug = True, port = 7000, use_reloader=False)

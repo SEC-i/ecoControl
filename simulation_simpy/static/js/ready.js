@@ -52,10 +52,11 @@ $(function(){
         });
     }).done(function(){
         $.getJSON( "./api/data/", function( data ) {
+            var timestamp = get_timestamp(data['time']);
             $.each(data, function(key, value) {
                 $.each(series_data, function(series_index, series_data) {
                     if(series_data['name'] == key){
-                        series_data['data'].push(parseFloat(value));
+                        series_data['data'].push([timestamp, parseFloat(value)]);
                     }
                 });
             });
@@ -101,16 +102,21 @@ function update_scheme(data){
 
 function update_diagram(data){
     var chart = $('#simulation_diagram').highcharts();
+    var timestamp = get_timestamp(data['time']);
 
     $.each(data, function(key, value) {
         $.each(chart.series, function(series_index, series_data) {
             if(series_data['name'] == key){
-                series_data.addPoint(value, false);
+                series_data.addPoint([timestamp, value], false);
             }
         });
     });
 
     chart.redraw();
+}
+
+function get_timestamp(string){
+    return new Date(parseFloat(string) * 1000).getTime();
 }
 
 function initialize_diagram(){

@@ -8,7 +8,11 @@ from consumers import ThermalConsumer
 
 # initialize real-time environment
 env = RealtimeEnvironment(
-    initial_time=0, factor=1.0, strict=True)
+    initial_time=0, factor=1.0/10.0, strict=True)
+
+# verbose logging by default
+env.quiet = False
+
 
 # initialize power systems
 heat_storage = HeatStorage(env=env)
