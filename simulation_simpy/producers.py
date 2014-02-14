@@ -1,10 +1,14 @@
 import random
-import math
+
+from helpers import log
+
+gas_price_per_kwh = 0.0655
 
 
 class PowerGenerator(object):
 
-    def __init__(self):
+    def __init__(self, env):
+        self.env = env
         self.running = False
 
     def start(self):
@@ -13,13 +17,11 @@ class PowerGenerator(object):
     def stop(self):
         self.running = False
 
-    def get_workload(self):
-        pass
-
 
 class BHKW(PowerGenerator):
 
-    def __init__(self, heat_storage):
+    def __init__(self, env, heat_storage):
+        PowerGenerator.__init__(self, env)
         # XRGI 15kW
         self.max_gas_input = 49.0  # kW
         self.electrical_efficiency = 0.3  # max 14.7 kW
@@ -35,8 +37,8 @@ class BHKW(PowerGenerator):
 
     def get_workload(self):
         if self.running:
-            calculated_workload = self.heat_storage.target_level + \
-                self.minimal_workload - self.heat_storage.level()
+            calculated_workload = self.heat_storage.target_energy + \
+                self.minimal_workload - self.heat_storage.energy_stored()
             # add noise
             calculated_workload += random.random() - 0.5
             if calculated_workload >= self.minimal_workload:
@@ -63,10 +65,24 @@ class BHKW(PowerGenerator):
             self.total_thermal_production += current_thermal_production
         return current_thermal_production
 
+    def update(self):
+        log(self.env, 'Starting BHKW...')
+        self.start()
+        while True:
+            if self.running:
+                log(self.env, 'BHKW workload:', '%f %%' % self.get_workload(), 'Total:', '%f kWh (%f Euro)' %
+                    (self.total_gas_consumption, self.total_gas_consumption * gas_price_per_kwh))
+                if self.get_workload() > 0:
+                    self.heat_storage.add_energy(self.get_thermal_power(True))
+            else:
+                log(self.env, 'BHKW stopped.')
+            yield self.env.timeout(1)
+
 
 class PeakLoadBoiler(PowerGenerator):
 
-    def __init__(self, heat_storage):
+    def __init__(self, env, heat_storage):
+        PowerGenerator.__init__(self, env)
         self.max_gas_input = 100.0  # kW
         self.thermal_efficiency = 0.8
 
@@ -79,7 +95,7 @@ class PeakLoadBoiler(PowerGenerator):
     def analyze_demand(self):
         if self.heat_storage.undersupplied():
             self.producing = True
-        elif self.heat_storage.level() + self.get_thermal_power() >= self.heat_storage.target_level:
+        elif self.heat_storage.energy_stored() + self.get_thermal_power() >= self.heat_storage.target_energy:
             self.producing = False
 
     def get_workload(self):
@@ -100,47 +116,18 @@ class PeakLoadBoiler(PowerGenerator):
             self.total_thermal_production += current_thermal_production
         return current_thermal_production
 
+    def update(self):
+        log(self.env, 'Starting PLB...')
+        self.start()
+        while True:
+            self.analyze_demand()
+            if self.running:
+                log(self.env, 'PLB workload:', '%f %%' % self.get_workload(), 'Total:', '%f kWh (%f Euro)' %
+                   (self.total_gas_consumption, self.total_gas_consumption * gas_price_per_kwh))
+                if self.get_workload() > 0:
+                    self.heat_storage.add_energy(self.get_thermal_power(True))
+            else:
+                log(self.env, 'PLB stopped.')
 
-class HeatStorage():
-
-    def __init__(self):
-        self.capacity = 700.0  # kWh
-        self.target_level = 500.0  # kWh
-        self.input_energy = 0.0  # kWh
-        self.output_energy = 0.0  # kWh
-
-        self.undersupplied_threshold = self.target_level / 2
-
-    def level(self):
-        return self.input_energy - self.output_energy
-
-    def add_energy(self, energy):
-        if self.level() + energy <= self.capacity:
-            self.input_energy += energy
-
-    def consume_energy(self, energy):
-        if self.level() - energy >= 0:
-            self.output_energy += energy
-        else:
-            print('Heat Storage empty')
-
-    def undersupplied(self):
-        return self.level() < self.undersupplied_threshold
-
-
-class ThermalConsumer():
-
-    def __init__(self, env):
-        self.env = env
-        self.average_demand = 20.0  # kW
-        self.varying_demand = 10.0  # kW
-
-        self.total_consumption = 0.0 # kWh
-
-    def get_consumption(self, consider_consumed=False):
-        variation = self.varying_demand * \
-            math.fabs(math.sin((self.env.now % 100.0) / 100.0 * 2 * math.pi))
-        current_consumption = self.average_demand + variation
-        if consider_consumed:
-            self.total_consumption += current_consumption
-        return current_consumption
+            log(self.env, '=' * 80)
+            yield self.env.timeout(1)
