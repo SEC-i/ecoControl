@@ -9,7 +9,8 @@ app = Flask(__name__)
 
 from simulation import env, heat_storage, bhkw, plb, thermal
 
-start_time = time.time()
+# start_time = time.time()
+start_time = 1388534400 # 01.01.2014 00:00
 
 def crossdomain(origin=None):
     def decorator(f):
@@ -69,14 +70,22 @@ def get_settings():
 @app.route('/api/set/', methods=['POST'])
 @crossdomain(origin='*')
 def set_data():
-    thermal.average_demand = float(request.form['average_thermal_demand'])
-    thermal.varying_demand = float(request.form['varying_thermal_demand'])
-    heat_storage.capacity = float(request.form['hs_capacity'])
-    heat_storage.target_energy = float(request.form['hs_target_energy'])
-    heat_storage.undersupplied_threshold = float(request.form['hs_undersupplied_threshold'])
-    bhkw.max_gas_input = float(request.form['bhkw_max_gas_input'])
-    bhkw.minimal_workload = float(request.form['bhkw_minimal_workload'])
-    plb.max_gas_input = float(request.form['plb_max_gas_input'])
+    if 'average_thermal_demand' in request.form:
+        thermal.average_demand = float(request.form['average_thermal_demand'])
+    if 'varying_thermal_demand' in request.form:
+        thermal.varying_demand = float(request.form['varying_thermal_demand'])
+    if 'hs_capacity' in request.form:
+        heat_storage.capacity = float(request.form['hs_capacity'])
+    if 'hs_target_energy' in request.form:
+        heat_storage.target_energy = float(request.form['hs_target_energy'])
+    if 'hs_undersupplied_threshold' in request.form:
+        heat_storage.undersupplied_threshold = float(request.form['hs_undersupplied_threshold'])
+    if 'bhkw_max_gas_input' in request.form:
+        bhkw.max_gas_input = float(request.form['bhkw_max_gas_input'])
+    if 'bhkw_minimal_workload' in request.form:
+        bhkw.minimal_workload = float(request.form['bhkw_minimal_workload'])
+    if 'plb_max_gas_input' in request.form:
+        plb.max_gas_input = float(request.form['plb_max_gas_input'])
 
     return jsonify({
         'average_thermal_demand': thermal.average_demand,

@@ -76,7 +76,7 @@ class BHKW(PowerGenerator):
                     self.heat_storage.add_energy(self.get_thermal_power(True))
             else:
                 log(self.env, 'BHKW stopped.')
-            yield self.env.timeout(1)
+            yield self.env.timeout(3600)
 
 
 class PeakLoadBoiler(PowerGenerator):
@@ -130,4 +130,4 @@ class PeakLoadBoiler(PowerGenerator):
                 log(self.env, 'PLB stopped.')
 
             log(self.env, '=' * 80)
-            yield self.env.timeout(1)
+            yield self.env.timeout(3600)

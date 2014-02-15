@@ -139,23 +139,15 @@ function initialize_diagram(){
         rangeSelector: {
             buttons: [{
                 count: 1,
-                type: 'minute',
-                text: '1M'
-            }, {
-                count: 5,
-                type: 'minute',
-                text: '5M'
-            }, {
-                count: 10,
-                type: 'minute',
-                text: '10M'
-            }, {
-                count: 60,
-                type: 'minute',
+                type: 'hour',
                 text: '1H'
             }, {
-                count: 60*12,
-                type: 'minute',
+                count: 6,
+                type: 'hour',
+                text: '6H'
+            }, {
+                count: 12,
+                type: 'hour',
                 text: '12H'
             }, {
                 count: 1,
