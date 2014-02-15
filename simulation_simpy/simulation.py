@@ -1,14 +1,15 @@
 import math
 import simpy
-from simpy.rt import RealtimeEnvironment
 from simpy.util import start_delayed
+
+from env import ForwardableRealtimeEnvironment
 
 from producers import BHKW, PeakLoadBoiler
 from storages import HeatStorage
 from consumers import ThermalConsumer
 
 # initialize real-time environment
-env = RealtimeEnvironment(
+env = ForwardableRealtimeEnvironment(
     initial_time=0, factor=1.0/3600.0, strict=False)
 
 # verbose logging by default

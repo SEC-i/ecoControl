@@ -10,7 +10,8 @@ app = Flask(__name__)
 from simulation import env, heat_storage, bhkw, plb, thermal
 
 # start_time = time.time()
-start_time = 1388534400 # 01.01.2014 00:00
+start_time = 1388534400  # 01.01.2014 00:00
+
 
 def crossdomain(origin=None):
     def decorator(f):
@@ -22,7 +23,9 @@ def crossdomain(origin=None):
         return update_wrapper(wrapped_function, f)
     return decorator
 
+
 class Simulation(Thread):
+
     def __init__(self, env):
         Thread.__init__(self)
         self.daemon = True
@@ -36,6 +39,7 @@ class Simulation(Thread):
 @crossdomain(origin='*')
 def index():
     return render_template('index.html')
+
 
 @app.route('/api/data/', methods=['GET'])
 @crossdomain(origin='*')
@@ -53,6 +57,7 @@ def get_data():
         'thermal_consumption': round(thermal.get_consumption(), 2)
     })
 
+
 @app.route('/api/settings/', methods=['GET'])
 @crossdomain(origin='*')
 def get_settings():
@@ -67,7 +72,9 @@ def get_settings():
         'bhkw_minimal_workload': bhkw.minimal_workload,
         'bhkw_noise': 1 if bhkw.noise else 0,
         'plb_max_gas_input': plb.max_gas_input,
+        'sim_forward': '',
     })
+
 
 @app.route('/api/set/', methods=['POST'])
 @crossdomain(origin='*')
@@ -83,13 +90,16 @@ def set_data():
     if 'hs_target_energy' in request.form:
         heat_storage.target_energy = float(request.form['hs_target_energy'])
     if 'hs_undersupplied_threshold' in request.form:
-        heat_storage.undersupplied_threshold = float(request.form['hs_undersupplied_threshold'])
+        heat_storage.undersupplied_threshold = float(
+            request.form['hs_undersupplied_threshold'])
     if 'bhkw_max_gas_input' in request.form:
         bhkw.max_gas_input = float(request.form['bhkw_max_gas_input'])
     if 'bhkw_minimal_workload' in request.form:
         bhkw.minimal_workload = float(request.form['bhkw_minimal_workload'])
     if 'bhkw_noise' in request.form:
         bhkw.noise = request.form['bhkw_noise'] == "1"
+    if 'sim_forward' in request.form and request.form['sim_forward'] != "":
+        env.forward = float(request.form['sim_forward']) * 60 * 60
     if 'plb_max_gas_input' in request.form:
         plb.max_gas_input = float(request.form['plb_max_gas_input'])
 
@@ -104,10 +114,11 @@ def set_data():
         'bhkw_minimal_workload': bhkw.minimal_workload,
         'bhkw_noise': 1 if bhkw.noise else 0,
         'plb_max_gas_input': plb.max_gas_input,
+        'sim_forward': '',
     })
 
 if __name__ == '__main__':
     sim = Simulation(env)
     env.quiet = True
     sim.start()
-    app.run(host="0.0.0.0",debug = True, port = 7000, use_reloader=False)
+    app.run(host="0.0.0.0", debug=True, port=7000, use_reloader=False)
