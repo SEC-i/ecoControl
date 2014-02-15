@@ -108,10 +108,10 @@ function update_diagram(data){
 
     for (var i = 0; i < data['time'].length; i++) {
         var timestamp = get_timestamp(data['time'][i]);
-        chart.series[0].addPoint([timestamp, parseFloat(data['bhkw_workload'][i])]);
-        chart.series[1].addPoint([timestamp, parseFloat(data['plb_workload'][i])]);
-        chart.series[2].addPoint([timestamp, parseFloat(data['hs_level'][i])]);
-        chart.series[3].addPoint([timestamp, parseFloat(data['thermal_consumption'][i])]);
+        chart.series[0].addPoint([timestamp, parseFloat(data['bhkw_workload'][i])], false);
+        chart.series[1].addPoint([timestamp, parseFloat(data['plb_workload'][i])], false);
+        chart.series[2].addPoint([timestamp, parseFloat(data['hs_level'][i])], false);
+        chart.series[3].addPoint([timestamp, parseFloat(data['thermal_consumption'][i])], false);
     };
 
     chart.redraw();
