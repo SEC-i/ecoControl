@@ -9,9 +9,6 @@ app = Flask(__name__)
 
 from simulation import env, heat_storage, bhkw, plb, thermal
 
-# start_time = time.time()
-start_time = 1388534400  # 01.01.2014 00:00
-
 
 def crossdomain(origin=None):
     def decorator(f):
@@ -44,18 +41,10 @@ def index():
 @app.route('/api/data/', methods=['GET'])
 @crossdomain(origin='*')
 def get_data():
-    return jsonify({
-        'time': start_time + env.now,
-        'bhkw_workload': round(bhkw.get_workload(), 2),
-        'bhkw_electrical_power': round(bhkw.get_electrical_power(), 2),
-        'bhkw_thermal_power': round(bhkw.get_thermal_power(), 2),
-        'bhkw_total_gas_consumption': round(bhkw.total_gas_consumption, 2),
-        'plb_workload': round(plb.get_workload(), 2),
-        'plb_thermal_power': round(plb.get_thermal_power(), 2),
-        'plb_total_gas_consumption': round(plb.total_gas_consumption, 2),
-        'hs_level': round(heat_storage.level(), 2),
-        'thermal_consumption': round(thermal.get_consumption(), 2)
-    })
+    env.append_measurement()
+    output = env.data
+    env.clear_data()
+    return jsonify(output)
 
 
 @app.route('/api/settings/', methods=['GET'])

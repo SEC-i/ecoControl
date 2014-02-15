@@ -51,14 +51,13 @@ $(function(){
         });
     }).done(function(){
         $.getJSON( "./api/data/", function( data ) {
-            var timestamp = get_timestamp(data['time']);
-            $.each(data, function(key, value) {
-                $.each(series_data, function(series_index, series_data) {
-                    if(series_data['name'] == key){
-                        series_data['data'].push([timestamp, parseFloat(value)]);
-                    }
-                });
-            });
+            for (var i = 0; i < data['time'].length; i++) {
+                var timestamp = get_timestamp(data['time'][i]);
+                series_data[0]['data'].push([timestamp, parseFloat(data['bhkw_workload'][i])]);
+                series_data[1]['data'].push([timestamp, parseFloat(data['plb_workload'][i])]);
+                series_data[2]['data'].push([timestamp, parseFloat(data['hs_level'][i])]);
+                series_data[3]['data'].push([timestamp, parseFloat(data['thermal_consumption'][i])]);
+            };
         }).done(function(){
             initialize_diagram();
             setInterval(function(){
@@ -92,6 +91,7 @@ function refresh(){
 
 function update_scheme(data){
     $.each(data, function(key, value) {
+        value = value[value.length-1];
         var item = $('#' + key);
         if (item.length) {
             if(key == "time"){
@@ -105,15 +105,14 @@ function update_scheme(data){
 
 function update_diagram(data){
     var chart = $('#simulation_diagram').highcharts();
-    var timestamp = get_timestamp(data['time']);
 
-    $.each(data, function(key, value) {
-        $.each(chart.series, function(series_index, series_data) {
-            if(series_data['name'] == key){
-                series_data.addPoint([timestamp, value], false);
-            }
-        });
-    });
+    for (var i = 0; i < data['time'].length; i++) {
+        var timestamp = get_timestamp(data['time'][i]);
+        chart.series[0].addPoint([timestamp, parseFloat(data['bhkw_workload'][i])]);
+        chart.series[1].addPoint([timestamp, parseFloat(data['plb_workload'][i])]);
+        chart.series[2].addPoint([timestamp, parseFloat(data['hs_level'][i])]);
+        chart.series[3].addPoint([timestamp, parseFloat(data['thermal_consumption'][i])]);
+    };
 
     chart.redraw();
 }
