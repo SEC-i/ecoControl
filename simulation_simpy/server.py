@@ -59,11 +59,13 @@ def get_settings():
     return jsonify({
         'average_thermal_demand': thermal.average_demand,
         'varying_thermal_demand': thermal.varying_demand,
+        'thermal_demand_noise': 1 if thermal.noise else 0,
         'hs_capacity': heat_storage.capacity,
         'hs_target_energy': heat_storage.target_energy,
         'hs_undersupplied_threshold': heat_storage.undersupplied_threshold,
         'bhkw_max_gas_input': bhkw.max_gas_input,
         'bhkw_minimal_workload': bhkw.minimal_workload,
+        'bhkw_noise': 1 if bhkw.noise else 0,
         'plb_max_gas_input': plb.max_gas_input,
     })
 
@@ -74,6 +76,8 @@ def set_data():
         thermal.average_demand = float(request.form['average_thermal_demand'])
     if 'varying_thermal_demand' in request.form:
         thermal.varying_demand = float(request.form['varying_thermal_demand'])
+    if 'thermal_demand_noise' in request.form:
+        thermal.noise = request.form['thermal_demand_noise'] == "1"
     if 'hs_capacity' in request.form:
         heat_storage.capacity = float(request.form['hs_capacity'])
     if 'hs_target_energy' in request.form:
@@ -84,17 +88,21 @@ def set_data():
         bhkw.max_gas_input = float(request.form['bhkw_max_gas_input'])
     if 'bhkw_minimal_workload' in request.form:
         bhkw.minimal_workload = float(request.form['bhkw_minimal_workload'])
+    if 'bhkw_noise' in request.form:
+        bhkw.noise = request.form['bhkw_noise'] == "1"
     if 'plb_max_gas_input' in request.form:
         plb.max_gas_input = float(request.form['plb_max_gas_input'])
 
     return jsonify({
         'average_thermal_demand': thermal.average_demand,
         'varying_thermal_demand': thermal.varying_demand,
+        'thermal_demand_noise': 1 if thermal.noise else 0,
         'hs_capacity': heat_storage.capacity,
         'hs_target_energy': heat_storage.target_energy,
         'hs_undersupplied_threshold': heat_storage.undersupplied_threshold,
         'bhkw_max_gas_input': bhkw.max_gas_input,
         'bhkw_minimal_workload': bhkw.minimal_workload,
+        'bhkw_noise': 1 if bhkw.noise else 0,
         'plb_max_gas_input': plb.max_gas_input,
     })
 

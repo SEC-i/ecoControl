@@ -31,6 +31,8 @@ class BHKW(PowerGenerator):
         self.heat_storage = heat_storage
 
         self.minimal_workload = 40.0
+        self.noise = True
+
         self.total_gas_consumption = 0.0  # kWh
         self.total_electrical_production = 0.0  # kWh
         self.total_thermal_production = 0.0  # kWh
@@ -39,8 +41,10 @@ class BHKW(PowerGenerator):
         if self.running:
             calculated_workload = self.heat_storage.target_energy + \
                 self.minimal_workload - self.heat_storage.energy_stored()
-            # add noise
-            calculated_workload += random.random() - 0.5
+                
+            if self.noise:
+                calculated_workload += random.random() - 0.5
+
             if calculated_workload >= self.minimal_workload:
                 return min(calculated_workload, 99.0)
         return 0.0

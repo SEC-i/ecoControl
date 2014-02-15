@@ -12,6 +12,7 @@ class ThermalConsumer():
 
         self.average_demand = 20.0  # kW
         self.varying_demand = 10.0  # kW
+        self.noise = True
 
         self.total_consumption = 0.0  # kWh
 
@@ -21,9 +22,9 @@ class ThermalConsumer():
         variation = self.varying_demand * \
             math.fabs(math.sin(time_of_day * math.pi))
         current_consumption = self.average_demand + variation
-        
-        # add noise
-        current_consumption += self.varying_demand * (random.random() - 0.5)
+
+        if self.noise:
+            current_consumption += self.varying_demand * (random.random() - 0.5)
 
         if consider_consumed:
             self.total_consumption += current_consumption
