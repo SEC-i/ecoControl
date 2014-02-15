@@ -18,8 +18,6 @@ bhkw = BHKW(env=env, heat_storage=heat_storage)
 plb = PeakLoadBoiler(env=env, heat_storage=heat_storage)
 thermal = ThermalConsumer(env=env, heat_storage=heat_storage)
 
-env.connect_devices(bhkw, plb, heat_storage, thermal)
-
 # add power system to simulation environment
 env.process(thermal.update())
 env.process(bhkw.update())

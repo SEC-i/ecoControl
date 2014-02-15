@@ -60,9 +60,7 @@ $(function(){
             };
         }).done(function(){
             initialize_diagram();
-            setInterval(function(){
-                refresh()
-            }, 2000);
+            refresh();
         });
     });
 
@@ -86,6 +84,11 @@ function refresh(){
     $.getJSON( "./api/data/", function( data ) {
         update_scheme(data);
         update_diagram(data);
+        next_refresh = 2 + Math.sqrt(data['time'].length) * 100;
+        console.log(data['time'].length);
+        setTimeout(function(){
+            refresh();
+        }, next_refresh);
     });
 }
 
