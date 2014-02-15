@@ -1,6 +1,7 @@
 import math
 import simpy
 from simpy.rt import RealtimeEnvironment
+from simpy.util import start_delayed
 
 from producers import BHKW, PeakLoadBoiler
 from storages import HeatStorage
@@ -20,5 +21,8 @@ plb = PeakLoadBoiler(env=env, heat_storage=heat_storage)
 thermal = ThermalConsumer(env=env, heat_storage=heat_storage)
 
 # add power system to simulation environment
-for system in [thermal, bhkw, plb]:
-    env.process(system.update())
+env.process(thermal.update())
+env.process(bhkw.update())
+
+# start plb 10h after simulation start
+start_delayed(env, plb.update(), 10 * 3600)
