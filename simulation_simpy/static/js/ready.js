@@ -84,8 +84,9 @@ function refresh(){
     $.getJSON( "./api/data/", function( data ) {
         update_scheme(data);
         update_diagram(data);
+
+        // schedule next refresh
         next_refresh = 2 + Math.sqrt(data['time'].length) * 100;
-        console.log(data['time'].length);
         setTimeout(function(){
             refresh();
         }, next_refresh);
@@ -109,12 +110,16 @@ function update_scheme(data){
 function update_diagram(data){
     var chart = $('#simulation_diagram').highcharts();
 
+    new_data = [[], [], [], []];
     for (var i = 0; i < data['time'].length; i++) {
         var timestamp = get_timestamp(data['time'][i]);
-        chart.series[0].addPoint([timestamp, parseFloat(data['bhkw_workload'][i])], false);
-        chart.series[1].addPoint([timestamp, parseFloat(data['plb_workload'][i])], false);
-        chart.series[2].addPoint([timestamp, parseFloat(data['hs_level'][i])], false);
-        chart.series[3].addPoint([timestamp, parseFloat(data['thermal_consumption'][i])], false);
+        new_data[0].push([timestamp, data['bhkw_workload'][i]]);
+        new_data[1].push([timestamp, data['plb_workload'][i]]);
+        new_data[2].push([timestamp, data['hs_level'][i]]);
+        new_data[3].push([timestamp, data['thermal_consumption'][i]]);
+    };
+    for (var i = new_data.length - 1; i >= 0; i--) {
+        chart.series[i].setData(new_data[i], false);
     };
 
     chart.redraw();
