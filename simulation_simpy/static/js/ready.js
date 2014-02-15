@@ -60,7 +60,10 @@ $(function(){
             };
         }).done(function(){
             initialize_diagram();
-            refresh();
+            // set up refresh loop
+            setInterval(function(){
+                refresh();
+            }, 2000);
         });
     });
 
@@ -84,12 +87,6 @@ function refresh(){
     $.getJSON( "./api/data/", function( data ) {
         update_scheme(data);
         update_diagram(data);
-
-        // schedule next refresh
-        next_refresh = 2 + Math.sqrt(data['time'].length) * 100;
-        setTimeout(function(){
-            refresh();
-        }, next_refresh);
     });
 }
 
@@ -145,10 +142,6 @@ function initialize_diagram(){
     $('#simulation_diagram').highcharts('StockChart', {
         rangeSelector: {
             buttons: [{
-                count: 1,
-                type: 'hour',
-                text: '1H'
-            }, {
                 count: 6,
                 type: 'hour',
                 text: '6H'
@@ -161,14 +154,18 @@ function initialize_diagram(){
                 type: 'day',
                 text: '1D'
             }, {
-                count: 7,
-                type: 'day',
-                text: '7D'
+                count: 1,
+                type: 'week',
+                text: '1W'
+            }, {
+                count: 2,
+                type: 'week',
+                text: '2W'
             }, {
                 type: 'all',
                 text: 'All'
             }],
-            selected: 0
+            selected: 2
         },
         
         title : {
