@@ -2,11 +2,11 @@ import math
 import simpy
 from simpy.util import start_delayed
 
-from env import ForwardableRealtimeEnvironment
+from environment import ForwardableRealtimeEnvironment
 
-from producers import BHKW, PeakLoadBoiler
-from storages import HeatStorage
-from consumers import ThermalConsumer
+from systems.producers import CogenerationUnit, PeakLoadBoiler
+from systems.storages import HeatStorage, ElectricalInfeed
+from systems.consumers import ThermalConsumer, ElectricalConsumer
 
 # initialize real-time environment
 env = ForwardableRealtimeEnvironment(
@@ -14,13 +14,16 @@ env = ForwardableRealtimeEnvironment(
 
 # initialize power systems
 heat_storage = HeatStorage(env=env)
-bhkw = BHKW(env=env, heat_storage=heat_storage)
+electrical_infeed = ElectricalInfeed()
+cu = CogenerationUnit(env=env, heat_storage=heat_storage, electrical_infeed=electrical_infeed)
 plb = PeakLoadBoiler(env=env, heat_storage=heat_storage)
-thermal = ThermalConsumer(env=env, heat_storage=heat_storage)
+thermal_consumer = ThermalConsumer(env=env, heat_storage=heat_storage)
+electrical_consumer = ElectricalConsumer(env=env, electrical_infeed=electrical_infeed)
 
 # add power system to simulation environment
-env.process(thermal.update())
-env.process(bhkw.update())
+env.process(thermal_consumer.update())
+env.process(electrical_consumer.update())
+env.process(cu.update())
 
 # start plb 10h after simulation start
 start_delayed(env, plb.update(), 10 * 3600)

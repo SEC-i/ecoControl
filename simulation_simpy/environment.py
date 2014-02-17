@@ -1,3 +1,5 @@
+import sys
+
 from simpy.core import Environment
 from simpy.rt import RealtimeEnvironment
 
@@ -10,12 +12,12 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         # start_time = time.time()
         self.start_time = 1388534400  # 01.01.2014 00:00
 
-        # verbose logging by default
-        self.quiet = False
+        # quiet by default
+        self.verbose = False
 
         self.forward = 0
 
-        # function which gets called every step in forward mode
+        # function which gets called every step
         self.step_function = None
 
         self.last_step = self.now
@@ -43,3 +45,10 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
     def get_time(self):
         return self.start_time + self.now
+
+    def log(self, *args):
+        if self.verbose:
+            sys.stdout.write('%d' % self.now)
+            for string in enumerate(args):
+                sys.stdout.write('\t{0}'.format(string[1]))
+            sys.stdout.write('\n')

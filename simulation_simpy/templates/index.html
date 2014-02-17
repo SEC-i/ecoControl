@@ -7,10 +7,13 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>BP2013H1 - Simulation</title>
+    <title>Power System Simulation</title>
 
     <!-- Bootstrap core CSS -->
     <link href="./static/css/bootstrap.min.css" rel="stylesheet">
+     <!-- jQuery UI CSS core CSS -->
+    <link rel="stylesheet" href="./static/css/smoothness/jquery-ui-1.10.4.custom.min.css">
+
     <!-- Custom styles -->
     <link href="./static/css/basic.css" rel="stylesheet">
 
@@ -23,99 +26,170 @@
 
   <body>
     <!-- Simulation page -->
-    <div class="container" id="home">
-      <div class="page-header">
-        <h1>Simulation</h1>
-      </div>
+    <div class="container">
+      <h2>Power System Simulation</h2>
       <div class="row">
         <div class="col-sm-12">
           <div class="panel-group" id="accordion">
             <div class="panel panel-default">
               <div class="panel-heading">
                 <h4 class="panel-title">
-                  <a data-toggle="collapse" data-parent="#accordion" href="#scheme_container">
-                    Scheme
-                  </a>
-                </h4>
-              </div>
-              <div id="scheme_container" class="panel-collapse collapse out">
-                <div class="panel-body">
-                  <div id="simulation_scheme" class="svg_container"></div>
-                </div>
-              </div>
-            </div>
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <h4 class="panel-title">
                   <a data-toggle="collapse" data-parent="#accordion" href="#diagram_container">
-                    Diagram
+                    Live Diagram
                   </a>
                 </h4>
               </div>
               <div id="diagram_container" class="panel-collapse collapse in">
                 <div class="panel-body">
                   <div id="simulation_diagram"></div>
-                  <form id="settings">
-                    <div class="row">
-                      <div class="col-sm-3">
-                        <div class="form-group">
-                          <label class="control-label">Average Thermal Demand</label>
-                          <input type="text" id="form_average_thermal_demand" name="average_thermal_demand" class="form-control">
-                        </div>
-                        <div class="form-group">
-                          <label class="control-label">Varying Thermal Demand</label>
-                          <input type="text" id="form_varying_thermal_demand" name="varying_thermal_demand" class="form-control">
-                        </div>
-                        <div class="form-group">
-                          <label class="control-label">Thermal Demand Noise</label>
-                          <input type="text" id="form_thermal_demand_noise" name="thermal_demand_noise" class="form-control">
-                        </div>
+                  <div class="panel-group" id="settings_accordion">
+                    <div class="panel panel-default">
+                      <div class="panel-heading">
+                        <h4 class="panel-title">
+                          <a data-toggle="collapse" data-parent="#settings_accordion" href="#settings_panel">
+                            Settings
+                          </a>
+                        </h4>
                       </div>
-                      <div class="col-sm-3">
-                        <div class="form-group">
-                          <label class="control-label">HS Capacity</label>
-                          <input type="text" id="form_hs_capacity" name="hs_capacity" class="form-control">
-                        </div>
-                        <div class="form-group">
-                          <label class="control-label">HS Target Energy</label>
-                          <input type="text" id="form_hs_target_energy" name="hs_target_energy" class="form-control">
-                        </div>
-                        <div class="form-group">
-                          <label class="control-label">HS Undersupplied Threshold</label>
-                          <input type="text" id="form_hs_undersupplied_threshold" name="hs_undersupplied_threshold" class="form-control">
-                        </div>
-                      </div>
-                      <div class="col-sm-3">
-                        <div class="form-group">
-                          <label class="control-label">BHKW's Max Gas Input</label>
-                          <input type="text" id="form_bhkw_max_gas_input" name="bhkw_max_gas_input" class="form-control">
-                        </div>
-                        <div class="form-group">
-                          <label class="control-label">BHKW's Minimal Workload</label>
-                          <input type="text" id="form_bhkw_minimal_workload" name="bhkw_minimal_workload" class="form-control">
-                        </div>
-                        <div class="form-group">
-                          <label class="control-label">BHKW Noise</label>
-                          <input type="text" id="form_bhkw_noise" name="bhkw_noise" class="form-control">
-                        </div>
-                      </div>
-                      <div class="col-sm-3">
-                        <div class="form-group">
-                          <label class="control-label">PLB's Max Gas Input</label>
-                          <input type="text" id="form_plb_max_gas_input" name="plb_max_gas_input" class="form-control">
-                        </div>
-                        <div class="form-group">
-                          <label class="control-label">Forward Simulation</label>
-                          <input type="text" id="form_sim_forward" name="sim_forward" class="form-control" placeholder="12 (in hours)">
+                      <div id="settings_panel" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                          <form id="settings" class="form-horizontal" role="form">
+                            <div class="row">
+                              <div class="col-sm-3">
+                                <div class="form-group">
+                                  <label class="control-label col-sm-8 small">Thermal Base Demand</label>
+                                  <div class="col-sm-4">
+                                    <input type="number" step="0.1" id="form_base_thermal_demand" name="base_thermal_demand" class="form-control input-sm">
+                                  </div>
+                                </div>
+                                <div class="form-group">
+                                  <label class="control-label col-sm-8 small">Varying Thermal Demand</label>
+                                  <div class="col-sm-4">
+                                    <input type="number" step="0.1" id="form_varying_thermal_demand" name="varying_thermal_demand" class="form-control input-sm">
+                                  </div>
+                                </div>
+                                <div class="form-group">
+                                  <label class="control-label col-sm-8 small">Thermal Demand Noise</label>
+                                  <div class="col-sm-4">
+                                    <input type="number" step="0.1" id="form_thermal_demand_noise" name="thermal_demand_noise" class="form-control input-sm">
+                                  </div>
+                                </div>
+                                <div class="form-group">
+                                  <label class="control-label col-sm-8 small">Forward Simulation</label>
+                                  <div class="col-sm-4">
+                                    <select id="form_sim_forward" name="sim_forward" class="form-control small">
+                                      <option value="">---</option>
+                                      <option value="12">12 hours</option>
+                                      <option value="24">1 day</option>
+                                      <option value="168">1 week</option>
+                                      <option value="720">1 month</option>
+                                      <option value="4320">12 months</option>
+                                      <option value="8760">1 year</option>
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col-sm-3">
+                                <div class="form-group">
+                                  <label class="control-label col-sm-8 small">Electrical Base Demand</label>
+                                  <div class="col-sm-4">
+                                    <input type="number" step="0.1" id="form_base_electrical_demand" name="base_electrical_demand" class="form-control input-sm">
+                                  </div>
+                                </div>
+                                <div class="form-group">
+                                  <label class="control-label col-sm-8 small">Varying Electrical Demand</label>
+                                  <div class="col-sm-4">
+                                    <input type="number" step="0.1" id="form_varying_electrical_demand" name="varying_electrical_demand" class="form-control input-sm">
+                                  </div>
+                                </div>
+                                <div class="form-group">
+                                  <label class="control-label col-sm-8 small">Electrical Demand Noise</label>
+                                  <div class="col-sm-4">
+                                    <input type="number" step="0.1" id="form_electrical_demand_noise" name="electrical_demand_noise" class="form-control input-sm">
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col-sm-3">
+                                <div class="form-group">
+                                  <label class="control-label col-sm-8 small">HS Capacity</label>
+                                  <div class="col-sm-4">
+                                    <input type="number" step="0.1" id="form_hs_capacity" name="hs_capacity" class="form-control input-sm">
+                                  </div>
+                                </div>
+                                <div class="form-group">
+                                  <label class="control-label col-sm-8 small">HS Target Energy</label>
+                                  <div class="col-sm-4">
+                                    <input type="number" step="0.1" id="form_hs_target_energy" name="hs_target_energy" class="form-control input-sm">
+                                  </div>
+                                </div>
+                                <div class="form-group">
+                                  <label class="control-label col-sm-8 small">HS Undersupplied Threshold</label>
+                                  <div class="col-sm-4">
+                                    <input type="number" step="0.1" id="form_hs_undersupplied_threshold" name="hs_undersupplied_threshold" class="form-control input-sm">
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col-sm-3">
+                                <div class="form-group">
+                                  <label class="control-label col-sm-8 small">CU's Max Gas Input</label>
+                                  <div class="col-sm-4">
+                                    <input type="number" step="0.1" id="form_cu_max_gas_input" name="cu_max_gas_input" class="form-control input-sm">
+                                  </div>
+                                </div>
+                                <div class="form-group">
+                                  <label class="control-label col-sm-8 small">CU's Minimal Workload</label>
+                                  <div class="col-sm-4">
+                                    <input type="number" step="0.1" id="form_cu_minimal_workload" name="cu_minimal_workload" class="form-control input-sm">
+                                  </div>
+                                </div>
+                                <div class="form-group">
+                                  <label class="control-label col-sm-8 small">CU Noise</label>
+                                  <div class="col-sm-4">
+                                    <input type="number" step="0.1" id="form_cu_noise" name="cu_noise" class="form-control input-sm">
+                                  </div>
+                                </div>
+                                <div class="form-group">
+                                  <label class="control-label col-sm-8 small">PLB's Max Gas Input</label>
+                                  <div class="col-sm-4">
+                                    <input type="number" step="0.1" id="form_plb_max_gas_input" name="plb_max_gas_input" class="form-control input-sm">
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="row">
+                              <div class="col-lg-6">
+                                <label class="control-label small">Daily Thermal Demand <span id="daily_thermal_demand_info" class="bg-success"></span></label>
+                                <div id="daily_thermal_demand" class="daily_demand"></div>
+                              </div>
+                              <div class="col-lg-6">
+                                <label class="control-label small">Daily Electrical Demand <span id="daily_electrical_demand_info" class="bg-success"></span></label>
+                                <div id="daily_electrical_demand" class="daily_demand"></div>
+                              </div>
+                            </div>
+                            <div class="row">
+                              <div class="col-sm-12">
+                                <button type="submit" id="settings_button" class="btn btn-primary btn-block">Submit</button>
+                              </div>
+                            </div>
+                          </form>
                         </div>
                       </div>
                     </div>
-                    <div class="row">
-                      <div class="col-sm-12">
-                        <button type="submit" id="settings_button" class="btn btn-primary btn-block">Submit</button>
-                      </div>
-                    </div>
-                  </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" data-parent="#accordion" href="#setup_container">
+                    Live Setup
+                  </a>
+                </h4>
+              </div>
+              <div id="setup_container" class="panel-collapse collapse out">
+                <div class="panel-body">
+                  <div id="simulation_setup" class="svg_container"></div>
                 </div>
               </div>
             </div>
@@ -124,18 +198,11 @@
       </div>
     </div> <!-- /container -->
 
-    <!-- Footer -->
-    <div id="footer" class="collapse">
-      <div class="container">
-        <p class="text-muted credit">Copyright &copy; BP2013H1</p>
-      </div>
-    </div>
-
-
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="./static/js/jquery-1.10.2.min.js"></script>
+    <script src="./static/js/jquery-1.11.0.min.js"></script>
+    <script src="./static/js/jquery-ui-1.10.4.custom.min.js"></script>
     <script src="./static/js/bootstrap.min.js"></script>
 
     <script src="./static/js/hs/highstock.js"></script>
