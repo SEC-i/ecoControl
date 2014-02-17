@@ -24,8 +24,10 @@ class GasPoweredGenerator(object):
         self.running = False
 
     def consume_gas(self):
-        self.total_gas_consumption += self.current_gas_consumption / self.env.accuracy
-        self.total_thermal_production += self.current_thermal_production / self.env.accuracy
+        self.total_gas_consumption += self.current_gas_consumption / \
+            self.env.accuracy
+        self.total_thermal_production += self.current_thermal_production / \
+            self.env.accuracy
 
     def get_operating_costs(self):
         return self.total_gas_consumption * self.gas_price_per_kwh
@@ -41,23 +43,23 @@ class CogenerationUnit(GasPoweredGenerator):
         self.max_gas_input = 49.0  # kW
         self.electrical_efficiency = 0.3  # max 14.7 kW
         self.thermal_efficiency = 0.62  # max 30.38 kW
+        self.max_efficiency_loss = 0.1  # %
         self.maintenance_interval = 8500  # hours
 
         self.electrical_infeed = electrical_infeed
 
-        self.minimal_workload = 40.0
+        self.minimal_workload = 40.0  # %
 
         self.current_electrical_production = 0.0  # kWh
         self.total_electrical_production = 0.0  # kWh
 
-    def get_efficiency_loss(self):
+    def get_efficiency_loss_factor(self):
         # given efficiency is reached only on maximum workload
-        # at minumum workload the efficiency is decreased with efficiency_loss
-        efficiency_loss = 10  # %
-        relative_loss = 100.0 - (self.workload - self.minimal_workload) \
+        # at minumum workload the efficiency is decreased with
+        # max_efficiency_loss
+        relative_loss = 1.0 - (self.workload - self.minimal_workload) \
             / (99.0 - self.minimal_workload)
-        relative_loss = relative_loss / 100
-        return efficiency_loss * relative_loss
+        return 1.0 - self.max_efficiency_loss * relative_loss
 
     def calculate_state(self):
         calculated_workload = self.heat_storage.target_energy + \
@@ -65,7 +67,7 @@ class CogenerationUnit(GasPoweredGenerator):
 
         # ensure smoothly changing workload
         slope = sign(calculated_workload - self.workload)
-        change_speed = 100 / 180 # percent per 3 minutes
+        change_speed = 100 / 180  # percent per 3 minutes
         self.workload += change_speed * slope * self.env.step_size
 
         # make sure that minimal_workload <= workload <= 99.0 or workload = 0
@@ -79,13 +81,14 @@ class CogenerationUnit(GasPoweredGenerator):
             99.0 * self.max_gas_input
 
         self.current_electrical_production = self.current_gas_consumption * \
-            (self.electrical_efficiency - self.get_efficiency_loss())
+            self.electrical_efficiency * self.get_efficiency_loss_factor()
         self.current_thermal_production = self.current_gas_consumption * \
-            (self.thermal_efficiency - self.get_efficiency_loss())
+            self.thermal_efficiency * self.get_efficiency_loss_factor()
 
     def consume_gas(self):
         super(CogenerationUnit, self).consume_gas()
-        self.total_electrical_production += self.current_electrical_production / self.env.accuracy
+        self.total_electrical_production += self.current_electrical_production / \
+            self.env.accuracy
 
     def update(self):
         self.env.log('Starting cogeneration unit...')
@@ -149,7 +152,6 @@ class PeakLoadBoiler(GasPoweredGenerator):
 
             self.env.log('=' * 80)
             yield self.env.timeout(self.env.step_size)
-
 
 
 def sign(x):
