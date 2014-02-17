@@ -17,10 +17,12 @@ class HeatStorage():
         return self.energy_stored() / self.capacity * 99.0
 
     def add_energy(self, energy):
+        energy /= self.env.accuracy
         if self.energy_stored() + energy <= self.capacity:
             self.input_energy += energy
 
     def consume_energy(self, energy):
+        energy /= self.env.accuracy
         if self.energy_stored() - energy >= 0:
             self.output_energy += energy
         else:
@@ -32,7 +34,8 @@ class HeatStorage():
 
 class ElectricalInfeed():
 
-    def __init__(self):
+    def __init__(self, env):
+        self.env = env
         self.electrical_reward_per_kwh = 0.0541  # Euro
         self.electrical_costs_per_kwh = 0.264  # Euro
 
@@ -42,12 +45,14 @@ class ElectricalInfeed():
         self.energy_produced = 0.0  # kWh
 
     def add_energy(self, energy):
+        energy /= self.env.accuracy
         self.energy_produced = energy
 
     def consume_energy(self, energy):
+        energy /= self.env.accuracy
+
         balance = self.energy_produced - energy
-        # purchase external electrical energy if more energy needed than
-        # produced
+        # purchase electrical energy if more energy needed than produced
         if balance < 0:
             self.total_purchased -= balance
         else:

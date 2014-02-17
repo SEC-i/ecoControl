@@ -9,12 +9,11 @@ from systems.storages import HeatStorage, ElectricalInfeed
 from systems.consumers import SimpleThermalConsumer, ThermalConsumer, SimpleElectricalConsumer
 
 # initialize real-time environment
-env = ForwardableRealtimeEnvironment(
-    initial_time=0, factor=1.0/3600.0, strict=False)
+env = ForwardableRealtimeEnvironment()
 
 # initialize power systems
 heat_storage = HeatStorage(env=env)
-electrical_infeed = ElectricalInfeed()
+electrical_infeed = ElectricalInfeed(env=env)
 cu = CogenerationUnit(env=env, heat_storage=heat_storage, electrical_infeed=electrical_infeed)
 plb = PeakLoadBoiler(env=env, heat_storage=heat_storage)
 #thermal_consumer = SimpleThermalConsumer(env=env, heat_storage=heat_storage)
