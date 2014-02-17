@@ -80,14 +80,10 @@ def set_data():
         thermal_consumer.base_demand = float(request.form['base_thermal_demand'])
     if 'varying_thermal_demand' in request.form:
         thermal_consumer.varying_demand = float(request.form['varying_thermal_demand'])
-    if 'thermal_demand_noise' in request.form:
-        thermal_consumer.noise = request.form['thermal_demand_noise'] == "1"
     if 'base_electrical_demand' in request.form:
         electrical_consumer.base_demand = float(request.form['base_electrical_demand'])
     if 'varying_electrical_demand' in request.form:
         electrical_consumer.varying_demand = float(request.form['varying_electrical_demand'])
-    if 'electrical_demand_noise' in request.form:
-        electrical_consumer.noise = request.form['electrical_demand_noise'] == "1"
     if 'hs_capacity' in request.form:
         heat_storage.capacity = float(request.form['hs_capacity'])
     if 'hs_target_energy' in request.form:
@@ -99,8 +95,6 @@ def set_data():
         cu.max_gas_input = float(request.form['cu_max_gas_input'])
     if 'cu_minimal_workload' in request.form:
         cu.minimal_workload = float(request.form['cu_minimal_workload'])
-    if 'cu_noise' in request.form:
-        cu.noise = request.form['cu_noise'] == "1"
     if 'sim_forward' in request.form and request.form['sim_forward'] != "":
         env.forward = float(request.form['sim_forward']) * 60 * 60
     if 'plb_max_gas_input' in request.form:
@@ -129,16 +123,13 @@ def get_settings_json():
     return {
         'base_thermal_demand': thermal_consumer.base_demand,
         'varying_thermal_demand': thermal_consumer.varying_demand,
-        'thermal_demand_noise': 1 if thermal_consumer.noise else 0,
         'base_electrical_demand': electrical_consumer.base_demand,
         'varying_electrical_demand': electrical_consumer.varying_demand,
-        'electrical_demand_noise': 1 if electrical_consumer.noise else 0,
         'hs_capacity': heat_storage.capacity,
         'hs_target_energy': heat_storage.target_energy,
         'hs_undersupplied_threshold': heat_storage.undersupplied_threshold,
         'cu_max_gas_input': cu.max_gas_input,
         'cu_minimal_workload': cu.minimal_workload,
-        'cu_noise': 1 if cu.noise else 0,
         'plb_max_gas_input': plb.max_gas_input,
         'sim_forward': '',
         'daily_thermal_demand': thermal_consumer.daily_demand,
@@ -146,7 +137,7 @@ def get_settings_json():
     };
 
 def append_measurement():
-    if env.now % 3600 == 0: # take measurements each hour
+    if env.now % env.granularity == 0: # take measurements each hour
         time_values.append(env.get_time())
         cu_workload_values.append(round(cu.workload, 2))
         plb_workload_values.append(round(plb.workload, 2))
