@@ -57,10 +57,9 @@ class ThermalConsumer():
         self.temperature_room = 20
         self.temperature_outside = 1
 
-        # list of 24 values representing relative target_temperature per hour
-        self.daily_demand = [50 / 350.0, 25 / 350.0, 10 / 350.0, 10 / 350.0, 5 / 350.0, 20 / 350.0, 250 / 350.0, 1, 320 / 350.0, 290 / 350.0, 280 / 350.0, 310 /
-                             350.0, 250 / 350.0, 230 / 350.0, 225 / 350.0, 160 / 350.0, 125 / 350.0, 160 / 350.0, 200 / 350.0, 220 / 350.0, 260 / 350.0, 130 / 350.0, 140 / 350.0, 120 / 350.0]
-
+        # list of 24 values representing  target_temperature per hour
+        self.daily_demand = [18, 18, 19, 18, 19, 18, 19, 20, 21,
+                             24, 24, 25, 24, 25, 25, 25, 26, 25, 25, 24, 23, 22, 21, 20]
 
         # let's use 30 heating systems
         amount_of_heating_systems = 30
@@ -86,10 +85,9 @@ class ThermalConsumer():
     def get_consumption(self):
         time_of_day = (self.env.now % (3600 * 24)) / 3600
         # calculate variation using daily demand
-        self.target_temperature = self.daily_demand[time_of_day] 
+        self.target_temperature = self.daily_demand[time_of_day]
 
-
-        self.heat_loss(self.env.step_size)
+        self.heat_loss()
 
         # slow rise and  fall of heating
         change_speed = 1
@@ -100,7 +98,7 @@ class ThermalConsumer():
         self.current_power += power_delta
         # clamp to maximum power
         self.current_power = max(min(self.current_power, self.max_power), 0)
-        self.heat_room(time_delta)
+        self.heat_room()
         return self.current_power
 
     def update(self):
@@ -108,7 +106,7 @@ class ThermalConsumer():
             consumption_kW = self.get_consumption() / 1000.0
             self.heat_storage.consume_energy(consumption_kW)
 
-            self.env.log('Thermal demand:', '%f kW' % consumption)
+            self.env.log('Thermal demand:', '%f kW' % consumption_kW)
             self.env.log('HS level:', '%f kWh' %
                          self.heat_storage.energy_stored())
 

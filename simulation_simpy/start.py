@@ -76,10 +76,6 @@ def get_settings():
 @app.route('/api/set/', methods=['POST'])
 @crossdomain(origin='*')
 def set_data():
-    if 'base_thermal_demand' in request.form:
-        thermal_consumer.base_demand = float(request.form['base_thermal_demand'])
-    if 'varying_thermal_demand' in request.form:
-        thermal_consumer.varying_demand = float(request.form['varying_thermal_demand'])
     if 'base_electrical_demand' in request.form:
         electrical_consumer.base_demand = float(request.form['base_electrical_demand'])
     if 'varying_electrical_demand' in request.form:
@@ -121,8 +117,6 @@ def set_data():
 
 def get_settings_json():
     return {
-        'base_thermal_demand': thermal_consumer.base_demand,
-        'varying_thermal_demand': thermal_consumer.varying_demand,
         'base_electrical_demand': electrical_consumer.base_demand,
         'varying_electrical_demand': electrical_consumer.varying_demand,
         'hs_capacity': heat_storage.capacity,
