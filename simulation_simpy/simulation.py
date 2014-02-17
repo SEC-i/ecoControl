@@ -6,7 +6,7 @@ from environment import ForwardableRealtimeEnvironment
 
 from systems.producers import CogenerationUnit, PeakLoadBoiler
 from systems.storages import HeatStorage, ElectricalInfeed
-from systems.consumers import ThermalConsumer, ElectricalConsumer
+from systems.consumers import SimpleThermalConsumer, ThermalConsumer, SimpleElectricalConsumer
 
 # initialize real-time environment
 env = ForwardableRealtimeEnvironment(
@@ -17,8 +17,9 @@ heat_storage = HeatStorage(env=env)
 electrical_infeed = ElectricalInfeed()
 cu = CogenerationUnit(env=env, heat_storage=heat_storage, electrical_infeed=electrical_infeed)
 plb = PeakLoadBoiler(env=env, heat_storage=heat_storage)
+#thermal_consumer = SimpleThermalConsumer(env=env, heat_storage=heat_storage)
 thermal_consumer = ThermalConsumer(env=env, heat_storage=heat_storage)
-electrical_consumer = ElectricalConsumer(env=env, electrical_infeed=electrical_infeed)
+electrical_consumer = SimpleElectricalConsumer(env=env, electrical_infeed=electrical_infeed)
 
 # add power system to simulation environment
 env.process(thermal_consumer.update())
