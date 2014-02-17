@@ -55,8 +55,9 @@ $(function(){
         $("#simulation_setup").append(svg_item);
     }, "xml");
 
-    initialize_daily_thermal_demand();
-    initialize_settings_panel();
+    initialize_daily_thermal_and_electrical_demand();
+
+    
 
     $.getJSON( "./api/settings/", function( data ) {
         update_setting(data);
@@ -166,12 +167,29 @@ function get_timestamp(string){
     return new Date(parseFloat(string) * 1000).getTime();
 }
 
-function initialize_daily_thermal_demand(){
+function initialize_daily_thermal_and_electrical_demand(){
     for(var i = 0; i < 24; i++) {
-        $("#daily_thermal_demand").append("<span id='daily_thermal_demand_" + i + "' class='slider'><span>" + i + "</span></span>");
-        $("#daily_electrical_demand").append("<span id='daily_electrical_demand_" + i + "' class='slider'><span>" + i + "</span></span>");
+        $("#daily_thermal_demand").append("<span id='daily_thermal_demand_" + i + "' class='slider_thermal'><span>" + i + "</span></span>");
+        $("#daily_electrical_demand").append("<span id='daily_electrical_demand_" + i + "' class='slider_electrical'><span>" + i + "</span></span>");
     }
-    $( ".slider" ).slider({
+
+    $( ".slider_thermal" ).slider({
+        value: 0,
+        min: 0,
+        max: 3000,
+        range: "min",
+        animate: true,
+        orientation: "vertical",
+        slide: function( event, ui ) {
+            var text = "(Current value: " + ui.value/100 + "C)";
+            $( "#daily_thermal_demand_info" ).text( text );
+        },
+        stop: function( event, ui ) {
+            $( "#daily_thermal_demand_info" ).text('');
+        }
+    });
+
+    $( ".slider_electrical" ).slider({
         value: 0,
         min: 0,
         max: 10000,
@@ -179,20 +197,16 @@ function initialize_daily_thermal_demand(){
         animate: true,
         orientation: "vertical",
         slide: function( event, ui ) {
-            if(ui.handle.parentElement.id.indexOf("thermal") > 0){
-                var text = "(Current value: " + ui.value/100 + "°C)";
-                $( "#daily_thermal_demand_info" ).text( text );
-            }else{
-                var text = "(Current value: " + ui.value/100 + "%)";
-                $( "#daily_electrical_demand_info" ).text( text );
-            }
+            var text = "(Current value: " + ui.value/100 + "%)";
+            $( "#daily_electrical_demand_info" ).text( text );   
         },
         stop: function( event, ui ) {
-            $( "#daily_thermal_demand_info" ).text('');
             $( "#daily_electrical_demand_info" ).text('');
         }
     });
 }
+
+
 
 function initialize_settings_panel(){
     $('#settings_accordion').on('hide.bs.collapse', function () {
