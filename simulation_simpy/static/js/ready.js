@@ -179,10 +179,11 @@ function initialize_daily_thermal_demand(){
         animate: true,
         orientation: "vertical",
         slide: function( event, ui ) {
-            var text = "(Current value: " + ui.value/100 + "%)";
             if(ui.handle.parentElement.id.indexOf("thermal") > 0){
+                var text = "(Current value: " + ui.value/200 + "°C)";
                 $( "#daily_thermal_demand_info" ).text( text );
             }else{
+                var text = "(Current value: " + ui.value/100 + "%)";
                 $( "#daily_electrical_demand_info" ).text( text );
             }
         },
