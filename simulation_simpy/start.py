@@ -146,12 +146,13 @@ def get_settings_json():
     };
 
 def append_measurement():
-    time_values.append(env.get_time())
-    cu_workload_values.append(round(cu.workload, 2))
-    plb_workload_values.append(round(plb.workload, 2))
-    hs_level_values.append(round(heat_storage.level(), 2))
-    thermal_consumption_values.append(round(thermal_consumer.get_consumption(), 2))
-    electrical_consumption_values.append(round(electrical_consumer.get_consumption(), 2))
+    if env.now % 3600 == 0: # take measurements each hour
+        time_values.append(env.get_time())
+        cu_workload_values.append(round(cu.workload, 2))
+        plb_workload_values.append(round(plb.workload, 2))
+        hs_level_values.append(round(heat_storage.level(), 2))
+        thermal_consumption_values.append(round(thermal_consumer.get_consumption(), 2))
+        electrical_consumption_values.append(round(electrical_consumer.get_consumption(), 2))
 
 if __name__ == '__main__':
     sim = Simulation(env)

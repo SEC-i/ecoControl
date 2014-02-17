@@ -94,7 +94,7 @@ class CogenerationUnit(GasPoweredGenerator):
             else:
                 self.env.log('Cogeneration unit stopped')
 
-            yield self.env.timeout(3600)
+            yield self.env.timeout(3600 / self.env.accuracy)
 
 
 class PeakLoadBoiler(GasPoweredGenerator):
@@ -137,4 +137,4 @@ class PeakLoadBoiler(GasPoweredGenerator):
                 self.env.log('PLB stopped.')
 
             self.env.log('=' * 80)
-            yield self.env.timeout(3600)
+            yield self.env.timeout(3600 / self.env.accuracy)

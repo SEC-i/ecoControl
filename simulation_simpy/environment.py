@@ -6,7 +6,7 @@ from simpy.rt import RealtimeEnvironment
 
 class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
-    def __init__(self, initial_time=0, factor=1.0, strict=True):
+    def __init__(self, initial_time=0, factor=1.0 / 3600, strict=False):
         RealtimeEnvironment.__init__(self, initial_time, factor, strict)
 
         # start_time = time.time()
@@ -15,7 +15,11 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         # quiet by default
         self.verbose = False
 
+        # time to forward
         self.forward = 0
+
+        # ticks per hour
+        self.accuracy = 360  # every 10s
 
         # function which gets called every step
         self.step_function = None
@@ -47,7 +51,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         return self.start_time + self.now
 
     def log(self, *args):
-        if self.verbose:
+        if self.verbose and env.now % 3600 == 0:  # each hour:
             sys.stdout.write('%d' % self.now)
             for string in enumerate(args):
                 sys.stdout.write('\t{0}'.format(string[1]))
