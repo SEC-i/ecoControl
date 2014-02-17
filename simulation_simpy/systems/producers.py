@@ -51,12 +51,26 @@ class CogenerationUnit(GasPoweredGenerator):
         self.current_electrical_production = 0  # kWh
         self.total_electrical_production = 0.0  # kWh
 
-    def calculate_workload(self):
+    def get_efficiency_loss(self):
+        # given efficiency is reached only on maximum workload
+        # at minumum workload the efficiency is decreased with efficiency_loss
+        efficiency_loss = 10  # %
+        relative_loss = 100.0 - (self.workload - self.minimal_workload) \
+            / (99.0 - self.minimal_workload)
+        relative_loss = relative_loss / 100
+        return efficiency_loss * realtive_loss
+
+    def calculate_state(self):
         calculated_workload = self.heat_storage.target_energy + \
             self.minimal_workload - self.heat_storage.energy_stored()
 
         if self.noise:
             calculated_workload += random.random() - 0.5
+
+        # ensure smoothly changing workload
+        slope = sign(calculated_workload - self.workload)
+        change_speed = 100 / 180 # percent per 3 minutes
+        self.workload += change_speed * slope * self.env.step_size
 
         # make sure that minimal_workload <= workload <= 99.0 or workload = 0
         if calculated_workload >= self.minimal_workload:
@@ -67,10 +81,11 @@ class CogenerationUnit(GasPoweredGenerator):
         # calulate current consumption and production values
         self.current_gas_consumption = self.workload / \
             99.0 * self.max_gas_input
+
         self.current_electrical_production = self.current_gas_consumption * \
-            self.electrical_efficiency
+            (self.electrical_efficiency - self.get_efficiency_loss())
         self.current_thermal_production = self.current_gas_consumption * \
-            self.thermal_efficiency
+            (self.thermal_efficiency - self.get_efficiency_loss())
 
     def consume_gas(self):
         super(CogenerationUnit, self).consume_gas()
@@ -81,7 +96,7 @@ class CogenerationUnit(GasPoweredGenerator):
         self.start()
         while True:
             if self.running:
-                self.calculate_workload()
+                self.calculate_state()
 
                 self.env.log(
                     'CU workload:', '%f %%' % self.workload, 'Total:', '%f kWh (%f Euro)' %
@@ -106,7 +121,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
         self.max_gas_input = 100.0  # kW
         self.thermal_efficiency = 0.8
 
-    def calculate_workload(self):
+    def calculate_state(self):
         # turn on if heat_storage is undersupplied
         if self.heat_storage.undersupplied():
             self.workload = 99.0
@@ -125,7 +140,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
         self.start()
         while True:
             if self.running:
-                self.calculate_workload()
+                self.calculate_state()
 
                 self.env.log(
                     'PLB workload:', '%f %%' % self.workload, 'Total:', '%f kWh (%f Euro)' %
