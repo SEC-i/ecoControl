@@ -55,7 +55,7 @@ class ThermalConsumer():
         self.target_temperature = 25
         self.total_consumption = 0
         self.temperature_room = 20
-        self.temperature_outside = 1
+        self.outside_temperature = 1
 
         # list of 24 values representing  target_temperature per hour
         self.daily_demand = [18, 18, 19, 18, 19, 18, 19, 20, 21,
@@ -115,7 +115,7 @@ class ThermalConsumer():
     def heat_loss(self):
         # assume cooling of power/2
         d = self.temperature_room - \
-            self.temperature_outside
+            self.outside_temperature
         # heat transfer coefficient normal glas window, W/(m^2 * K)
         k = 5.9
         # in Watt

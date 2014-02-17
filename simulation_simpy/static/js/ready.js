@@ -55,8 +55,7 @@ $(function(){
         $("#simulation_setup").append(svg_item);
     }, "xml");
 
-    initialize_daily_thermal_and_electrical_demand();
-
+    initialize_daily_demands();
     
 
     $.getJSON( "./api/settings/", function( data ) {
@@ -83,7 +82,7 @@ $(function(){
     $("#settings").submit(function( event ){
         var post_data = $( "#settings" ).serialize();
         for(var i = 0; i < 24; i++) {
-            post_data += "&daily_thermal_demand_" + i + "=" + ($("#daily_thermal_demand_" + i).slider( "value")/10000);
+            post_data += "&daily_thermal_demand_" + i + "=" + ($("#daily_thermal_demand_" + i).slider( "value")/100);
         }
         for(var i = 0; i < 24; i++) {
             post_data += "&daily_electrical_demand_" + i + "=" + ($("#daily_electrical_demand_" + i).slider( "value")/10000);
@@ -112,7 +111,7 @@ function update_setting(data){
     $.each(data, function(key, value) {
         if(key == "daily_thermal_demand"){
             $.each(value, function(index, hour_value) {
-                $("#daily_thermal_demand_" + index).slider( "value", hour_value * 10000);
+                $("#daily_thermal_demand_" + index).slider( "value", hour_value * 100);
             });
         }else if(key == "daily_electrical_demand"){
             $.each(value, function(index, hour_value) {
@@ -167,7 +166,7 @@ function get_timestamp(string){
     return new Date(parseFloat(string) * 1000).getTime();
 }
 
-function initialize_daily_thermal_and_electrical_demand(){
+function initialize_daily_demands(){
     for(var i = 0; i < 24; i++) {
         $("#daily_thermal_demand").append("<span id='daily_thermal_demand_" + i + "' class='slider_thermal'><span>" + i + "</span></span>");
         $("#daily_electrical_demand").append("<span id='daily_electrical_demand_" + i + "' class='slider_electrical'><span>" + i + "</span></span>");

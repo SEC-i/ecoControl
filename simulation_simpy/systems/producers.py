@@ -1,6 +1,6 @@
 import random
 
-# Basic
+from helpers import sign
 
 
 class GasPoweredGenerator(object):
@@ -152,7 +152,3 @@ class PeakLoadBoiler(GasPoweredGenerator):
 
             self.env.log('=' * 80)
             yield self.env.timeout(self.env.step_size)
-
-
-def sign(x):
-    return 1 if x >= 0 else -1
