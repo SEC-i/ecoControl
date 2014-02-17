@@ -57,7 +57,7 @@ class CogenerationUnit(GasPoweredGenerator):
         relative_loss = 100.0 - (self.workload - self.minimal_workload) \
             / (99.0 - self.minimal_workload)
         relative_loss = relative_loss / 100
-        return efficiency_loss * realtive_loss
+        return efficiency_loss * relative_loss
 
     def calculate_state(self):
         calculated_workload = self.heat_storage.target_energy + \
@@ -149,3 +149,8 @@ class PeakLoadBoiler(GasPoweredGenerator):
 
             self.env.log('=' * 80)
             yield self.env.timeout(self.env.step_size)
+
+
+
+def sign(x):
+    return 1 if x >= 0 else -1
