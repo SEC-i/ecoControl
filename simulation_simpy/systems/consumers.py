@@ -24,7 +24,7 @@ class ThermalConsumer():
         current_consumption = self.base_demand + variation
 
         if consider_consumed:
-            self.total_consumption += current_consumption
+            self.total_consumption += current_consumption / self.env.accuracy
 
         return current_consumption
 
@@ -62,7 +62,7 @@ class ElectricalConsumer():
         current_consumption = self.base_demand + variation
 
         if consider_consumed:
-            self.total_consumption += current_consumption
+            self.total_consumption += current_consumption / self.env.accuracy
 
         return current_consumption
 

@@ -54,9 +54,9 @@ class ElectricalInfeed():
         balance = self.energy_produced - energy
         # purchase electrical energy if more energy needed than produced
         if balance < 0:
-            self.total_purchased -= balance
+            self.total_purchased -= balance / self.env.accuracy
         else:
-            self.total += balance
+            self.total += balance / self.env.accuracy
         self.energy_produced = 0
 
     def get_reward(self):

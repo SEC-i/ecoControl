@@ -24,8 +24,8 @@ class GasPoweredGenerator(object):
         self.running = False
 
     def consume_gas(self):
-        self.total_gas_consumption += self.current_gas_consumption
-        self.total_thermal_production += self.current_thermal_production
+        self.total_gas_consumption += self.current_gas_consumption / self.env.accuracy
+        self.total_thermal_production += self.current_thermal_production / self.env.accuracy
 
     def get_operating_costs(self):
         return self.total_gas_consumption * self.gas_price_per_kwh
@@ -47,7 +47,7 @@ class CogenerationUnit(GasPoweredGenerator):
 
         self.minimal_workload = 40.0
 
-        self.current_electrical_production = 0  # kWh
+        self.current_electrical_production = 0.0  # kWh
         self.total_electrical_production = 0.0  # kWh
 
     def get_efficiency_loss(self):
@@ -85,7 +85,7 @@ class CogenerationUnit(GasPoweredGenerator):
 
     def consume_gas(self):
         super(CogenerationUnit, self).consume_gas()
-        self.total_electrical_production += self.current_electrical_production
+        self.total_electrical_production += self.current_electrical_production / self.env.accuracy
 
     def update(self):
         self.env.log('Starting cogeneration unit...')
