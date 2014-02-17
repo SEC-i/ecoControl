@@ -172,6 +172,7 @@ function initialize_daily_thermal_and_electrical_demand(){
         $("#daily_thermal_demand").append("<span id='daily_thermal_demand_" + i + "' class='slider_thermal'><span>" + i + "</span></span>");
         $("#daily_electrical_demand").append("<span id='daily_electrical_demand_" + i + "' class='slider_electrical'><span>" + i + "</span></span>");
     }
+
     $( ".slider_thermal" ).slider({
         value: 0,
         min: 0,
@@ -181,14 +182,14 @@ function initialize_daily_thermal_and_electrical_demand(){
         orientation: "vertical",
         slide: function( event, ui ) {
             var text = "(Current value: " + ui.value/100 + "C)";
-                $( "#daily_thermal_demand_info" ).text( text );
+            $( "#daily_thermal_demand_info" ).text( text );
         },
         stop: function( event, ui ) {
             $( "#daily_thermal_demand_info" ).text('');
         }
     });
 
-     $( ".slider_electrical" ).slider({
+    $( ".slider_electrical" ).slider({
         value: 0,
         min: 0,
         max: 10000,
@@ -197,7 +198,7 @@ function initialize_daily_thermal_and_electrical_demand(){
         orientation: "vertical",
         slide: function( event, ui ) {
             var text = "(Current value: " + ui.value/100 + "%)";
-                $( "#daily_electrical_demand_info" ).text( text );   
+            $( "#daily_electrical_demand_info" ).text( text );   
         },
         stop: function( event, ui ) {
             $( "#daily_electrical_demand_info" ).text('');
