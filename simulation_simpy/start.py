@@ -95,6 +95,10 @@ def set_data():
         cu.max_gas_input = float(request.form['cu_max_gas_input'])
     if 'cu_minimal_workload' in request.form:
         cu.minimal_workload = float(request.form['cu_minimal_workload'])
+    if 'cu_electrical_efficiency' in request.form:
+        cu.electrical_efficiency = float(request.form['cu_electrical_efficiency'])
+    if 'cu_thermal_efficiency' in request.form:
+        cu.thermal_efficiency = float(request.form['cu_thermal_efficiency'])
     if 'sim_forward' in request.form and request.form['sim_forward'] != "":
         env.forward = float(request.form['sim_forward']) * 60 * 60
     if 'plb_max_gas_input' in request.form:
@@ -130,6 +134,8 @@ def get_settings_json():
         'hs_undersupplied_threshold': heat_storage.undersupplied_threshold,
         'cu_max_gas_input': cu.max_gas_input,
         'cu_minimal_workload': cu.minimal_workload,
+        'cu_thermal_efficiency': cu.thermal_efficiency,
+        'cu_electrical_efficiency': cu.electrical_efficiency,
         'plb_max_gas_input': plb.max_gas_input,
         'sim_forward': '',
         'daily_thermal_demand': thermal_consumer.daily_demand,

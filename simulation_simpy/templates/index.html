@@ -116,6 +116,12 @@
                                     <input type="number" step="0.1" id="form_hs_undersupplied_threshold" name="hs_undersupplied_threshold" class="form-control input-sm">
                                   </div>
                                 </div>
+                                  <div class="form-group">
+                                  <label class="control-label col-sm-8 small">PLB's Max Gas Input</label>
+                                  <div class="col-sm-4">
+                                    <input type="number" step="0.1" id="form_plb_max_gas_input" name="plb_max_gas_input" class="form-control input-sm">
+                                  </div>
+                                </div>
                               </div>
                               <div class="col-sm-3">
                                 <div class="form-group">
@@ -131,17 +137,24 @@
                                   </div>
                                 </div>
                                 <div class="form-group">
-                                  <label class="control-label col-sm-8 small">PLB's Max Gas Input</label>
+                                  <label class="control-label col-sm-8 small">CU's electric efficiency</label>
                                   <div class="col-sm-4">
-                                    <input type="number" step="0.1" id="form_plb_max_gas_input" name="plb_max_gas_input" class="form-control input-sm">
+                                    <input type="number" step="0.1" id="form_cu_electrical_efficiency" name="cu_electrical_efficiency" class="form-control input-sm">
                                   </div>
                                 </div>
+                                 <div class="form-group">
+                                  <label class="control-label col-sm-8 small">CU's thermal efficiency</label>
+                                  <div class="col-sm-4">
+                                    <input type="number" step="0.1" id="form_cu_thermal_efficiency" name="cu_thermal_efficiency" class="form-control input-sm">
+                                  </div>
+                                </div>
+                              
                               </div>
                             </div>
-                            <div class="row">
+                           <div class="row">
                               <div class="col-lg-6">
                                 <label class="control-label small">Daily Thermal Demand <span id="daily_thermal_demand_info" class="bg-success"></span></label>
-                                <div id="daily_thermal_demand" class="daily_demand"></div>
+                                <div id="daily_raermal_demand" class="daily_demand"></div>
                               </div>
                               <div class="col-lg-6">
                                 <label class="control-label small">Daily Electrical Demand <span id="daily_electrical_demand_info" class="bg-success"></span></label>
