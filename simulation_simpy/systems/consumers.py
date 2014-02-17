@@ -1,6 +1,8 @@
 import math
 import random
 
+from helpers import sign
+
 
 class SimpleThermalConsumer():
 
@@ -50,8 +52,6 @@ class ThermalConsumer():
         self.env = env
         self.heat_storage = heat_storage
 
-        self.name = "Heating"
-
         self.target_temperature = 25
         self.total_consumption = 0
         self.temperature_room = 20
@@ -89,7 +89,7 @@ class ThermalConsumer():
 
         self.heat_loss()
 
-        # slow rise and  fall of heating
+        # slow rise and fall of heating
         change_speed = 1
         slope = change_speed * \
             sign(self.target_temperature - self.temperature_room)
@@ -99,14 +99,14 @@ class ThermalConsumer():
         # clamp to maximum power
         self.current_power = max(min(self.current_power, self.max_power), 0)
         self.heat_room()
-        return self.current_power
+        return self.current_power / 1000.0
 
     def update(self):
         while True:
-            consumption_kW = self.get_consumption() / 1000.0
-            self.heat_storage.consume_energy(consumption_kW)
+            consumption = self.get_consumption() 
+            self.heat_storage.consume_energy(consumption)
 
-            self.env.log('Thermal demand:', '%f kW' % consumption_kW)
+            self.env.log('Thermal demand:', '%f kW' % consumption)
             self.env.log('HS level:', '%f kWh' %
                          self.heat_storage.energy_stored())
 
@@ -128,10 +128,6 @@ class ThermalConsumer():
         temperature_delta = self.current_power * \
             heating_efficiency * self.env.step_size
         self.temperature_room += temperature_delta
-
-
-def sign(x):
-    return 1 if x >= 0 else -1
 
 
 class SimpleElectricalConsumer():
