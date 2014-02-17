@@ -10,7 +10,6 @@ class ThermalConsumer():
 
         self.base_demand = 20.0  # kW
         self.varying_demand = 25.0  # kW
-        self.noise = False
 
         self.total_consumption = 0.0  # kWh
 
@@ -23,10 +22,6 @@ class ThermalConsumer():
         # calculate variation using daily demand
         variation = self.daily_demand[time_of_day] * self.varying_demand
         current_consumption = self.base_demand + variation
-
-        if self.noise:
-            current_consumption += self.varying_demand / 4.0 * \
-                (random.random() - 0.5)
 
         if consider_consumed:
             self.total_consumption += current_consumption
@@ -42,7 +37,7 @@ class ThermalConsumer():
             self.env.log('HS level:', '%f kWh' %
                          self.heat_storage.energy_stored())
 
-            yield self.env.timeout(3600)
+            yield self.env.timeout(self.env.step_size)
 
 
 class ElectricalConsumer():
@@ -53,7 +48,6 @@ class ElectricalConsumer():
 
         self.base_demand = 5.0  # kW
         self.varying_demand = 7.5  # kW
-        self.noise = False
 
         self.total_consumption = 0.0  # kWh
 
@@ -66,10 +60,6 @@ class ElectricalConsumer():
         # calculate variation using daily demand
         variation = self.daily_demand[time_of_day] * self.varying_demand
         current_consumption = self.base_demand + variation
-
-        if self.noise:
-            current_consumption += self.varying_demand / 4.0 * \
-                (random.random() - 0.5)
 
         if consider_consumed:
             self.total_consumption += current_consumption
@@ -85,4 +75,4 @@ class ElectricalConsumer():
             self.env.log('Infeed Reward:', '%f Euro' %
                          self.electrical_infeed.get_reward())
 
-            yield self.env.timeout(3600)
+            yield self.env.timeout(self.env.step_size)

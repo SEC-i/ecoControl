@@ -46,7 +46,6 @@ class CogenerationUnit(GasPoweredGenerator):
         self.electrical_infeed = electrical_infeed
 
         self.minimal_workload = 40.0
-        self.noise = True
 
         self.current_electrical_production = 0  # kWh
         self.total_electrical_production = 0.0  # kWh
@@ -63,9 +62,6 @@ class CogenerationUnit(GasPoweredGenerator):
     def calculate_state(self):
         calculated_workload = self.heat_storage.target_energy + \
             self.minimal_workload - self.heat_storage.energy_stored()
-
-        if self.noise:
-            calculated_workload += random.random() - 0.5
 
         # ensure smoothly changing workload
         slope = sign(calculated_workload - self.workload)
@@ -109,7 +105,7 @@ class CogenerationUnit(GasPoweredGenerator):
             else:
                 self.env.log('Cogeneration unit stopped')
 
-            yield self.env.timeout(3600)
+            yield self.env.timeout(self.env.step_size)
 
 
 class PeakLoadBoiler(GasPoweredGenerator):
@@ -152,4 +148,4 @@ class PeakLoadBoiler(GasPoweredGenerator):
                 self.env.log('PLB stopped.')
 
             self.env.log('=' * 80)
-            yield self.env.timeout(3600)
+            yield self.env.timeout(self.env.step_size)
