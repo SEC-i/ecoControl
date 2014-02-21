@@ -1,4 +1,5 @@
 import sys
+import datetime
 
 from simpy.core import Environment
 from simpy.rt import RealtimeEnvironment
@@ -6,13 +7,12 @@ from simpy.rt import RealtimeEnvironment
 
 class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
-    def __init__(self, initial_time=0, granularity=3600, strict=False):
-        RealtimeEnvironment.__init__(self, initial_time, 1.0 / granularity, strict)
-
+    def __init__(self, initial_time=1356998400, granularity=3600, strict=False):
+        RealtimeEnvironment.__init__(
+            self, initial_time, 1.0 / granularity, strict)
 
         # start_time = time.time()
-        self.start_time = 1388534400  # 01.01.2014 00:00
-
+        # self.start_time = 1356998400  # 01.01.2013 00:00
         # quiet by default
         self.verbose = False
 
@@ -21,8 +21,8 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
         # timings
         self.granularity = granularity
-        self.accuracy = 360  # every 10s
-        self.step_size = self.granularity / self.accuracy # in seconds
+        self.accuracy = 30  # every 2min
+        self.step_size = self.granularity / self.accuracy  # in seconds
 
         # function which gets called every step
         self.step_function = None
@@ -50,8 +50,14 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
             self.last_step = self.now
             self.step_function()
 
-    def get_time(self):
-        return self.start_time + self.now
+    def get_hour_of_day(self):
+        return self.get_timetuple().tm_hour
+
+    def get_day_of_year(self):
+        return self.get_timetuple().tm_yday
+
+    def get_timetuple(self):
+        return datetime.datetime.fromtimestamp(self.now).timetuple()
 
     def log(self, *args):
         if self.verbose and self.now % self.granularity == 0:  # each hour:
