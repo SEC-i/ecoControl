@@ -1,6 +1,8 @@
 import math
 import random
+import datetime
 
+from data import outside_temperatures_2013
 from helpers import sign
 
 
@@ -55,7 +57,6 @@ class ThermalConsumer():
         self.target_temperature = 25
         self.total_consumption = 0
         self.temperature_room = 20
-        self.outside_temperature = 1
 
         # list of 24 values representing  target_temperature per hour
         self.daily_demand = [18, 18, 19, 18, 19, 18, 19, 20, 21,
@@ -83,9 +84,8 @@ class ThermalConsumer():
             self.room_volume + heat_cap_brick
 
     def get_consumption(self):
-        time_of_day = (self.env.now % (3600 * 24)) / 3600
         # calculate variation using daily demand
-        self.target_temperature = self.daily_demand[time_of_day]
+        self.target_temperature = self.daily_demand[self.env.get_hour_of_day()]
 
         self.heat_loss()
 
@@ -103,7 +103,7 @@ class ThermalConsumer():
 
     def update(self):
         while True:
-            consumption = self.get_consumption() 
+            consumption = self.get_consumption()
             self.heat_storage.consume_energy(consumption)
 
             self.env.log('Thermal demand:', '%f kW' % consumption)
@@ -115,7 +115,7 @@ class ThermalConsumer():
     def heat_loss(self):
         # assume cooling of power/2
         d = self.temperature_room - \
-            self.outside_temperature
+            self.get_outside_temperature()
         # heat transfer coefficient normal glas window, W/(m^2 * K)
         k = 5.9
         # in Watt
@@ -128,6 +128,9 @@ class ThermalConsumer():
         temperature_delta = self.current_power * \
             heating_efficiency * self.env.step_size
         self.temperature_room += temperature_delta
+
+    def get_outside_temperature(self):
+        return outside_temperatures_2013[self.env.get_day_of_year() - 1]
 
 
 class SimpleElectricalConsumer():

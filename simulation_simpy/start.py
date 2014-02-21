@@ -17,7 +17,9 @@ cu_workload_values = collections.deque(maxlen=CACHE_LIMIT)
 plb_workload_values = collections.deque(maxlen=CACHE_LIMIT)
 hs_level_values = collections.deque(maxlen=CACHE_LIMIT)
 thermal_consumption_values = collections.deque(maxlen=CACHE_LIMIT)
+outside_temperature_values = collections.deque(maxlen=CACHE_LIMIT)
 electrical_consumption_values = collections.deque(maxlen=CACHE_LIMIT)
+
 
 def crossdomain(origin=None):
     def decorator(f):
@@ -61,6 +63,7 @@ def get_data():
         'plb_operating_costs': [round(plb.get_operating_costs(), 2)],
         'hs_level': list(hs_level_values),
         'thermal_consumption': list(thermal_consumption_values),
+        'outside_temperature': list(outside_temperature_values),
         'electrical_consumption': list(electrical_consumption_values),
         'infeed_reward': [round(electrical_infeed.get_reward(), 2)],
         'infeed_costs': [round(electrical_infeed.get_costs(), 2)]
@@ -76,12 +79,12 @@ def get_settings():
 @app.route('/api/set/', methods=['POST'])
 @crossdomain(origin='*')
 def set_data():
-    if 'outside_temperature' in request.form:
-        thermal_consumer.outside_temperature = float(request.form['outside_temperature'])
     if 'base_electrical_demand' in request.form:
-        electrical_consumer.base_demand = float(request.form['base_electrical_demand'])
+        electrical_consumer.base_demand = float(
+            request.form['base_electrical_demand'])
     if 'varying_electrical_demand' in request.form:
-        electrical_consumer.varying_demand = float(request.form['varying_electrical_demand'])
+        electrical_consumer.varying_demand = float(
+            request.form['varying_electrical_demand'])
     if 'hs_capacity' in request.form:
         heat_storage.capacity = float(request.form['hs_capacity'])
     if 'hs_target_energy' in request.form:
@@ -94,7 +97,8 @@ def set_data():
     if 'cu_minimal_workload' in request.form:
         cu.minimal_workload = float(request.form['cu_minimal_workload'])
     if 'cu_electrical_efficiency' in request.form:
-        cu.electrical_efficiency = float(request.form['cu_electrical_efficiency'])
+        cu.electrical_efficiency = float(
+            request.form['cu_electrical_efficiency'])
     if 'cu_thermal_efficiency' in request.form:
         cu.thermal_efficiency = float(request.form['cu_thermal_efficiency'])
     if 'sim_forward' in request.form and request.form['sim_forward'] != "":
@@ -123,7 +127,6 @@ def set_data():
 
 def get_settings_json():
     return {
-        'outside_temperature': thermal_consumer.outside_temperature,
         'base_electrical_demand': electrical_consumer.base_demand,
         'varying_electrical_demand': electrical_consumer.varying_demand,
         'hs_capacity': heat_storage.capacity,
@@ -137,16 +140,21 @@ def get_settings_json():
         'sim_forward': '',
         'daily_thermal_demand': thermal_consumer.daily_demand,
         'daily_electrical_demand': electrical_consumer.daily_demand
-    };
+    }
+
 
 def append_measurement():
-    if env.now % env.granularity == 0: # take measurements each hour
-        time_values.append(env.get_time())
+    if env.now % env.granularity == 0:  # take measurements each hour
+        time_values.append(env.now)
         cu_workload_values.append(round(cu.workload, 2))
         plb_workload_values.append(round(plb.workload, 2))
         hs_level_values.append(round(heat_storage.level(), 2))
-        thermal_consumption_values.append(round(thermal_consumer.get_consumption(), 2))
-        electrical_consumption_values.append(round(electrical_consumer.get_consumption(), 2))
+        thermal_consumption_values.append(
+            round(thermal_consumer.get_consumption(), 2))
+        outside_temperature_values.append(
+            round(thermal_consumer.get_outside_temperature(), 2))
+        electrical_consumption_values.append(
+            round(electrical_consumer.get_consumption(), 2))
 
 if __name__ == '__main__':
     sim = Simulation(env)

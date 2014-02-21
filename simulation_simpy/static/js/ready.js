@@ -42,6 +42,13 @@ var series_data = [{
     }
 },
 {
+    name: 'outside_temperature',
+    data: [],
+    tooltip: {
+        valueSuffix: ' °C'
+    }
+},
+{
     name: 'electrical_consumption',
     data: [],
     tooltip: {
@@ -68,7 +75,8 @@ $(function(){
                 series_data[1]['data'].push([timestamp, parseFloat(data['plb_workload'][i])]);
                 series_data[2]['data'].push([timestamp, parseFloat(data['hs_level'][i])]);
                 series_data[3]['data'].push([timestamp, parseFloat(data['thermal_consumption'][i])]);
-                series_data[4]['data'].push([timestamp, parseFloat(data['electrical_consumption'][i])]);
+                series_data[4]['data'].push([timestamp, parseFloat(data['outside_temperature'][i])]);
+                series_data[5]['data'].push([timestamp, parseFloat(data['electrical_consumption'][i])]);
             };
         }).done(function(){
             initialize_diagram();
@@ -140,14 +148,15 @@ function update_setup(data){
 function update_diagram(data){
     var chart = $('#simulation_diagram').highcharts();
 
-    new_data = [[], [], [], [], []];
+    new_data = [[], [], [], [], [], []];
     for (var i = 0; i < data['time'].length; i++) {
         var timestamp = get_timestamp(data['time'][i]);
         new_data[0].push([timestamp, data['cu_workload'][i]]);
         new_data[1].push([timestamp, data['plb_workload'][i]]);
         new_data[2].push([timestamp, data['hs_level'][i]]);
         new_data[3].push([timestamp, data['thermal_consumption'][i]]);
-        new_data[4].push([timestamp, data['electrical_consumption'][i]]);
+        new_data[4].push([timestamp, data['outside_temperature'][i]]);
+        new_data[5].push([timestamp, data['electrical_consumption'][i]]);
     };
 
     for (var i = new_data.length - 1; i >= 0; i--) {
@@ -267,7 +276,7 @@ function initialize_diagram(){
         },
 
         yAxis: {
-            min: 0
+            min: -10
         },
         
         tooltip : {
