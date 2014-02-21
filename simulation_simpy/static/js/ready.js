@@ -214,7 +214,7 @@ function initialize_settings_panel(){
     });
     $('#settings_accordion').on('show.bs.collapse', function () {
         var chart = $('#simulation_diagram').highcharts();
-        chart.setSize(chart.width, 300, doAnimation = true);
+        chart.setSize(chart.width, 400, doAnimation = true);
     });
 }
 
@@ -228,7 +228,7 @@ function initialize_diagram(){
     // Create the chart
     $('#simulation_diagram').highcharts('StockChart', {
         chart: {
-            height: 300
+            height: 400
         },
         rangeSelector: {
             buttons: [{
