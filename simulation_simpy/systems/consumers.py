@@ -110,7 +110,7 @@ class ThermalConsumer():
             self.env.log('HS level:', '%f kWh' %
                          self.heat_storage.energy_stored())
 
-            yield self.env.timeout(3600)
+            yield self.env.timeout(self.env.step_size)
 
     def heat_loss(self):
         # assume cooling of power/2

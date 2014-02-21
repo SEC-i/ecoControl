@@ -54,7 +54,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         return self.start_time + self.now
 
     def log(self, *args):
-        if self.verbose and env.now % self.granularity == 0:  # each hour:
+        if self.verbose and self.now % self.granularity == 0:  # each hour:
             sys.stdout.write('%d' % self.now)
             for string in enumerate(args):
                 sys.stdout.write('\t{0}'.format(string[1]))
