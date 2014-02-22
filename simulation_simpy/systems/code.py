@@ -7,6 +7,7 @@ class CodeExecuter():
         self.code = "# Available variables:"
         for key in local_variables.keys():
             self.code += " " + key
+        self.code += "\n"
 
     def update(self):
         while True:

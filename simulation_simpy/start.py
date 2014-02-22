@@ -165,7 +165,7 @@ def append_measurement():
         thermal_consumption_values.append(
             round(thermal_consumer.get_consumption(), 2))
         outside_temperature_values.append(
-            round(thermal_consumer.get_outside_temperature(), 2))
+            round(env.get_outside_temperature(), 2))
         electrical_consumption_values.append(
             round(electrical_consumer.get_consumption(), 2))
 

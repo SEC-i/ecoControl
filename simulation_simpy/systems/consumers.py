@@ -114,7 +114,7 @@ class ThermalConsumer():
     def heat_loss(self):
         # assume cooling of power/2
         d = self.temperature_room - \
-            self.get_outside_temperature()
+            self.env.get_outside_temperature()
         # heat transfer coefficient normal glas window, W/(m^2 * K)
         k = 5.9
         # in Watt
@@ -127,9 +127,6 @@ class ThermalConsumer():
         temperature_delta = self.current_power * \
             heating_efficiency * self.env.step_size
         self.temperature_room += temperature_delta
-
-    def get_outside_temperature(self):
-        return outside_temperatures_2013[self.env.get_day_of_year() - 1]
 
 
 class SimpleElectricalConsumer():

@@ -4,18 +4,22 @@ class HeatStorage():
         self.env = env
         self.capacity = 700.0  # kWh
         self.target_energy = 500.0  # kWh
+        self.target_energy_factor = 1.0  # %
 
         self.input_energy = 0.0  # kWh
         self.output_energy = 0.0  # kWh
         self.empty_count = 0
 
-        self.undersupplied_threshold = self.target_energy / 2
+        self.undersupplied_threshold = self.get_target_energy() / 2
 
     def energy_stored(self):
         return self.input_energy - self.output_energy
 
     def level(self):
         return self.energy_stored() / self.capacity * 99.0
+
+    def get_target_energy(self):
+        return self.target_energy * self.target_energy_factor
 
     def add_energy(self, energy):
         energy /= self.env.accuracy
