@@ -32,15 +32,15 @@ def crossdomain(origin=None):
     return decorator
 
 
-class Simulation(Thread):
+class FlaskBackgroundRunner(Thread):
 
-    def __init__(self, env):
+    def __init__(self, app):
         Thread.__init__(self)
         self.daemon = True
-        self.env = env
+        self.app = app
 
     def run(self):
-        self.env.run()
+        self.app.run(host="0.0.0.0", debug=True, port=7000, use_reloader=False)
 
 
 @app.route('/')
@@ -56,15 +56,26 @@ def get_data():
         'time': list(time_values),
         'cu_workload': list(cu_workload_values),
         'cu_electrical_production': [round(cu.current_electrical_production, 2)],
+        'cu_total_electrical_production': [round(cu.total_electrical_production, 2)],
         'cu_thermal_production': [round(cu.current_thermal_production, 2)],
+        'cu_total_thermal_production': [round(cu.total_thermal_production, 2)],
+        'cu_total_gas_consumption': [round(cu.total_gas_consumption, 2)],
         'cu_operating_costs': [round(cu.get_operating_costs(), 2)],
+        'cu_power_ons': [cu.power_on_count],
         'plb_workload': list(plb_workload_values),
         'plb_thermal_production': [round(plb.current_thermal_production, 2)],
+        'plb_total_gas_consumption': [round(plb.total_gas_consumption, 2)],
         'plb_operating_costs': [round(plb.get_operating_costs(), 2)],
+        'plb_power_ons': [plb.power_on_count],
         'hs_level': list(hs_level_values),
+        'hs_total_input': [round(heat_storage.input_energy, 2)],
+        'hs_total_output': [round(heat_storage.output_energy, 2)],
+        'hs_empty_count': [round(heat_storage.empty_count, 2)],
         'thermal_consumption': list(thermal_consumption_values),
+        'total_thermal_consumption': [round(thermal_consumer.total_consumption, 2)],
         'outside_temperature': list(outside_temperature_values),
         'electrical_consumption': list(electrical_consumption_values),
+        'total_electrical_consumption': [round(electrical_consumer.total_consumption, 2)],
         'infeed_reward': [round(electrical_infeed.get_reward(), 2)],
         'infeed_costs': [round(electrical_infeed.get_costs(), 2)]
     })
@@ -157,8 +168,8 @@ def append_measurement():
             round(electrical_consumer.get_consumption(), 2))
 
 if __name__ == '__main__':
-    sim = Simulation(env)
+    thread = FlaskBackgroundRunner(app)
+    thread.start()
     env.verbose = len(sys.argv) > 1
     env.step_function = append_measurement
-    sim.start()
-    app.run(host="0.0.0.0", debug=True, port=7000, use_reloader=False)
+    env.run()
