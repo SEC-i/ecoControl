@@ -1,14 +1,25 @@
 var systems_units = {
     cu_workload: '%',
     cu_electrical_production: 'kW',
+    cu_total_electrical_production: 'kWh',
     cu_thermal_production: 'kW',
+    cu_total_thermal_production: 'kWh',
+    cu_total_gas_consumption: 'kWh',
     cu_operating_costs: 'Euro',
+    cu_power_ons: 'times',
     hs_level: '%',
+    hs_total_input: 'kWh',
+    hs_total_output: 'kWh',
+    hs_empty_count: 'times',
     plb_workload: '%',
     plb_thermal_production: 'kW',
+    plb_total_gas_consumption: 'kWh',
     plb_operating_costs: 'Euro',
+    plb_power_ons: 'times',
     thermal_consumption: 'kW',
+    total_thermal_consumption: 'kWh',
     electrical_consumption: 'kW',
+    total_electrical_consumption: 'kWh',
     infeed_reward: 'Euro',
     infeed_costs: 'Euro'
 };
@@ -63,7 +74,6 @@ $(function(){
     }, "xml");
 
     initialize_daily_demands();
-    
 
     $.getJSON( "./api/settings/", function( data ) {
         update_setting(data);
@@ -134,7 +144,7 @@ function update_setting(data){
 function update_setup(data){
     $.each(data, function(key, value) {
         value = value[value.length-1];
-        var item = $('#' + key);
+        var item = $('.' + key);
         if (item.length) {
             if(key == "time"){
                 item.text(format_date(new Date(parseFloat(value) * 1000)));
@@ -211,19 +221,6 @@ function initialize_daily_demands(){
         stop: function( event, ui ) {
             $( "#daily_electrical_demand_info" ).text('');
         }
-    });
-}
-
-
-
-function initialize_settings_panel(){
-    $('#settings_accordion').on('hide.bs.collapse', function () {
-        var chart = $('#simulation_diagram').highcharts();
-        chart.setSize(chart.width, 750, doAnimation = true);
-    });
-    $('#settings_accordion').on('show.bs.collapse', function () {
-        var chart = $('#simulation_diagram').highcharts();
-        chart.setSize(chart.width, 400, doAnimation = true);
     });
 }
 
