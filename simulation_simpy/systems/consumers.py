@@ -21,20 +21,18 @@ class SimpleThermalConsumer():
         self.daily_demand = [50 / 350.0, 25 / 350.0, 10 / 350.0, 10 / 350.0, 5 / 350.0, 20 / 350.0, 250 / 350.0, 1, 320 / 350.0, 290 / 350.0, 280 / 350.0, 310 /
                              350.0, 250 / 350.0, 230 / 350.0, 225 / 350.0, 160 / 350.0, 125 / 350.0, 160 / 350.0, 200 / 350.0, 220 / 350.0, 260 / 350.0, 130 / 350.0, 140 / 350.0, 120 / 350.0]
 
-    def get_consumption(self, consider_consumed=False):
+    def get_consumption(self):
         time_of_day = (self.env.now % (3600 * 24)) / 3600
         # calculate variation using daily demand
         variation = self.daily_demand[time_of_day] * self.varying_demand
         current_consumption = self.base_demand + variation
-
-        if consider_consumed:
-            self.total_consumption += current_consumption / self.env.accuracy
 
         return current_consumption
 
     def update(self):
         while True:
             consumption = self.get_consumption()
+            self.total_consumption += consumption / self.env.accuracy
             self.heat_storage.consume_energy(consumption)
 
             self.env.log('Thermal demand:', '%f kW' % consumption)
@@ -104,6 +102,7 @@ class ThermalConsumer():
     def update(self):
         while True:
             consumption = self.get_consumption()
+            self.total_consumption += consumption / self.env.accuracy
             self.heat_storage.consume_energy(consumption)
 
             self.env.log('Thermal demand:', '%f kW' % consumption)
@@ -148,20 +147,18 @@ class SimpleElectricalConsumer():
         self.daily_demand = [50 / 350.0, 25 / 350.0, 10 / 350.0, 10 / 350.0, 5 / 350.0, 20 / 350.0, 250 / 350.0, 1, 320 / 350.0, 290 / 350.0, 280 / 350.0, 310 /
                              350.0, 250 / 350.0, 230 / 350.0, 225 / 350.0, 160 / 350.0, 125 / 350.0, 160 / 350.0, 200 / 350.0, 220 / 350.0, 260 / 350.0, 130 / 350.0, 140 / 350.0, 120 / 350.0]
 
-    def get_consumption(self, consider_consumed=False):
+    def get_consumption(self):
         time_of_day = (self.env.now % (3600 * 24)) / 3600
         # calculate variation using daily demand
         variation = self.daily_demand[time_of_day] * self.varying_demand
         current_consumption = self.base_demand + variation
-
-        if consider_consumed:
-            self.total_consumption += current_consumption / self.env.accuracy
 
         return current_consumption
 
     def update(self):
         while True:
             consumption = self.get_consumption()
+            self.total_consumption += consumption / self.env.accuracy
             self.electrical_infeed.consume_energy(consumption)
 
             self.env.log('Electrical demand:', '%f kW' % consumption)
