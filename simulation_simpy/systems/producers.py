@@ -16,6 +16,7 @@ class GasPoweredGenerator(object):
         self.current_thermal_production = 0  # kWh
         self.total_gas_consumption = 0.0  # kWh
         self.total_thermal_production = 0.0  # kWh
+        self.power_on_count = 0
 
     def start(self):
         self.running = True
@@ -62,16 +63,21 @@ class CogenerationUnit(GasPoweredGenerator):
         return 1.0 - self.max_efficiency_loss * relative_loss
 
     def calculate_state(self):
+        old_workload = self.workload
         calculated_workload = self.heat_storage.target_energy + \
             self.minimal_workload - self.heat_storage.energy_stored()
 
         # ensure smoothly changing workload
-        slope = sign(calculated_workload - self.workload)
+        slope = sign(calculated_workload - old_workload)
         change_speed = 100 / 180  # percent per 3 minutes
         self.workload += change_speed * slope * self.env.step_size
 
         # make sure that minimal_workload <= workload <= 99.0 or workload = 0
         if calculated_workload >= self.minimal_workload:
+            # detect if power has been turned on
+            if old_workload == 0:
+                self.power_on_count += 1
+
             self.workload = min(calculated_workload, 99.0)
         else:
             self.workload = 0.0
@@ -123,6 +129,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
     def calculate_state(self):
         # turn on if heat_storage is undersupplied
         if self.heat_storage.undersupplied():
+            self.power_on_count += 1
             self.workload = 99.0
         # turn off if heat storage's target_energy is almost reached
         elif self.heat_storage.energy_stored() + self.current_thermal_production >= self.heat_storage.target_energy:

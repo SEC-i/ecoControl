@@ -7,6 +7,7 @@ class HeatStorage():
 
         self.input_energy = 0.0  # kWh
         self.output_energy = 0.0  # kWh
+        self.empty_count = 0
 
         self.undersupplied_threshold = self.target_energy / 2
 
@@ -26,6 +27,7 @@ class HeatStorage():
         if self.energy_stored() - energy >= 0:
             self.output_energy += energy
         else:
+            self.empty_count += 1
             self.env.log('Heat Storage empty')
 
     def undersupplied(self):
