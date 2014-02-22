@@ -34,3 +34,7 @@ html, body {
     left: -5px;
     top: -20px;
 }
+
+#editor {
+    height: 400px;
+}

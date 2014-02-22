@@ -4,6 +4,7 @@ from simpy.util import start_delayed
 
 from environment import ForwardableRealtimeEnvironment
 
+from systems.code import CodeExecuter
 from systems.producers import CogenerationUnit, PeakLoadBoiler
 from systems.storages import HeatStorage, ElectricalInfeed
 from systems.consumers import SimpleThermalConsumer, ThermalConsumer, SimpleElectricalConsumer
@@ -12,13 +13,25 @@ from systems.consumers import SimpleThermalConsumer, ThermalConsumer, SimpleElec
 env = ForwardableRealtimeEnvironment()
 
 # initialize power systems
-heat_storage = HeatStorage(env=env)
-electrical_infeed = ElectricalInfeed(env=env)
-cu = CogenerationUnit(env=env, heat_storage=heat_storage, electrical_infeed=electrical_infeed)
-plb = PeakLoadBoiler(env=env, heat_storage=heat_storage)
-#thermal_consumer = SimpleThermalConsumer(env=env, heat_storage=heat_storage)
-thermal_consumer = ThermalConsumer(env=env, heat_storage=heat_storage)
-electrical_consumer = SimpleElectricalConsumer(env=env, electrical_infeed=electrical_infeed)
+heat_storage = HeatStorage(env)
+electrical_infeed = ElectricalInfeed(env)
+cu = CogenerationUnit(env, heat_storage, electrical_infeed)
+plb = PeakLoadBoiler(env, heat_storage)
+#thermal_consumer = SimpleThermalConsumer(env, heat_storage)
+thermal_consumer = ThermalConsumer(env, heat_storage)
+electrical_consumer = SimpleElectricalConsumer(env, electrical_infeed)
+
+# initilize code executer
+code_executer = CodeExecuter(env, {
+    'env': env,
+    'heat_storage': heat_storage,
+    'electrical_infeed': electrical_infeed,
+    'cu': cu,
+    'plb': plb,
+    'thermal_consumer': thermal_consumer,
+    'electrical_consumer': electrical_consumer,
+})
+env.process(code_executer.update())
 
 # add power system to simulation environment
 env.process(thermal_consumer.update())

@@ -67,6 +67,10 @@ var series_data = [{
     }
 }];
 
+var editor = ace.edit("editor");
+editor.setTheme("ace/theme/monokai");
+editor.getSession().setMode("ace/mode/python");
+
 $(function(){
     $.get( "./static/img/simulation.svg", function( data ) {
         var svg_item = document.importNode(data.documentElement,true);
@@ -78,44 +82,29 @@ $(function(){
     $.getJSON( "./api/settings/", function( data ) {
         update_setting(data);
     }).done(function(){
-        $.getJSON( "./api/data/", function( data ) {
-            for (var i = 0; i < data['time'].length; i++) {
-                var timestamp = get_timestamp(data['time'][i]);
-                series_data[0]['data'].push([timestamp, parseFloat(data['cu_workload'][i])]);
-                series_data[1]['data'].push([timestamp, parseFloat(data['plb_workload'][i])]);
-                series_data[2]['data'].push([timestamp, parseFloat(data['hs_level'][i])]);
-                series_data[3]['data'].push([timestamp, parseFloat(data['thermal_consumption'][i])]);
-                series_data[4]['data'].push([timestamp, parseFloat(data['outside_temperature'][i])]);
-                series_data[5]['data'].push([timestamp, parseFloat(data['electrical_consumption'][i])]);
-            };
+        $.getJSON( "./api/code/", function( data ) {
+            editor.setValue(data['code'], 1);
         }).done(function(){
-            initialize_diagram();
-            // set up refresh loop
-            setInterval(function(){
-                refresh();
-            }, 2000);
+            $.getJSON( "./api/data/", function( data ) {
+                for (var i = 0; i < data['time'].length; i++) {
+                    var timestamp = get_timestamp(data['time'][i]);
+                    series_data[0]['data'].push([timestamp, parseFloat(data['cu_workload'][i])]);
+                    series_data[1]['data'].push([timestamp, parseFloat(data['plb_workload'][i])]);
+                    series_data[2]['data'].push([timestamp, parseFloat(data['hs_level'][i])]);
+                    series_data[3]['data'].push([timestamp, parseFloat(data['thermal_consumption'][i])]);
+                    series_data[4]['data'].push([timestamp, parseFloat(data['outside_temperature'][i])]);
+                    series_data[5]['data'].push([timestamp, parseFloat(data['electrical_consumption'][i])]);
+                };
+            }).done(function(){
+                initialize_diagram();
+                // set up refresh loop
+                setInterval(function(){
+                    refresh();
+                }, 2000);
+            });
         });
     });
-
-    $("#settings").submit(function( event ){
-        var post_data = $( "#settings" ).serialize();
-        for(var i = 0; i < 24; i++) {
-            post_data += "&daily_thermal_demand_" + i + "=" + ($("#daily_thermal_demand_" + i).slider( "value")/100);
-        }
-        for(var i = 0; i < 24; i++) {
-            post_data += "&daily_electrical_demand_" + i + "=" + ($("#daily_electrical_demand_" + i).slider( "value")/10000);
-        }
-        $.post( "./api/set/", post_data, function( data ) {
-            $("#settings_button").removeClass("btn-primary");
-            $("#settings_button").addClass("btn-success");
-            update_setting(data);
-            setTimeout(function(){
-                $("#settings_button").removeClass("btn-success");
-                $("#settings_button").addClass("btn-primary");
-            }, 500);
-        });
-        event.preventDefault();
-    });
+    initialize_event_handlers();
 });
 
 function refresh(){
@@ -183,6 +172,34 @@ function format_date(date){
 
 function get_timestamp(string){
     return new Date(parseFloat(string) * 1000).getTime();
+}
+
+function initialize_event_handlers(){
+    $("#settings").submit(function( event ){
+        var post_data = $( "#settings" ).serialize();
+        for(var i = 0; i < 24; i++) {
+            post_data += "&daily_thermal_demand_" + i + "=" + ($("#daily_thermal_demand_" + i).slider( "value")/100);
+        }
+        for(var i = 0; i < 24; i++) {
+            post_data += "&daily_electrical_demand_" + i + "=" + ($("#daily_electrical_demand_" + i).slider( "value")/10000);
+        }
+        $.post( "./api/settings/", post_data, function( data ) {
+            $("#settings_button").removeClass("btn-primary");
+            $("#settings_button").addClass("btn-success");
+            update_setting(data);
+            setTimeout(function(){
+                $("#settings_button").removeClass("btn-success");
+                $("#settings_button").addClass("btn-primary");
+            }, 500);
+        });
+        event.preventDefault();
+    });
+
+    $("#editor_button").click(function() {
+        $.post( "./api/code/", {code: editor.getValue()}, function( data ) {
+            editor.setValue(data['code'], 1);
+        });
+    });
 }
 
 function initialize_daily_demands(){

@@ -8,7 +8,7 @@ from functools import update_wrapper
 from werkzeug.serving import run_simple
 app = Flask(__name__)
 
-from simulation import env, heat_storage, electrical_infeed, cu, plb, thermal_consumer, electrical_consumer
+from simulation import env, heat_storage, electrical_infeed, cu, plb, thermal_consumer, electrical_consumer, code_executer
 
 CACHE_LIMIT = 24 * 365  # 365 days
 
@@ -81,63 +81,65 @@ def get_data():
     })
 
 
-@app.route('/api/settings/', methods=['GET'])
+@app.route('/api/code/', methods=['GET', 'POST'])
 @crossdomain(origin='*')
-def get_settings():
-    return jsonify(get_settings_json())
+def handle_code():
+    if request.method == "POST":
+        if 'code' in request.form:
+            code_executer.code = request.form['code']
+    return jsonify({'code': code_executer.code})
 
 
-@app.route('/api/set/', methods=['POST'])
+@app.route('/api/settings/', methods=['GET', 'POST'])
 @crossdomain(origin='*')
-def set_data():
-    if 'base_electrical_demand' in request.form:
-        electrical_consumer.base_demand = float(
-            request.form['base_electrical_demand'])
-    if 'varying_electrical_demand' in request.form:
-        electrical_consumer.varying_demand = float(
-            request.form['varying_electrical_demand'])
-    if 'hs_capacity' in request.form:
-        heat_storage.capacity = float(request.form['hs_capacity'])
-    if 'hs_target_energy' in request.form:
-        heat_storage.target_energy = float(request.form['hs_target_energy'])
-    if 'hs_undersupplied_threshold' in request.form:
-        heat_storage.undersupplied_threshold = float(
-            request.form['hs_undersupplied_threshold'])
-    if 'cu_max_gas_input' in request.form:
-        cu.max_gas_input = float(request.form['cu_max_gas_input'])
-    if 'cu_minimal_workload' in request.form:
-        cu.minimal_workload = float(request.form['cu_minimal_workload'])
-    if 'cu_electrical_efficiency' in request.form:
-        cu.electrical_efficiency = float(
-            request.form['cu_electrical_efficiency'])
-    if 'cu_thermal_efficiency' in request.form:
-        cu.thermal_efficiency = float(request.form['cu_thermal_efficiency'])
-    if 'sim_forward' in request.form and request.form['sim_forward'] != "":
-        env.forward = float(request.form['sim_forward']) * 60 * 60
-    if 'plb_max_gas_input' in request.form:
-        plb.max_gas_input = float(request.form['plb_max_gas_input'])
+def handle_settings():
+    if request.method == "POST":
+        if 'base_electrical_demand' in request.form:
+            electrical_consumer.base_demand = float(
+                request.form['base_electrical_demand'])
+        if 'varying_electrical_demand' in request.form:
+            electrical_consumer.varying_demand = float(
+                request.form['varying_electrical_demand'])
+        if 'hs_capacity' in request.form:
+            heat_storage.capacity = float(request.form['hs_capacity'])
+        if 'hs_target_energy' in request.form:
+            heat_storage.target_energy = float(
+                request.form['hs_target_energy'])
+        if 'hs_undersupplied_threshold' in request.form:
+            heat_storage.undersupplied_threshold = float(
+                request.form['hs_undersupplied_threshold'])
+        if 'cu_max_gas_input' in request.form:
+            cu.max_gas_input = float(request.form['cu_max_gas_input'])
+        if 'cu_minimal_workload' in request.form:
+            cu.minimal_workload = float(request.form['cu_minimal_workload'])
+        if 'cu_electrical_efficiency' in request.form:
+            cu.electrical_efficiency = float(
+                request.form['cu_electrical_efficiency'])
+        if 'cu_thermal_efficiency' in request.form:
+            cu.thermal_efficiency = float(
+                request.form['cu_thermal_efficiency'])
+        if 'sim_forward' in request.form and request.form['sim_forward'] != "":
+            env.forward = float(request.form['sim_forward']) * 60 * 60
+        if 'plb_max_gas_input' in request.form:
+            plb.max_gas_input = float(request.form['plb_max_gas_input'])
 
-    daily_thermal_demand = []
-    for i in range(24):
-        key = 'daily_thermal_demand_' + str(i)
-        if key in request.form:
-            daily_thermal_demand.append(float(request.form[key]))
-    if len(daily_thermal_demand) == 24:
-        thermal_consumer.daily_demand = daily_thermal_demand
+        daily_thermal_demand = []
+        for i in range(24):
+            key = 'daily_thermal_demand_' + str(i)
+            if key in request.form:
+                daily_thermal_demand.append(float(request.form[key]))
+        if len(daily_thermal_demand) == 24:
+            thermal_consumer.daily_demand = daily_thermal_demand
 
-    daily_electrical_demand = []
-    for i in range(24):
-        key = 'daily_electrical_demand_' + str(i)
-        if key in request.form:
-            daily_electrical_demand.append(float(request.form[key]))
-    if len(daily_electrical_demand) == 24:
-        electrical_consumer.daily_demand = daily_electrical_demand
+        daily_electrical_demand = []
+        for i in range(24):
+            key = 'daily_electrical_demand_' + str(i)
+            if key in request.form:
+                daily_electrical_demand.append(float(request.form[key]))
+        if len(daily_electrical_demand) == 24:
+            electrical_consumer.daily_demand = daily_electrical_demand
 
-    return jsonify(get_settings_json())
-
-
-def get_settings_json():
-    return {
+    return jsonify({
         'base_electrical_demand': electrical_consumer.base_demand,
         'varying_electrical_demand': electrical_consumer.varying_demand,
         'hs_capacity': heat_storage.capacity,
@@ -151,7 +153,7 @@ def get_settings_json():
         'sim_forward': '',
         'daily_thermal_demand': thermal_consumer.daily_demand,
         'daily_electrical_demand': electrical_consumer.daily_demand
-    }
+    })
 
 
 def append_measurement():
