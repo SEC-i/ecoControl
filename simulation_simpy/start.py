@@ -40,7 +40,7 @@ class FlaskBackgroundRunner(Thread):
         self.app = app
 
     def run(self):
-        self.app.run(host="0.0.0.0", debug=True, port=7000, use_reloader=False)
+        self.app.run(host="0.0.0.0", debug=True, port=8080, use_reloader=False)
 
 
 @app.route('/')
