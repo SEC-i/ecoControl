@@ -9,7 +9,7 @@ from data import outside_temperatures_2013
 
 class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
-    def __init__(self, initial_time=1356998400, granularity=3600, strict=False):
+    def __init__(self, initial_time=1356998400, granularity=3600.0, strict=False):
         RealtimeEnvironment.__init__(
             self, initial_time, 1.0 / granularity, strict)
 
@@ -23,7 +23,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
         # timings
         self.granularity = granularity
-        self.accuracy = 30  # every 2min
+        self.accuracy = 30.0  # every 2min
         self.step_size = self.granularity / self.accuracy  # in seconds
 
         # function which gets called every step
