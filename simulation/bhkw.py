@@ -6,7 +6,7 @@ import random
 import unittest
 import sys
 
-milliseconds_per_hour = 1000 * 60 * 60
+seconds_per_hour = 60 * 60.0
 
 """@doc please read the technical datasheet of vitobloc_200_EM,
 which contains all the data which we are mocking here"""
@@ -18,12 +18,15 @@ class BHKW(GeneratorDevice):
         # workload is modulated starting from this value
         # ecoPower from 1,3 kw el or 4 kw th -> about 30% workload
         self.modulation = 30 
+        self.gas_cost = 0.0654 #per kWH
+        
 
 
         self.sensors = {"workload":Sensor(name="workload", id=0, value=0, unit=r"%",graph_id=1),
                         "electrical_power":Sensor(name="electrical_power", id=1, value=0, unit="kW",graph_id=1),
                         "thermal_power":Sensor(name="thermal_power", id=2, value=0, unit="kW",graph_id=1),
-                        "gasinput":Sensor(name="gas_input", id=3, value=0, unit="kW",graph_id=1) }
+                        "gasinput":Sensor(name="gas_input", id=3, value=0, unit="kW",graph_id=1),
+                        "gas_cost":Sensor(name="gas_cost",id=4,value=0,unit="Euro")}
 
 
         self.given_data = []
@@ -37,11 +40,13 @@ class BHKW(GeneratorDevice):
         # use smaller bhkw of pamiru48: Vaillant ecoPower 4.7
         # gas input based on maximum 90% efficiency scaling down like vitobloc
         # electric/thermal power scaled down almost linear
-        self.given_data.append({"workload":0, "electrical_power":0, "thermal_power":0, "gasinput":0})
-        self.given_data.append({"workload":25, "electrical_power":1.18, "thermal_power":3.13, "gasinput":5.75})
+        self.given_data.append({"workload":31, "electrical_power":1.5, "thermal_power":4.7, "gasinput":5.75})
         self.given_data.append({"workload":50, "electrical_power":2.35, "thermal_power":7, "gasinput":11.27})
         self.given_data.append({"workload":75, "electrical_power":3.53, "thermal_power":10, "gasinput":15.73})
         self.given_data.append({"workload":99, "electrical_power":4.7, "thermal_power":12.5, "gasinput":19.1})
+        
+        #0 = follow thermal, 1 = follow electric
+        self.mode = 0
 
 
     def find_bounding_datasets(self,value,type):
@@ -59,12 +64,17 @@ class BHKW(GeneratorDevice):
 
 
     def calculate_parameters(self,value,type):
+        #return 0 initialized dict if value is under threshold
+        if value < self.given_data[0][type]:
+            return {key: 0 for (key, value) in self.given_data[0].items()}
+        
+        ret_dict = {}
         data_set1,data_set2 = self.find_bounding_datasets(value,type)
         mu = value-data_set1[type]
-        ret_dict = {}
+        
 
         #return interpolated values from datasheet
-        for key in self.sensors:
+        for key in self.given_data[0]:
             if (key!= type):
                 interp_value = cosine_interpolate(data_set1[key], data_set2[key], mu)
                 ret_dict[key] = interp_value
@@ -80,20 +90,28 @@ class BHKW(GeneratorDevice):
         else:
             self.target_workload = 0
 
-    def update(self,time_delta,heat_storage):
-        time_delta_hour = time_delta / milliseconds_per_hour
-        
-        needed_thermal_energy = heat_storage.get_energy_demand()
-        self.target_workload = self.calculate_parameters(needed_thermal_energy / time_delta_hour,"thermal_power")["workload"]
+    def update(self,time_delta,heat_storage,electric_consumer):
+        time_delta_hour = time_delta / seconds_per_hour
+
+        if self.mode == 0:
+            needed_thermal_energy = heat_storage.get_energy_demand()
+            self.target_workload = self.calculate_parameters(needed_thermal_energy / time_delta_hour,"thermal_power")["workload"]
+        else:
+            self.target_workload = self.calculate_parameters(electric_consumer.get_power_demand(),"electrical_power")["workload"]
+            #ensure heatstorage is not overheated
+            if heat_storage.get_temperature() > heat_storage.target_temperature:
+                self.target_workload = 0
         self.modulating()
-        self.smooth_set_step(time_delta)
+        self.smooth_set_step(time_delta)            
         new_values = self.calculate_parameters(self.sensors["workload"].value,"workload")
         #set values for current simulation step
         for key in new_values:
             if (key != "workload"):
                 self.sensors[key].value = new_values[key]
-
+        
         heat_storage.add_energy(self.sensors["thermal_power"].value * time_delta_hour)
+        electric_consumer.add_electric_energy(self.sensors["electrical_power"].value * time_delta_hour)
+        self.sensors["gas_cost"].value += self.gas_cost * self.sensors["gasinput"].value * time_delta_hour
 
     def get_electrical_power(self):
         return self.sensors["electrical_power"].value

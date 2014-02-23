@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Power System Simulation</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./static/css/bootstrap.min.css" rel="stylesheet">
+     <!-- jQuery UI CSS core CSS -->
+    <link rel="stylesheet" href="./static/css/smoothness/jquery-ui-1.10.4.custom.min.css">
+
+    <!-- Custom styles -->
+    <link href="./static/css/basic.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body>
+    <!-- Simulation page -->
+    <div class="container">
+      <h2>Power System Simulation</h2>
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="panel-group" id="accordion">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#diagram_container">
+                    Live Diagram
+                  </a>
+                </h4>
+              </div>
+              <div id="diagram_container" class="panel-collapse collapse in">
+                <div class="panel-body">
+                  <div id="simulation_diagram"></div>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#settings_panel">
+                    Settings
+                  </a>
+                </h4>
+              </div>
+              <div id="settings_panel" class="panel-collapse collapse in">
+                <div class="panel-body">
+
+
+                  <form id="settings" class="form-horizontal" role="form">
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-tabs">
+                      <li class="active"><a href="#general" data-toggle="tab">General</a></li>
+                      <li><a href="#thermal_consumer" data-toggle="tab">Thermal Consumer</a></li>
+                      <li><a href="#electrical_consumer" data-toggle="tab">Electrical Consumer</a></li>
+                      <li><a href="#cogeneration_unit" data-toggle="tab">Cogeneration Unit</a></li>
+                      <li><a href="#heat_storage" data-toggle="tab">Heat Storage</a></li>
+                      <li><a href="#peak_load_boiler" data-toggle="tab">Peak Load Boiler</a></li>
+                    </ul>
+
+                    <!-- Tab panes -->
+                    <div class="tab-content">
+                      <div class="tab-pane fade in active" id="general">
+                        <p>
+                          <div class="row">
+                            <div class="col-lg-6">
+                              <div class="form-group">
+                                <label class="control-label col-lg-6 small">Fast-forward:</label>
+                                <div class="col-lg-6">
+                                  <select id="form_sim_forward" name="sim_forward" class="form-control small">
+                                    <option value="">---</option>
+                                    <option value="12">12 hours</option>
+                                    <option value="24">1 day</option>
+                                    <option value="168">1 week</option>
+                                    <option value="720">1 month</option>
+                                    <option value="4320">12 months</option>
+                                    <option value="8760">1 year</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </p>
+                      </div>
+                      <div class="tab-pane fade" id="thermal_consumer">
+                        <p>
+                          <div class="row">
+                            <div class="col-lg-6">
+                              <label class="control-label small">Daily Thermal Demand <span id="daily_thermal_demand_info" class="bg-success"></span></label>
+                              <div id="daily_thermal_demand" class="daily_demand"></div>
+                            </div>
+                          </div>
+                        </p>
+                      </div>
+                      <div class="tab-pane fade" id="electrical_consumer">
+                        <p>
+                          <div class="row">
+                            <div class="col-lg-6">
+                              <label class="control-label small">Daily Electrical Demand <span id="daily_electrical_demand_info" class="bg-success"></span></label>
+                              <div id="daily_electrical_demand" class="daily_demand"></div>
+                            </div>
+                            <div class="col-lg-6">
+                              <div class="form-group">
+                                <label class="control-label col-lg-6 small">Electrical Base</label>
+                                <div class="col-lg-6">
+                                  <div class="input-group">
+                                    <input type="number" step="0.1" id="form_base_electrical_demand" name="base_electrical_demand" class="form-control input-sm">
+                                    <span class="input-group-addon">kW</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="form-group">
+                                <label class="control-label col-lg-6 small">Max Varying</label>
+                                <div class="col-lg-6">
+                                  <div class="input-group">
+                                    <input type="number" step="0.1" id="form_varying_electrical_demand" name="varying_electrical_demand" class="form-control input-sm">
+                                    <span class="input-group-addon">kW</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </p>
+                      </div>
+                      <div class="tab-pane fade" id="cogeneration_unit">
+                        <p>
+                          <div class="row">
+                            <div class="col-lg-4">
+                              <div class="form-group">
+                                <label class="control-label col-lg-6 small">Max Input</label>
+                                <div class="col-lg-6">
+                                  <div class="input-group">
+                                    <input type="number" step="0.1" id="form_cu_max_gas_input" name="cu_max_gas_input" class="form-control input-sm">
+                                    <span class="input-group-addon">kW</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-lg-4">
+                              <div class="form-group">
+                                <label class="control-label col-lg-6 small">Min Workload</label>
+                                <div class="col-lg-6">
+                                  <div class="input-group">
+                                    <input type="number" step="0.1" id="form_cu_minimal_workload" name="cu_minimal_workload" class="form-control input-sm">
+                                    <span class="input-group-addon">%</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-lg-4">
+                              <div class="form-group">
+                                <label class="control-label col-lg-6 small">Electric Eff.</label>
+                                <div class="col-lg-6">
+                                  <div class="input-group">
+                                    <input type="number" step="0.01" id="form_cu_electrical_efficiency" name="cu_electrical_efficiency" class="form-control input-sm">
+                                    <span class="input-group-addon">%</span>
+                                  </div>
+                                </div>
+                              </div>
+                               <div class="form-group">
+                                <label class="control-label col-lg-6 small">Thermal Eff.</label>
+                                <div class="col-lg-6">
+                                  <div class="input-group">
+                                    <input type="number" step="0.01" id="form_cu_thermal_efficiency" name="cu_thermal_efficiency" class="form-control input-sm">
+                                    <span class="input-group-addon">%</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        <p>
+                      </div>
+                      <div class="tab-pane fade" id="heat_storage">
+                        <p>
+                          <div class="row">
+                            <div class="col-lg-4">
+                              <div class="form-group">
+                                <label class="control-label col-lg-6 small">HS Capacity</label>
+                                <div class="col-lg-6">
+                                  <div class="input-group">
+                                    <input type="number" step="0.1" id="form_hs_capacity" name="hs_capacity" class="form-control input-sm">
+                                    <span class="input-group-addon">kWh</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-lg-4">
+                              <div class="form-group">
+                                <label class="control-label col-lg-6 small">HS Target</label>
+                                <div class="col-lg-6">
+                                  <div class="input-group">
+                                    <input type="number" step="0.1" id="form_hs_target_energy" name="hs_target_energy" class="form-control input-sm">
+                                    <span class="input-group-addon">kWh</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-lg-4">
+                              <div class="form-group">
+                                <label class="control-label col-lg-6 small">HS Threshold</label>
+                                <div class="col-lg-6">
+                                  <div class="input-group">
+                                    <input type="number" step="0.1" id="form_hs_undersupplied_threshold" name="hs_undersupplied_threshold" class="form-control input-sm">
+                                    <span class="input-group-addon">kWh</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </p>
+                      </div>
+                      <div class="tab-pane fade" id="peak_load_boiler">
+                        <p>
+                          <div class="row">
+                            <div class="col-lg-4">
+                              <div class="form-group">
+                                <label class="control-label col-lg-6 small">Max Input</label>
+                                <div class="col-lg-6">
+                                  <div class="input-group">
+                                    <input type="number" step="0.1" id="form_plb_max_gas_input" name="plb_max_gas_input" class="form-control input-sm">
+                                    <span class="input-group-addon">kW</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-lg-12">
+                        <button type="submit" id="settings_button" class="btn btn-primary btn-block">Submit</button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#editor_container">
+                    Rule System
+                  </a>
+                </h4>
+              </div>
+              <div id="editor_container" class="panel-collapse collapse">
+                <div class="panel-body">
+                  <pre id="editor"></pre>
+                  <div class="row">
+                      <div class="col-lg-12">
+                        <button type="submit" id="editor_button" class="btn btn-primary btn-block">Update</button>
+                      </div>
+                    </div>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#data_container">
+                    Live Data
+                  </a>
+                </h4>
+              </div>
+              <div id="data_container" class="panel-collapse collapse out">
+                <div class="panel-body">
+                  <div class="row">
+                    <div class="col-sm-4">
+                      <h5>Consumption & Production</h5>
+                      <table class="table table-bordered table-condensed small">
+                        <tbody>
+                          <tr>
+                            <th class="active col-md-7">Total Thermal Consumption:</th>
+                            <td class="text-center">
+                              <span class="total_thermal_consumption"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Total Electrical Consumption:</th>
+                            <td class="text-center">
+                              <span class="total_electrical_consumption"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Electrical Infeed Reward:</th>
+                            <td class="text-center">
+                              <span class="infeed_reward"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Electrical Infeed Costs:</th>
+                            <td class="text-center">
+                              <span class="infeed_costs"></span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="col-sm-4">
+                      <h5>Cogeneration Unit</h5>
+                      <table class="table table-bordered table-condensed small">
+                        <tbody>
+                          <tr>
+                            <th class="active col-md-7">Operating Costs:</th>
+                            <td class="text-center">
+                              <span class="cu_operating_costs"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Total Electrical Production:</th>
+                            <td class="text-center">
+                              <span class="cu_total_electrical_production"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Total Thermal Production:</th>
+                            <td class="text-center">
+                              <span class="cu_total_thermal_production"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Total Gas Consumption:</th>
+                            <td class="text-center">
+                              <span class="cu_total_gas_consumption"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Power-Ons:</th>
+                            <td class="text-center">
+                              <span class="cu_power_ons"></span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <h5>Peak Load Boiler</h5>
+                      <table class="table table-bordered table-condensed small">
+                        <tbody>
+                          <tr>
+                            <th class="active col-md-7">Operating Costs:</th>
+                            <td class="text-center">
+                              <span class="plb_operating_costs"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Total Gas Consumption:</th>
+                            <td class="text-center">
+                              <span class="plb_total_gas_consumption"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Power-Ons:</th>
+                            <td class="text-center">
+                              <span class="plb_power_ons"></span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="col-sm-4">
+                      <h5>Heat Storage</h5>
+                      <table class="table table-bordered table-condensed small">
+                        <tbody>
+                          <tr>
+                            <th class="active col-md-7">Total Input:</th>
+                            <td class="text-center">
+                              <span class="hs_total_input"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Total Output:</th>
+                            <td class="text-center">
+                              <span class="hs_total_output"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Empty Count:</th>
+                            <td class="text-center">
+                              <span class="hs_empty_count"></span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#setup_container">
+                    Live Setup
+                  </a>
+                </h4>
+              </div>
+              <div id="setup_container" class="panel-collapse collapse out">
+                <div class="panel-body">
+                  <div id="simulation_setup" class="svg_container"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> <!-- /container -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="./static/js/jquery-1.11.0.min.js"></script>
+    <script src="./static/js/jquery-ui-1.10.4.custom.min.js"></script>
+    <script src="./static/js/bootstrap.min.js"></script>
+
+    <script src="./static/js/hs/highstock.js"></script>
+    <script src="./static/js/hs/modules/no-data-to-display.js"></script>
+    <script src="./static/js/hs/modules/exporting.js"></script>
+
+    <script src="./static/js/ace.js" type="text/javascript" charset="utf-8"></script>
+
+    <script src="./static/js/ready.js"></script>
+  </body>
+</html>

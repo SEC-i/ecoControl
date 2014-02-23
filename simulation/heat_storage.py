@@ -22,6 +22,9 @@ class HeatStorage(Device):
 
     def consume_energy(self,energy):
         self.output_energy += energy
+        
+    def get_temperature(self):
+        return self.sensors["temperature"].value
 
     def update(self,time_delta):
         energy_delta =  self.input_energy - self.output_energy
