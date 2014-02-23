@@ -17,6 +17,7 @@ install:
   - pip install pytz
   - pip install -q Django==$DJANGO_VERSION --use-mirrors
   - pip install south
+  - pip install simpy
 script:
   - cd server
   - python manage.py test
