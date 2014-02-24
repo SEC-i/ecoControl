@@ -9,7 +9,7 @@ logger = logging.getLogger('planner')
 
 
 def simple_moisture_check():
-    sensor_ids = [1,2,3] #plant ids
+    sensor_ids = [1,2,18] #plant ids
     try:
         sensor_entries = SensorEntry.objects.filter(sensor__in = sensor_ids).order_by("-timestamp")[:3]
         summed_value = 0.0
@@ -17,11 +17,16 @@ def simple_moisture_check():
             summed_value += float(sensor_entry.value)
         summed_value /= 3.0
 
+        if summed_value < 200:
+            logger.warning("Sensor values very low (maybe damaged)")
+            raspberrypi.handle_post_data({'switch_number':2, 'switch_state':'on'})
+            return
+
         if summed_value < 500:
-            arduino.handle_post_data({'water_plants':1}) #send a POST to arduino
+            arduino.handle_post_data({'water_plants':1})
     
     except SensorEntry.DoesNotExist:
-        pass
+        logger.warning("No SensorEntries found")
 
 
 def simple_battery_check():
