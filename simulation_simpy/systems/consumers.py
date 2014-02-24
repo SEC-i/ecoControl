@@ -22,9 +22,8 @@ class SimpleThermalConsumer():
                              350.0, 250 / 350.0, 230 / 350.0, 225 / 350.0, 160 / 350.0, 125 / 350.0, 160 / 350.0, 200 / 350.0, 220 / 350.0, 260 / 350.0, 130 / 350.0, 140 / 350.0, 120 / 350.0]
 
     def get_consumption(self):
-        time_of_day = (self.env.now % (3600 * 24)) / 3600
         # calculate variation using daily demand
-        variation = self.daily_demand[time_of_day] * self.varying_demand
+        variation = self.daily_demand[self.env.get_hour_of_day()] * self.varying_demand
         current_consumption = self.base_demand + variation
 
         return current_consumption
@@ -145,9 +144,8 @@ class SimpleElectricalConsumer():
                              350.0, 250 / 350.0, 230 / 350.0, 225 / 350.0, 160 / 350.0, 125 / 350.0, 160 / 350.0, 200 / 350.0, 220 / 350.0, 260 / 350.0, 130 / 350.0, 140 / 350.0, 120 / 350.0]
 
     def get_consumption(self):
-        time_of_day = (self.env.now % (3600 * 24)) / 3600
         # calculate variation using daily demand
-        variation = self.daily_demand[time_of_day] * self.varying_demand
+        variation = self.daily_demand[self.env.get_hour_of_day()] * self.varying_demand
         current_consumption = self.base_demand + variation
 
         return current_consumption

@@ -15,7 +15,7 @@ CACHE_LIMIT = 24 * 365  # 365 days
 time_values = collections.deque(maxlen=CACHE_LIMIT)
 cu_workload_values = collections.deque(maxlen=CACHE_LIMIT)
 plb_workload_values = collections.deque(maxlen=CACHE_LIMIT)
-hs_level_values = collections.deque(maxlen=CACHE_LIMIT)
+hs_temperature_values = collections.deque(maxlen=CACHE_LIMIT)
 thermal_consumption_values = collections.deque(maxlen=CACHE_LIMIT)
 outside_temperature_values = collections.deque(maxlen=CACHE_LIMIT)
 electrical_consumption_values = collections.deque(maxlen=CACHE_LIMIT)
@@ -67,7 +67,7 @@ def get_data():
         'plb_total_gas_consumption': [round(plb.total_gas_consumption, 2)],
         'plb_operating_costs': [round(plb.get_operating_costs(), 2)],
         'plb_power_ons': [plb.power_on_count],
-        'hs_level': list(hs_level_values),
+        'hs_temperature': list(hs_temperature_values),
         'hs_total_input': [round(heat_storage.input_energy, 2)],
         'hs_total_output': [round(heat_storage.output_energy, 2)],
         'hs_empty_count': [round(heat_storage.empty_count, 2)],
@@ -102,12 +102,12 @@ def handle_settings():
                 request.form['varying_electrical_demand'])
         if 'hs_capacity' in request.form:
             heat_storage.capacity = float(request.form['hs_capacity'])
-        if 'hs_target_energy' in request.form:
-            heat_storage.target_energy = float(
-                request.form['hs_target_energy'])
-        if 'hs_undersupplied_threshold' in request.form:
-            heat_storage.undersupplied_threshold = float(
-                request.form['hs_undersupplied_threshold'])
+        if 'hs_min_temperature' in request.form:
+            heat_storage.min_temperature = float(
+                request.form['hs_min_temperature'])
+        if 'hs_max_temperature' in request.form:
+            heat_storage.max_temperature = float(
+                request.form['hs_max_temperature'])
         if 'cu_max_gas_input' in request.form:
             cu.max_gas_input = float(request.form['cu_max_gas_input'])
         if 'cu_minimal_workload' in request.form:
@@ -143,8 +143,8 @@ def handle_settings():
         'base_electrical_demand': electrical_consumer.base_demand,
         'varying_electrical_demand': electrical_consumer.varying_demand,
         'hs_capacity': heat_storage.capacity,
-        'hs_target_energy': heat_storage.target_energy,
-        'hs_undersupplied_threshold': heat_storage.undersupplied_threshold,
+        'hs_min_temperature': heat_storage.min_temperature,
+        'hs_max_temperature': heat_storage.max_temperature,
         'cu_max_gas_input': cu.max_gas_input,
         'cu_minimal_workload': cu.minimal_workload,
         'cu_thermal_efficiency': cu.thermal_efficiency,
@@ -161,7 +161,7 @@ def append_measurement():
         time_values.append(env.now)
         cu_workload_values.append(round(cu.workload, 2))
         plb_workload_values.append(round(plb.workload, 2))
-        hs_level_values.append(round(heat_storage.level(), 2))
+        hs_temperature_values.append(round(heat_storage.get_temperature(), 2))
         thermal_consumption_values.append(
             round(thermal_consumer.get_consumption(), 2))
         outside_temperature_values.append(
