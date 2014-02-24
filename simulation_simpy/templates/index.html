@@ -38,11 +38,26 @@
                   <a data-toggle="collapse" href="#diagram_container">
                     Live Diagram
                   </a>
+                  <a href="#" title="Pause Data Refresh" id="pause_refresh">
+                    <span class="glyphicon glyphicon-refresh pull-right"></span>
+                  </a>
                 </h4>
               </div>
               <div id="diagram_container" class="panel-collapse collapse in">
-                <div class="panel-body">
+                <div class="panel-body text-center">
                   <div id="simulation_diagram"></div>
+                  <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-default"><b>Fast-Forward:</b></button>
+                    <button type="button" class="btn btn-default fast_forward_button" value="12">12 Hours</button>
+                    <button type="button" class="btn btn-default fast_forward_button" value="24">1 Day</button>
+                    <button type="button" class="btn btn-default fast_forward_button" value="168">1 Week</button>
+                    <button type="button" class="btn btn-default fast_forward_button" value="720">1 Month</button>
+                    <button type="button" class="btn btn-default fast_forward_button" value="4320">6 Months</button>
+                    <button type="button" class="btn btn-default fast_forward_button" value="8760">1 Year</button>
+                  </div>
+                  <div class="btn-group btn-group-sm">
+                    <button id="reset_simulation" type="button" class="btn btn-default"><span class="glyphicon glyphicon-repeat"></span> Restart Simulation</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -61,8 +76,7 @@
                   <form id="settings" class="form-horizontal" role="form">
                     <!-- Nav tabs -->
                     <ul class="nav nav-tabs">
-                      <li class="active"><a href="#general" data-toggle="tab">General</a></li>
-                      <li><a href="#thermal_consumer" data-toggle="tab">Thermal Consumer</a></li>
+                      <li class="active"><a href="#thermal_consumer" data-toggle="tab">Thermal Consumer</a></li>
                       <li><a href="#electrical_consumer" data-toggle="tab">Electrical Consumer</a></li>
                       <li><a href="#cogeneration_unit" data-toggle="tab">Cogeneration Unit</a></li>
                       <li><a href="#heat_storage" data-toggle="tab">Heat Storage</a></li>
@@ -71,29 +85,7 @@
 
                     <!-- Tab panes -->
                     <div class="tab-content">
-                      <div class="tab-pane fade in active" id="general">
-                        <p>
-                          <div class="row">
-                            <div class="col-lg-6">
-                              <div class="form-group">
-                                <label class="control-label col-lg-6 small">Fast-forward:</label>
-                                <div class="col-lg-6">
-                                  <select id="form_sim_forward" name="sim_forward" class="form-control small">
-                                    <option value="">---</option>
-                                    <option value="12">12 hours</option>
-                                    <option value="24">1 day</option>
-                                    <option value="168">1 week</option>
-                                    <option value="720">1 month</option>
-                                    <option value="4320">6 months</option>
-                                    <option value="8760">1 year</option>
-                                  </select>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </p>
-                      </div>
-                      <div class="tab-pane fade" id="thermal_consumer">
+                      <div class="tab-pane fade in active" id="thermal_consumer">
                         <p>
                           <div class="row">
                             <div class="col-lg-6">

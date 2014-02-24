@@ -1,3 +1,5 @@
+var refresh_gui = true;
+
 var systems_units = {
     cu_workload: '%',
     cu_electrical_production: 'kW',
@@ -110,10 +112,12 @@ $(function(){
 });
 
 function refresh(){
-    $.getJSON( "./api/data/", function( data ) {
-        update_setup(data);
-        update_diagram(data);
-    });
+    if(refresh_gui){
+        $.getJSON( "./api/data/", function( data ) {
+            update_setup(data);
+            update_diagram(data);
+        });
+    }
 }
 
 function update_setting(data){
@@ -207,10 +211,32 @@ function initialize_event_handlers(){
         event.preventDefault();
     });
 
+    $(".fast_forward_button").click(function( event ) {
+        $.post( "./api/simulation/", {forward: $(this).val()});
+    });
+
     $("#editor_button").click(function() {
         $.post( "./api/code/", {code: editor.getValue()}, function( data ) {
             editor.setValue(data['code'], 1);
         });
+    });
+
+    $("#pause_refresh").click(function( event ) {
+        refresh_gui = !refresh_gui;
+        if(refresh_gui){
+            $("#pause_refresh span").removeClass('glyphicon-pause');
+            $("#pause_refresh span").addClass('glyphicon-refresh');
+        }else{
+            $("#pause_refresh span").removeClass('glyphicon-refresh');
+            $("#pause_refresh span").addClass('glyphicon-pause');
+
+        }
+        event.preventDefault();
+    });
+
+    $("#reset_simulation").click(function( event ) {
+        $.post( "./api/simulation/", {reset: 1});
+        event.preventDefault();
     });
 }
 

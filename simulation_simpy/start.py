@@ -145,8 +145,6 @@ def handle_settings():
         if 'cu_thermal_efficiency' in request.form:
             cu.thermal_efficiency = float(
                 request.form['cu_thermal_efficiency'])
-        if 'sim_forward' in request.form and request.form['sim_forward'] != "":
-            env.forward = float(request.form['sim_forward']) * 60 * 60
         if 'plb_max_gas_input' in request.form:
             plb.max_gas_input = float(request.form['plb_max_gas_input'])
 
@@ -186,6 +184,8 @@ def handle_settings():
 @app.route('/api/simulation/', methods=['POST'])
 @crossdomain(origin='*')
 def handle_simulation():
+    if 'forward' in request.form and request.form['forward'] != "":
+        env.forward = float(request.form['forward']) * 60 * 60
     if 'reset' in request.form:
         reset_simulation()
     return "1"

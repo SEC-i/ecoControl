@@ -66,7 +66,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         return datetime.datetime.fromtimestamp(self.now).timetuple()
 
     def log(self, *args):
-        if self.verbose and self.now % self.granularity == 0:  # each hour:
+        if self.verbose and self.now % self.granularity == 0:
             sys.stdout.write('%d' % self.now)
             for string in enumerate(args):
                 sys.stdout.write('\t{0}'.format(string[1]))
