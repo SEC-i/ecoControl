@@ -137,6 +137,16 @@ function update_setup(data){
         if (item.length) {
             if(key == "time"){
                 item.text(format_date(new Date(parseFloat(value) * 1000)));
+            }else if(key == "code_execution_status"){
+                if(value == 1){
+                    item.removeClass('badge-danger');
+                    item.addClass('badge-success');
+                    item.text('OK');
+                }else{
+                    item.removeClass('badge-success');
+                    item.addClass('badge-danger');
+                    item.text('Fail');
+                }
             }else{
                 item.text(value + " " + systems_units[key]);
             }

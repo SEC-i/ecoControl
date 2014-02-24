@@ -77,7 +77,8 @@ def get_data():
         'electrical_consumption': list(electrical_consumption_values),
         'total_electrical_consumption': [round(electrical_consumer.total_consumption, 2)],
         'infeed_reward': [round(electrical_infeed.get_reward(), 2)],
-        'infeed_costs': [round(electrical_infeed.get_costs(), 2)]
+        'infeed_costs': [round(electrical_infeed.get_costs(), 2)],
+        'code_execution_status': [1 if code_executer.execution_successful else 0]
     })
 
 
