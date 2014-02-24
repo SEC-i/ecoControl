@@ -44,7 +44,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
             self.forward = 0
         else:
             self.handle_step_function()
-            return RealtimeEnvironment.step(self)
+            RealtimeEnvironment.step(self)
 
     def handle_step_function(self):
         # call step_function whenever time has changed

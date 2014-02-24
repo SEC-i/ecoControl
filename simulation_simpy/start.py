@@ -8,7 +8,9 @@ from functools import update_wrapper
 from werkzeug.serving import run_simple
 app = Flask(__name__)
 
-from simulation import env, heat_storage, electrical_infeed, cu, plb, thermal_consumer, electrical_consumer, code_executer
+from simulation import init_simulation
+
+(env, heat_storage, electrical_infeed, cu, plb, thermal_consumer, electrical_consumer, code_executer) = init_simulation()
 
 CACHE_LIMIT = 24 * 365  # 365 days
 
@@ -20,6 +22,25 @@ thermal_consumption_values = collections.deque(maxlen=CACHE_LIMIT)
 outside_temperature_values = collections.deque(maxlen=CACHE_LIMIT)
 electrical_consumption_values = collections.deque(maxlen=CACHE_LIMIT)
 
+def reset_simulation():
+    global env, heat_storage, electrical_infeed, cu, plb, thermal_consumer, electrical_consumer, code_executer
+    try:
+        env.exit(1)
+    except StopIteration:
+        pass
+    (env, heat_storage, electrical_infeed, cu, plb, thermal_consumer, electrical_consumer, code_executer) = init_simulation()
+    time_values.clear()
+    cu_workload_values.clear()
+    plb_workload_values.clear()
+    hs_temperature_values.clear()
+    thermal_consumption_values.clear()
+    outside_temperature_values.clear()
+    electrical_consumption_values.clear()
+
+    env.step_function = append_measurement
+    thread = SimulationBackgroundRunner(env)
+    thread.start()
+    
 
 def crossdomain(origin=None):
     def decorator(f):
@@ -32,15 +53,15 @@ def crossdomain(origin=None):
     return decorator
 
 
-class FlaskBackgroundRunner(Thread):
+class SimulationBackgroundRunner(Thread):
 
-    def __init__(self, app):
+    def __init__(self, env):
         Thread.__init__(self)
         self.daemon = True
-        self.app = app
+        self.env = env
 
     def run(self):
-        self.app.run(host="0.0.0.0", debug=True, port=8080, use_reloader=False)
+        self.env.run()
 
 
 @app.route('/')
@@ -158,6 +179,12 @@ def handle_settings():
         'daily_electrical_demand': electrical_consumer.daily_demand
     })
 
+@app.route('/api/simulation/', methods=['POST'])
+@crossdomain(origin='*')
+def handle_simulation():
+    if 'reset' in request.form:
+        reset_simulation()
+    return "1"
 
 def append_measurement():
     if env.now % env.granularity == 0:  # take measurements each hour
@@ -173,8 +200,9 @@ def append_measurement():
             round(electrical_consumer.get_consumption(), 2))
 
 if __name__ == '__main__':
-    thread = FlaskBackgroundRunner(app)
-    thread.start()
     env.verbose = len(sys.argv) > 1
     env.step_function = append_measurement
-    env.run()
+    thread = SimulationBackgroundRunner(env)
+    thread.start()
+    
+    app.run(host="0.0.0.0", debug=True, port=8080, use_reloader=False)    
