@@ -52,7 +52,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
             self.last_step = self.now
             self.step_function()
 
-    def get_outside_temperature(self, offset_days = 0):
+    def get_outside_temperature(self, offset_days=0):
         day = (self.get_day_of_year() + offset_days) % 365
         return outside_temperatures_2013[day]
 

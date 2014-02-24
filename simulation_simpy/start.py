@@ -10,7 +10,8 @@ app = Flask(__name__)
 
 from simulation import init_simulation
 
-(env, heat_storage, electrical_infeed, cu, plb, thermal_consumer, electrical_consumer, code_executer) = init_simulation()
+(env, heat_storage, electrical_infeed, cu, plb, thermal_consumer,
+ electrical_consumer, code_executer) = init_simulation()
 
 CACHE_LIMIT = 24 * 365  # 365 days
 
@@ -22,13 +23,15 @@ thermal_consumption_values = collections.deque(maxlen=CACHE_LIMIT)
 outside_temperature_values = collections.deque(maxlen=CACHE_LIMIT)
 electrical_consumption_values = collections.deque(maxlen=CACHE_LIMIT)
 
+
 def reset_simulation():
     global env, heat_storage, electrical_infeed, cu, plb, thermal_consumer, electrical_consumer, code_executer
     try:
         env.exit(1)
     except StopIteration:
         pass
-    (env, heat_storage, electrical_infeed, cu, plb, thermal_consumer, electrical_consumer, code_executer) = init_simulation()
+    (env, heat_storage, electrical_infeed, cu, plb, thermal_consumer,
+     electrical_consumer, code_executer) = init_simulation()
     time_values.clear()
     cu_workload_values.clear()
     plb_workload_values.clear()
@@ -40,7 +43,7 @@ def reset_simulation():
     env.step_function = append_measurement
     thread = SimulationBackgroundRunner(env)
     thread.start()
-    
+
 
 def crossdomain(origin=None):
     def decorator(f):
@@ -179,12 +182,14 @@ def handle_settings():
         'daily_electrical_demand': electrical_consumer.daily_demand
     })
 
+
 @app.route('/api/simulation/', methods=['POST'])
 @crossdomain(origin='*')
 def handle_simulation():
     if 'reset' in request.form:
         reset_simulation()
     return "1"
+
 
 def append_measurement():
     if env.now % env.granularity == 0:  # take measurements each hour
@@ -204,5 +209,5 @@ if __name__ == '__main__':
     env.step_function = append_measurement
     thread = SimulationBackgroundRunner(env)
     thread.start()
-    
-    app.run(host="0.0.0.0", debug=True, port=8080, use_reloader=False)    
+
+    app.run(host="0.0.0.0", debug=True, port=8080, use_reloader=False)
