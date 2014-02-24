@@ -1,3 +1,6 @@
+import traceback
+
+
 class CodeExecuter():
 
     def __init__(self, env, local_variables):
@@ -17,6 +20,8 @@ class CodeExecuter():
                 exec(self.code, self.local_variables)
                 self.execution_successful = True
             except:
-                self.env.log('Code could not be executed.')
+                if self.env.verbose and self.env.now % self.env.granularity == 0:
+                    traceback.print_exc()
                 self.execution_successful = False
+
             yield self.env.timeout(self.env.step_size)
