@@ -39,7 +39,7 @@
     <rect id="svg_14" height="78" width="86" y="298" x="526" stroke-linecap="null" stroke-linejoin="round" stroke-width="2" stroke="#000000" fill="#e5e5e5"/>
    </g>
    <ellipse ry="21" rx="43" id="svg_12" cy="297" cx="569" stroke-linecap="null" stroke-linejoin="round" stroke-width="2" stroke="#000000" fill="#cccccc"/>
-   <text class="hs_level" transform="matrix(0.714147 0 0 0.714147 112.207 137.825)" font-style="normal" font-weight="normal" xml:space="preserve" text-anchor="middle" font-family="Sans-serif" font-size="24" y="300.260921" x="648.649473" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#7f0000" fill="#7f0000">hs_level</text>
+   <text class="hs_temperature" transform="matrix(0.714147 0 0 0.714147 112.207 137.825)" font-style="normal" font-weight="normal" xml:space="preserve" text-anchor="middle" font-family="Sans-serif" font-size="24" y="300.260921" x="648.649473" stroke-linecap="null" stroke-linejoin="round" stroke-width="0" stroke="#7f0000" fill="#7f0000">hs_temperature</text>
   </g>
   <g id="consumer">
    <rect id="svg_15" height="22" width="57" y="137" x="538" stroke-linecap="null" stroke-linejoin="null" stroke-width="2" stroke="#cccccc" fill="#cccccc"/>

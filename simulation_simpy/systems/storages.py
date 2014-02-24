@@ -2,24 +2,23 @@ class HeatStorage():
 
     def __init__(self, env):
         self.env = env
-        self.capacity = 700.0  # kWh
-        self.target_energy = 500.0  # kWh
-        self.target_energy_factor = 1.0  # %
+
+        self.capacity = 700.0 * 10  # kilos ~ liters
+        self.base_temperature = 20.0  # degree Celsius
+        self.min_temperature = 70.0  # degree Celsius
+        self.max_temperature = 78.0  # degree Celsius
+
+        self.specific_heat_capacity = 4.19 * 1 / 3600.0  # kWh/(kg*K)
 
         self.input_energy = 0.0  # kWh
         self.output_energy = 0.0  # kWh
         self.empty_count = 0
 
-        self.undersupplied_threshold = self.get_target_energy() / 2
-
     def energy_stored(self):
         return self.input_energy - self.output_energy
 
-    def level(self):
-        return self.energy_stored() / self.capacity * 99.0
-
     def get_target_energy(self):
-        return self.target_energy * self.target_energy_factor
+        return self.specific_heat_capacity * self.capacity * (self.max_temperature - self.base_temperature)
 
     def add_energy(self, energy):
         energy /= self.env.accuracy
@@ -34,8 +33,11 @@ class HeatStorage():
             self.empty_count += 1
             self.env.log('Heat Storage empty')
 
+    def get_temperature(self):
+        return self.base_temperature + self.energy_stored() / (self.capacity * self.specific_heat_capacity)
+
     def undersupplied(self):
-        return self.energy_stored() < self.undersupplied_threshold
+        return self.get_temperature() < self.min_temperature
 
 
 class ElectricalInfeed():

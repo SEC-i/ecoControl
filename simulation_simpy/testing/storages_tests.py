@@ -28,17 +28,17 @@ class HeatStorageTests(unittest.TestCase):
 
         self.assertEqual(int(self.heat_storage.energy_stored()), 543)
 
-    def test_level(self):
-        self.assertEqual(self.heat_storage.level(), 0)
-        energy = self.heat_storage.capacity * self.env.accuracy
-        self.heat_storage.add_energy(energy)
-        self.assertEqual(self.heat_storage.level(), 99)
+    # def test_level(self):
+    #     self.assertEqual(self.heat_storage.level(), 0)
+    #     energy = self.heat_storage.capacity * self.env.accuracy
+    #     self.heat_storage.add_energy(energy)
+    #     self.assertEqual(self.heat_storage.level(), 99)
 
-    def test_undersupplied(self):
-        self.assertTrue(self.heat_storage.undersupplied())
-        energy = self.heat_storage.undersupplied_threshold * self.env.accuracy
-        self.heat_storage.add_energy(energy)
-        self.assertFalse(self.heat_storage.undersupplied())
+    # def test_undersupplied(self):
+    #     self.assertTrue(self.heat_storage.undersupplied())
+    #     energy = self.heat_storage.undersupplied_threshold * self.env.accuracy
+    #     self.heat_storage.add_energy(energy)
+    #     self.assertFalse(self.heat_storage.undersupplied())
 
 
 class ElectricalInfeedTests(unittest.TestCase):

@@ -7,7 +7,7 @@ var systems_units = {
     cu_total_gas_consumption: 'kWh',
     cu_operating_costs: 'Euro',
     cu_power_ons: 'times',
-    hs_level: '%',
+    hs_temperature: '°C',
     hs_total_input: 'kWh',
     hs_total_output: 'kWh',
     hs_empty_count: 'times',
@@ -39,10 +39,10 @@ var series_data = [{
     }
 },
 {
-    name: 'hs_level',
+    name: 'hs_temperature',
     data: [],
     tooltip: {
-        valueSuffix: ' %'
+        valueSuffix: ' °C'
     }
 },
 {
@@ -90,7 +90,7 @@ $(function(){
                     var timestamp = get_timestamp(data['time'][i]);
                     series_data[0]['data'].push([timestamp, parseFloat(data['cu_workload'][i])]);
                     series_data[1]['data'].push([timestamp, parseFloat(data['plb_workload'][i])]);
-                    series_data[2]['data'].push([timestamp, parseFloat(data['hs_level'][i])]);
+                    series_data[2]['data'].push([timestamp, parseFloat(data['hs_temperature'][i])]);
                     series_data[3]['data'].push([timestamp, parseFloat(data['thermal_consumption'][i])]);
                     series_data[4]['data'].push([timestamp, parseFloat(data['outside_temperature'][i])]);
                     series_data[5]['data'].push([timestamp, parseFloat(data['electrical_consumption'][i])]);
@@ -152,7 +152,7 @@ function update_diagram(data){
         var timestamp = get_timestamp(data['time'][i]);
         new_data[0].push([timestamp, data['cu_workload'][i]]);
         new_data[1].push([timestamp, data['plb_workload'][i]]);
-        new_data[2].push([timestamp, data['hs_level'][i]]);
+        new_data[2].push([timestamp, data['hs_temperature'][i]]);
         new_data[3].push([timestamp, data['thermal_consumption'][i]]);
         new_data[4].push([timestamp, data['outside_temperature'][i]]);
         new_data[5].push([timestamp, data['electrical_consumption'][i]]);
