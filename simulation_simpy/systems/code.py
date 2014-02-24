@@ -9,10 +9,14 @@ class CodeExecuter():
             self.code += " " + key
         self.code += "\n"
 
+        self.execution_successful = True
+
     def update(self):
         while True:
             try:
                 exec(self.code, self.local_variables)
+                self.execution_successful = True
             except:
                 self.env.log('Code could not be executed.')
+                self.execution_successful = False
             yield self.env.timeout(self.env.step_size)
