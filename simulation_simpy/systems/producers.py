@@ -86,7 +86,8 @@ class CogenerationUnit(GasPoweredGenerator):
                 if old_workload == 0:
                     self.power_on_count += 1
 
-                self.total_hours_of_operation += self.env.step_size / self.env.granularity
+                self.total_hours_of_operation += self.env.step_size / \
+                    self.env.granularity
                 self.workload = min(calculated_workload, 99.0)
             else:
                 self.workload = 0.0
@@ -121,6 +122,7 @@ class CogenerationUnit(GasPoweredGenerator):
                 self.heat_storage.add_energy(self.current_thermal_production)
                 self.consume_gas()
             else:
+                self.workload = 0.0
                 self.env.log('Cogeneration unit stopped')
 
             yield self.env.timeout(self.env.step_size)
@@ -146,7 +148,8 @@ class PeakLoadBoiler(GasPoweredGenerator):
                 if self.workload == 0.0:
                     self.power_on_count += 1
 
-                self.total_hours_of_operation += self.env.step_size / self.env.granularity
+                self.total_hours_of_operation += self.env.step_size / \
+                    self.env.granularity
                 self.workload = 99.0
             # turn off if heat storage's target energy is almost reached
             elif self.heat_storage.energy_stored() + self.current_thermal_production >= self.heat_storage.get_target_energy():
@@ -172,6 +175,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
                 self.heat_storage.add_energy(self.current_thermal_production)
                 self.consume_gas()
             else:
+                self.workload = 0.0
                 self.env.log('PLB stopped.')
 
             self.env.log('=' * 80)
