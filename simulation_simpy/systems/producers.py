@@ -53,6 +53,9 @@ class CogenerationUnit(GasPoweredGenerator):
 
         self.minimal_workload = 40.0  # %
 
+        self.minimal_off_time = 5.0 * 60.0
+        self.off_time = self.env.now
+
         self.current_electrical_production = 0.0  # kWh
         self.total_electrical_production = 0.0  # kWh
 
@@ -70,7 +73,6 @@ class CogenerationUnit(GasPoweredGenerator):
         max_thermal_power = self.thermal_efficiency * self.max_gas_input
         min_thermal_power = max_thermal_power * (self.minimal_workload / 100.0)
         calculated_power =  self.heat_storage.get_target_energy() + min_thermal_power - self.heat_storage.energy_stored()
-        #print calculated_power,  calculated_power / max_thermal_power * 100.0
         return calculated_power / max_thermal_power * 99.0
 
     def calculate_state(self):
@@ -80,10 +82,10 @@ class CogenerationUnit(GasPoweredGenerator):
             old_workload = self.workload
 
 
-            #calculated_workload = self.get_calculated_workload()
+            calculated_workload = self.get_calculated_workload()
 
-            calculated_workload = self.heat_storage.get_target_energy() + \
-                self.minimal_workload - self.heat_storage.energy_stored()
+            #calculated_workload = self.heat_storage.get_target_energy() + \
+            #    self.minimal_workload - self.heat_storage.energy_stored()
 
             # ensure smoothly changing workload
             slope = sign(calculated_workload - old_workload)
@@ -92,7 +94,7 @@ class CogenerationUnit(GasPoweredGenerator):
 
             # make sure that minimal_workload <= workload <= 99.0 or workload =
             # 0
-            if calculated_workload >= self.minimal_workload:
+            if calculated_workload >= self.minimal_workload and self.off_time <= self.env.now:
                 # detect if power has been turned on
                 if old_workload == 0:
                     self.power_on_count += 1
@@ -101,6 +103,8 @@ class CogenerationUnit(GasPoweredGenerator):
                 self.workload = min(calculated_workload, 99.0)
             else:
                 self.workload = 0.0
+                if self.off_time <= self.env.now:
+                    self.off_time = self.env.now + 10.0 * 60.0#5 min
 
         # calulate current consumption and production values
         self.current_gas_consumption = self.workload / 99.0 * self.max_gas_input
