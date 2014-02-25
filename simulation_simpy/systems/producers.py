@@ -74,7 +74,7 @@ class CogenerationUnit(GasPoweredGenerator):
         return calculated_power / max_thermal_power * 99.0
 
     def calculate_state(self):
-        if self.overwrite_workload:
+        if self.overwrite_workload is not None:
             self.workload = self.overwrite_workload
         else:
             old_workload = self.workload
@@ -148,7 +148,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
         self.overwrite_workload = None
 
     def calculate_state(self):
-        if self.overwrite_workload:
+        if self.overwrite_workload is not None:
             self.workload = self.overwrite_workload
         else:
             # turn on if heat_storage is undersupplied
