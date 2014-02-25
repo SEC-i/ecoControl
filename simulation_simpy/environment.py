@@ -4,8 +4,6 @@ import datetime
 from simpy.core import Environment
 from simpy.rt import RealtimeEnvironment
 
-from data import outside_temperatures_2013
-
 
 class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
@@ -52,13 +50,9 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
             self.last_step = self.now
             self.step_function()
 
-    def get_outside_temperature(self, offset_days=0):
-        day = (self.get_day_of_year() + offset_days) % 365
-        return outside_temperatures_2013[day]
-
     def get_hour_of_day(self):
         return self.get_timetuple().tm_hour
-    
+
     def get_min_of_hour(self):
         return self.get_timetuple().tm_min
 

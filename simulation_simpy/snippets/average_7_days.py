@@ -1,7 +1,7 @@
 # average of the next 7 days
 sum = 0
 for i in range(7):
-    sum += env.get_outside_temperature(i + 1)
+    sum += thermal_consumer.get_outside_temperature(i + 1)
 
 avg = sum / 7.0
 

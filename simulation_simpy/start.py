@@ -188,7 +188,7 @@ def handle_settings():
         'cu_electrical_efficiency': cu.electrical_efficiency,
         'plb_max_gas_input': plb.max_gas_input,
         'daily_thermal_demand': thermal_consumer.daily_demand,
-        'daily_electrical_variation_': electrical_consumer.daily_demand
+        'daily_electrical_variation': electrical_consumer.demand_variation,
         'editor_code': code_executer.code,
         'code_snippets': code_executer.snippets_list()
     })
@@ -234,7 +234,7 @@ def export_data(filename):
             'hs_empty_count': round(heat_storage.empty_count, 2),
             'thermal_consumption': round(thermal_consumer.get_consumption(), 2),
             'total_thermal_consumption': round(thermal_consumer.total_consumption, 2),
-            'outside_temperature': round(env.get_outside_temperature(), 2),
+            'outside_temperature': round(thermal_consumer.get_outside_temperature(), 2),
             'electrical_consumption': round(electrical_consumer.get_consumption(), 2),
             'total_electrical_consumption': round(electrical_consumer.total_consumption, 2),
             'infeed_reward': round(electrical_infeed.get_reward(), 2),
@@ -259,7 +259,7 @@ def append_measurement():
         thermal_consumption_values.append(
             round(thermal_consumer.get_consumption(), 2))
         outside_temperature_values.append(
-            round(env.get_outside_temperature(), 2))
+            round(thermal_consumer.get_outside_temperature(), 2))
         electrical_consumption_values.append(
             round(electrical_consumer.get_consumption(), 2))
 
