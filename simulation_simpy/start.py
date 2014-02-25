@@ -150,10 +150,10 @@ def handle_settings():
             cu.minimal_workload = float(request.form['cu_minimal_workload'])
         if 'cu_electrical_efficiency' in request.form:
             cu.electrical_efficiency = float(
-                request.form['cu_electrical_efficiency'])
+                request.form['cu_electrical_efficiency']) / 100.0
         if 'cu_thermal_efficiency' in request.form:
             cu.thermal_efficiency = float(
-                request.form['cu_thermal_efficiency'])
+                request.form['cu_thermal_efficiency']) / 100.0
         if 'plb_max_gas_input' in request.form:
             plb.max_gas_input = float(request.form['plb_max_gas_input'])
 
@@ -184,8 +184,8 @@ def handle_settings():
         'hs_max_temperature': heat_storage.max_temperature,
         'cu_max_gas_input': cu.max_gas_input,
         'cu_minimal_workload': cu.minimal_workload,
-        'cu_thermal_efficiency': cu.thermal_efficiency,
-        'cu_electrical_efficiency': cu.electrical_efficiency,
+        'cu_thermal_efficiency': cu.thermal_efficiency * 100.0,
+        'cu_electrical_efficiency': cu.electrical_efficiency * 100.0,
         'plb_max_gas_input': plb.max_gas_input,
         'daily_thermal_demand': thermal_consumer.daily_demand,
         'daily_electrical_variation': electrical_consumer.demand_variation,

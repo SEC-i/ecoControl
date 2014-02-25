@@ -44,9 +44,9 @@ class CogenerationUnit(GasPoweredGenerator):
 
         # vaillant ecopower 4.7
         self.max_gas_input = 19.0  # kW
-        self.electrical_efficiency = 24.7  # % (max 4.7 kW)
-        self.thermal_efficiency = 65  # % (max 12.5 kW)
-        self.max_efficiency_loss = 15  # %
+        self.electrical_efficiency = 0.247  # % (max 4.7 kW)
+        self.thermal_efficiency = 0.65  # % (max 12.5 kW)
+        self.max_efficiency_loss = 0.15  # %
         self.maintenance_interval = 4000  # hours
 
         self.power_meter = power_meter
@@ -68,10 +68,10 @@ class CogenerationUnit(GasPoweredGenerator):
         # max_efficiency_loss
         relative_loss = 1.0 - (self.workload - self.minimal_workload) \
             / (99.0 - self.minimal_workload)
-        return 1.0 - self.max_efficiency_loss / 100 * relative_loss
+        return 1.0 - self.max_efficiency_loss / 100.0 * relative_loss
 
     def get_calculated_workload_thermal(self):
-        max_thermal_power = self.thermal_efficiency / 100 * self.max_gas_input
+        max_thermal_power = self.thermal_efficiency * self.max_gas_input
         min_thermal_power = max_thermal_power * (self.minimal_workload / 100.0)
         calculated_power =  self.heat_storage.get_target_energy() + \
             min_thermal_power - self.heat_storage.energy_stored()
@@ -122,10 +122,10 @@ class CogenerationUnit(GasPoweredGenerator):
             99.0 * self.max_gas_input
 
         self.current_electrical_production = self.current_gas_consumption * \
-            self.electrical_efficiency / 100 * \
+            self.electrical_efficiency * \
             self.get_efficiency_loss_factor()
         self.current_thermal_production = self.current_gas_consumption * \
-            self.thermal_efficiency / 100 * self.get_efficiency_loss_factor()
+            self.thermal_efficiency * self.get_efficiency_loss_factor()
 
     def consume_gas(self):
         super(CogenerationUnit, self).consume_gas()
@@ -161,7 +161,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
         self.heat_storage = heat_storage
 
         self.max_gas_input = 50.0  # kW
-        self.thermal_efficiency = 80  # %
+        self.thermal_efficiency = 0.8  # %
         self.off_time = self.env.now
 
         self.overwrite_workload = None
@@ -182,14 +182,13 @@ class PeakLoadBoiler(GasPoweredGenerator):
             elif self.heat_storage.energy_stored() + self.current_thermal_production >= self.heat_storage.get_target_energy():
                 self.workload = 0.0
                 if self.off_time <= self.env.now:
-                    self.off_time = self.env.now + 3 * 60.0#3 min
-
+                    self.off_time = self.env.now + 3 * 60.0  # 3 min
 
         # calulate current consumption and production values
         self.current_gas_consumption = self.workload / \
             99.0 * self.max_gas_input
         self.current_thermal_production = self.current_gas_consumption * \
-            self.thermal_efficiency / 100
+            self.thermal_efficiency
 
     def update(self):
         self.env.log('Starting peak load boiler...')
