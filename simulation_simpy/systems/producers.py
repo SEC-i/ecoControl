@@ -96,7 +96,6 @@ class CogenerationUnit(GasPoweredGenerator):
             elif self.mode == "electric-led":
                 calculated_workload = self.get_calculated_workload_electric()
 
-
             # ensure smoothly changing workload
             slope = sign(calculated_workload - old_workload)
             change_speed = 100 / 180  # percent per 3 minutes
