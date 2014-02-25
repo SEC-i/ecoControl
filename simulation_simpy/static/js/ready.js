@@ -87,7 +87,7 @@ $(function(){
         update_setting(data);
     }).done(function(){
         $.getJSON( "./api/code/", function( data ) {
-            editor.setValue(data['code'], 1);
+            editor.setValue(data['editor_code'], 1);
         }).done(function(){
             $.getJSON( "./api/data/", function( data ) {
                 for (var i = 0; i < data['time'].length; i++) {
@@ -129,6 +129,10 @@ function update_setting(data){
         }else if(key == "daily_electrical_demand"){
             $.each(value, function(index, hour_value) {
                 $("#daily_electrical_demand_" + index).slider( "value", hour_value * 10000);
+            });
+        }else if(key == "code_snippets"){
+            $.each(value, function(index, snippet_name) {
+                $("#snippets").append('<option>' + snippet_name + '</option>');
             });
         }else{
             $("#form_" + key).val(value);
@@ -216,8 +220,8 @@ function initialize_event_handlers(){
     });
 
     $("#editor_button").click(function() {
-        $.post( "./api/code/", {code: editor.getValue()}, function( data ) {
-            editor.setValue(data['code'], 1);
+        $.post( "./api/settings/", {code: editor.getValue()}, function( data ) {
+            editor.setValue(data['editor_code'], 1);
         });
     });
 
@@ -236,6 +240,30 @@ function initialize_event_handlers(){
 
     $("#reset_simulation").click(function( event ) {
         $.post( "./api/simulation/", {reset: 1});
+        event.preventDefault();
+    });
+
+    $("#save_snippet").submit(function( event ){
+        $.post( "./api/code/", {save_snippet: $("#snippet_name").val(), code: editor.getValue()}, function( data ) {
+            editor.setValue(data['editor_code'], 1);
+            // refresh snippet list
+            $("#snippets").html('');
+            $.each(data['code_snippets'], function(index, snippet_name) {
+                $("#snippets").append('<option>' + snippet_name + '</option>');
+            });
+        });
+        event.preventDefault();
+    });
+
+    $("#load_snippet").submit(function( event ){
+        $.post( "./api/code/", {snippet: $("#snippets").val()}, function( data ) {
+            editor.setValue(data['editor_code'], 1);
+        });
+        event.preventDefault();
+    });
+
+    $("#export_data").submit(function( event ){
+        $.post( "./api/simulation/", {export: $("#export_name").val()});
         event.preventDefault();
     });
 }

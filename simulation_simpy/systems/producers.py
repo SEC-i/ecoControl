@@ -80,10 +80,10 @@ class CogenerationUnit(GasPoweredGenerator):
             old_workload = self.workload
 
 
-            #calculated_workload = self.get_calculated_workload()
+            calculated_workload = self.get_calculated_workload()
 
-            calculated_workload = self.heat_storage.get_target_energy() + \
-                self.minimal_workload - self.heat_storage.energy_stored()
+            # calculated_workload = self.heat_storage.get_target_energy() + \
+                # self.minimal_workload - self.heat_storage.energy_stored()
 
             # ensure smoothly changing workload
             slope = sign(calculated_workload - old_workload)
