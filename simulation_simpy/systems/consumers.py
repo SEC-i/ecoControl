@@ -130,9 +130,9 @@ class ThermalConsumer():
 
 class SimpleElectricalConsumer():
 
-    def __init__(self, env, electrical_infeed):
+    def __init__(self, env, power_meter):
         self.env = env
-        self.electrical_infeed = electrical_infeed
+        self.power_meter = power_meter
 
         self.base_demand = 5.0  # kW
         self.varying_demand = 7.5  # kW
@@ -154,10 +154,10 @@ class SimpleElectricalConsumer():
         while True:
             consumption = self.get_consumption()
             self.total_consumption += consumption / self.env.accuracy
-            self.electrical_infeed.consume_energy(consumption)
+            self.power_meter.consume_energy(consumption)
 
             self.env.log('Electrical demand:', '%f kW' % consumption)
             self.env.log('Infeed Reward:', '%f Euro' %
-                         self.electrical_infeed.get_reward())
+                         self.power_meter.get_reward())
 
             yield self.env.timeout(self.env.step_size)
