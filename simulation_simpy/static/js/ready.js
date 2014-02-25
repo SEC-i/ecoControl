@@ -126,9 +126,9 @@ function update_setting(data){
             $.each(value, function(index, hour_value) {
                 $("#daily_thermal_demand_" + index).slider( "value", hour_value * 100);
             });
-        }else if(key == "daily_electrical_demand"){
+        }else if(key == "daily_electrical_variation"){
             $.each(value, function(index, hour_value) {
-                $("#daily_electrical_demand_" + index).slider( "value", hour_value * 10000);
+                $("#daily_electrical_variation_" + index).slider( "value", hour_value * 10000);
             });
         }else if(key == "code_snippets"){
             $.each(value, function(index, snippet_name) {
@@ -201,7 +201,7 @@ function initialize_event_handlers(){
             post_data += "&daily_thermal_demand_" + i + "=" + ($("#daily_thermal_demand_" + i).slider( "value")/100);
         }
         for(var i = 0; i < 24; i++) {
-            post_data += "&daily_electrical_demand_" + i + "=" + ($("#daily_electrical_demand_" + i).slider( "value")/10000);
+            post_data += "&daily_electrical_variation_" + i + "=" + ($("#daily_electrical_variation_" + i).slider( "value")/10000);
         }
         $.post( "./api/settings/", post_data, function( data ) {
             $("#settings_button").removeClass("btn-primary");
@@ -271,7 +271,7 @@ function initialize_event_handlers(){
 function initialize_daily_demands(){
     for(var i = 0; i < 24; i++) {
         $("#daily_thermal_demand").append("<span id='daily_thermal_demand_" + i + "' class='slider_thermal'><span>" + i + "</span></span>");
-        $("#daily_electrical_demand").append("<span id='daily_electrical_demand_" + i + "' class='slider_electrical'><span>" + i + "</span></span>");
+        $("#daily_electrical_variation").append("<span id='daily_electrical_variation_" + i + "' class='slider_electrical'><span>" + i + "</span></span>");
     }
 
     $( ".slider_thermal" ).slider({
@@ -293,16 +293,16 @@ function initialize_daily_demands(){
     $( ".slider_electrical" ).slider({
         value: 0,
         min: 0,
-        max: 10000,
+        max: 20000,
         range: "min",
         animate: true,
         orientation: "vertical",
         slide: function( event, ui ) {
             var text = "(Current value: " + ui.value/100 + "%)";
-            $( "#daily_electrical_demand_info" ).text( text );   
+            $( "#daily_electrical_variation_info" ).text( text );   
         },
         stop: function( event, ui ) {
-            $( "#daily_electrical_demand_info" ).text('');
+            $( "#daily_electrical_variation_info" ).text('');
         }
     });
 }
