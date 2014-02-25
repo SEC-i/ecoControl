@@ -6,7 +6,7 @@ parent_directory = os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))
 os.sys.path.insert(0, parent_directory)
 
-from systems.storages import HeatStorage, ElectricalInfeed
+from systems.storages import HeatStorage, PowerMeter
 from environment import ForwardableRealtimeEnvironment
 
 
@@ -41,11 +41,11 @@ class HeatStorageTests(unittest.TestCase):
     #     self.assertFalse(self.heat_storage.undersupplied())
 
 
-class ElectricalInfeedTests(unittest.TestCase):
+class PowerMeterTests(unittest.TestCase):
 
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
-        self.electrical_infeed = ElectricalInfeed(env=self.env)
+        self.electrical_infeed = PowerMeter(env=self.env)
 
     def test_add_energy(self):
         self.electrical_infeed.add_energy(123)

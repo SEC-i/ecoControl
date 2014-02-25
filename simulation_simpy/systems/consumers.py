@@ -80,7 +80,7 @@ class ThermalConsumer():
         self.heat_capacity = specific_heat_capacity_air * \
             self.room_volume + heat_cap_brick
 
-    def get_consumption(self):
+    def simulate_consumption(self):
         # calculate variation using daily demand
         self.target_temperature = self.daily_demand[self.env.get_hour_of_day()]
 
@@ -96,11 +96,15 @@ class ThermalConsumer():
         # clamp to maximum power
         self.current_power = max(min(self.current_power, self.max_power), 0)
         self.heat_room()
+
+
+    def get_consumption(self):
         return self.current_power / 1000.0
 
     def update(self):
         while True:
-            consumption = self.get_consumption()
+            self.simulate_consumption()
+            consumption = self.current_power / 1000.0
             self.total_consumption += consumption / self.env.accuracy
             self.heat_storage.consume_energy(consumption)
 
@@ -130,9 +134,9 @@ class ThermalConsumer():
 
 class SimpleElectricalConsumer():
 
-    def __init__(self, env, electrical_infeed):
+    def __init__(self, env, power_meter):
         self.env = env
-        self.electrical_infeed = electrical_infeed
+        self.power_meter = power_meter
 
         self.base_demand = 5.0  # kW
         self.varying_demand = 7.5  # kW
@@ -154,10 +158,10 @@ class SimpleElectricalConsumer():
         while True:
             consumption = self.get_consumption()
             self.total_consumption += consumption / self.env.accuracy
-            self.electrical_infeed.consume_energy(consumption)
+            self.power_meter.consume_energy(consumption)
 
             self.env.log('Electrical demand:', '%f kW' % consumption)
             self.env.log('Infeed Reward:', '%f Euro' %
-                         self.electrical_infeed.get_reward())
+                         self.power_meter.get_reward())
 
             yield self.env.timeout(self.env.step_size)

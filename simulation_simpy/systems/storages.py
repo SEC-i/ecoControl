@@ -8,7 +8,7 @@ class HeatStorage():
         self.min_temperature = 70.0  # degree Celsius
         self.max_temperature = 78.0  # degree Celsius
 
-        self.specific_heat_capacity = 4.19 * 1 / 3600.0  # kWh/(kg*K) --> ?
+        self.specific_heat_capacity = 4.19 * 1 / 3600.0  # kWh/(kg*K)
 
         self.input_energy = 0.0  # kWh
         self.output_energy = 0.0  # kWh
@@ -40,7 +40,7 @@ class HeatStorage():
         return self.get_temperature() < self.min_temperature
 
 
-class ElectricalInfeed():
+class PowerMeter():
 
     def __init__(self, env):
         self.env = env
@@ -51,6 +51,7 @@ class ElectricalInfeed():
         self.total_purchased = 0  # kWh
 
         self.energy_produced = 0.0  # kWh
+        self.energy_consumed = 0.0 #kWh
 
     def add_energy(self, energy):
         energy /= self.env.accuracy
@@ -58,6 +59,7 @@ class ElectricalInfeed():
 
     def consume_energy(self, energy):
         energy /= self.env.accuracy
+        self.energy_consumed = energy
 
         balance = self.energy_produced - energy
         # purchase electrical energy if more energy needed than produced
@@ -65,10 +67,10 @@ class ElectricalInfeed():
             self.total_purchased -= balance
         else:
             self.total += balance
-        self.energy_produced = 0
 
     def get_reward(self):
         return self.total * self.electrical_reward_per_kwh
 
     def get_costs(self):
         return self.total_purchased * self.electrical_costs_per_kwh
+

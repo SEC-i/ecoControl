@@ -38,7 +38,7 @@ class GasPoweredGenerator(object):
 
 class CogenerationUnit(GasPoweredGenerator):
 
-    def __init__(self, env, heat_storage, electrical_infeed):
+    def __init__(self, env, heat_storage, power_meter):
         GasPoweredGenerator.__init__(self, env)
         self.heat_storage = heat_storage
 
@@ -49,12 +49,16 @@ class CogenerationUnit(GasPoweredGenerator):
         self.max_efficiency_loss = 0.1  # %
         self.maintenance_interval = 8500  # hours
 
-        self.electrical_infeed = electrical_infeed
+        self.power_meter = power_meter
 
         self.minimal_workload = 40.0  # %
 
+        self.minimal_off_time = 5.0 * 60.0
+        self.off_time = self.env.now
+
         self.current_electrical_production = 0.0  # kWh
         self.total_electrical_production = 0.0  # kWh
+        self.mode = "electric-led"
 
         self.overwrite_workload = None
 
@@ -66,12 +70,20 @@ class CogenerationUnit(GasPoweredGenerator):
             / (99.0 - self.minimal_workload)
         return 1.0 - self.max_efficiency_loss * relative_loss
 
-    def get_calculated_workload(self):
+    def get_calculated_workload_thermal(self):
         max_thermal_power = self.thermal_efficiency * self.max_gas_input
         min_thermal_power = max_thermal_power * (self.minimal_workload / 100.0)
-        calculated_power =  self.heat_storage.get_target_energy() + min_thermal_power - self.heat_storage.energy_stored()
-        #print calculated_power,  calculated_power / max_thermal_power * 100.0
+        calculated_power =  self.heat_storage.get_target_energy() + \
+            min_thermal_power - self.heat_storage.energy_stored()
         return calculated_power / max_thermal_power * 99.0
+
+    def get_calculated_workload_electric(self):
+        if self.heat_storage.get_temperature() >= self.heat_storage.max_temperature:
+            return 0.0
+        max_electric_power = self.electrical_efficiency * self.max_gas_input
+        consumption_per_hour = self.power_meter.energy_consumed * self.env.accuracy
+        return consumption_per_hour / max_electric_power * 99.0
+
 
     def calculate_state(self):
         if self.overwrite_workload is not None:
@@ -79,11 +91,10 @@ class CogenerationUnit(GasPoweredGenerator):
         else:
             old_workload = self.workload
 
-
-            calculated_workload = self.get_calculated_workload()
-
-            # calculated_workload = self.heat_storage.get_target_energy() + \
-                # self.minimal_workload - self.heat_storage.energy_stored()
+            if self.mode == "thermal-led":
+                calculated_workload = self.get_calculated_workload_thermal()
+            elif self.mode == "electric-led":
+                calculated_workload = self.get_calculated_workload_electric()
 
             # ensure smoothly changing workload
             slope = sign(calculated_workload - old_workload)
@@ -92,7 +103,7 @@ class CogenerationUnit(GasPoweredGenerator):
 
             # make sure that minimal_workload <= workload <= 99.0 or workload =
             # 0
-            if calculated_workload >= self.minimal_workload:
+            if calculated_workload >= self.minimal_workload and self.off_time <= self.env.now:
                 # detect if power has been turned on
                 if old_workload == 0:
                     self.power_on_count += 1
@@ -101,6 +112,8 @@ class CogenerationUnit(GasPoweredGenerator):
                 self.workload = min(calculated_workload, 99.0)
             else:
                 self.workload = 0.0
+                if self.off_time <= self.env.now:
+                    self.off_time = self.env.now + 10.0 * 60.0#5 min
 
         # calulate current consumption and production values
         self.current_gas_consumption = self.workload / 99.0 * self.max_gas_input
@@ -125,7 +138,7 @@ class CogenerationUnit(GasPoweredGenerator):
                     'CU workload:', '%f %%' % self.workload, 'Total:', '%f kWh (%f Euro)' %
                     (self.total_gas_consumption, self.get_operating_costs()))
 
-                self.electrical_infeed.add_energy(
+                self.power_meter.add_energy(
                     self.current_electrical_production)
                 self.heat_storage.add_energy(self.current_thermal_production)
                 self.consume_gas()
