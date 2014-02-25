@@ -80,7 +80,7 @@ class ThermalConsumer():
         self.heat_capacity = specific_heat_capacity_air * \
             self.room_volume + heat_cap_brick
 
-    def get_consumption(self):
+    def simulate_consumption(self):
         # calculate variation using daily demand
         self.target_temperature = self.daily_demand[self.env.get_hour_of_day()]
 
@@ -96,11 +96,15 @@ class ThermalConsumer():
         # clamp to maximum power
         self.current_power = max(min(self.current_power, self.max_power), 0)
         self.heat_room()
+
+
+    def get_consumption(self):
         return self.current_power / 1000.0
 
     def update(self):
         while True:
-            consumption = self.get_consumption()
+            self.simulate_consumption()
+            consumption = self.current_power / 1000.0
             self.total_consumption += consumption / self.env.accuracy
             self.heat_storage.consume_energy(consumption)
 
