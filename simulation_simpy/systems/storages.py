@@ -3,18 +3,18 @@ class HeatStorage():
     def __init__(self, env):
         self.env = env
 
-        self.capacity = 700.0 * 10  # kilos ~ liters
+        self.capacity = 700.0 * 10  # kilos ~ liters --> why x10 ?
         self.base_temperature = 20.0  # degree Celsius
         self.min_temperature = 70.0  # degree Celsius
         self.max_temperature = 78.0  # degree Celsius
 
-        self.specific_heat_capacity = 4.19 * 1 / 3600.0  # kWh/(kg*K)
+        self.specific_heat_capacity = 4.19 * 1 / 3600.0  # kWh/(kg*K) --> ?
 
         self.input_energy = 0.0  # kWh
         self.output_energy = 0.0  # kWh
         self.empty_count = 0
 
-    def energy_stored(self):
+    def energy_stored(self): #energydelta
         return self.input_energy - self.output_energy
 
     def get_target_energy(self):

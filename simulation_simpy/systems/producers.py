@@ -66,11 +66,22 @@ class CogenerationUnit(GasPoweredGenerator):
             / (99.0 - self.minimal_workload)
         return 1.0 - self.max_efficiency_loss * relative_loss
 
+    def get_calculated_workload(self):
+        max_thermal_power = self.thermal_efficiency * self.max_gas_input
+        min_thermal_power = max_thermal_power * (self.minimal_workload / 100.0)
+        calculated_power =  self.heat_storage.get_target_energy() + min_thermal_power - self.heat_storage.energy_stored()
+        #print calculated_power,  calculated_power / max_thermal_power * 100.0
+        return calculated_power / max_thermal_power * 99.0
+
     def calculate_state(self):
         if self.overwrite_workload:
             self.workload = self.overwrite_workload
         else:
             old_workload = self.workload
+
+
+            #calculated_workload = self.get_calculated_workload()
+
             calculated_workload = self.heat_storage.get_target_energy() + \
                 self.minimal_workload - self.heat_storage.energy_stored()
 
@@ -86,15 +97,13 @@ class CogenerationUnit(GasPoweredGenerator):
                 if old_workload == 0:
                     self.power_on_count += 1
 
-                self.total_hours_of_operation += self.env.step_size / \
-                    self.env.granularity
+                self.total_hours_of_operation += self.env.step_size / self.env.granularity
                 self.workload = min(calculated_workload, 99.0)
             else:
                 self.workload = 0.0
 
         # calulate current consumption and production values
-        self.current_gas_consumption = self.workload / \
-            99.0 * self.max_gas_input
+        self.current_gas_consumption = self.workload / 99.0 * self.max_gas_input
 
         self.current_electrical_production = self.current_gas_consumption * \
             self.electrical_efficiency * self.get_efficiency_loss_factor()
@@ -103,8 +112,7 @@ class CogenerationUnit(GasPoweredGenerator):
 
     def consume_gas(self):
         super(CogenerationUnit, self).consume_gas()
-        self.total_electrical_production += self.current_electrical_production / \
-            self.env.accuracy
+        self.total_electrical_production += self.current_electrical_production / self.env.accuracy
 
     def update(self):
         self.env.log('Starting cogeneration unit...')
