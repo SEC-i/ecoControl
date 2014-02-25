@@ -1,5 +1,6 @@
 import sys
 import datetime
+import traceback
 
 from simpy.core import Environment
 from simpy.rt import RealtimeEnvironment
@@ -30,19 +31,22 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         self.last_step = self.now
 
     def step(self):
-        if self.forward > 0:
-            forward_to = self.now + self.forward
-            sim_delta = self.forward - self.now
+        try:
+            if self.forward > 0:
+                forward_to = self.now + self.forward
+                sim_delta = self.forward - self.now
 
-            while self.now < forward_to:
+                while self.now < forward_to:
+                    self.handle_step_function()
+                    Environment.step(self)
+
+                self.env_start += self.forward
+                self.forward = 0
+            else:
                 self.handle_step_function()
-                Environment.step(self)
-
-            self.env_start += self.forward
-            self.forward = 0
-        else:
-            self.handle_step_function()
-            RealtimeEnvironment.step(self)
+                RealtimeEnvironment.step(self)
+        except:
+            traceback.print_exc()
 
     def handle_step_function(self):
         # call step_function whenever time has changed
