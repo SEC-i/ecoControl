@@ -58,7 +58,7 @@ class CogenerationUnit(GasPoweredGenerator):
 
         self.current_electrical_production = 0.0  # kWh
         self.total_electrical_production = 0.0  # kWh
-        self.mode = "electric-led"
+        self.mode = "thermal-led"
 
         self.overwrite_workload = None
 
@@ -162,6 +162,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
 
         self.max_gas_input = 50.0  # kW
         self.thermal_efficiency = 80  # %
+        self.off_time = self.env.now
 
         self.overwrite_workload = None
 
