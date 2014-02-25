@@ -165,7 +165,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
             self.workload = self.overwrite_workload
         else:
             # turn on if heat_storage is undersupplied
-            if self.heat_storage.undersupplied():
+            if self.heat_storage.undersupplied() and self.off_time <= self.env.now:
                 if self.workload == 0.0:
                     self.power_on_count += 1
 
@@ -175,6 +175,9 @@ class PeakLoadBoiler(GasPoweredGenerator):
             # turn off if heat storage's target energy is almost reached
             elif self.heat_storage.energy_stored() + self.current_thermal_production >= self.heat_storage.get_target_energy():
                 self.workload = 0.0
+                if self.off_time <= self.env.now:
+                    self.off_time = self.env.now + 3 * 60.0#3 min
+
 
         # calulate current consumption and production values
         self.current_gas_consumption = self.workload / \

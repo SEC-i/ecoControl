@@ -188,7 +188,7 @@ def handle_settings():
         'cu_electrical_efficiency': cu.electrical_efficiency,
         'plb_max_gas_input': plb.max_gas_input,
         'daily_thermal_demand': thermal_consumer.daily_demand,
-        'daily_electrical_variation_': electrical_consumer.daily_demand
+        'daily_electrical_variation_': electrical_consumer.daily_demand,
         'editor_code': code_executer.code,
         'code_snippets': code_executer.snippets_list()
     })
