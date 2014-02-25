@@ -156,13 +156,13 @@ def handle_settings():
         if len(daily_thermal_demand) == 24:
             thermal_consumer.daily_demand = daily_thermal_demand
 
-        daily_electrical_demand = []
+        daily_electrical_variation = []
         for i in range(24):
-            key = 'daily_electrical_demand_' + str(i)
+            key = 'daily_electrical_variation_' + str(i)
             if key in request.form:
-                daily_electrical_demand.append(float(request.form[key]))
-        if len(daily_electrical_demand) == 24:
-            electrical_consumer.daily_demand = daily_electrical_demand
+                daily_electrical_variation.append(float(request.form[key]))
+        if len(daily_electrical_variation) == 24:
+            electrical_consumer.demand_variation = daily_electrical_variation
 
     return jsonify({
         'base_electrical_demand': electrical_consumer.base_demand,
@@ -177,7 +177,7 @@ def handle_settings():
         'plb_max_gas_input': plb.max_gas_input,
         'sim_forward': '',
         'daily_thermal_demand': thermal_consumer.daily_demand,
-        'daily_electrical_demand': electrical_consumer.daily_demand
+        'daily_electrical_variation_': electrical_consumer.daily_demand
     })
 
 

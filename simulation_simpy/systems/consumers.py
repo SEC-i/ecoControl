@@ -2,7 +2,7 @@ import math
 import random
 import datetime
 
-from data import outside_temperatures_2013
+from data import outside_temperatures_2013, daily_electric_demand
 from helpers import sign
 
 
@@ -59,16 +59,13 @@ class ThermalConsumer():
         self.daily_demand = [18, 18, 19, 18, 19, 18, 19, 20, 21,
                              24, 24, 25, 24, 25, 25, 25, 26, 25, 25, 24, 23, 22, 21, 20]
 
-        # let's use 30 heating systems
-        amount_of_heating_systems = 30
-
-        # Type 22, 1.4m X 0.5m
-        # W/m to 22 C = 90 W
-        # room: 3x5x3m
-        self.room_volume = 3 * 5 * 3 * amount_of_heating_systems
-        self.max_power = 4000 * amount_of_heating_systems  # W
+        #data from pamiru48
+        #has 12 apartments with 22 persons
+        self.room_volume = 650 #m^3
+        #assume 100W heating demand per m^2, rule of thumb for new housings
+        self.max_power = self.room_volume * 100  # W
         self.current_power = 0
-        self.window_surface = 5 * amount_of_heating_systems  # m^2
+        self.window_surface = 4 * 4 * 12  # m^2, avg per room, avg rooms per appartments, appartments
 
         specific_heat_capacity_brick = 1360 * 10 ** 2  # J/(m^3 * K)
         # J / K, approximation for 15m^2walls, 0.2m thickness, walls, ceiling,
@@ -144,15 +141,14 @@ class SimpleElectricalConsumer():
         self.total_consumption = 0.0  # kWh
 
         # list of 24 values representing relative demand per hour
-        self.daily_demand = [50 / 350.0, 25 / 350.0, 10 / 350.0, 10 / 350.0, 5 / 350.0, 20 / 350.0, 250 / 350.0, 1, 320 / 350.0, 290 / 350.0, 280 / 350.0, 310 /
-                             350.0, 250 / 350.0, 230 / 350.0, 225 / 350.0, 160 / 350.0, 125 / 350.0, 160 / 350.0, 200 / 350.0, 220 / 350.0, 260 / 350.0, 130 / 350.0, 140 / 350.0, 120 / 350.0]
+        self.demand_variation = [1.0 for i in range(24)]
 
     def get_consumption(self):
         # calculate variation using daily demand
-        variation = self.daily_demand[self.env.get_hour_of_day()] * self.varying_demand
-        current_consumption = self.base_demand + variation
-
-        return current_consumption
+        hour = self.env.get_hour_of_day()
+        quarter = int(self.env.get_min_of_hour() / 15.0)
+        demand = daily_electric_demand[hour*4 + quarter]
+        return demand * self.demand_variation[hour]
 
     def update(self):
         while True:

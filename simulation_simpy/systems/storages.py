@@ -3,10 +3,11 @@ class HeatStorage():
     def __init__(self, env):
         self.env = env
 
-        self.capacity = 700.0 * 10  # kilos ~ liters --> why x10 ?
+        #data from pamiru48 
+        self.capacity = 2500 #liters  (=kilos)
         self.base_temperature = 20.0  # degree Celsius
-        self.min_temperature = 70.0  # degree Celsius
-        self.max_temperature = 78.0  # degree Celsius
+        self.min_temperature = 55.0  # degree Celsius
+        self.max_temperature = 70.0  # degree Celsius
 
         self.specific_heat_capacity = 4.19 * 1 / 3600.0  # kWh/(kg*K)
 

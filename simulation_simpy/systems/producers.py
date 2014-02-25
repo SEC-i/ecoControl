@@ -42,12 +42,12 @@ class CogenerationUnit(GasPoweredGenerator):
         GasPoweredGenerator.__init__(self, env)
         self.heat_storage = heat_storage
 
-        # XRGI 15kW
-        self.max_gas_input = 49.0  # kW
-        self.electrical_efficiency = 0.3  # max 14.7 kW
-        self.thermal_efficiency = 0.62  # max 30.38 kW
-        self.max_efficiency_loss = 0.1  # %
-        self.maintenance_interval = 8500  # hours
+        # vaillant ecopower 4.7
+        self.max_gas_input = 19.0  # kW
+        self.electrical_efficiency = 0.247  # max 4.7 kW
+        self.thermal_efficiency = 0.65  # max 12.5 kW
+        self.max_efficiency_loss = 0.15  # %
+        self.maintenance_interval = 4000  # hours
 
         self.power_meter = power_meter
 
@@ -156,7 +156,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
         GasPoweredGenerator.__init__(self, env)
         self.heat_storage = heat_storage
 
-        self.max_gas_input = 100.0  # kW
+        self.max_gas_input = 50.0  # kW
         self.thermal_efficiency = 0.8
 
         self.overwrite_workload = None

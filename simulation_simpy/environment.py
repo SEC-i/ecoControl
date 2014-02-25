@@ -58,6 +58,9 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
     def get_hour_of_day(self):
         return self.get_timetuple().tm_hour
+    
+    def get_min_of_hour(self):
+        return self.get_timetuple().tm_min
 
     def get_day_of_year(self):
         return self.get_timetuple().tm_yday
