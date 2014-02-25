@@ -2,7 +2,7 @@ import math
 import random
 import datetime
 
-from data import outside_temperatures_2013, daily_electric_demand
+from data import outside_temperatures_2013, daily_electrical_demand
 from helpers import sign
 
 
@@ -114,7 +114,7 @@ class ThermalConsumer():
     def heat_loss(self):
         # assume cooling of power/2
         d = self.temperature_room - \
-            self.env.get_outside_temperature()
+            self.get_outside_temperature()
         # heat transfer coefficient normal glas window, W/(m^2 * K)
         k = 5.9
         # in Watt
@@ -127,6 +127,10 @@ class ThermalConsumer():
         temperature_delta = self.current_power * \
             heating_efficiency * self.env.step_size
         self.temperature_room += temperature_delta
+
+    def get_outside_temperature(self, offset_days=0):
+        day = (self.env.get_day_of_year() + offset_days) % 365
+        return outside_temperatures_2013[day]
 
 
 class SimpleElectricalConsumer():
@@ -144,11 +148,14 @@ class SimpleElectricalConsumer():
         self.demand_variation = [1.0 for i in range(24)]
 
     def get_consumption(self):
-        # calculate variation using daily demand
+        # calculate variation using daily demand and variation
+        return self.get_electrical_demand() * self.demand_variation[self.env.get_hour_of_day()]
+
+    def get_electrical_demand(self):
         hour = self.env.get_hour_of_day()
         quarter = int(self.env.get_min_of_hour() / 15.0)
-        demand = daily_electric_demand[hour*4 + quarter]
-        return demand * self.demand_variation[hour]
+        quarters = (hour * 4 + quarter) % (4 * 24)
+        return daily_electrical_demand[quarters]
 
     def update(self):
         while True:
