@@ -60,6 +60,7 @@ class CogenerationUnit(GasPoweredGenerator):
         self.total_electrical_production = 0.0  # kWh
         self.mode = "thermal-led"
 
+
         self.overwrite_workload = None
 
     def get_efficiency_loss_factor(self):
@@ -181,6 +182,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
             # turn off if heat storage's target energy is almost reached
             elif self.heat_storage.energy_stored() + self.current_thermal_production >= self.heat_storage.get_target_energy():
                 self.workload = 0.0
+
                 if self.off_time <= self.env.now:
                     self.off_time = self.env.now + 3 * 60.0  # 3 min
 
