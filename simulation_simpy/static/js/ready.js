@@ -246,11 +246,14 @@ function initialize_event_handlers(){
     $("#save_snippet").submit(function( event ){
         $.post( "./api/code/", {save_snippet: $("#snippet_name").val(), code: editor.getValue()}, function( data ) {
             editor.setValue(data['editor_code'], 1);
+            
             // refresh snippet list
-            $("#snippets").html('');
-            $.each(data['code_snippets'], function(index, snippet_name) {
-                $("#snippets").append('<option>' + snippet_name + '</option>');
-            });
+            if('code_snippets' in data){
+                $("#snippets").html('');
+                $.each(data['code_snippets'], function(index, snippet_name) {
+                    $("#snippets").append('<option>' + snippet_name + '</option>');
+                });
+            }
         });
         event.preventDefault();
     });
