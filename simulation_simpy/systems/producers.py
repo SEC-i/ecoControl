@@ -61,6 +61,7 @@ class CogenerationUnit(GasPoweredGenerator):
         self.thermal_led = True
         self.electric_led_overproduction = 1.0 # kWh
 
+
         self.overwrite_workload = None
 
     def get_efficiency_loss_factor(self):
@@ -86,7 +87,7 @@ class CogenerationUnit(GasPoweredGenerator):
 
     def calculate_state(self):
         if self.overwrite_workload is not None:
-            self.workload = self.overwrite_workload
+            calculated_workload = self.overwrite_workload
         else:
             old_workload = self.workload
 
@@ -95,25 +96,29 @@ class CogenerationUnit(GasPoweredGenerator):
             else:
                 calculated_workload = self.get_calculated_workload_electric()
 
-            # ensure smoothly changing workload
-            slope = sign(calculated_workload - old_workload)
-            change_speed = 100 / 180  # percent per 3 minutes
-            self.workload += change_speed * slope * self.env.step_size
+        self.updateParameters(calculated_workload)
 
-            # make sure that minimal_workload <= workload <= 99.0 or workload =
-            # 0
-            if calculated_workload >= self.minimal_workload and self.off_time <= self.env.now:
-                # detect if power has been turned on
-                if old_workload == 0:
-                    self.power_on_count += 1
+    def updateParameters(self,calculated_workload):
+        old_workload = self.workload
+        # ensure smoothly changing workload
+        slope = sign(calculated_workload - old_workload)
+        change_speed = 100 / 180  # percent per 3 minutes
+        self.workload += change_speed * slope * self.env.step_size
 
-                self.total_hours_of_operation += self.env.step_size / \
-                    self.env.granularity
-                self.workload = min(calculated_workload, 99.0)
-            else:
-                self.workload = 0.0
-                if self.off_time <= self.env.now:
-                    self.off_time = self.env.now + 10.0 * 60.0  # 5 min
+        # make sure that minimal_workload <= workload <= 99.0 or workload =
+        # 0
+        if calculated_workload >= self.minimal_workload and self.off_time <= self.env.now:
+            # detect if power has been turned on
+            if old_workload == 0:
+                self.power_on_count += 1
+
+            self.total_hours_of_operation += self.env.step_size / \
+                self.env.granularity
+            self.workload = min(calculated_workload, 99.0)
+        else:
+            self.workload = 0.0
+            if self.off_time <= self.env.now:
+                self.off_time = self.env.now + 10.0 * 60.0  # 5 min
 
         # calulate current consumption and production values
         self.current_gas_consumption = self.workload / \
@@ -179,6 +184,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
             # turn off if heat storage's target energy is almost reached
             elif self.heat_storage.energy_stored() + self.current_thermal_production >= self.heat_storage.get_target_energy():
                 self.workload = 0.0
+
                 if self.off_time <= self.env.now:
                     self.off_time = self.env.now + 3 * 60.0  # 3 min
 
