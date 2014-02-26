@@ -3,6 +3,7 @@ from threading import Thread
 from flask import make_response
 from functools import update_wrapper
 
+
 def crossdomain(origin=None):
     def decorator(f):
         def wrapped_function(*args, **kwargs):
@@ -12,6 +13,7 @@ def crossdomain(origin=None):
             return resp
         return update_wrapper(wrapped_function, f)
     return decorator
+
 
 class SimulationBackgroundRunner(Thread):
 

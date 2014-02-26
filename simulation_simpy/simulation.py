@@ -9,7 +9,7 @@ from systems.storages import HeatStorage, PowerMeter
 from systems.consumers import SimpleThermalConsumer, ThermalConsumer, SimpleElectricalConsumer
 
 
-def init_simulation():
+def get_new_simulation():
     # initialize real-time environment
     env = ForwardableRealtimeEnvironment()
 

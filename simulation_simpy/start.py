@@ -8,7 +8,7 @@ from flask import Flask, jsonify, render_template, request
 from werkzeug.serving import run_simple
 app = Flask(__name__)
 
-from simulation import init_simulation
+from simulation import get_new_simulation
 from helpers import SimulationBackgroundRunner, crossdomain
 
 CACHE_LIMIT = 24 * 365  # 365 days
@@ -21,7 +21,7 @@ for i in measurement_values:
     measurements[i] = collections.deque(maxlen=CACHE_LIMIT)
 
 (env, heat_storage, power_meter, cu, plb, thermal_consumer,
- electrical_consumer, code_executer) = init_simulation()
+ electrical_consumer, code_executer) = get_new_simulation()
 
 
 @app.route('/')
@@ -135,7 +135,7 @@ def reset_simulation():
     except StopIteration:
         pass
     (env, heat_storage, power_meter, cu, plb, thermal_consumer,
-     electrical_consumer, code_executer) = init_simulation()
+     electrical_consumer, code_executer) = get_new_simulation()
 
     # clear measurements
     for i in measurement_values:
