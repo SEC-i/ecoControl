@@ -51,9 +51,9 @@ class PowerMeterTests(unittest.TestCase):
         self.power_meter.add_energy(123)
         self.assertEqual(
             self.power_meter.energy_produced, 123 / self.env.accuracy)
-        self.assertEqual(self.power_meter.total, 0)
+        self.assertEqual(self.power_meter.total_fed_in_electricity, 0)
         self.power_meter.consume_energy(0)
-        self.assertEqual(self.power_meter.total, 123 / self.env.accuracy)
+        self.assertEqual(self.power_meter.total_fed_in_electricity, 123 / self.env.accuracy)
 
 
 if __name__ == '__main__':

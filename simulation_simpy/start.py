@@ -2,71 +2,26 @@ import sys
 import os
 import time
 import collections
-from threading import Thread
 import json
 
-from flask import Flask, jsonify, make_response, render_template, request
-from functools import update_wrapper
+from flask import Flask, jsonify, render_template, request
 from werkzeug.serving import run_simple
 app = Flask(__name__)
 
 from simulation import init_simulation
+from helpers import SimulationBackgroundRunner, crossdomain
+
+CACHE_LIMIT = 24 * 365  # 365 days
+measurement_values = ['time', 'cu_workload', 'plb_workload', 'hs_temperature',
+                      'thermal_consumption', 'electrical_consumption', 'outside_temperature']
+
+# initialize empty measurement deques
+measurements = {}
+for i in measurement_values:
+    measurements[i] = collections.deque(maxlen=CACHE_LIMIT)
 
 (env, heat_storage, power_meter, cu, plb, thermal_consumer,
  electrical_consumer, code_executer) = init_simulation()
-
-CACHE_LIMIT = 24 * 365  # 365 days
-
-time_values = collections.deque(maxlen=CACHE_LIMIT)
-cu_workload_values = collections.deque(maxlen=CACHE_LIMIT)
-plb_workload_values = collections.deque(maxlen=CACHE_LIMIT)
-hs_temperature_values = collections.deque(maxlen=CACHE_LIMIT)
-thermal_consumption_values = collections.deque(maxlen=CACHE_LIMIT)
-outside_temperature_values = collections.deque(maxlen=CACHE_LIMIT)
-electrical_consumption_values = collections.deque(maxlen=CACHE_LIMIT)
-
-
-def reset_simulation():
-    global env, heat_storage, power_meter, cu, plb, thermal_consumer, electrical_consumer, code_executer
-    try:
-        env.exit(1)
-    except StopIteration:
-        pass
-    (env, heat_storage, power_meter, cu, plb, thermal_consumer,
-     electrical_consumer, code_executer) = init_simulation()
-    time_values.clear()
-    cu_workload_values.clear()
-    plb_workload_values.clear()
-    hs_temperature_values.clear()
-    thermal_consumption_values.clear()
-    outside_temperature_values.clear()
-    electrical_consumption_values.clear()
-
-    env.step_function = append_measurement
-    thread = SimulationBackgroundRunner(env)
-    thread.start()
-
-
-def crossdomain(origin=None):
-    def decorator(f):
-        def wrapped_function(*args, **kwargs):
-            resp = make_response(f(*args, **kwargs))
-            h = resp.headers
-            h['Access-Control-Allow-Origin'] = origin
-            return resp
-        return update_wrapper(wrapped_function, f)
-    return decorator
-
-
-class SimulationBackgroundRunner(Thread):
-
-    def __init__(self, env):
-        Thread.__init__(self)
-        self.daemon = True
-        self.env = env
-
-    def run(self):
-        self.env.run()
 
 
 @app.route('/')
@@ -78,37 +33,7 @@ def index():
 @app.route('/api/data/', methods=['GET'])
 @crossdomain(origin='*')
 def get_data():
-    return jsonify({
-        'time': list(time_values),
-        'cu_workload': list(cu_workload_values),
-        'cu_electrical_production': [round(cu.current_electrical_production, 2)],
-        'cu_total_electrical_production': [round(cu.total_electrical_production, 2)],
-        'cu_thermal_production': [round(cu.current_thermal_production, 2)],
-        'cu_total_thermal_production': [round(cu.total_thermal_production, 2)],
-        'cu_total_gas_consumption': [round(cu.total_gas_consumption, 2)],
-        'cu_operating_costs': [round(cu.get_operating_costs(), 2)],
-        'cu_power_ons': [cu.power_on_count],
-        'cu_total_hours_of_operation': [round(cu.total_hours_of_operation, 2)],
-        'plb_workload': list(plb_workload_values),
-        'plb_thermal_production': [round(plb.current_thermal_production, 2)],
-        'plb_total_gas_consumption': [round(plb.total_gas_consumption, 2)],
-        'plb_operating_costs': [round(plb.get_operating_costs(), 2)],
-        'plb_power_ons': [plb.power_on_count],
-        'plb_total_hours_of_operation': [round(plb.total_hours_of_operation, 2)],
-        'hs_temperature': list(hs_temperature_values),
-        'hs_total_input': [round(heat_storage.input_energy, 2)],
-        'hs_total_output': [round(heat_storage.output_energy, 2)],
-        'hs_empty_count': [round(heat_storage.empty_count, 2)],
-        'thermal_consumption': list(thermal_consumption_values),
-        'total_thermal_consumption': [round(thermal_consumer.total_consumption, 2)],
-        'outside_temperature': list(outside_temperature_values),
-        'electrical_consumption': list(electrical_consumption_values),
-        'total_electrical_consumption': [round(electrical_consumer.total_consumption, 2)],
-        'infeed_reward': [round(power_meter.get_reward(), 2)],
-        'infeed_costs': [round(power_meter.get_costs(), 2)],
-        'total_bilance': [round(get_total_bilance(), 2)],
-        'code_execution_status': [1 if code_executer.execution_successful else 0]
-    })
+    return jsonify(get_measurements(multiple=True))
 
 
 @app.route('/api/code/', methods=['GET', 'POST'])
@@ -142,15 +67,15 @@ def handle_settings():
         if 'cu_max_gas_input' in request.form:
             cu.max_gas_input = float(request.form['cu_max_gas_input'])
         if 'cu_mode' in request.form:
-            cu.thermal_led = request.form['cu_mode'] == "thermal_led"
+            cu.thermal_driven = request.form['cu_mode'] == "thermal_driven"
         if 'cu_minimal_workload' in request.form:
             cu.minimal_workload = float(request.form['cu_minimal_workload'])
         if 'cu_electrical_efficiency' in request.form:
             cu.electrical_efficiency = float(
                 request.form['cu_electrical_efficiency']) / 100.0
-        if 'cu_electric_led_overproduction' in request.form:
-            cu.electric_led_overproduction = float(
-                request.form['cu_electric_led_overproduction'])
+        if 'cu_electrical_driven_overproduction' in request.form:
+            cu.electrical_driven_overproduction = float(
+                request.form['cu_electrical_driven_overproduction'])
         if 'cu_thermal_efficiency' in request.form:
             cu.thermal_efficiency = float(
                 request.form['cu_thermal_efficiency']) / 100.0
@@ -160,19 +85,13 @@ def handle_settings():
         if 'code' in request.form:
             code_executer.code = request.form['code']
 
-        daily_thermal_demand = []
-        for i in range(24):
-            key = 'daily_thermal_demand_' + str(i)
-            if key in request.form:
-                daily_thermal_demand.append(float(request.form[key]))
+        daily_thermal_demand = parse_hourly_demand_values(
+            'daily_thermal_demand', request.form)
         if len(daily_thermal_demand) == 24:
             thermal_consumer.daily_demand = daily_thermal_demand
 
-        daily_electrical_variation = []
-        for i in range(24):
-            key = 'daily_electrical_variation_' + str(i)
-            if key in request.form:
-                daily_electrical_variation.append(float(request.form[key]))
+        daily_electrical_variation = parse_hourly_demand_values(
+            'daily_electrical_variation', request.form)
         if len(daily_electrical_variation) == 24:
             electrical_consumer.demand_variation = daily_electrical_variation
 
@@ -181,11 +100,11 @@ def handle_settings():
         'hs_min_temperature': heat_storage.min_temperature,
         'hs_max_temperature': heat_storage.max_temperature,
         'cu_max_gas_input': cu.max_gas_input,
-        'cu_mode': 0 if cu.thermal_led else 1,
+        'cu_mode': 0 if cu.thermal_driven else 1,
         'cu_minimal_workload': cu.minimal_workload,
         'cu_thermal_efficiency': cu.thermal_efficiency * 100.0,
         'cu_electrical_efficiency': cu.electrical_efficiency * 100.0,
-        'cu_electric_led_overproduction': cu.electric_led_overproduction,
+        'cu_electrical_driven_overproduction': cu.electrical_driven_overproduction,
         'plb_max_gas_input': plb.max_gas_input,
         'daily_thermal_demand': thermal_consumer.daily_demand,
         'daily_electrical_variation': electrical_consumer.demand_variation,
@@ -209,64 +128,116 @@ def handle_simulation():
     return "1"
 
 
+def reset_simulation():
+    global env, heat_storage, power_meter, cu, plb, thermal_consumer, electrical_consumer, code_executer
+    try:
+        env.exit(1)
+    except StopIteration:
+        pass
+    (env, heat_storage, power_meter, cu, plb, thermal_consumer,
+     electrical_consumer, code_executer) = init_simulation()
+
+    # clear measurements
+    for i in measurement_values:
+        measurements[i].clear()
+
+    env.step_function = append_measurement
+    thread = SimulationBackgroundRunner(env)
+    thread.start()
+
+
 def export_data(filename):
     if os.path.splitext(filename)[1] == ".json":
-        data = json.dumps({
-            'time': env.now,
-            'cu_workload': round(cu.workload, 2),
-            'cu_electrical_production': round(cu.current_electrical_production, 2),
-            'cu_total_electrical_production': round(cu.total_electrical_production, 2),
-            'cu_thermal_production': round(cu.current_thermal_production, 2),
-            'cu_total_thermal_production': round(cu.total_thermal_production, 2),
-            'cu_total_gas_consumption': round(cu.total_gas_consumption, 2),
-            'cu_operating_costs': round(cu.get_operating_costs(), 2),
-            'cu_power_ons': cu.power_on_count,
-            'cu_total_hours_of_operation': round(cu.total_hours_of_operation, 2),
-            'plb_workload': round(plb.workload, 2),
-            'plb_thermal_production': round(plb.current_thermal_production, 2),
-            'plb_total_gas_consumption': round(plb.total_gas_consumption, 2),
-            'plb_operating_costs': round(plb.get_operating_costs(), 2),
-            'plb_power_ons': plb.power_on_count,
-            'plb_total_hours_of_operation': round(plb.total_hours_of_operation, 2),
-            'hs_temperature': round(heat_storage.get_temperature(), 2),
-            'hs_total_input': round(heat_storage.input_energy, 2),
-            'hs_total_output': round(heat_storage.output_energy, 2),
-            'hs_empty_count': round(heat_storage.empty_count, 2),
-            'thermal_consumption': round(thermal_consumer.get_consumption(), 2),
-            'total_thermal_consumption': round(thermal_consumer.total_consumption, 2),
-            'outside_temperature': round(thermal_consumer.get_outside_temperature(), 2),
-            'electrical_consumption': round(electrical_consumer.get_consumption(), 2),
-            'total_electrical_consumption': round(electrical_consumer.total_consumption, 2),
-            'infeed_reward': round(power_meter.get_reward(), 2),
-            'infeed_costs': round(power_meter.get_costs(), 2),
-            'total_bilance': round(get_total_bilance(), 2),
-            'code_execution_status': 1 if code_executer.execution_successful else 0
-        }, sort_keys = True, indent = 4)
+        data = json.dumps(get_measurements(), sort_keys=True, indent=4)
         with open("./exports/" + filename, "w") as export_file:
             for line in data:
                 export_file.write(line)
-
         return True
-
     return False
+
+
+def get_measurements(multiple=False):
+    output = [
+        ('cu_electrical_production',
+         [round(cu.current_electrical_production, 2)]),
+        ('cu_total_electrical_production',
+         [round(cu.total_electrical_production, 2)]),
+        ('cu_thermal_production', [round(cu.current_thermal_production, 2)]),
+        ('cu_total_thermal_production',
+         [round(cu.total_thermal_production, 2)]),
+        ('cu_total_gas_consumption', [round(cu.total_gas_consumption, 2)]),
+        ('cu_operating_costs', [round(cu.get_operating_costs(), 2)]),
+        ('cu_power_ons', [cu.power_on_count]),
+        ('cu_total_hours_of_operation',
+         [round(cu.total_hours_of_operation, 2)]),
+        ('plb_thermal_production', [round(plb.current_thermal_production, 2)]),
+        ('plb_total_gas_consumption', [round(plb.total_gas_consumption, 2)]),
+        ('plb_operating_costs', [round(plb.get_operating_costs(), 2)]),
+        ('plb_power_ons', [plb.power_on_count]),
+        ('plb_total_hours_of_operation',
+         [round(plb.total_hours_of_operation, 2)]),
+        ('hs_total_input', [round(heat_storage.input_energy, 2)]),
+        ('hs_total_output', [round(heat_storage.output_energy, 2)]),
+        ('hs_empty_count', [round(heat_storage.empty_count, 2)]),
+        ('total_thermal_consumption',
+         [round(thermal_consumer.total_consumption, 2)]),
+        ('total_electrical_consumption',
+         [round(electrical_consumer.total_consumption, 2)]),
+        ('infeed_reward', [round(power_meter.get_reward(), 2)]),
+        ('infeed_costs', [round(power_meter.get_costs(), 2)]),
+        ('total_bilance', [round(get_total_bilance(), 2)]),
+        ('code_execution_status',
+         [1 if code_executer.execution_successful else 0])
+    ]
+
+    for i in measurement_values:
+        if multiple:
+            output.append((i, list(measurements[i])))
+        else:
+            output += [
+                ('time', env.now),
+                ('cu_workload', [round(cu.workload, 2)]),
+                ('plb_workload', [round(plb.workload, 2)]),
+                ('hs_temperature', [round(heat_storage.get_temperature(), 2)]),
+                ('thermal_consumption',
+                 [round(thermal_consumer.get_consumption(), 2)]),
+                ('outside_temperature',
+                 [round(thermal_consumer.get_outside_temperature(), 2)]),
+                ('electrical_consumption',
+                 [round(electrical_consumer.get_consumption(), 2)])
+            ]
+
+    return dict(output)
 
 
 def append_measurement():
     if env.now % env.granularity == 0:  # take measurements each hour
-        time_values.append(env.now)
-        cu_workload_values.append(round(cu.workload, 2))
-        plb_workload_values.append(round(plb.workload, 2))
-        hs_temperature_values.append(round(heat_storage.get_temperature(), 2))
-        thermal_consumption_values.append(
+        measurements['time'].append(env.now)
+        measurements['cu_workload'].append(round(cu.workload, 2))
+        measurements['plb_workload'].append(round(plb.workload, 2))
+        measurements['hs_temperature'].append(
+            round(heat_storage.get_temperature(), 2))
+        measurements['thermal_consumption'].append(
             round(thermal_consumer.get_consumption(), 2))
-        outside_temperature_values.append(
+        measurements['outside_temperature'].append(
             round(thermal_consumer.get_outside_temperature(), 2))
-        electrical_consumption_values.append(
+        measurements['electrical_consumption'].append(
             round(electrical_consumer.get_consumption(), 2))
+
 
 def get_total_bilance():
     return cu.get_operating_costs() + plb.get_operating_costs() - \
         power_meter.get_reward() + power_meter.get_costs()
+
+
+def parse_hourly_demand_values(namespace, data):
+    output = []
+    for i in range(24):
+        key = namespace + '_' + str(i)
+        if key in data:
+            output.append(float(request.form[key]))
+    return output
+
 
 if __name__ == '__main__':
     env.verbose = len(sys.argv) > 1

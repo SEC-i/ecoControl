@@ -48,7 +48,7 @@ class PowerMeter():
         self.electrical_reward_per_kwh = 0.0541  # Euro
         self.electrical_costs_per_kwh = 0.264  # Euro
 
-        self.total = 0.0  # kWh
+        self.total_fed_in_electricity = 0.0  # kWh
         self.total_purchased = 0  # kWh
 
         self.energy_produced = 0.0  # kWh
@@ -65,10 +65,10 @@ class PowerMeter():
         if balance < 0:
             self.total_purchased -= balance
         else:
-            self.total += balance
+            self.total_fed_in_electricity += balance
 
     def get_reward(self):
-        return self.total * self.electrical_reward_per_kwh
+        return self.total_fed_in_electricity * self.electrical_reward_per_kwh
 
     def get_costs(self):
         return self.total_purchased * self.electrical_costs_per_kwh

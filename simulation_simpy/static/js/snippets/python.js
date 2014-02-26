@@ -47,10 +47,10 @@ snippet cu.minimal_off_time\n\
 	cu.minimal_off_time\n\
 snippet cu.total_electrical_production\n\
 	cu.total_electrical_production\n\
-snippet cu.thermal_led\n\
-	cu.thermal_led\n\
-snippet cu.electric_led_overproduction\n\
-	cu.electric_led_overproduction\n\
+snippet cu.thermal_driven\n\
+	cu.thermal_driven\n\
+snippet cu.electrical_driven_overproduction\n\
+	cu.electrical_driven_overproduction\n\
 snippet cu.overwrite_workload\n\
 	cu.overwrite_workload\n\
 snippet plb.start()\n\
@@ -103,8 +103,8 @@ snippet power_meter.electrical_reward_per_kwh\n\
 	power_meter.electrical_reward_per_kwh\n\
 snippet power_meter.electrical_costs_per_kwh\n\
 	power_meter.electrical_costs_per_kwh\n\
-snippet power_meter.total\n\
-	power_meter.total\n\
+snippet power_meter.total_fed_in_electricity\n\
+	power_meter.total_fed_in_electricity\n\
 snippet power_meter.total_purchased\n\
 	power_meter.total_purchased\n\
 snippet power_meter.get_reward()\n\
