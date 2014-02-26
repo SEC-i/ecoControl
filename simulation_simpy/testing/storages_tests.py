@@ -14,31 +14,39 @@ class HeatStorageTests(unittest.TestCase):
 
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
-        self.heat_storage = HeatStorage(env=self.env)
+        self.hs = HeatStorage(env=self.env)
 
     def test_add_and_consume_energy(self):
-        self.heat_storage.add_energy(123)
+        self.hs.add_energy(12.3)
         self.assertEqual(
-            self.heat_storage.energy_stored(), 123 / self.env.accuracy)
-        self.heat_storage.consume_energy(123)
-        self.assertEqual(self.heat_storage.energy_stored(), 0)
+            self.hs.energy_stored(), 12.3 / self.env.accuracy)
+        self.hs.consume_energy(12.3)
+        self.assertEqual(self.hs.energy_stored(), 0)
 
         for i in range(int(self.env.accuracy)):
-            self.heat_storage.add_energy(543)
+            self.hs.add_energy(54.3)
 
-        self.assertEqual(int(self.heat_storage.energy_stored()), 543)
+        self.assertTrue(abs(self.hs.energy_stored() - 54.3) < 0.01)
 
-    # def test_level(self):
-    #     self.assertEqual(self.heat_storage.level(), 0)
-    #     energy = self.heat_storage.capacity * self.env.accuracy
-    #     self.heat_storage.add_energy(energy)
-    #     self.assertEqual(self.heat_storage.level(), 99)
+    def test_undersupplied(self):
+        self.assertTrue(self.hs.undersupplied())
 
-    # def test_undersupplied(self):
-    #     self.assertTrue(self.heat_storage.undersupplied())
-    #     energy = self.heat_storage.undersupplied_threshold * self.env.accuracy
-    #     self.heat_storage.add_energy(energy)
-    #     self.assertFalse(self.heat_storage.undersupplied())
+        temperature_delta = self.hs.min_temperature - self.hs.base_temperature
+        min_energy_needed = temperature_delta * \
+            self.hs.capacity * self.hs.specific_heat_capacity
+        self.hs.add_energy(min_energy_needed * self.env.accuracy)
+        self.assertFalse(self.hs.undersupplied())
+        self.hs.consume_energy(1)
+        self.assertTrue(self.hs.undersupplied())
+        self.hs.add_energy(1)
+        self.assertFalse(self.hs.undersupplied())
+
+    def test_overload(self):
+        self.hs.add_energy(self.hs.energy_capacity * self.env.accuracy)
+        self.assertEqual(self.hs.energy_stored(), self.hs.energy_capacity)
+        # try to max-fill it another time
+        self.hs.add_energy(self.hs.energy_capacity * self.env.accuracy)
+        self.assertEqual(self.hs.energy_stored(), self.hs.energy_capacity)
 
 
 class PowerMeterTests(unittest.TestCase):
@@ -50,10 +58,11 @@ class PowerMeterTests(unittest.TestCase):
     def test_add_energy(self):
         self.power_meter.add_energy(123)
         self.assertEqual(
-            self.power_meter.energy_produced, 123 / self.env.accuracy)
+            self.power_meter.energy_produced, 123)
         self.assertEqual(self.power_meter.total_fed_in_electricity, 0)
         self.power_meter.consume_energy(0)
-        self.assertEqual(self.power_meter.total_fed_in_electricity, 123 / self.env.accuracy)
+        self.assertEqual(
+            self.power_meter.total_fed_in_electricity, 123 / self.env.accuracy)
 
 
 if __name__ == '__main__':
