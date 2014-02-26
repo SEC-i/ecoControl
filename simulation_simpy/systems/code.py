@@ -1,11 +1,13 @@
 import traceback
 import os
 
+from helpers import BaseSystem
 
-class CodeExecuter():
+
+class CodeExecuter(BaseSystem):
 
     def __init__(self, env, local_variables):
-        self.env = env
+        BaseSystem.__init__(self, env)
         self.local_variables = local_variables
 
         self.code = "#"
@@ -16,17 +18,14 @@ class CodeExecuter():
         self.execution_successful = True
         self.snippet_folder = "snippets"
 
-    def update(self):
-        while True:
-            try:
-                exec(self.code, self.local_variables)
-                self.execution_successful = True
-            except:
-                if self.env.verbose and self.env.now % self.env.granularity == 0:
-                    traceback.print_exc()
-                self.execution_successful = False
-
-            yield self.env.timeout(self.env.step_size)
+    def step(self):
+        try:
+            exec(self.code, self.local_variables)
+            self.execution_successful = True
+        except:
+            if self.env.verbose and self.env.now % self.env.granularity == 0:
+                traceback.print_exc()
+            self.execution_successful = False
 
     def snippets_list(self):
         output = []

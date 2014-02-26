@@ -1,7 +1,9 @@
-class HeatStorage():
+from helpers import BaseSystem
+
+class HeatStorage(BaseSystem):
 
     def __init__(self, env):
-        self.env = env
+        BaseSystem.__init__(self, env)
 
         # data from pamiru48
         self.capacity = 2500  # liters  (=kilos)
@@ -41,10 +43,11 @@ class HeatStorage():
         return self.get_temperature() < self.min_temperature
 
 
-class PowerMeter():
+class PowerMeter(BaseSystem):
 
     def __init__(self, env):
-        self.env = env
+        BaseSystem.__init__(self, env)
+        
         self.electrical_reward_per_kwh = 0.0541  # Euro
         self.electrical_costs_per_kwh = 0.264  # Euro
 
