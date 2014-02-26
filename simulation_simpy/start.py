@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 from simulation import init_simulation
 
-(env, heat_storage, electrical_infeed, cu, plb, thermal_consumer,
+(env, heat_storage, power_meter, cu, plb, thermal_consumer,
  electrical_consumer, code_executer) = init_simulation()
 
 CACHE_LIMIT = 24 * 365  # 365 days
@@ -27,12 +27,12 @@ electrical_consumption_values = collections.deque(maxlen=CACHE_LIMIT)
 
 
 def reset_simulation():
-    global env, heat_storage, electrical_infeed, cu, plb, thermal_consumer, electrical_consumer, code_executer
+    global env, heat_storage, power_meter, cu, plb, thermal_consumer, electrical_consumer, code_executer
     try:
         env.exit(1)
     except StopIteration:
         pass
-    (env, heat_storage, electrical_infeed, cu, plb, thermal_consumer,
+    (env, heat_storage, power_meter, cu, plb, thermal_consumer,
      electrical_consumer, code_executer) = init_simulation()
     time_values.clear()
     cu_workload_values.clear()
@@ -104,8 +104,8 @@ def get_data():
         'outside_temperature': list(outside_temperature_values),
         'electrical_consumption': list(electrical_consumption_values),
         'total_electrical_consumption': [round(electrical_consumer.total_consumption, 2)],
-        'infeed_reward': [round(electrical_infeed.get_reward(), 2)],
-        'infeed_costs': [round(electrical_infeed.get_costs(), 2)],
+        'infeed_reward': [round(power_meter.get_reward(), 2)],
+        'infeed_costs': [round(power_meter.get_costs(), 2)],
         'code_execution_status': [1 if code_executer.execution_successful else 0]
     })
 
@@ -130,12 +130,6 @@ def handle_code():
 @crossdomain(origin='*')
 def handle_settings():
     if request.method == "POST":
-        if 'base_electrical_demand' in request.form:
-            electrical_consumer.base_demand = float(
-                request.form['base_electrical_demand'])
-        if 'varying_electrical_demand' in request.form:
-            electrical_consumer.varying_demand = float(
-                request.form['varying_electrical_demand'])
         if 'hs_capacity' in request.form:
             heat_storage.capacity = float(request.form['hs_capacity'])
         if 'hs_min_temperature' in request.form:
@@ -146,11 +140,16 @@ def handle_settings():
                 request.form['hs_max_temperature'])
         if 'cu_max_gas_input' in request.form:
             cu.max_gas_input = float(request.form['cu_max_gas_input'])
+        if 'cu_mode' in request.form:
+            cu.thermal_led = request.form['cu_mode'] == "thermal_led"
         if 'cu_minimal_workload' in request.form:
             cu.minimal_workload = float(request.form['cu_minimal_workload'])
         if 'cu_electrical_efficiency' in request.form:
             cu.electrical_efficiency = float(
                 request.form['cu_electrical_efficiency']) / 100.0
+        if 'cu_electric_led_overproduction' in request.form:
+            cu.electric_led_overproduction = float(
+                request.form['cu_electric_led_overproduction'])
         if 'cu_thermal_efficiency' in request.form:
             cu.thermal_efficiency = float(
                 request.form['cu_thermal_efficiency']) / 100.0
@@ -177,15 +176,15 @@ def handle_settings():
             electrical_consumer.demand_variation = daily_electrical_variation
 
     return jsonify({
-        'base_electrical_demand': electrical_consumer.base_demand,
-        'varying_electrical_demand': electrical_consumer.varying_demand,
         'hs_capacity': heat_storage.capacity,
         'hs_min_temperature': heat_storage.min_temperature,
         'hs_max_temperature': heat_storage.max_temperature,
         'cu_max_gas_input': cu.max_gas_input,
+        'cu_mode': 0 if cu.thermal_led else 1,
         'cu_minimal_workload': cu.minimal_workload,
         'cu_thermal_efficiency': cu.thermal_efficiency * 100.0,
         'cu_electrical_efficiency': cu.electrical_efficiency * 100.0,
+        'cu_electric_led_overproduction': cu.electric_led_overproduction,
         'plb_max_gas_input': plb.max_gas_input,
         'daily_thermal_demand': thermal_consumer.daily_demand,
         'daily_electrical_variation': electrical_consumer.demand_variation,
@@ -237,8 +236,8 @@ def export_data(filename):
             'outside_temperature': round(thermal_consumer.get_outside_temperature(), 2),
             'electrical_consumption': round(electrical_consumer.get_consumption(), 2),
             'total_electrical_consumption': round(electrical_consumer.total_consumption, 2),
-            'infeed_reward': round(electrical_infeed.get_reward(), 2),
-            'infeed_costs': round(electrical_infeed.get_costs(), 2),
+            'infeed_reward': round(power_meter.get_reward(), 2),
+            'infeed_costs': round(power_meter.get_costs(), 2),
             'code_execution_status': 1 if code_executer.execution_successful else 0
         }, sort_keys = True, indent = 4)
         with open("./exports/" + filename, "w") as export_file:

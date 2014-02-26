@@ -139,13 +139,10 @@ class SimpleElectricalConsumer():
         self.env = env
         self.power_meter = power_meter
 
-        self.base_demand = 5.0  # kW
-        self.varying_demand = 7.5  # kW
-
         self.total_consumption = 0.0  # kWh
 
         # list of 24 values representing relative demand per hour
-        self.demand_variation = [1.0 for i in range(24)]
+        self.demand_variation = [1 for i in range(24)]
 
     def get_consumption(self):
         # calculate variation using daily demand and variation

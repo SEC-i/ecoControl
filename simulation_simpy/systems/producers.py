@@ -58,7 +58,8 @@ class CogenerationUnit(GasPoweredGenerator):
 
         self.current_electrical_production = 0.0  # kWh
         self.total_electrical_production = 0.0  # kWh
-        self.mode = "thermal-led"
+        self.thermal_led = True
+        self.electric_led_overproduction = 1.0 # kWh
 
         self.overwrite_workload = None
 
@@ -75,16 +76,13 @@ class CogenerationUnit(GasPoweredGenerator):
         min_thermal_power = max_thermal_power * (self.minimal_workload / 100.0)
         calculated_power =  self.heat_storage.get_target_energy() + \
             min_thermal_power - self.heat_storage.energy_stored()
-        return calculated_power / max_thermal_power * 99.0
+        return min(calculated_power / max_thermal_power, 1) * 99.0
 
     def get_calculated_workload_electric(self):
         if self.heat_storage.get_temperature() >= self.heat_storage.max_temperature:
             return 0.0
-        max_electric_power = self.electrical_efficiency / \
-            100 * self.max_gas_input
-        consumption_per_hour = self.power_meter.energy_consumed * \
-            self.env.accuracy
-        return consumption_per_hour / max_electric_power * 99.0
+        max_electric_power = self.electrical_efficiency * self.max_gas_input
+        return min((self.power_meter.energy_consumed + self.electric_led_overproduction) / max_electric_power, 1) * 99.0
 
     def calculate_state(self):
         if self.overwrite_workload is not None:
@@ -92,9 +90,9 @@ class CogenerationUnit(GasPoweredGenerator):
         else:
             old_workload = self.workload
 
-            if self.mode == "thermal-led":
+            if self.thermal_led:
                 calculated_workload = self.get_calculated_workload_thermal()
-            elif self.mode == "electric-led":
+            else:
                 calculated_workload = self.get_calculated_workload_electric()
 
             # ensure smoothly changing workload

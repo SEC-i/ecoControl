@@ -130,6 +130,12 @@ function update_setting(data){
             $.each(value, function(index, hour_value) {
                 $("#daily_electrical_variation_" + index).slider( "value", hour_value * 10000);
             });
+        }else if(key == "cu_mode"){
+            if(value == 0){
+                $("#cu_mode_thermal_led").attr('checked', true);
+            }else{
+                $("#cu_mode_electric_led").attr('checked', true);
+            }
         }else if(key == "code_snippets"){
             $.each(value, function(index, snippet_name) {
                 $("#snippets").append('<option>' + snippet_name + '</option>');

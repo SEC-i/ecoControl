@@ -3,8 +3,8 @@ class HeatStorage():
     def __init__(self, env):
         self.env = env
 
-        #data from pamiru48 
-        self.capacity = 2500 #liters  (=kilos)
+        # data from pamiru48
+        self.capacity = 2500  # liters  (=kilos)
         self.base_temperature = 20.0  # degree Celsius
         self.min_temperature = 55.0  # degree Celsius
         self.max_temperature = 70.0  # degree Celsius
@@ -15,7 +15,7 @@ class HeatStorage():
         self.output_energy = 0.0  # kWh
         self.empty_count = 0
 
-    def energy_stored(self): #energydelta
+    def energy_stored(self):  # energydelta
         return self.input_energy - self.output_energy
 
     def get_target_energy(self):
@@ -52,17 +52,15 @@ class PowerMeter():
         self.total_purchased = 0  # kWh
 
         self.energy_produced = 0.0  # kWh
-        self.energy_consumed = 0.0 #kWh
+        self.energy_consumed = 0.0  # kWh
 
     def add_energy(self, energy):
-        energy /= self.env.accuracy
         self.energy_produced = energy
 
     def consume_energy(self, energy):
-        energy /= self.env.accuracy
         self.energy_consumed = energy
 
-        balance = self.energy_produced - energy
+        balance = (self.energy_produced - self.energy_consumed) /self.env.accuracy
         # purchase electrical energy if more energy needed than produced
         if balance < 0:
             self.total_purchased -= balance
@@ -74,4 +72,3 @@ class PowerMeter():
 
     def get_costs(self):
         return self.total_purchased * self.electrical_costs_per_kwh
-
