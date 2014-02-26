@@ -14,6 +14,7 @@ class HeatStorage():
         self.input_energy = 0.0  # kWh
         self.output_energy = 0.0  # kWh
         self.empty_count = 0
+        self.temperature_loss = 3.0 / 24.0 #energy loss per hour
 
     def energy_stored(self):  # energydelta
         return self.input_energy - self.output_energy
@@ -39,6 +40,22 @@ class HeatStorage():
 
     def undersupplied(self):
         return self.get_temperature() < self.min_temperature
+
+    def start(self):
+        self.running = True
+
+    def stop(self):
+        self.running = False
+
+    def update(self):
+        self.env.log('Starting heat_storage ...')
+        self.start()
+
+        while self.running:
+            energy_loss = (self.capacity * self.specific_heat_capacity) * self.temperature_loss
+            self.output_energy += energy_loss / self.env.accuracy 
+            yield self.env.timeout(self.env.step_size)
+
 
 
 class PowerMeter():

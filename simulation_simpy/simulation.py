@@ -38,6 +38,7 @@ def init_simulation():
     env.process(thermal_consumer.update())
     env.process(electrical_consumer.update())
     env.process(cu.update())
+    env.process(heat_storage.update())
 
     # start plb 10h after simulation start
     start_delayed(env, plb.update(), 10 * 3600)
