@@ -7,7 +7,7 @@ class GasPoweredGenerator(BaseSystem):
         BaseSystem.__init__(self, env)
         self.gas_price_per_kwh = 0.0655  # Euro
 
-        self.running = False
+        self.running = True
 
         self.workload = 0
         self.current_gas_consumption = 0  # kWh

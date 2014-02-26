@@ -49,14 +49,9 @@ class HeatStorage(BaseSystem):
     def stop(self):
         self.running = False
 
-    def update(self):
-        self.env.log('Starting heat_storage ...')
-        self.start()
-
-        while self.running:
-            energy_loss = (self.capacity * self.specific_heat_capacity) * self.temperature_loss
-            self.output_energy += energy_loss / self.env.accuracy 
-            yield self.env.timeout(self.env.step_size)
+    def step(self):
+        energy_loss = (self.capacity * self.specific_heat_capacity) * self.temperature_loss
+        self.output_energy += energy_loss / self.env.accuracy 
 
 
 
