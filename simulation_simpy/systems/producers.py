@@ -64,6 +64,11 @@ class CogenerationUnit(GasPoweredGenerator):
 
         self.overwrite_workload = None
 
+    def get_operating_costs(self):
+        gas_costs = super(CogenerationUnit, self).get_operating_costs()
+        maintenance_costs = self.total_electrical_production * 0.05 # 5 ct maintenance costs
+        return maintenance_costs + gas_costs
+
     def get_efficiency_loss_factor(self):
         # given efficiency is reached only on maximum workload
         # at minumum workload the efficiency is decreased with
