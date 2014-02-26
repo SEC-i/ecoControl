@@ -15,18 +15,18 @@ def init_simulation():
 
     # initialize power systems
     heat_storage = HeatStorage(env)
-    electrical_infeed = PowerMeter(env)
-    cu = CogenerationUnit(env, heat_storage, electrical_infeed)
+    power_meter = PowerMeter(env)
+    cu = CogenerationUnit(env, heat_storage, power_meter)
     plb = PeakLoadBoiler(env, heat_storage)
     #thermal_consumer = SimpleThermalConsumer(env, heat_storage)
     thermal_consumer = ThermalConsumer(env, heat_storage)
-    electrical_consumer = SimpleElectricalConsumer(env, electrical_infeed)
+    electrical_consumer = SimpleElectricalConsumer(env, power_meter)
 
     # initilize code executer
     code_executer = CodeExecuter(env, {
         'env': env,
         'heat_storage': heat_storage,
-        'electrical_infeed': electrical_infeed,
+        'power_meter': power_meter,
         'cu': cu,
         'plb': plb,
         'thermal_consumer': thermal_consumer,
@@ -42,5 +42,5 @@ def init_simulation():
     # start plb 10h after simulation start
     start_delayed(env, plb.update(), 10 * 3600)
 
-    return (env, heat_storage, electrical_infeed, cu, plb,
+    return (env, heat_storage, power_meter, cu, plb,
             thermal_consumer, electrical_consumer, code_executer)

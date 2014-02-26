@@ -45,15 +45,15 @@ class PowerMeterTests(unittest.TestCase):
 
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
-        self.electrical_infeed = PowerMeter(env=self.env)
+        self.power_meter = PowerMeter(env=self.env)
 
     def test_add_energy(self):
-        self.electrical_infeed.add_energy(123)
+        self.power_meter.add_energy(123)
         self.assertEqual(
-            self.electrical_infeed.energy_produced, 123 / self.env.accuracy)
-        self.assertEqual(self.electrical_infeed.total, 0)
-        self.electrical_infeed.consume_energy(0)
-        self.assertEqual(self.electrical_infeed.total, 123 / self.env.accuracy)
+            self.power_meter.energy_produced, 123 / self.env.accuracy)
+        self.assertEqual(self.power_meter.total, 0)
+        self.power_meter.consume_energy(0)
+        self.assertEqual(self.power_meter.total, 123 / self.env.accuracy)
 
 
 if __name__ == '__main__':
