@@ -42,11 +42,13 @@ class HeatStorageTests(unittest.TestCase):
         self.assertFalse(self.hs.undersupplied())
 
     def test_overload(self):
-        self.hs.add_energy(self.hs.energy_capacity * self.env.accuracy)
-        self.assertEqual(self.hs.energy_stored(), self.hs.energy_capacity)
+        self.hs.add_energy(self.hs.get_energy_capacity() * self.env.accuracy)
+        self.assertEqual(
+            self.hs.energy_stored(), self.hs.get_energy_capacity())
         # try to max-fill it another time
-        self.hs.add_energy(self.hs.energy_capacity * self.env.accuracy)
-        self.assertEqual(self.hs.energy_stored(), self.hs.energy_capacity)
+        self.hs.add_energy(self.hs.get_energy_capacity() * self.env.accuracy)
+        self.assertEqual(
+            self.hs.energy_stored(), self.hs.get_energy_capacity())
 
 
 class PowerMeterTests(unittest.TestCase):

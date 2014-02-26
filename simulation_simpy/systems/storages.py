@@ -13,9 +13,6 @@ class HeatStorage(BaseSystem):
         self.max_temperature = 70.0  # degree Celsius
 
         self.specific_heat_capacity = 4.19 * 1 / 3600.0  # kWh/(kg*K)
-        self.energy_capacity = self.capacity * \
-            (self.max_temperature - self.base_temperature) * \
-            self.specific_heat_capacity
 
         self.input_energy = 0.0  # kWh
         self.output_energy = 0.0  # kWh
@@ -31,7 +28,7 @@ class HeatStorage(BaseSystem):
     def add_energy(self, energy):
         energy /= self.env.accuracy
         self.input_energy += min(
-            energy, self.energy_capacity - self.energy_stored())
+            energy, self.get_energy_capacity() - self.energy_stored())
 
     def consume_energy(self, energy):
         energy /= self.env.accuracy
@@ -43,6 +40,11 @@ class HeatStorage(BaseSystem):
 
     def get_temperature(self):
         return self.base_temperature + self.energy_stored() / (self.capacity * self.specific_heat_capacity)
+
+    def get_energy_capacity(self):
+        return self.capacity * \
+            (self.max_temperature - self.base_temperature) * \
+            self.specific_heat_capacity
 
     def undersupplied(self):
         return self.get_temperature() < self.min_temperature
