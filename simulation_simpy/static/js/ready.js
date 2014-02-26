@@ -24,6 +24,7 @@ var systems_units = {
     total_thermal_consumption: 'kWh',
     electrical_consumption: 'kW',
     total_electrical_consumption: 'kWh',
+    total_bilance: 'Euro',
     infeed_reward: 'Euro',
     infeed_costs: 'Euro'
 };

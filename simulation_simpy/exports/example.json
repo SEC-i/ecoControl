@@ -26,5 +26,6 @@
     "thermal_consumption": 21.24, 
     "time": 1357379880.0, 
     "total_electrical_consumption": 918.29, 
+    "total_bilance": 10000.0,
     "total_thermal_consumption": 1635.08
 }

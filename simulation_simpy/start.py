@@ -106,6 +106,7 @@ def get_data():
         'total_electrical_consumption': [round(electrical_consumer.total_consumption, 2)],
         'infeed_reward': [round(power_meter.get_reward(), 2)],
         'infeed_costs': [round(power_meter.get_costs(), 2)],
+        'total_bilance': [round(get_total_bilance(), 2)],
         'code_execution_status': [1 if code_executer.execution_successful else 0]
     })
 
@@ -238,6 +239,7 @@ def export_data(filename):
             'total_electrical_consumption': round(electrical_consumer.total_consumption, 2),
             'infeed_reward': round(power_meter.get_reward(), 2),
             'infeed_costs': round(power_meter.get_costs(), 2),
+            'total_bilance': round(get_total_bilance(), 2),
             'code_execution_status': 1 if code_executer.execution_successful else 0
         }, sort_keys = True, indent = 4)
         with open("./exports/" + filename, "w") as export_file:
@@ -261,6 +263,10 @@ def append_measurement():
             round(thermal_consumer.get_outside_temperature(), 2))
         electrical_consumption_values.append(
             round(electrical_consumer.get_consumption(), 2))
+
+def get_total_bilance():
+    return cu.get_operating_costs() + plb.get_operating_costs() - \
+        power_meter.get_reward() + power_meter.get_costs()
 
 if __name__ == '__main__':
     env.verbose = len(sys.argv) > 1
