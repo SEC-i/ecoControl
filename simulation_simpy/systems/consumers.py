@@ -67,15 +67,14 @@ class ThermalConsumer():
         self.current_power = 0
         self.window_surface = 4 * 4 * 12  # m^2, avg per room, avg rooms per appartments, appartments
 
-        specific_heat_capacity_brick = 1360 * 10 ** 2  # J/(m^3 * K)
-        # J / K, approximation for 15m^2walls, 0.2m thickness, walls, ceiling,
-        heat_cap_brick = specific_heat_capacity_brick * (4 * 3 * 5 * 0.2)
+        specific_heat_capacity_brick = 1360 * 10 ** 3  # J/(m^3 * K)
+        # J / K, approximation for 15m^2walls, 0.2m thickness, walls, ceiling, acg rooms p appartent, appartments
+        heat_cap_brick = specific_heat_capacity_brick * (4 * 3 * 5 * 0.2) * 4 * 12
 
         #J /( m^3 * K)
         specific_heat_capacity_air = 1290
 
-        self.heat_capacity = specific_heat_capacity_air * \
-            self.room_volume + heat_cap_brick
+        self.heat_capacity = specific_heat_capacity_air * self.room_volume + heat_cap_brick
 
     def simulate_consumption(self):
         # calculate variation using daily demand
@@ -84,7 +83,7 @@ class ThermalConsumer():
         self.heat_loss()
 
         # slow rise and fall of heating
-        change_speed = 1
+        change_speed = 0.3
         slope = change_speed * \
             sign(self.target_temperature - self.temperature_room)
         power_delta = slope * self.env.step_size
@@ -108,6 +107,7 @@ class ThermalConsumer():
             self.env.log('Thermal demand:', '%f kW' % consumption)
             self.env.log('HS level:', '%f kWh' %
                          self.heat_storage.energy_stored())
+            self.env.log("room temperature:", '%f C' % self.temperature_room)
 
             yield self.env.timeout(self.env.step_size)
 
@@ -127,6 +127,7 @@ class ThermalConsumer():
         temperature_delta = self.current_power * \
             heating_efficiency * self.env.step_size
         self.temperature_room += temperature_delta
+
 
     def get_outside_temperature(self, offset_days=0):
         day = (self.env.get_day_of_year() + offset_days) % 365
