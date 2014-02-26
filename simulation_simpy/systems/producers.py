@@ -1,12 +1,10 @@
-import random
-
-from helpers import sign
+from helpers import BaseSystem, sign
 
 
-class GasPoweredGenerator(object):
+class GasPoweredGenerator(BaseSystem):
 
     def __init__(self, env):
-        self.env = env
+        BaseSystem.__init__(self, env)
         self.gas_price_per_kwh = 0.0655  # Euro
 
         self.running = False
@@ -59,14 +57,30 @@ class CogenerationUnit(GasPoweredGenerator):
         self.current_electrical_production = 0.0  # kWh
         self.total_electrical_production = 0.0  # kWh
         self.thermal_driven = True
-        self.electrical_driven_overproduction = 1.0 # kWh
-
+        self.electrical_driven_overproduction = 1.0  # kWh
 
         self.overwrite_workload = None
 
+    def step(self):
+        if self.running:
+            self.calculate_state()
+
+            self.env.log(
+                'CU workload:', '%f %%' % self.workload, 'Total:', '%f kWh (%f Euro)' %
+                (self.total_gas_consumption, self.get_operating_costs()))
+
+            self.power_meter.add_energy(
+                self.current_electrical_production)
+            self.heat_storage.add_energy(self.current_thermal_production)
+            self.consume_gas()
+        else:
+            self.workload = 0.0
+            self.env.log('Cogeneration unit stopped')
+
     def get_operating_costs(self):
         gas_costs = super(CogenerationUnit, self).get_operating_costs()
-        maintenance_costs = self.total_electrical_production * 0.05 # 5 ct maintenance costs
+        maintenance_costs = self.total_electrical_production * \
+            0.05  # 5 ct maintenance costs
         return maintenance_costs + gas_costs
 
     def get_efficiency_loss_factor(self):
@@ -103,7 +117,7 @@ class CogenerationUnit(GasPoweredGenerator):
 
         self.updateParameters(calculated_workload)
 
-    def updateParameters(self,calculated_workload):
+    def updateParameters(self, calculated_workload):
         old_workload = self.workload
         # ensure smoothly changing workload
         slope = sign(calculated_workload - old_workload)
@@ -140,27 +154,6 @@ class CogenerationUnit(GasPoweredGenerator):
         self.total_electrical_production += self.current_electrical_production / \
             self.env.accuracy
 
-    def update(self):
-        self.env.log('Starting cogeneration unit...')
-        self.start()
-        while True:
-            if self.running:
-                self.calculate_state()
-
-                self.env.log(
-                    'CU workload:', '%f %%' % self.workload, 'Total:', '%f kWh (%f Euro)' %
-                    (self.total_gas_consumption, self.get_operating_costs()))
-
-                self.power_meter.add_energy(
-                    self.current_electrical_production)
-                self.heat_storage.add_energy(self.current_thermal_production)
-                self.consume_gas()
-            else:
-                self.workload = 0.0
-                self.env.log('Cogeneration unit stopped')
-
-            yield self.env.timeout(self.env.step_size)
-
 
 class PeakLoadBoiler(GasPoweredGenerator):
 
@@ -173,6 +166,22 @@ class PeakLoadBoiler(GasPoweredGenerator):
         self.off_time = self.env.now
 
         self.overwrite_workload = None
+
+    def step(self):
+        if self.running:
+            self.calculate_state()
+
+            self.env.log(
+                'PLB workload:', '%f %%' % self.workload, 'Total:', '%f kWh (%f Euro)' %
+                (self.total_gas_consumption, self.get_operating_costs()))
+
+            self.heat_storage.add_energy(self.current_thermal_production)
+            self.consume_gas()
+        else:
+            self.workload = 0.0
+            self.env.log('PLB stopped.')
+
+        self.env.log('=' * 80)
 
     def calculate_state(self):
         if self.overwrite_workload is not None:
@@ -198,23 +207,3 @@ class PeakLoadBoiler(GasPoweredGenerator):
             99.0 * self.max_gas_input
         self.current_thermal_production = self.current_gas_consumption * \
             self.thermal_efficiency
-
-    def update(self):
-        self.env.log('Starting peak load boiler...')
-        self.start()
-        while True:
-            if self.running:
-                self.calculate_state()
-
-                self.env.log(
-                    'PLB workload:', '%f %%' % self.workload, 'Total:', '%f kWh (%f Euro)' %
-                    (self.total_gas_consumption, self.get_operating_costs()))
-
-                self.heat_storage.add_energy(self.current_thermal_production)
-                self.consume_gas()
-            else:
-                self.workload = 0.0
-                self.env.log('PLB stopped.')
-
-            self.env.log('=' * 80)
-            yield self.env.timeout(self.env.step_size)

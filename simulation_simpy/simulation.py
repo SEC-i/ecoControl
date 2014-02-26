@@ -9,7 +9,7 @@ from systems.storages import HeatStorage, PowerMeter
 from systems.consumers import SimpleThermalConsumer, ThermalConsumer, SimpleElectricalConsumer
 
 
-def init_simulation():
+def get_new_simulation():
     # initialize real-time environment
     env = ForwardableRealtimeEnvironment()
 
@@ -32,16 +32,16 @@ def init_simulation():
         'thermal_consumer': thermal_consumer,
         'electrical_consumer': electrical_consumer,
     })
-    env.process(code_executer.update())
+    env.process(code_executer.loop())
 
     # add power system to simulation environment
-    env.process(thermal_consumer.update())
-    env.process(electrical_consumer.update())
-    env.process(cu.update())
-    env.process(heat_storage.update())
+    env.process(thermal_consumer.loop())
+    env.process(electrical_consumer.loop())
+    env.process(cu.loop())
+    env.process(heat_storage.loop())
 
     # start plb 10h after simulation start
-    start_delayed(env, plb.update(), 10 * 3600)
+    start_delayed(env, plb.loop(), 10 * 3600)
 
     return (env, heat_storage, power_meter, cu, plb,
             thermal_consumer, electrical_consumer, code_executer)

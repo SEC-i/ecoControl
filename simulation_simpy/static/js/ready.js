@@ -1,4 +1,5 @@
 var refresh_gui = true;
+var editor = null;
 
 var systems_units = {
     cu_workload: '%',
@@ -35,36 +36,31 @@ var series_data = [{
     tooltip: {
         valueSuffix: ' %'
     }
-},
-{
+}, {
     name: 'plb_workload',
     data: [],
     tooltip: {
         valueSuffix: ' %'
     }
-},
-{
+}, {
     name: 'hs_temperature',
     data: [],
     tooltip: {
         valueSuffix: ' °C'
     }
-},
-{
+}, {
     name: 'thermal_consumption',
     data: [],
     tooltip: {
         valueSuffix: ' kW'
     }
-},
-{
+}, {
     name: 'outside_temperature',
     data: [],
     tooltip: {
         valueSuffix: ' °C'
     }
-},
-{
+}, {
     name: 'electrical_consumption',
     data: [],
     tooltip: {
@@ -72,30 +68,20 @@ var series_data = [{
     }
 }];
 
-ace.require("ace/ext/language_tools");
-var editor = ace.edit("editor");
-editor.setTheme("ace/theme/monokai");
-editor.getSession().setMode("ace/mode/python");
-editor.setOptions({
-    enableBasicAutocompletion: true,
-    enableSnippets: true
-});
+// READY
+$(function() {
+    initialize_editor();
+    initialize_svg();
+    initialize_hourly_demands();
+    initialize_event_handlers();
 
-$(function(){
-    $.get( "./static/img/simulation.svg", function( data ) {
-        var svg_item = document.importNode(data.documentElement,true);
-        $("#simulation_setup").append(svg_item);
-    }, "xml");
-
-    initialize_daily_demands();
-
-    $.getJSON( "./api/settings/", function( data ) {
+    $.getJSON("./api/settings/", function(data) {
         update_setting(data);
-    }).done(function(){
-        $.getJSON( "./api/code/", function( data ) {
+    }).done(function() {
+        $.getJSON("./api/code/", function(data) {
             editor.setValue(data['editor_code'], 1);
-        }).done(function(){
-            $.getJSON( "./api/data/", function( data ) {
+        }).done(function() {
+            $.getJSON("./api/data/", function(data) {
                 for (var i = 0; i < data['time'].length; i++) {
                     var timestamp = get_timestamp(data['time'][i]);
                     series_data[0]['data'].push([timestamp, parseFloat(data['cu_workload'][i])]);
@@ -105,81 +91,65 @@ $(function(){
                     series_data[4]['data'].push([timestamp, parseFloat(data['outside_temperature'][i])]);
                     series_data[5]['data'].push([timestamp, parseFloat(data['electrical_consumption'][i])]);
                 };
-            }).done(function(){
+            }).done(function() {
                 initialize_diagram();
                 // set up refresh loop
-                setInterval(function(){
+                setInterval(function() {
                     refresh();
                 }, 2000);
             });
         });
     });
-    initialize_event_handlers();
 });
 
-function refresh(){
-    if(refresh_gui){
-        $.getJSON( "./api/data/", function( data ) {
+// UPDATING
+function refresh() {
+    if (refresh_gui) {
+        $.getJSON("./api/data/", function(data) {
             update_setup(data);
             update_diagram(data);
         });
     }
 }
 
-function update_setting(data){
+function update_setup(data) {
     $.each(data, function(key, value) {
-        if(key == "daily_thermal_demand"){
-            $.each(value, function(index, hour_value) {
-                $("#daily_thermal_demand_" + index).slider( "value", hour_value * 100);
-            });
-        }else if(key == "daily_electrical_variation"){
-            $.each(value, function(index, hour_value) {
-                $("#daily_electrical_variation_" + index).slider( "value", hour_value * 10000);
-            });
-        }else if(key == "cu_mode"){
-            if(value == 0){
-                $("#cu_mode_thermal_driven").attr('checked', true);
-            }else{
-                $("#cu_mode_electrical_driven").attr('checked', true);
-            }
-        }else if(key == "code_snippets"){
-            $.each(value, function(index, snippet_name) {
-                $("#snippets").append('<option>' + snippet_name + '</option>');
-            });
-        }else{
-            $("#form_" + key).val(value);
-        }
-    });
-}
-
-function update_setup(data){
-    $.each(data, function(key, value) {
-        value = value[value.length-1];
+        value = value[value.length - 1];
         var item = $('.' + key);
-        if (item.length) {
-            if(key == "time"){
-                item.text(format_date(new Date(parseFloat(value) * 1000)));
-            }else if(key == "code_execution_status"){
-                if(value == 1){
-                    item.removeClass('badge-danger');
-                    item.addClass('badge-success');
-                    item.text('OK');
-                }else{
-                    item.removeClass('badge-success');
-                    item.addClass('badge-danger');
-                    item.text('Fail');
-                }
-            }else{
-                item.text(value + " " + systems_units[key]);
+        if (item.length) { // check if item exists
+            switch (key) {
+                case "time":
+                    item.text(format_date(new Date(parseFloat(value) * 1000)));
+                    break;
+                case "code_execution_status":
+                    if (value == 1) {
+                        item.removeClass('badge-danger');
+                        item.addClass('badge-success');
+                        item.text('OK');
+                    } else {
+                        item.removeClass('badge-success');
+                        item.addClass('badge-danger');
+                        item.text('Fail');
+                    }
+                    break;
+                default:
+                    item.text(value + " " + systems_units[key]);
             }
         }
     });
 }
 
-function update_diagram(data){
+function update_diagram(data) {
     var chart = $('#simulation_diagram').highcharts();
 
-    new_data = [[], [], [], [], [], []];
+    new_data = [
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+    ];
     for (var i = 0; i < data['time'].length; i++) {
         var timestamp = get_timestamp(data['time'][i]);
         new_data[0].push([timestamp, data['cu_workload'][i]]);
@@ -197,29 +167,108 @@ function update_diagram(data){
     chart.redraw();
 }
 
-function format_date(date){
-    date = date.toString();
-    return date.substring(0, date.length - 15);
+function update_setting(data) {
+    $.each(data, function(key, value) {
+        switch (key) {
+            case "daily_thermal_demand":
+                $.each(value, function(index, hour_value) {
+                    $("#daily_thermal_demand_" + index).slider("value", hour_value * 100);
+                });
+                break;
+            case "daily_electrical_variation":
+                $.each(value, function(index, hour_value) {
+                    $("#daily_electrical_variation_" + index).slider("value", hour_value * 10000);
+                });
+                break;
+            case "cu_mode":
+                if (value == 0)
+                    $("#cu_mode_thermal_driven").attr('checked', true);
+                else
+                    $("#cu_mode_electrical_driven").attr('checked', true);
+                break;
+            case "code_snippets":
+                $.each(value, function(index, snippet_name) {
+                    $("#snippets").append('<option>' + snippet_name + '</option>');
+                });
+                break;
+            default:
+                $("#form_" + key).val(value);
+        }
+    });
 }
 
-function get_timestamp(string){
-    return new Date(parseFloat(string) * 1000).getTime();
+// INITIALIZATIONS
+function initialize_editor() {
+    ace.require("ace/ext/language_tools");
+    editor = ace.edit("editor");
+    editor.setTheme("ace/theme/monokai");
+    editor.getSession().setMode("ace/mode/python");
+    editor.setOptions({
+        enableBasicAutocompletion: true,
+        enableSnippets: true
+    });
 }
 
-function initialize_event_handlers(){
-    $("#settings").submit(function( event ){
-        var post_data = $( "#settings" ).serialize();
-        for(var i = 0; i < 24; i++) {
-            post_data += "&daily_thermal_demand_" + i + "=" + ($("#daily_thermal_demand_" + i).slider( "value")/100);
+function initialize_svg() {
+    $.get("./static/img/simulation.svg", function(data) {
+        var svg_item = document.importNode(data.documentElement, true);
+        $("#simulation_setup").append(svg_item);
+    }, "xml");
+}
+
+function initialize_hourly_demands() {
+    for (var i = 0; i < 24; i++) {
+        $("#daily_thermal_demand").append("<span id='daily_thermal_demand_" + i + "' class='slider_thermal'><span>" + i + "</span></span>");
+        $("#daily_electrical_variation").append("<span id='daily_electrical_variation_" + i + "' class='slider_electrical'><span>" + i + "</span></span>");
+    }
+
+    $(".slider_thermal").slider({
+        value: 0,
+        min: 0,
+        max: 3000,
+        range: "min",
+        animate: true,
+        orientation: "vertical",
+        slide: function(event, ui) {
+            var text = "(Current value: " + ui.value / 100 + "C)";
+            $("#daily_thermal_demand_info").text(text);
+        },
+        stop: function(event, ui) {
+            $("#daily_thermal_demand_info").text('');
         }
-        for(var i = 0; i < 24; i++) {
-            post_data += "&daily_electrical_variation_" + i + "=" + ($("#daily_electrical_variation_" + i).slider( "value")/10000);
+    });
+
+    $(".slider_electrical").slider({
+        value: 0,
+        min: 0,
+        max: 20000,
+        range: "min",
+        animate: true,
+        orientation: "vertical",
+        slide: function(event, ui) {
+            var text = "(Current value: " + ui.value / 100 + "%)";
+            $("#daily_electrical_variation_info").text(text);
+        },
+        stop: function(event, ui) {
+            $("#daily_electrical_variation_info").text('');
         }
-        $.post( "./api/settings/", post_data, function( data ) {
+    });
+}
+
+function initialize_event_handlers() {
+    $("#settings").submit(function(event) {
+        var post_data = $("#settings").serialize();
+        for (var i = 0; i < 24; i++) {
+            post_data += "&daily_thermal_demand_" + i + "=" + ($("#daily_thermal_demand_" + i).slider("value") / 100);
+        }
+        for (var i = 0; i < 24; i++) {
+            post_data += "&daily_electrical_variation_" + i + "=" + ($("#daily_electrical_variation_" + i).slider("value") / 10000);
+        }
+        $.post("./api/settings/", post_data, function(data) {
             $("#settings_button").removeClass("btn-primary");
             $("#settings_button").addClass("btn-success");
             update_setting(data);
-            setTimeout(function(){
+            setTimeout(function() {
                 $("#settings_button").removeClass("btn-success");
                 $("#settings_button").addClass("btn-primary");
             }, 500);
@@ -227,22 +276,26 @@ function initialize_event_handlers(){
         event.preventDefault();
     });
 
-    $(".fast_forward_button").click(function( event ) {
-        $.post( "./api/simulation/", {forward: $(this).val()});
+    $(".fast_forward_button").click(function(event) {
+        $.post("./api/simulation/", {
+            forward: $(this).val()
+        });
     });
 
     $("#editor_button").click(function() {
-        $.post( "./api/settings/", {code: editor.getValue()}, function( data ) {
+        $.post("./api/settings/", {
+            code: editor.getValue()
+        }, function(data) {
             editor.setValue(data['editor_code'], 1);
         });
     });
 
-    $("#pause_refresh").click(function( event ) {
+    $("#pause_refresh").click(function(event) {
         refresh_gui = !refresh_gui;
-        if(refresh_gui){
+        if (refresh_gui) {
             $("#pause_refresh span").removeClass('glyphicon-pause');
             $("#pause_refresh span").addClass('glyphicon-refresh');
-        }else{
+        } else {
             $("#pause_refresh span").removeClass('glyphicon-refresh');
             $("#pause_refresh span").addClass('glyphicon-pause');
 
@@ -250,17 +303,22 @@ function initialize_event_handlers(){
         event.preventDefault();
     });
 
-    $("#reset_simulation").click(function( event ) {
-        $.post( "./api/simulation/", {reset: 1});
+    $("#reset_simulation").click(function(event) {
+        $.post("./api/simulation/", {
+            reset: 1
+        });
         event.preventDefault();
     });
 
-    $("#save_snippet").submit(function( event ){
-        $.post( "./api/code/", {save_snippet: $("#snippet_name").val(), code: editor.getValue()}, function( data ) {
+    $("#save_snippet").submit(function(event) {
+        $.post("./api/code/", {
+            save_snippet: $("#snippet_name").val(),
+            code: editor.getValue()
+        }, function(data) {
             editor.setValue(data['editor_code'], 1);
-            
+
             // refresh snippet list
-            if('code_snippets' in data){
+            if ('code_snippets' in data) {
                 $("#snippets").html('');
                 $.each(data['code_snippets'], function(index, snippet_name) {
                     $("#snippets").append('<option>' + snippet_name + '</option>');
@@ -270,65 +328,30 @@ function initialize_event_handlers(){
         event.preventDefault();
     });
 
-    $("#load_snippet").submit(function( event ){
-        $.post( "./api/code/", {snippet: $("#snippets").val()}, function( data ) {
+    $("#load_snippet").submit(function(event) {
+        $.post("./api/code/", {
+            snippet: $("#snippets").val()
+        }, function(data) {
             editor.setValue(data['editor_code'], 1);
         });
         event.preventDefault();
     });
 
-    $("#export_data").submit(function( event ){
-        $.post( "./api/simulation/", {export: $("#export_name").val()});
+    $("#export_data").submit(function(event) {
+        $.post("./api/simulation/", {
+            export: $("#export_name").val()
+        });
         event.preventDefault();
     });
 }
 
-function initialize_daily_demands(){
-    for(var i = 0; i < 24; i++) {
-        $("#daily_thermal_demand").append("<span id='daily_thermal_demand_" + i + "' class='slider_thermal'><span>" + i + "</span></span>");
-        $("#daily_electrical_variation").append("<span id='daily_electrical_variation_" + i + "' class='slider_electrical'><span>" + i + "</span></span>");
-    }
-
-    $( ".slider_thermal" ).slider({
-        value: 0,
-        min: 0,
-        max: 3000,
-        range: "min",
-        animate: true,
-        orientation: "vertical",
-        slide: function( event, ui ) {
-            var text = "(Current value: " + ui.value/100 + "C)";
-            $( "#daily_thermal_demand_info" ).text( text );
-        },
-        stop: function( event, ui ) {
-            $( "#daily_thermal_demand_info" ).text('');
-        }
-    });
-
-    $( ".slider_electrical" ).slider({
-        value: 0,
-        min: 0,
-        max: 20000,
-        range: "min",
-        animate: true,
-        orientation: "vertical",
-        slide: function( event, ui ) {
-            var text = "(Current value: " + ui.value/100 + "%)";
-            $( "#daily_electrical_variation_info" ).text( text );   
-        },
-        stop: function( event, ui ) {
-            $( "#daily_electrical_variation_info" ).text('');
-        }
-    });
-}
-
-function initialize_diagram(){
+function initialize_diagram() {
     Highcharts.setOptions({
-        global : {
-            useUTC : false
+        global: {
+            useUTC: false
         }
     });
-    
+
     // Create the chart
     $('#simulation_diagram').highcharts('StockChart', {
         chart: {
@@ -369,15 +392,12 @@ function initialize_diagram(){
             }],
             selected: 2
         },
-
         yAxis: {
             min: -10
         },
-        
-        tooltip : {
-            valueDecimals : 2
+        tooltip: {
+            valueDecimals: 2
         },
-
         plotOptions: {
             series: {
                 marker: {
@@ -386,11 +406,19 @@ function initialize_diagram(){
                 lineWidth: 1,
             }
         },
-        
-        series : series_data,
-
+        series: series_data,
         credits: {
             enabled: false
         }
     });
+}
+
+// HELPERS
+function format_date(date) {
+    date = date.toString();
+    return date.substring(0, date.length - 15);
+}
+
+function get_timestamp(string) {
+    return new Date(parseFloat(string) * 1000).getTime();
 }
