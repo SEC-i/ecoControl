@@ -47,10 +47,10 @@ snippet cu.minimal_off_time\n\
 	cu.minimal_off_time\n\
 snippet cu.total_electrical_production\n\
 	cu.total_electrical_production\n\
-snippet cu.thermal_led\n\
-	cu.thermal_led\n\
-snippet cu.electric_led_overproduction\n\
-	cu.electric_led_overproduction\n\
+snippet cu.thermal_driven\n\
+	cu.thermal_driven\n\
+snippet cu.electrical_driven_overproduction\n\
+	cu.electrical_driven_overproduction\n\
 snippet cu.overwrite_workload\n\
 	cu.overwrite_workload\n\
 snippet plb.start()\n\

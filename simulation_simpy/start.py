@@ -142,15 +142,15 @@ def handle_settings():
         if 'cu_max_gas_input' in request.form:
             cu.max_gas_input = float(request.form['cu_max_gas_input'])
         if 'cu_mode' in request.form:
-            cu.thermal_led = request.form['cu_mode'] == "thermal_led"
+            cu.thermal_driven = request.form['cu_mode'] == "thermal_driven"
         if 'cu_minimal_workload' in request.form:
             cu.minimal_workload = float(request.form['cu_minimal_workload'])
         if 'cu_electrical_efficiency' in request.form:
             cu.electrical_efficiency = float(
                 request.form['cu_electrical_efficiency']) / 100.0
-        if 'cu_electric_led_overproduction' in request.form:
-            cu.electric_led_overproduction = float(
-                request.form['cu_electric_led_overproduction'])
+        if 'cu_electrical_driven_overproduction' in request.form:
+            cu.electrical_driven_overproduction = float(
+                request.form['cu_electrical_driven_overproduction'])
         if 'cu_thermal_efficiency' in request.form:
             cu.thermal_efficiency = float(
                 request.form['cu_thermal_efficiency']) / 100.0
@@ -181,11 +181,11 @@ def handle_settings():
         'hs_min_temperature': heat_storage.min_temperature,
         'hs_max_temperature': heat_storage.max_temperature,
         'cu_max_gas_input': cu.max_gas_input,
-        'cu_mode': 0 if cu.thermal_led else 1,
+        'cu_mode': 0 if cu.thermal_driven else 1,
         'cu_minimal_workload': cu.minimal_workload,
         'cu_thermal_efficiency': cu.thermal_efficiency * 100.0,
         'cu_electrical_efficiency': cu.electrical_efficiency * 100.0,
-        'cu_electric_led_overproduction': cu.electric_led_overproduction,
+        'cu_electrical_driven_overproduction': cu.electrical_driven_overproduction,
         'plb_max_gas_input': plb.max_gas_input,
         'daily_thermal_demand': thermal_consumer.daily_demand,
         'daily_electrical_variation': electrical_consumer.demand_variation,

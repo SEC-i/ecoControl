@@ -138,9 +138,9 @@ function update_setting(data){
             });
         }else if(key == "cu_mode"){
             if(value == 0){
-                $("#cu_mode_thermal_led").attr('checked', true);
+                $("#cu_mode_thermal_driven").attr('checked', true);
             }else{
-                $("#cu_mode_electric_led").attr('checked', true);
+                $("#cu_mode_electrical_driven").attr('checked', true);
             }
         }else if(key == "code_snippets"){
             $.each(value, function(index, snippet_name) {
