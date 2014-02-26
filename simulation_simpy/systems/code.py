@@ -8,7 +8,7 @@ class CodeExecuter():
         self.env = env
         self.local_variables = local_variables
 
-        self.code = "# Available variables:"
+        self.code = "#"
         for key in local_variables.keys():
             self.code += " " + key
         self.code += "\n"
