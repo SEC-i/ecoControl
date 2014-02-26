@@ -103,8 +103,8 @@ snippet power_meter.electrical_reward_per_kwh\n\
 	power_meter.electrical_reward_per_kwh\n\
 snippet power_meter.electrical_costs_per_kwh\n\
 	power_meter.electrical_costs_per_kwh\n\
-snippet power_meter.total\n\
-	power_meter.total\n\
+snippet power_meter.total_fed_in_electricity\n\
+	power_meter.total_fed_in_electricity\n\
 snippet power_meter.total_purchased\n\
 	power_meter.total_purchased\n\
 snippet power_meter.get_reward()\n\
