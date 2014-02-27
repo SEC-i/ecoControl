@@ -26,12 +26,10 @@ class HeatStorage(BaseSystem):
         return self.specific_heat_capacity * self.capacity * (self.max_temperature - self.base_temperature)
 
     def add_energy(self, energy):
-        energy /= self.env.accuracy
         self.input_energy += min(
             energy, self.get_energy_capacity() - self.energy_stored())
 
     def consume_energy(self, energy):
-        energy /= self.env.accuracy
         if self.energy_stored() - energy >= 0:
             self.output_energy += energy
         else:
@@ -81,8 +79,7 @@ class PowerMeter(BaseSystem):
     def consume_energy(self, energy):
         self.energy_consumed = energy
 
-        balance = (self.energy_produced - self.energy_consumed) / \
-            self.env.accuracy
+        balance = (self.energy_produced - self.energy_consumed)
         # purchase electrical energy if more energy needed than produced
         if balance < 0:
             self.total_purchased -= balance

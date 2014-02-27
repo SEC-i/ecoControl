@@ -6,40 +6,6 @@ from data import outside_temperatures_2013, daily_electrical_demand
 from helpers import BaseSystem, sign
 
 
-class SimpleThermalConsumer(BaseSystem):
-
-    def __init__(self, env, heat_storage):
-        BaseSystem.__init__(self, env)
-        self.env = env
-        self.heat_storage = heat_storage
-
-        self.base_demand = 20.0  # kW
-        self.varying_demand = 25.0  # kW
-
-        self.total_consumption = 0.0  # kWh
-
-        # list of 24 values representing relative demand per hour
-        self.daily_demand = [50 / 350.0, 25 / 350.0, 10 / 350.0, 10 / 350.0, 5 / 350.0, 20 / 350.0, 250 / 350.0, 1, 320 / 350.0, 290 / 350.0, 280 / 350.0, 310 /
-                             350.0, 250 / 350.0, 230 / 350.0, 225 / 350.0, 160 / 350.0, 125 / 350.0, 160 / 350.0, 200 / 350.0, 220 / 350.0, 260 / 350.0, 130 / 350.0, 140 / 350.0, 120 / 350.0]
-
-    def step(self):
-        consumption = self.get_consumption()
-        self.total_consumption += consumption / self.env.accuracy
-        self.heat_storage.consume_energy(consumption)
-
-        self.env.log('Thermal demand:', '%f kW' % consumption)
-        self.env.log('HS level:', '%f kWh' %
-                     self.heat_storage.energy_stored())
-
-    def get_consumption(self):
-        # calculate variation using daily demand
-        variation = self.daily_demand[
-            self.env.get_hour_of_day()] * self.varying_demand
-        current_consumption = self.base_demand + variation
-
-        return current_consumption
-
-
 class ThermalConsumer(BaseSystem):
 
     """ physically based heating, using formulas from 
@@ -68,23 +34,32 @@ class ThermalConsumer(BaseSystem):
         self.window_surface = 4 * 4 * 12
 
         specific_heat_capacity_brick = 1360 * 10 ** 3  # J/(m^3 * K)
-        # J / K, approximation for 15m^2walls, 0.2m thickness, walls, ceiling, acg rooms p appartent, appartments
-        heat_cap_brick = specific_heat_capacity_brick * (4 * 3 * 5 * 0.2) * 4 * 12
+        # J / K, approximation for 15m^2walls, 0.2m thickness, walls, ceiling,
+        # acg rooms p appartent, appartments
+        heat_cap_brick = specific_heat_capacity_brick * \
+            (4 * 3 * 5 * 0.2) * 4 * 12
 
         #J /( m^3 * K)
         specific_heat_capacity_air = 1290
 
-        self.heat_capacity = specific_heat_capacity_air * self.room_volume + heat_cap_brick
+        self.heat_capacity = specific_heat_capacity_air * \
+            self.room_volume + heat_cap_brick
 
     def step(self):
         self.simulate_consumption()
-        consumption = self.current_power / 1000.0
-        self.total_consumption += consumption / self.env.accuracy
+        consumption = self.get_consumption_energy()
+        self.total_consumption += consumption
         self.heat_storage.consume_energy(consumption)
 
-        self.env.log('Thermal demand:', '%f kW' % consumption)
+        self.env.log('Thermal demand:', '%f kW' % self.get_consumption_power())
         self.env.log('HS level:', '%f kWh' %
                      self.heat_storage.energy_stored())
+
+    def get_consumption_power(self):
+        return self.current_power / 1000.0
+
+    def get_consumption_energy(self):
+        return self.get_consumption_power() / self.env.accuracy
 
     def simulate_consumption(self):
         # calculate variation using daily demand
@@ -103,9 +78,6 @@ class ThermalConsumer(BaseSystem):
         self.current_power = max(min(self.current_power, self.max_power), 0)
         self.heat_room()
 
-    def get_consumption(self):
-        return self.current_power / 1000.0
-
     def heat_loss(self):
         # assume cooling of power/2
         d = self.temperature_room - \
@@ -122,7 +94,6 @@ class ThermalConsumer(BaseSystem):
         temperature_delta = self.current_power * \
             heating_efficiency * self.env.step_size
         self.temperature_room += temperature_delta
-
 
     def get_outside_temperature(self, offset_days=0):
         day = (self.env.get_day_of_year() + offset_days) % 365
@@ -141,17 +112,21 @@ class SimpleElectricalConsumer(BaseSystem):
         self.demand_variation = [1 for i in range(24)]
 
     def step(self):
-        consumption = self.get_consumption()
-        self.total_consumption += consumption / self.env.accuracy
+        consumption = self.get_consumption_energy()
+        self.total_consumption += consumption
         self.power_meter.consume_energy(consumption)
 
-        self.env.log('Electrical demand:', '%f kW' % consumption)
+        self.env.log('Electrical demand:', '%f kW' %
+                     self.get_consumption_power())
         self.env.log('Infeed Reward:', '%f Euro' %
                      self.power_meter.get_reward())
 
-    def get_consumption(self):
+    def get_consumption_power(self):
         # calculate variation using daily demand and variation
         return self.get_electrical_demand() * self.demand_variation[self.env.get_hour_of_day()]
+
+    def get_consumption_energy(self):
+        return self.get_consumption_power() / self.env.accuracy
 
     def get_electrical_demand(self):
         hour = self.env.get_hour_of_day()

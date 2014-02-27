@@ -9,7 +9,7 @@ from werkzeug.serving import run_simple
 app = Flask(__name__)
 
 from simulation import get_new_simulation
-from helpers import SimulationBackgroundRunner, crossdomain
+from helpers import SimulationBackgroundRunner
 
 CACHE_LIMIT = 24 * 365  # 365 days
 measurement_values = ['time', 'cu_workload', 'plb_workload', 'hs_temperature',
@@ -25,19 +25,16 @@ for i in measurement_values:
 
 
 @app.route('/')
-@crossdomain(origin='*')
 def index():
     return render_template('index.html')
 
 
 @app.route('/api/data/', methods=['GET'])
-@crossdomain(origin='*')
 def get_data():
     return jsonify(get_measurements(multiple=True))
 
 
 @app.route('/api/code/', methods=['GET', 'POST'])
-@crossdomain(origin='*')
 def handle_code():
     if request.method == "POST":
         if 'snippet' in request.form:
@@ -53,7 +50,6 @@ def handle_code():
 
 
 @app.route('/api/settings/', methods=['GET', 'POST'])
-@crossdomain(origin='*')
 def handle_settings():
     if request.method == "POST":
         if 'hs_capacity' in request.form:
@@ -114,7 +110,6 @@ def handle_settings():
 
 
 @app.route('/api/simulation/', methods=['POST'])
-@crossdomain(origin='*')
 def handle_simulation():
     if 'forward' in request.form and request.form['forward'] != "":
         env.forward = float(request.form['forward']) * 60 * 60
@@ -200,11 +195,11 @@ def get_measurements(multiple=False):
                 ('plb_workload', [round(plb.workload, 2)]),
                 ('hs_temperature', [round(heat_storage.get_temperature(), 2)]),
                 ('thermal_consumption',
-                 [round(thermal_consumer.get_consumption(), 2)]),
+                 [round(thermal_consumer.get_consumption_power(), 2)]),
                 ('outside_temperature',
                  [round(thermal_consumer.get_outside_temperature(), 2)]),
                 ('electrical_consumption',
-                 [round(electrical_consumer.get_consumption(), 2)])
+                 [round(electrical_consumer.get_consumption_power(), 2)])
             ]
 
     return dict(output)
@@ -218,11 +213,11 @@ def append_measurement():
         measurements['hs_temperature'].append(
             round(heat_storage.get_temperature(), 2))
         measurements['thermal_consumption'].append(
-            round(thermal_consumer.get_consumption(), 2))
+            round(thermal_consumer.get_consumption_power(), 2))
         measurements['outside_temperature'].append(
             round(thermal_consumer.get_outside_temperature(), 2))
         measurements['electrical_consumption'].append(
-            round(electrical_consumer.get_consumption(), 2))
+            round(electrical_consumer.get_consumption_power(), 2))
 
 
 def get_total_bilance():
@@ -245,4 +240,4 @@ if __name__ == '__main__':
     thread = SimulationBackgroundRunner(env)
     thread.start()
 
-    app.run(host="0.0.0.0", debug=True, port=8080, use_reloader=False)
+    run_simple('localhost', 8080, app, threaded=True)
