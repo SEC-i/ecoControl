@@ -24,7 +24,7 @@ class SimpleThermalConsumer(BaseSystem):
 
     def step(self):
         consumption = self.get_consumption()
-        self.total_consumption += consumption / self.env.accuracy
+        self.total_consumption += consumption / self.env.steps_per_measurement
         self.heat_storage.consume_energy(consumption)
 
         self.env.log('Thermal demand:', '%f kW' % consumption)
@@ -79,7 +79,7 @@ class ThermalConsumer(BaseSystem):
     def step(self):
         self.simulate_consumption()
         consumption = self.current_power / 1000.0
-        self.total_consumption += consumption / self.env.accuracy
+        self.total_consumption += consumption / self.env.steps_per_measurement
         self.heat_storage.consume_energy(consumption)
 
         self.env.log('Thermal demand:', '%f kW' % consumption)
@@ -142,7 +142,7 @@ class SimpleElectricalConsumer(BaseSystem):
 
     def step(self):
         consumption = self.get_consumption()
-        self.total_consumption += consumption / self.env.accuracy
+        self.total_consumption += consumption / self.env.steps_per_measurement
         self.power_meter.consume_energy(consumption)
 
         self.env.log('Electrical demand:', '%f kW' % consumption)
