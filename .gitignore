@@ -1,3 +1,6 @@
+/simulation/exports/*
+!/simulation/exports/example.json
+
 *.py[cod]
 *.py~
 # C extensions
@@ -41,8 +44,5 @@ nosetests.xml
 *.sublime-workspace
 *.sublime-project
 *.log
-
-
-
 
 sftp-config-alt2.json
