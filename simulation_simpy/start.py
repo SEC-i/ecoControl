@@ -206,7 +206,7 @@ def get_measurements(multiple=False):
 
 
 def append_measurement():
-    if env.now % env.granularity == 0:  # take measurements each hour
+    if env.now % env.measurement_interval == 0:  # take measurements each hour
         measurements['time'].append(env.now)
         measurements['cu_workload'].append(round(cu.workload, 2))
         measurements['plb_workload'].append(round(plb.workload, 2))

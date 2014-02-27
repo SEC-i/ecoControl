@@ -56,7 +56,7 @@ class HeatStorage(BaseSystem):
     def step(self):
         energy_loss = (self.capacity * self.specific_heat_capacity) * \
             self.temperature_loss
-        self.output_energy += energy_loss / self.env.accuracy
+        self.output_energy += energy_loss / self.env.steps_per_measurement
 
 
 class PowerMeter(BaseSystem):

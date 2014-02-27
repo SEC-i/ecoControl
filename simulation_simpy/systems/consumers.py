@@ -59,7 +59,7 @@ class ThermalConsumer(BaseSystem):
         return self.current_power / 1000.0
 
     def get_consumption_energy(self):
-        return self.get_consumption_power() / self.env.accuracy
+        return self.get_consumption_power() / self.env.steps_per_measurement
 
     def simulate_consumption(self):
         # calculate variation using daily demand
@@ -126,7 +126,7 @@ class SimpleElectricalConsumer(BaseSystem):
         return self.get_electrical_demand() * self.demand_variation[self.env.get_hour_of_day()]
 
     def get_consumption_energy(self):
-        return self.get_consumption_power() / self.env.accuracy
+        return self.get_consumption_power() / self.env.steps_per_measurement
 
     def get_electrical_demand(self):
         hour = self.env.get_hour_of_day()

@@ -26,9 +26,9 @@ class GasPoweredGenerator(BaseSystem):
 
     def consume_gas(self):
         self.total_gas_consumption += self.current_gas_consumption / \
-            self.env.accuracy
+            self.env.steps_per_measurement
         self.total_thermal_production += self.current_thermal_production / \
-            self.env.accuracy
+            self.env.steps_per_measurement
 
     def get_operating_costs(self):
         return self.total_gas_consumption * self.gas_price_per_kwh
@@ -78,10 +78,10 @@ class CogenerationUnit(GasPoweredGenerator):
             self.env.log('Cogeneration unit stopped')
 
     def get_electrical_energy_production(self):
-        return self.current_electrical_production / self.env.accuracy
+        return self.current_electrical_production / self.env.steps_per_measurement
 
     def get_thermal_energy_production(self):
-        return self.current_thermal_production / self.env.accuracy
+        return self.current_thermal_production / self.env.steps_per_measurement
 
     def get_operating_costs(self):
         gas_costs = super(CogenerationUnit, self).get_operating_costs()
@@ -138,7 +138,7 @@ class CogenerationUnit(GasPoweredGenerator):
                 self.power_on_count += 1
 
             self.total_hours_of_operation += self.env.step_size / \
-                self.env.granularity
+                self.env.measurement_interval
             self.workload = min(calculated_workload, 99.0)
         else:
             self.workload = 0.0
@@ -158,7 +158,7 @@ class CogenerationUnit(GasPoweredGenerator):
     def consume_gas(self):
         super(CogenerationUnit, self).consume_gas()
         self.total_electrical_production += self.current_electrical_production / \
-            self.env.accuracy
+            self.env.steps_per_measurement
 
 
 class PeakLoadBoiler(GasPoweredGenerator):
@@ -190,7 +190,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
         self.env.log('=' * 80)
 
     def get_thermal_energy_production(self):
-        return self.current_thermal_production / self.env.accuracy
+        return self.current_thermal_production / self.env.steps_per_measurement
 
     def calculate_state(self):
         if self.overwrite_workload is not None:
@@ -202,7 +202,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
                     self.power_on_count += 1
 
                 self.total_hours_of_operation += self.env.step_size / \
-                    self.env.granularity
+                    self.env.measurement_interval
                 self.workload = 99.0
             # turn off if heat storage's target energy is almost reached
             elif self.heat_storage.energy_stored() + self.current_thermal_production >= self.heat_storage.get_target_energy():
