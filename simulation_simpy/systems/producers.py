@@ -61,7 +61,6 @@ class CogenerationUnit(GasPoweredGenerator):
 
         self.overwrite_workload = None
 
-    @profile
     def step(self):
         if self.running:
             self.calculate_state()
