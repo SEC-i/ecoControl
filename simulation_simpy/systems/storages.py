@@ -10,7 +10,8 @@ class HeatStorage(BaseSystem):
         self.capacity = 2500  # liters  (=kilos)
         self.base_temperature = 20.0  # degree Celsius
         self.min_temperature = 55.0  # degree Celsius
-        self.max_temperature = 70.0  # degree Celsius
+        self.target_temperature = 70.0  # degree Celsius
+        self.critical_temperature = 90.0
 
         self.specific_heat_capacity = 4.19 * 1 / 3600.0  # kWh/(kg*K)
 
@@ -23,15 +24,12 @@ class HeatStorage(BaseSystem):
         return self.input_energy - self.output_energy
 
     def get_target_energy(self):
-        return self.specific_heat_capacity * self.capacity * (self.max_temperature - self.base_temperature)
+        return self.specific_heat_capacity * self.capacity * (self.target_temperature - self.base_temperature)
 
     def add_energy(self, energy):
-        energy /= self.env.accuracy
-        self.input_energy += min(
-            energy, self.get_energy_capacity() - self.energy_stored())
+        self.input_energy += energy
 
     def consume_energy(self, energy):
-        energy /= self.env.accuracy
         if self.energy_stored() - energy >= 0:
             self.output_energy += energy
         else:
@@ -43,7 +41,7 @@ class HeatStorage(BaseSystem):
 
     def get_energy_capacity(self):
         return self.capacity * \
-            (self.max_temperature - self.base_temperature) * \
+            (self.critical_temperature - self.base_temperature) * \
             self.specific_heat_capacity
 
     def undersupplied(self):
@@ -58,7 +56,7 @@ class HeatStorage(BaseSystem):
     def step(self):
         energy_loss = (self.capacity * self.specific_heat_capacity) * \
             self.temperature_loss
-        self.output_energy += energy_loss / self.env.accuracy
+        self.output_energy += energy_loss / self.env.steps_per_measurement
 
 
 class PowerMeter(BaseSystem):
@@ -81,8 +79,7 @@ class PowerMeter(BaseSystem):
     def consume_energy(self, energy):
         self.energy_consumed = energy
 
-        balance = (self.energy_produced - self.energy_consumed) / \
-            self.env.accuracy
+        balance = (self.energy_produced - self.energy_consumed)
         # purchase electrical energy if more energy needed than produced
         if balance < 0:
             self.total_purchased -= balance

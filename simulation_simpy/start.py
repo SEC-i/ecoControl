@@ -3,13 +3,16 @@ import os
 import time
 import collections
 import json
+import cProfile
+import re
+
 
 from flask import Flask, jsonify, render_template, request
 from werkzeug.serving import run_simple
 app = Flask(__name__)
 
 from simulation import get_new_simulation
-from helpers import SimulationBackgroundRunner, crossdomain
+from helpers import SimulationBackgroundRunner
 
 CACHE_LIMIT = 24 * 365  # 365 days
 measurement_values = ['time', 'cu_workload', 'plb_workload', 'hs_temperature',
@@ -25,19 +28,16 @@ for i in measurement_values:
 
 
 @app.route('/')
-@crossdomain(origin='*')
 def index():
     return render_template('index.html')
 
 
 @app.route('/api/data/', methods=['GET'])
-@crossdomain(origin='*')
 def get_data():
     return jsonify(get_measurements(multiple=True))
 
 
 @app.route('/api/code/', methods=['GET', 'POST'])
-@crossdomain(origin='*')
 def handle_code():
     if request.method == "POST":
         if 'snippet' in request.form:
@@ -53,7 +53,6 @@ def handle_code():
 
 
 @app.route('/api/settings/', methods=['GET', 'POST'])
-@crossdomain(origin='*')
 def handle_settings():
     if request.method == "POST":
         if 'hs_capacity' in request.form:
@@ -61,9 +60,9 @@ def handle_settings():
         if 'hs_min_temperature' in request.form:
             heat_storage.min_temperature = float(
                 request.form['hs_min_temperature'])
-        if 'hs_max_temperature' in request.form:
-            heat_storage.max_temperature = float(
-                request.form['hs_max_temperature'])
+        if 'hs_target_temperature' in request.form:
+            heat_storage.target_temperature = float(
+                request.form['hs_target_temperature'])
         if 'cu_max_gas_input' in request.form:
             cu.max_gas_input = float(request.form['cu_max_gas_input'])
         if 'cu_mode' in request.form:
@@ -98,7 +97,7 @@ def handle_settings():
     return jsonify({
         'hs_capacity': heat_storage.capacity,
         'hs_min_temperature': heat_storage.min_temperature,
-        'hs_max_temperature': heat_storage.max_temperature,
+        'hs_target_temperature': heat_storage.target_temperature,
         'cu_max_gas_input': cu.max_gas_input,
         'cu_mode': 0 if cu.thermal_driven else 1,
         'cu_minimal_workload': cu.minimal_workload,
@@ -114,7 +113,6 @@ def handle_settings():
 
 
 @app.route('/api/simulation/', methods=['POST'])
-@crossdomain(origin='*')
 def handle_simulation():
     if 'forward' in request.form and request.form['forward'] != "":
         env.forward = float(request.form['forward']) * 60 * 60
@@ -200,29 +198,29 @@ def get_measurements(multiple=False):
                 ('plb_workload', [round(plb.workload, 2)]),
                 ('hs_temperature', [round(heat_storage.get_temperature(), 2)]),
                 ('thermal_consumption',
-                 [round(thermal_consumer.get_consumption(), 2)]),
+                 [round(thermal_consumer.get_consumption_power(), 2)]),
                 ('outside_temperature',
                  [round(thermal_consumer.get_outside_temperature(), 2)]),
                 ('electrical_consumption',
-                 [round(electrical_consumer.get_consumption(), 2)])
+                 [round(electrical_consumer.get_consumption_power(), 2)])
             ]
 
     return dict(output)
 
 
 def append_measurement():
-    if env.now % env.granularity == 0:  # take measurements each hour
+    if env.now % env.measurement_interval == 0:  # take measurements each hour
         measurements['time'].append(env.now)
         measurements['cu_workload'].append(round(cu.workload, 2))
         measurements['plb_workload'].append(round(plb.workload, 2))
         measurements['hs_temperature'].append(
             round(heat_storage.get_temperature(), 2))
         measurements['thermal_consumption'].append(
-            round(thermal_consumer.get_consumption(), 2))
+            round(thermal_consumer.get_consumption_power(), 2))
         measurements['outside_temperature'].append(
             round(thermal_consumer.get_outside_temperature(), 2))
         measurements['electrical_consumption'].append(
-            round(electrical_consumer.get_consumption(), 2))
+            round(electrical_consumer.get_consumption_power(), 2))
 
 
 def get_total_bilance():
@@ -240,9 +238,21 @@ def parse_hourly_demand_values(namespace, data):
 
 
 if __name__ == '__main__':
-    env.verbose = len(sys.argv) > 1
-    env.step_function = append_measurement
-    thread = SimulationBackgroundRunner(env)
-    thread.start()
+    
 
-    app.run(host="0.0.0.0", debug=True, port=8080, use_reloader=False)
+    env.verbose = "verbose" in sys.argv
+    env.step_function = append_measurement
+
+    if "profile" in sys.argv:
+        #simulate half a year
+        env.forward = 1370088732 - 1356998400
+        cProfile.run("env.run()")
+    else:
+        thread = SimulationBackgroundRunner(env)
+        thread.start()
+        run_simple('localhost', 8080, app, threaded=True)
+
+
+    #1.1.2013
+    #1356998400
+    #1.6.2013

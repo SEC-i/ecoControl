@@ -2,15 +2,15 @@ import sys
 import datetime
 import traceback
 
-from simpy.core import Environment
+from simpy.core import Environment, EmptySchedule
 from simpy.rt import RealtimeEnvironment
 
 
 class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
-    def __init__(self, initial_time=1356998400, granularity=3600.0, strict=False):
+    def __init__(self, initial_time=1356998400, measurement_interval=3600.0, strict=False):
         RealtimeEnvironment.__init__(
-            self, initial_time, 1.0 / granularity, strict)
+            self, initial_time, 1.0 / measurement_interval, strict)
 
         # start_time = time.time()
         # self.start_time = 1356998400  # 01.01.2013 00:00
@@ -21,16 +21,20 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         self.forward = 0
 
         # timings
-        self.granularity = granularity
-        self.accuracy = 30.0  # every 2min
-        self.step_size = self.granularity / self.accuracy  # in seconds
+        self.measurement_interval = measurement_interval
+        self.steps_per_measurement = 30.0  # every 2min
+        self.step_size = self.measurement_interval / self.steps_per_measurement  # in seconds
 
         # function which gets called every step
         self.step_function = None
 
         self.last_step = self.now
+        self.exiting = False
 
     def step(self):
+        if self.exiting:
+            #self._stop_simulate()
+            raise EmptySchedule()
         try:
             if self.forward > 0:
                 forward_to = self.now + self.forward
@@ -42,6 +46,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
                 self.env_start += self.forward
                 self.forward = 0
+                self.exiting = True
             else:
                 self.handle_step_function()
                 RealtimeEnvironment.step(self)
@@ -67,7 +72,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         return datetime.datetime.fromtimestamp(self.now).timetuple()
 
     def log(self, *args):
-        if self.verbose and self.now % self.granularity == 0:
+        if self.verbose and self.now % self.measurement_interval == 0:
             sys.stdout.write('%d' % self.now)
             for string in enumerate(args):
                 sys.stdout.write('\t{0}'.format(string[1]))

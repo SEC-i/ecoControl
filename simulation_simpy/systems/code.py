@@ -23,7 +23,7 @@ class CodeExecuter(BaseSystem):
             exec(self.code, self.local_variables)
             self.execution_successful = True
         except:
-            if self.env.verbose and self.env.now % self.env.granularity == 0:
+            if self.env.verbose and self.env.now % self.env.measurement_interval == 0:
                 traceback.print_exc()
             self.execution_successful = False
 
@@ -41,7 +41,7 @@ class CodeExecuter(BaseSystem):
         return ""
 
     def save_snippet(self, snippet, code):
-        if os.path.splitext(snippet)[1] == ".py":
+        if os.path.splitext(snippet)[1] == ".py" and code != "":
             with open(self.snippet_folder + "/" + snippet, "w") as snippet_file:
                 snippet_file.write(code)
             return True

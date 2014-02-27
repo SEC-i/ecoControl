@@ -6,6 +6,6 @@ for i in range(7):
 avg = sum / 7.0
 
 if avg < 5.0:
-    heat_storage.max_temperature = 82
+    heat_storage.target_temperature = 82
 else:
-    heat_storage.max_temperature = 78
+    heat_storage.target_temperature = 78

@@ -1,7 +1,7 @@
-ace.define('ace/snippets/python', ['require', 'exports', 'module' ], function(require, exports, module) {
+ace.define('ace/snippets/python', ['require', 'exports', 'module'], function(require, exports, module) {
 
 
-exports.snippetText = "snippet env.get_hour_of_day()\n\
+    exports.snippetText = "snippet env.get_hour_of_day()\n\
 	env.get_hour_of_day()\n\
 snippet env.get_min_of_hour()\n\
 	env.get_min_of_hour()\n\
@@ -9,6 +9,12 @@ snippet env.get_day_of_year()\n\
 	env.get_day_of_year()\n\
 snippet env.log()\n\
 	env.log('msg')\n\
+snippet env.measurement_interval\n\
+	env.measurement_interval\n\
+snippet env.steps_per_measurement\n\
+	env.steps_per_measurement\n\
+snippet env.step_size\n\
+	env.step_size\n\
 snippet cu.start()\n\
 	cu.start()\n\
 snippet cu.stop()\n\
@@ -85,8 +91,8 @@ snippet heat_storage.capacity\n\
 	heat_storage.capacity\n\
 snippet heat_storage.min_temperature\n\
 	heat_storage.min_temperature\n\
-snippet heat_storage.max_temperature\n\
-	heat_storage.max_temperature\n\
+snippet heat_storage.target_temperature\n\
+	heat_storage.target_temperature\n\
 snippet heat_storage.input_energy\n\
 	heat_storage.input_energy\n\
 snippet heat_storage.output_energy\n\
@@ -117,16 +123,20 @@ snippet thermal_consumer.total_consumption\n\
 	thermal_consumer.total_consumptionn\n\
 snippet thermal_consumer.max_power\n\
 	thermal_consumer.max_power\n\
-snippet thermal_consumer.get_consumption()\n\
-	thermal_consumer.get_consumption()\n\
+snippet thermal_consumer.get_consumption_power()\n\
+	thermal_consumer.get_consumption_power()\n\
+snippet thermal_consumer.get_consumption_energy()\n\
+	thermal_consumer.get_consumption_energy()\n\
 snippet thermal_consumer.get_outside_temperature()\n\
 	thermal_consumer.get_outside_temperature()\n\
 snippet thermal_consumer.get_outside_temperature(offset=1)\n\
 	thermal_consumer.get_outside_temperature(offset=1)\n\
 snippet electrical_consumer.total_consumption\n\
 	electrical_consumer.total_consumption\n\
-snippet electrical_consumer.get_consumption()\n\
-	electrical_consumer.get_consumption()\n\
+snippet electrical_consumer.get_consumption_power()\n\
+	electrical_consumer.get_consumption_power()\n\
+snippet electrical_consumer.get_consumption_energy()\n\
+	electrical_consumer.get_consumption_energy()\n\
 snippet electrical_consumer.get_electrical_demand()\n\
 	electrical_consumer.get_electrical_demand()\n\
 snippet #!\n\
@@ -288,6 +298,6 @@ snippet getopt\n\
 		elif option in (\"-v\", \"--verbose\"):\n\
 			verbose = argument\n\
 ";
-exports.scope = "python";
+    exports.scope = "python";
 
 });
