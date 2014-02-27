@@ -54,7 +54,7 @@ class CogenerationUnit(GasPoweredGenerator):
         self.minimal_off_time = 5.0 * 60.0
         self.off_time = self.env.now
 
-        self.current_electrical_production = 0.0  # kWh
+        self.current_electrical_production = 0.0  # kW
         self.total_electrical_production = 0.0  # kWh
         self.thermal_driven = True
         self.electrical_driven_overproduction = 1.0  # kWh
@@ -70,12 +70,18 @@ class CogenerationUnit(GasPoweredGenerator):
                 (self.total_gas_consumption, self.get_operating_costs()))
 
             self.power_meter.add_energy(
-                self.current_electrical_production)
-            self.heat_storage.add_energy(self.current_thermal_production)
+                self.get_electrical_energy_production())
+            self.heat_storage.add_energy(self.get_thermal_energy_production())
             self.consume_gas()
         else:
             self.workload = 0.0
             self.env.log('Cogeneration unit stopped')
+
+    def get_electrical_energy_production(self):
+        return self.current_electrical_production / self.env.steps_per_measurement
+
+    def get_thermal_energy_production(self):
+        return self.current_thermal_production / self.env.steps_per_measurement
 
     def get_operating_costs(self):
         gas_costs = super(CogenerationUnit, self).get_operating_costs()
@@ -175,13 +181,16 @@ class PeakLoadBoiler(GasPoweredGenerator):
                 'PLB workload:', '%f %%' % self.workload, 'Total:', '%f kWh (%f Euro)' %
                 (self.total_gas_consumption, self.get_operating_costs()))
 
-            self.heat_storage.add_energy(self.current_thermal_production)
+            self.heat_storage.add_energy(self.get_thermal_energy_production())
             self.consume_gas()
         else:
             self.workload = 0.0
             self.env.log('PLB stopped.')
 
         self.env.log('=' * 80)
+
+    def get_thermal_energy_production(self):
+        return self.current_thermal_production / self.env.steps_per_measurement
 
     def calculate_state(self):
         if self.overwrite_workload is not None:

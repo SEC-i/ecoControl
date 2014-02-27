@@ -41,7 +41,7 @@ class CodeExecuter(BaseSystem):
         return ""
 
     def save_snippet(self, snippet, code):
-        if os.path.splitext(snippet)[1] == ".py":
+        if os.path.splitext(snippet)[1] == ".py" and code != "":
             with open(self.snippet_folder + "/" + snippet, "w") as snippet_file:
                 snippet_file.write(code)
             return True
