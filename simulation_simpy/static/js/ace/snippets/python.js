@@ -91,8 +91,8 @@ snippet heat_storage.capacity\n\
 	heat_storage.capacity\n\
 snippet heat_storage.min_temperature\n\
 	heat_storage.min_temperature\n\
-snippet heat_storage.max_temperature\n\
-	heat_storage.max_temperature\n\
+snippet heat_storage.target_temperature\n\
+	heat_storage.target_temperature\n\
 snippet heat_storage.input_energy\n\
 	heat_storage.input_energy\n\
 snippet heat_storage.output_energy\n\

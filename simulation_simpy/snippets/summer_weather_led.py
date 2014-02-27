@@ -11,8 +11,8 @@ hs_temp = heat_storage.get_temperature()
 if ((env.get_day_of_year() > 120) and (env.get_day_of_year() < 270)):
     plb.overwrite_workload = 0
     heat_storage.min_temperature = 50.0
-    heat_storage.max_temperature = 70.0
-    if hs_temp < heat_storage.max_temperature:
+    heat_storage.target_temperature = 70.0
+    if hs_temp < heat_storage.target_temperature:
         if hs_temp < heat_storage.min_temperature and avg < 15.0:
             cu.overwrite_workload = 80.0
         elif hs_temp < heat_storage.min_temperature and avg > 15.0:

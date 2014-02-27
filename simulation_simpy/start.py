@@ -60,9 +60,9 @@ def handle_settings():
         if 'hs_min_temperature' in request.form:
             heat_storage.min_temperature = float(
                 request.form['hs_min_temperature'])
-        if 'hs_max_temperature' in request.form:
-            heat_storage.max_temperature = float(
-                request.form['hs_max_temperature'])
+        if 'hs_target_temperature' in request.form:
+            heat_storage.target_temperature = float(
+                request.form['hs_target_temperature'])
         if 'cu_max_gas_input' in request.form:
             cu.max_gas_input = float(request.form['cu_max_gas_input'])
         if 'cu_mode' in request.form:
@@ -97,7 +97,7 @@ def handle_settings():
     return jsonify({
         'hs_capacity': heat_storage.capacity,
         'hs_min_temperature': heat_storage.min_temperature,
-        'hs_max_temperature': heat_storage.max_temperature,
+        'hs_target_temperature': heat_storage.target_temperature,
         'cu_max_gas_input': cu.max_gas_input,
         'cu_mode': 0 if cu.thermal_driven else 1,
         'cu_minimal_workload': cu.minimal_workload,

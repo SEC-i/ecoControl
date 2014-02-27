@@ -105,7 +105,7 @@ class CogenerationUnit(GasPoweredGenerator):
         return min(calculated_power / max_thermal_power, 1) * 99.0
 
     def get_calculated_workload_electric(self):
-        if self.heat_storage.get_temperature() >= self.heat_storage.max_temperature:
+        if self.heat_storage.get_temperature() >= self.heat_storage.target_temperature:
             return 0.0
         max_electric_power = self.electrical_efficiency * self.max_gas_input
         return min((self.power_meter.energy_consumed + self.electrical_driven_overproduction) / max_electric_power, 1) * 99.0
