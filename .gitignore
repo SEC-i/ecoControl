@@ -1,5 +1,5 @@
-/simulation_simpy/exports/*
-!/simulation_simpy/exports/example.json
+/simulation/exports/*
+!/simulation/exports/example.json
 
 *.py[cod]
 *.py~

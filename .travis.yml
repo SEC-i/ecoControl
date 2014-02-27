@@ -21,7 +21,7 @@ install:
 script:
   - cd server
   - python manage.py test
-  - cd ../simulation_simpy/testing
+  - cd ../simulation/testing
   - python -m unittest discover --pattern=*_tests.py
 #  - cd ../simulation
 #  - python test.py
