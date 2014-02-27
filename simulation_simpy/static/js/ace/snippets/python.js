@@ -9,6 +9,12 @@ snippet env.get_day_of_year()\n\
 	env.get_day_of_year()\n\
 snippet env.log()\n\
 	env.log('msg')\n\
+snippet env.measurement_interval\n\
+	env.measurement_interval\n\
+snippet env.steps_per_measurement\n\
+	env.steps_per_measurement\n\
+snippet env.step_size\n\
+	env.step_size\n\
 snippet cu.start()\n\
 	cu.start()\n\
 snippet cu.stop()\n\
