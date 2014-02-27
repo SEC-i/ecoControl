@@ -239,10 +239,12 @@ def parse_hourly_demand_values(namespace, data):
     return output
 
 
-if __name__ == '__main__':
-    env.verbose = len(sys.argv) > 1
-    env.step_function = append_measurement
-    thread = SimulationBackgroundRunner(env)
-    thread.start()
+# if __name__ == '__main__':
+#     env.verbose = len(sys.argv) > 1
+#     env.step_function = append_measurement
+#     thread = SimulationBackgroundRunner(env)
+#     thread.start()
 
-    app.run(host="0.0.0.0", debug=True, port=8080, use_reloader=False)
+    
+
+#     app.run(host="0.0.0.0", debug=True, port=8080, use_reloader=False)

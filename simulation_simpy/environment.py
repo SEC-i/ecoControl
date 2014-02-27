@@ -2,7 +2,7 @@ import sys
 import datetime
 import traceback
 
-from simpy.core import Environment
+from simpy.core import Environment, EmptySchedule
 from simpy.rt import RealtimeEnvironment
 
 
@@ -29,8 +29,12 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         self.step_function = None
 
         self.last_step = self.now
+        self.exiting = False
 
     def step(self):
+        if self.exiting:
+            #self._stop_simulate()
+            raise EmptySchedule()
         try:
             if self.forward > 0:
                 forward_to = self.now + self.forward
@@ -42,6 +46,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
                 self.env_start += self.forward
                 self.forward = 0
+                self.exiting = True
             else:
                 self.handle_step_function()
                 RealtimeEnvironment.step(self)
