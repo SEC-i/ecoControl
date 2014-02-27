@@ -1,5 +1,4 @@
 from helpers import BaseSystem, sign
-from profilehooks import profile
 
 
 class GasPoweredGenerator(BaseSystem):
@@ -112,7 +111,6 @@ class CogenerationUnit(GasPoweredGenerator):
         max_electric_power = self.electrical_efficiency * self.max_gas_input
         return min((self.power_meter.energy_consumed + self.electrical_driven_overproduction) / max_electric_power, 1) * 99.0
 
-    @profile
     def calculate_state(self):
         if self.overwrite_workload is not None:
             calculated_workload = self.overwrite_workload
@@ -126,7 +124,6 @@ class CogenerationUnit(GasPoweredGenerator):
 
         self.updateParameters(calculated_workload)
 
-    @profile
     def updateParameters(self, calculated_workload):
         old_workload = self.workload
         # ensure smoothly changing workload
