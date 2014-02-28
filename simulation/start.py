@@ -189,8 +189,8 @@ def get_measurements():
          [1 if code_executer.execution_successful else 0])
     ]
 
-    for key, val in enumerate(measurement_values):
-            output.append((val, list(measurements[key])))
+    for index, value in enumerate(measurement_values):
+            output.append((value, list(measurements[index])))
 
     return dict(output)
 
@@ -204,9 +204,9 @@ def append_measurement():
         measurements[4].append(
             round(thermal_consumer.get_consumption_power(), 2))
         measurements[5].append(
-            round(thermal_consumer.get_outside_temperature(), 2))
-        measurements[6].append(
             round(electrical_consumer.get_consumption_power(), 2))
+        measurements[6].append(
+            round(thermal_consumer.get_outside_temperature(), 2))
 
 
 def get_total_bilance():
