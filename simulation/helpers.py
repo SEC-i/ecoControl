@@ -46,6 +46,10 @@ class MeasurementCache():
             output.append((value, list(self.data[index])))
         return output
 
+    def clear(self):
+        for i in self.data:
+            self.data[i].clear()
+
     def get_mapped_value(self, value):
         if value == 'time':
             return self.env.now

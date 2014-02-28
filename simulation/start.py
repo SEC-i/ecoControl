@@ -128,11 +128,7 @@ def reset_simulation():
     (env, heat_storage, power_meter, cu, plb, thermal_consumer,
      electrical_consumer, code_executer) = get_new_simulation()
 
-    # clear measurements
-    for i in measurements:
-        measurements[i].clear()
-
-    env.step_function = append_measurement
+    env.step_function = measurements.take
     thread = SimulationBackgroundRunner(env)
     thread.start()
 
