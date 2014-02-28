@@ -121,9 +121,9 @@ class CogenerationUnit(GasPoweredGenerator):
             else:
                 calculated_workload = self.get_calculated_workload_electric()
 
-        self.updateParameters(calculated_workload)
+        self.update_parameters(calculated_workload)
 
-    def updateParameters(self, calculated_workload):
+    def update_parameters(self, calculated_workload):
         old_workload = self.workload
         # ensure smoothly changing workload
         slope = sign(calculated_workload - old_workload)
