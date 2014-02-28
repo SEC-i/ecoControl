@@ -1,4 +1,5 @@
 import time
+import math
 
 from data import outside_temperatures_2013, daily_electrical_demand
 from helpers import BaseSystem, sign
@@ -19,29 +20,34 @@ class ThermalConsumer(BaseSystem):
         self.temperature_room = 20
 
         # list of 24 values representing  target_temperature per hour
-        self.daily_demand = [18, 18, 19, 18, 19, 18, 19, 20, 21,
-                             24, 24, 25, 24, 25, 25, 25, 26, 25, 25, 24, 23, 22, 21, 20]
+        self.daily_demand = [15, 15, 16, 15, 15, 15, 19, 20, 21,
+                             20, 20, 21, 20, 22, 22, 21, 22, 22, 22, 22, 22, 22, 21, 17]
 
         # data from pamiru48
         # has 12 apartments with 22 persons
-        self.room_volume = 650  # m^3
+        self.total_heated_volume = 650  # m^3
+        appartments  = 12
+        avg_rooms_per_appartment = 4
+        avg_room_volume = self.total_heated_volume / (appartments * avg_rooms_per_appartment)
+        #avg surface of a cube side, so multiply with 6 to get the whole surface
+        avg_wall_size = avg_room_volume ** (2/3.0) #m^2
         # assume 100W heating demand per m^2, rule of thumb for new housings
-        self.max_power = self.room_volume * 100  # W
+        self.max_power = self.total_heated_volume * 100  # W
         self.current_power = 0
-        # m^2, avg per room, avg rooms per appartments, appartments
-        self.window_surface = 4 * 4 * 12
+        # m^2
+        self.window_surface = (avg_wall_size/2.0) * avg_rooms_per_appartment * appartments
 
-        specific_heat_capacity_brick = 1360 * 10 ** 3  # J/(m^3 * K)
-        # J / K, approximation for 15m^2walls, 0.2m thickness, walls, ceiling,
-        # acg rooms p appartent, appartments
-        heat_cap_brick = specific_heat_capacity_brick * \
-            (4 * 3 * 5 * 0.2) * 4 * 12
+        specific_heat_capacity_brick = 1360 * 10 ** 6  # J/(m^3 * K)
+        # J / K, approximation for 5 walls including ceiling, 0.2m wall thickness, 
+        heat_cap_brick_per_room = specific_heat_capacity_brick *  (avg_wall_size * 5 * 0.2)
+        # avg rooms per appartent,number of appartments
+        heat_cap_brick = heat_cap_brick_per_room * 4 * 12
 
         #J /( m^3 * K)
         specific_heat_capacity_air = 1290
+        heat_capacity_air = specific_heat_capacity_air * self.total_heated_volume
 
-        self.heat_capacity = specific_heat_capacity_air * \
-            self.room_volume + heat_cap_brick
+        self.heat_capacity =  heat_capacity_air + heat_cap_brick
 
     def step(self):
         self.simulate_consumption()
@@ -63,12 +69,10 @@ class ThermalConsumer(BaseSystem):
         self.heat_loss()
 
         # slow rise and fall of heating
-        change_speed = 0.3
-        slope = change_speed * \
-            sign(self.target_temperature - self.temperature_room)
+        slope = sign(self.target_temperature - self.temperature_room)
         power_delta = slope * self.env.step_size
-
         self.current_power += power_delta
+
         # clamp to maximum power
         self.current_power = max(min(self.current_power, self.max_power), 0)
         self.heat_room()

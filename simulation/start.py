@@ -204,5 +204,5 @@ if __name__ == '__main__':
     else:
         thread = SimulationBackgroundRunner(env)
         thread.start()
-        # app.run('0.0.0.0', 8080, debug=True)
+        #app.run('0.0.0.0', 8080, debug=True)
         run_simple('0.0.0.0', 8080, app, threaded=True)
