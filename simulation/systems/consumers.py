@@ -1,7 +1,3 @@
-import math
-import random
-import datetime
-
 from data import outside_temperatures_2013, daily_electrical_demand
 from helpers import BaseSystem, sign
 
@@ -50,10 +46,6 @@ class ThermalConsumer(BaseSystem):
         consumption = self.get_consumption_energy()
         self.total_consumption += consumption
         self.heat_storage.consume_energy(consumption)
-
-        self.env.log('Thermal demand:', '%f kW' % self.get_consumption_power())
-        self.env.log('HS level:', '%f kWh' %
-                     self.heat_storage.energy_stored())
 
     def get_consumption_power(self):
         return self.current_power / 1000.0
@@ -115,11 +107,6 @@ class SimpleElectricalConsumer(BaseSystem):
         consumption = self.get_consumption_energy()
         self.total_consumption += consumption
         self.power_meter.consume_energy(consumption)
-
-        self.env.log('Electrical demand:', '%f kW' %
-                     self.get_consumption_power())
-        self.env.log('Infeed Reward:', '%f Euro' %
-                     self.power_meter.get_reward())
 
     def get_consumption_power(self):
         # calculate variation using daily demand and variation

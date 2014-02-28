@@ -1,3 +1,4 @@
+from data import electrical_feed_in_reward_per_kwh, electrical_costs_per_kwh
 from helpers import BaseSystem
 
 
@@ -11,7 +12,7 @@ class HeatStorage(BaseSystem):
         self.base_temperature = 20.0  # degree Celsius
         self.min_temperature = 55.0  # degree Celsius
         self.target_temperature = 70.0  # degree Celsius
-        self.critical_temperature = 90.0
+        self.critical_temperature = 90.0  # degree Celsius
 
         self.specific_heat_capacity = 4.19 * 1 / 3600.0  # kWh/(kg*K)
 
@@ -19,12 +20,6 @@ class HeatStorage(BaseSystem):
         self.output_energy = 0.0  # kWh
         self.empty_count = 0
         self.temperature_loss = 3.0 / 24.0  # energy loss per hour
-
-    def energy_stored(self):  # energydelta
-        return self.input_energy - self.output_energy
-
-    def get_target_energy(self):
-        return self.specific_heat_capacity * self.capacity * (self.target_temperature - self.base_temperature)
 
     def add_energy(self, energy):
         self.input_energy += energy
@@ -34,7 +29,15 @@ class HeatStorage(BaseSystem):
             self.output_energy += energy
         else:
             self.empty_count += 1
-            self.env.log('Heat Storage empty')
+
+    def energy_stored(self):
+        return self.input_energy - self.output_energy
+
+    def get_target_energy(self):
+        return self.specific_heat_capacity * self.capacity * (self.target_temperature - self.base_temperature)
+
+    def get_require_energy(self):
+        return self.get_target_energy() - self.energy_stored()
 
     def get_temperature(self):
         return self.base_temperature + self.energy_stored() / (self.capacity * self.specific_heat_capacity)
@@ -64,9 +67,6 @@ class PowerMeter(BaseSystem):
     def __init__(self, env):
         BaseSystem.__init__(self, env)
 
-        self.electrical_reward_per_kwh = 0.0541  # Euro
-        self.electrical_costs_per_kwh = 0.264  # Euro
-
         self.total_fed_in_electricity = 0.0  # kWh
         self.total_purchased = 0  # kWh
 
@@ -87,7 +87,7 @@ class PowerMeter(BaseSystem):
             self.total_fed_in_electricity += balance
 
     def get_reward(self):
-        return self.total_fed_in_electricity * self.electrical_reward_per_kwh
+        return self.total_fed_in_electricity * electrical_feed_in_reward_per_kwh
 
     def get_costs(self):
-        return self.total_purchased * self.electrical_costs_per_kwh
+        return self.total_purchased * electrical_costs_per_kwh
