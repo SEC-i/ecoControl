@@ -1,3 +1,5 @@
+import time
+
 from data import outside_temperatures_2013, daily_electrical_demand
 from helpers import BaseSystem, sign
 
@@ -55,7 +57,8 @@ class ThermalConsumer(BaseSystem):
 
     def simulate_consumption(self):
         # calculate variation using daily demand
-        self.target_temperature = self.daily_demand[self.env.get_hour_of_day()]
+        self.target_temperature = self.daily_demand[
+            time.gmtime(self.env.now).tm_hour]
 
         self.heat_loss()
 
@@ -88,7 +91,7 @@ class ThermalConsumer(BaseSystem):
         self.temperature_room += temperature_delta
 
     def get_outside_temperature(self, offset_days=0):
-        day = (self.env.get_day_of_year() + offset_days) % 365
+        day = (time.gmtime(self.env.now).tm_yday + offset_days) % 365
         return outside_temperatures_2013[day]
 
 
@@ -109,14 +112,11 @@ class SimpleElectricalConsumer(BaseSystem):
         self.power_meter.consume_energy(consumption)
 
     def get_consumption_power(self):
+        time_tuple = time.gmtime(self.env.now)
+        quarter = int(time_tuple.tm_min / 15.0)
+        quarters = (time_tuple.tm_hour * 4 + quarter) % (4 * 24)
         # calculate variation using daily demand and variation
-        return self.get_electrical_demand() * self.demand_variation[self.env.get_hour_of_day()]
+        return daily_electrical_demand[quarters] * self.demand_variation[time_tuple.tm_hour]
 
     def get_consumption_energy(self):
         return self.get_consumption_power() / self.env.steps_per_measurement
-
-    def get_electrical_demand(self):
-        hour = self.env.get_hour_of_day()
-        quarter = int(self.env.get_min_of_hour() / 15.0)
-        quarters = (hour * 4 + quarter) % (4 * 24)
-        return daily_electrical_demand[quarters]

@@ -52,11 +52,5 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
             self.last_step = self.now
             self.step_function()
 
-    def get_hour_of_day(self):
-        return time.gmtime(self.now).tm_hour
-
-    def get_min_of_hour(self):
-        return time.gmtime(self.now).tm_min
-
     def get_day_of_year(self):
         return time.gmtime(self.now).tm_yday

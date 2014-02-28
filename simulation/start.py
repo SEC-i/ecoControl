@@ -1,7 +1,6 @@
 import sys
 import os
 import time
-from collections import deque
 import json
 
 
@@ -10,19 +9,15 @@ from werkzeug.serving import run_simple
 app = Flask(__name__)
 
 from simulation import get_new_simulation
-from helpers import SimulationBackgroundRunner
+from helpers import SimulationBackgroundRunner, MeasurementCache, parse_hourly_demand_values
 
-CACHE_LIMIT = 24 * 365  # 365 days
-measurement_values = ['time', 'cu_workload', 'plb_workload', 'hs_temperature',
-                      'thermal_consumption', 'electrical_consumption', 'outside_temperature']
-
-# initialize empty measurement deques
-measurements = []
-for i in measurement_values:
-    measurements.append(deque(maxlen=CACHE_LIMIT))
 
 (env, heat_storage, power_meter, cu, plb, thermal_consumer,
  electrical_consumer, code_executer) = get_new_simulation()
+
+# initialize MeasurementCache
+measurements = MeasurementCache(
+    env, cu, plb, heat_storage, thermal_consumer, electrical_consumer)
 
 
 @app.route('/')
@@ -187,26 +182,9 @@ def get_measurements():
         ('total_bilance', [round(get_total_bilance(), 2)]),
         ('code_execution_status',
          [1 if code_executer.execution_successful else 0])
-    ]
-
-    for index, value in enumerate(measurement_values):
-            output.append((value, list(measurements[index])))
+    ] + measurements.get()
 
     return dict(output)
-
-
-def append_measurement():
-    if env.now % env.measurement_interval == 0:  # take measurements each hour
-        measurements[0].append(env.now)
-        measurements[1].append(round(cu.workload, 2))
-        measurements[2].append(round(plb.workload, 2))
-        measurements[3].append(round(heat_storage.get_temperature(), 2))
-        measurements[4].append(
-            round(thermal_consumer.get_consumption_power(), 2))
-        measurements[5].append(
-            round(electrical_consumer.get_consumption_power(), 2))
-        measurements[6].append(
-            round(thermal_consumer.get_outside_temperature(), 2))
 
 
 def get_total_bilance():
@@ -214,18 +192,9 @@ def get_total_bilance():
         power_meter.get_reward() + power_meter.get_costs()
 
 
-def parse_hourly_demand_values(namespace, data):
-    output = []
-    for i in range(24):
-        key = namespace + '_' + str(i)
-        if key in data:
-            output.append(float(request.form[key]))
-    return output
-
-
 if __name__ == '__main__':
 
-    env.step_function = append_measurement
+    env.step_function = measurements.take
 
     if "profile" in sys.argv:
         import cProfile

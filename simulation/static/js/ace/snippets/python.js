@@ -1,10 +1,19 @@
 ace.define('ace/snippets/python', ['require', 'exports', 'module'], function(require, exports, module) {
 
-
-    exports.snippetText = "snippet env.get_hour_of_day()\n\
-	env.get_hour_of_day()\n\
-snippet env.get_min_of_hour()\n\
-	env.get_min_of_hour()\n\
+    exports.snippetText = "snippet time year\n\
+	time.gmtime(env.now).tm_year\n\
+snippet time day of month\n\
+	time.gmtime(env.now).tm_mday\n\
+snippet time hour of day\n\
+	time.gmtime(env.now).tm_hour\n\
+snippet time minutes of hour\n\
+	time.gmtime(env.now).tm_min\n\
+snippet time seconds of minute\n\
+	time.gmtime(env.now).tm_sec\n\
+snippet time day of week\n\
+	time.gmtime(env.now).tm_wday\n\
+snippet time day of year\n\
+	time.gmtime(env.now).tm_yday\n\
 snippet env.get_day_of_year()\n\
 	env.get_day_of_year()\n\
 snippet env.measurement_interval\n\
