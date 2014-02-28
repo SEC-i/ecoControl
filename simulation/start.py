@@ -238,21 +238,15 @@ def parse_hourly_demand_values(namespace, data):
 
 
 if __name__ == '__main__':
-    
 
     env.verbose = "verbose" in sys.argv
     env.step_function = append_measurement
 
     if "profile" in sys.argv:
-        #simulate half a year
-        env.forward = 1370088732 - 1356998400
+        # simulate a year
+        env.forward = 60 * 60 * 24 * 365
         cProfile.run("env.run()")
     else:
         thread = SimulationBackgroundRunner(env)
         thread.start()
         run_simple('localhost', 8080, app, threaded=True)
-
-
-    #1.1.2013
-    #1356998400
-    #1.6.2013
