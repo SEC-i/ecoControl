@@ -56,10 +56,12 @@ class ThermalConsumer(BaseSystem):
         self.heat_storage.consume_energy(consumption)
 
     def get_consumption_power(self):
+        #convert to kW
         return self.current_power / 1000.0
 
     def get_consumption_energy(self):
-        return self.get_consumption_power() / self.env.steps_per_measurement
+        # convert to kWh
+        return self.get_consumption_power() * (self.env.step_size / 3600.0)
 
     def simulate_consumption(self):
         # calculate variation using daily demand
@@ -123,4 +125,4 @@ class SimpleElectricalConsumer(BaseSystem):
         return daily_electrical_demand[quarters] * self.demand_variation[time_tuple.tm_hour]
 
     def get_consumption_energy(self):
-        return self.get_consumption_power() / self.env.steps_per_measurement
+        return self.get_consumption_power() * (self.env.step_size / 3600.0)

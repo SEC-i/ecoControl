@@ -5,7 +5,7 @@ import time
 from simulation import get_new_simulation
 from helpers import SimulationBackgroundRunner, MeasurementCache, parse_hourly_demand_values
 
-SIMULATED_TIME =  60 * 60 * 24 * 10
+SIMULATED_TIME =  60 * 60 * 24 * 7
 
 
 class Plotting(object):

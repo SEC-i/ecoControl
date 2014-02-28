@@ -19,7 +19,7 @@ class HeatStorage(BaseSystem):
         self.input_energy = 0.0  # kWh
         self.output_energy = 0.0  # kWh
         self.empty_count = 0
-        self.temperature_loss = 3.0 / 24.0  # energy loss per hour
+        self.temperature_loss = 3.0 / 24.0  # loss per hour
 
     def add_energy(self, energy):
         self.input_energy += energy
@@ -58,8 +58,8 @@ class HeatStorage(BaseSystem):
 
     def step(self):
         energy_loss = (self.capacity * self.specific_heat_capacity) * \
-            self.temperature_loss
-        self.output_energy += energy_loss / self.env.steps_per_measurement
+            self.temperature_loss #per hour
+        self.output_energy += energy_loss * (self.env.step_size / 3600.0)
 
 
 class PowerMeter(BaseSystem):

@@ -7,7 +7,7 @@ from simpy.rt import RealtimeEnvironment
 
 class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
-    def __init__(self, initial_time=1356998400, measurement_interval=3600.0, strict=False):
+    def __init__(self, initial_time=1356998400, measurement_interval=3600, strict=False):
         RealtimeEnvironment.__init__(
             self, initial_time, 1.0 / measurement_interval, strict)
 
