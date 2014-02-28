@@ -2,6 +2,10 @@
 branches:
   only:
     - master
+# Tell Travis to notify us by email
+notifications:
+  email:
+    - bp2013h1@lists.myhpi.de
 # Tell Travis you want a Python environment to test in
 language: python
 # List the versions of Python you'd like to test against
