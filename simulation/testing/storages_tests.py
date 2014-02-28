@@ -15,45 +15,133 @@ class HeatStorageTests(unittest.TestCase):
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
         self.hs = HeatStorage(env=self.env)
+        
+    def test_heat_storage_creation(self):
+        self.assertGreater(self.hs.capacity, 0)
+        self.assertGreater(self.hs.base_temperature, 0)
+        self.assertGreater(self.hs.min_temperature, 0)
+        
+        self.assertGreater(self.hs.target_temperature, self.hs.min_temperature)
+        self.assertGreater(self.hs.critical_temperature, self.hs.target_temperature)
 
-    '''def test_add_and_consume_energy(self):
-        self.hs.add_energy(12.3)
-        self.assertEqual(
-            self.hs.energy_stored(), 12.3 / self.env.steps_per_measurement)
-        self.hs.consume_energy(12.3)
-        self.assertEqual(self.hs.energy_stored(), 0)
+        self.assertGreater(self.hs.specific_heat_capacity, 0)
 
-        for i in range(int(self.env.steps_per_measurement)):
-            self.hs.add_energy(54.3)
-
-        self.assertTrue(abs(self.hs.energy_stored() - 54.3) < 0.01)
-
-    def test_undersupplied(self):
-        self.assertTrue(self.hs.undersupplied())
-
-        temperature_delta = self.hs.min_temperature - self.hs.base_temperature
-        min_energy_needed = temperature_delta * \
-            self.hs.capacity * self.hs.specific_heat_capacity
-        self.hs.add_energy(min_energy_needed * self.env.steps_per_measurement)
-        self.assertFalse(self.hs.undersupplied())
-        self.hs.consume_energy(1)
-        self.assertTrue(self.hs.undersupplied())
-        self.hs.add_energy(1)
-        self.assertFalse(self.hs.undersupplied())
-
-    def test_overload(self):
-        self.hs.add_energy(
-            self.hs.get_energy_capacity() * self.env.steps_per_measurement)
-        self.assertEqual(
-            self.hs.energy_stored(), self.hs.get_energy_capacity())
-        # try to max-fill it another time
-        self.hs.add_energy(
-            self.hs.get_energy_capacity() * self.env.steps_per_measurement)
-        self.assertEqual(
-            self.hs.energy_stored(), self.hs.get_energy_capacity())'''
+        self.assertEqual(self.hs.input_energy, 0)
+        self.assertEqual(self.hs.output_energy, 0) 
+        self.assertEqual(self.hs.empty_count, 0)
+        
+        self.assertGreater(self.hs.temperature_loss, 0)
             
-    def test_true(self):
-        self.assertTrue(True)
+    def test_energy_stored(self):
+        self.hs.input_energy = 2
+        self.hs.output_energy = 1
+        self.assertEqual(self.hs.energy_stored(), 2-1)
+        
+    def test_get_required_energy(self):
+        # target_energy should return the energy needed to fill the storage to its target-temperature
+        self.hs.input_energy = 9
+        self.hs.output_energy = 1
+        stored_energy = 9-1
+        
+        # get energy needed to get the enrgy needed to reach the target_temperature from zero
+        self.hs.base_temperature = 0
+        self.hs.target_temperature = 70
+        self.hs.specific_heat_capacity = 0.002
+        self.hs.capacity = 2500
+        target_energy = 0.002 * 70 * 2500
+    
+        # get energy needed to fill storage from the stored enrgy to its target temperature
+        required_energy = target_energy-stored_energy
+        
+        self.assertEqual(required_energy, self.hs.get_required_energy())
+        
+    def test_add_energy(self):     
+        self.hs.input_energy = 0
+        for i in range(20):
+            self.hs.add_energy(0.5)
+
+        self.assertEqual(self.hs.input_energy, 20*0.5)
+
+    def test_consume_energy(self):
+        self.hs.input_energy = 2
+        self.hs.output_energy = 0
+        self.hs.consume_energy(2)
+        
+        self.assertEqual(self.hs.output_energy, 2)
+        
+    def test_consume_too_much_energy(self):
+        self.hs.empty_count = 0
+        self.hs.input_energy = 1
+        self.hs.consume_energy(2)
+        
+        self.assertEqual(self.hs.empty_count, 1)   
+        self.assertEqual(self.hs.output_energy, 1)   
+        
+    def test_get_temperatur(self):
+        base_temperature = 1
+        self.hs.base_temperature = base_temperature
+        self.hs.input_energy = 1
+        self.hs.ouput_energy = 0
+        energy_stored = 1
+        self.hs.capacity = 2500
+        self.hs.specific_heat_capacity = 0.002
+        
+        # temperature = energy/capacity
+        added_temperature = energy_stored/(2500 * 0.002)
+        temperature = 1 + added_temperature
+        
+        self.assertEqual(temperature, self.hs.get_temperature())
+    
+        
+    def test_get_energy_capacity(self):
+        # max energy the storage can hold:
+        # energy = capacity*TemperatureDiff
+        max_temperature_diff = self.hs.critical_temperature-self.hs.base_temperature
+        max_energy = self.hs.specific_heat_capacity * self.hs.capacity * max_temperature_diff
+        
+        self.assertEqual(max_energy, self.hs.get_energy_capacity())
+     
+    def test_undersupplied(self):
+        self.hs.base_temperature = 0
+        self.hs.input_energy = 0
+        self.hs.min_temperature = 20
+        
+        self.assertTrue(self.hs.undersupplied())
+        
+        self.hs.base_temperature = 20
+        
+        self.assertFalse(self.hs.undersupplied())
+    
+    def test_start(self):
+        self.hs.running = False
+        self.hs.start()
+        
+        self.assertTrue(self.hs.running)    
+        
+        
+    def test_stop(self):
+        self.hs.running = True
+        self.hs.stop()
+        
+        self.assertFalse(self.hs.running)
+            
+    def test_step(self):
+        self.hs.temperature_loss = 3.0 / 24.0   # per hour
+        self.hs.capacity = 2500
+        self.hs.specific_heat_capacity = 0.002
+        self.env.measurement_interval = 3600.0 # intervall is one hour
+        self.env.steps_per_measurement = 20.0
+        energy_loss_per_hour = (2500* 0.002) * (3.0 / 24.0) # capacity * temperature_loss 
+        energy_loss_per_step = energy_loss_per_hour/ 20.0 #divide steps 
+        self.hs.output_energy = 0
+        
+        self.hs.step()
+        
+        self.assertEqual(self.hs.output_energy, energy_loss_per_step)
+        
+        # Attention! The assumption of the storage is that the measurement intervall ist always one hour
+        # If not the values are physically wrong!
+
 
 
 '''class PowerMeterTests(unittest.TestCase):
