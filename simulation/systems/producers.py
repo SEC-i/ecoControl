@@ -195,6 +195,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
                     self.off_time = self.env.now + 3 * 60.0  # 3 min
 
         # calulate current consumption and production values
+        self.workload = 0
         self.current_gas_consumption = self.workload / \
             99.0 * self.max_gas_input
         self.current_thermal_production = self.current_gas_consumption * \
