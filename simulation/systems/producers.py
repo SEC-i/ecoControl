@@ -102,7 +102,8 @@ class CogenerationUnit(GasPoweredGenerator):
         if self.heat_storage.get_temperature() >= self.heat_storage.target_temperature:
             return 0.0
         max_electric_power = self.electrical_efficiency * self.max_gas_input
-        return min(max(self.power_meter.energy_consumed, self.electrical_driven_overproduction) / max_electric_power, 1) * 99.0
+        #return min(max(self.power_meter.energy_consumed, self.electrical_driven_overproduction) / max_electric_power, 1) * 99.0
+        return min(self.power_meter.energy_consumed / max_electric_power,1) * 99.0
 
     def calculate_state(self):
         if self.overwrite_workload is not None:
@@ -121,8 +122,9 @@ class CogenerationUnit(GasPoweredGenerator):
         old_workload = self.workload
         # ensure smoothly changing workload
         slope = sign(calculated_workload - old_workload)
-        change_speed = 100 / 180  # percent per 3 minutes
-        self.workload += change_speed * slope * self.env.step_size
+        # percent per second --> 3 minutes for full startup
+        change_speed = 1.0 / 180.0 * self.env.step_size  
+        self.workload += change_speed * slope
 
         # make sure that minimal_workload <= workload <= 99.0 or workload =
         # 0
@@ -140,19 +142,14 @@ class CogenerationUnit(GasPoweredGenerator):
                 self.off_time = self.env.now + 10.0 * 60.0  # 5 min
 
         # calulate current consumption and production values
-        self.current_gas_consumption = self.workload / \
-            99.0 * self.max_gas_input
+        self.current_gas_consumption = self.workload / 99.0 * self.max_gas_input
 
-        self.current_electrical_production = self.current_gas_consumption * \
-            self.electrical_efficiency * \
-            self.get_efficiency_loss_factor()
-        self.current_thermal_production = self.current_gas_consumption * \
-            self.thermal_efficiency * self.get_efficiency_loss_factor()
+        self.current_electrical_production = self.current_gas_consumption * self.electrical_efficiency * self.get_efficiency_loss_factor()
+        self.current_thermal_production = self.current_gas_consumption * self.thermal_efficiency * self.get_efficiency_loss_factor()
 
     def consume_gas(self):
         super(CogenerationUnit, self).consume_gas()
-        self.total_electrical_production += self.current_electrical_production / \
-            self.env.steps_per_measurement
+        self.total_electrical_production += self.current_electrical_production * (self.env.step_size / 3600.0)
 
 
 class PeakLoadBoiler(GasPoweredGenerator):

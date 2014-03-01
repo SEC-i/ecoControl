@@ -15,9 +15,9 @@ class ThermalConsumer(BaseSystem):
         BaseSystem.__init__(self, env)
         self.heat_storage = heat_storage
 
-        self.target_temperature = 25
-        self.total_consumption = 0
-        self.temperature_room = 20
+        self.target_temperature = 25.0
+        self.total_consumption = 0.0
+        self.temperature_room = 20.0
 
         # list of 24 values representing  target_temperature per hour
         self.daily_demand = [15, 15, 16, 15, 15, 15, 19, 20, 21,
@@ -25,14 +25,14 @@ class ThermalConsumer(BaseSystem):
 
         # data from pamiru48
         # has 12 apartments with 22 persons
-        self.total_heated_volume = 650  # m^3
+        self.total_heated_volume = 650.0  # m^3
         appartments  = 12
         avg_rooms_per_appartment = 4
         avg_room_volume = self.total_heated_volume / (appartments * avg_rooms_per_appartment)
         #avg surface of a cube side, so multiply with 6 to get the whole surface
-        avg_wall_size = avg_room_volume ** (2/3.0) #m^2
+        avg_wall_size = avg_room_volume ** (2.0/3.0) #m^2
         # assume 100W heating demand per m^2, rule of thumb for new housings
-        self.max_power = self.total_heated_volume * 100  # W
+        self.max_power = self.total_heated_volume * 100.0  # W
         self.current_power = 0
         # m^2
         self.window_surface = (avg_wall_size/2.0) * avg_rooms_per_appartment * appartments
@@ -44,10 +44,12 @@ class ThermalConsumer(BaseSystem):
         heat_cap_brick = heat_cap_brick_per_room * 4 * 12
 
         #J /( m^3 * K)
-        specific_heat_capacity_air = 1290
+        specific_heat_capacity_air = 1290.0
         heat_capacity_air = specific_heat_capacity_air * self.total_heated_volume
 
         self.heat_capacity =  heat_capacity_air + heat_cap_brick
+
+        print 
 
     def step(self):
         self.simulate_consumption()

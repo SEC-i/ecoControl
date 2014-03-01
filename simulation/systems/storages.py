@@ -8,8 +8,8 @@ class HeatStorage(BaseSystem):
         BaseSystem.__init__(self, env)
 
         # data from pamiru48
-        self.capacity = 2500  # liters  (=kilos)
-        self.base_temperature = 20.0  # degree Celsius
+        self.capacity = 25000  # liters  (=kilos)
+        self.base_temperature = 55.0  # degree Celsius
         self.min_temperature = 55.0  # degree Celsius
         self.target_temperature = 70.0  # degree Celsius
         self.critical_temperature = 90.0  # degree Celsius
