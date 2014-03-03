@@ -20,6 +20,7 @@ class ThermalConsumer(BaseSystem):
         self.temperature_room = 12.0
 
         # list of 24 values representing  target_temperature per hour
+
         self.daily_demand = [19, 19, 19, 19, 19, 19, 19, 20, 21,
                              20, 20, 21, 20, 21, 21, 21, 21, 22, 22, 22, 22, 22, 21, 19]
 
@@ -37,9 +38,11 @@ class ThermalConsumer(BaseSystem):
         self.outer_wall_surface = avg_wall_size * appartments * 1.5
         # assume 100W heating demand per m^2, rule of thumb for new housings
         self.max_power = self.total_heated_floor * 100.0  # W
+
         self.current_power = 0
-        # m^2
-        self.window_surface = (avg_wall_size/2.0) * avg_rooms_per_appartment * appartments
+        # m^2, avg per room, avg rooms per appartments, appartments
+        self.window_surface = 4 * 4 * 12
+
 
         specific_heat_capacity_brick = 1360 * 10 ** 6  # J/(m^3 * K)
         # J / K, approximation for 5 walls including ceiling, 0.36m wall thickness, 
@@ -78,8 +81,8 @@ class ThermalConsumer(BaseSystem):
         self.temperature_room += temp_delta
 
     def get_consumption_power(self):
-        #convert to kW
-        return self.current_power / 1000.0
+        # convert to kW
+        return self.current_power / 1500.0
 
     def get_consumption_energy(self):
         # convert to kWh
