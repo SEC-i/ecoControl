@@ -142,6 +142,7 @@ class SimpleElectricalConsumer(BaseSystem):
         consumption = self.get_consumption_energy()
         self.total_consumption += consumption
         self.power_meter.consume_energy(consumption)
+        self.power_meter.current_power_consum = self.get_consumption_power()
 
     def get_consumption_power(self):
         time_tuple = time.gmtime(self.env.now)
