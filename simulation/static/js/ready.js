@@ -287,8 +287,7 @@ function initialize_event_handlers() {
         $.post("./api/simulation/", {
             reset: 1
         });
-        location.reload(true);
-        event.preventDefault();
+        // location.reload(true);
     });
 
     $("#save_snippet").submit(function(event) {

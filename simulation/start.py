@@ -120,13 +120,14 @@ def handle_simulation():
 
 
 def reset_simulation():
-    global env, heat_storage, power_meter, cu, plb, thermal_consumer, electrical_consumer, code_executer
-    try:
-        env.exit(1)
-    except StopIteration:
-        pass
+    global env, heat_storage, power_meter, cu, plb, thermal_consumer, electrical_consumer, code_executer, measurements
+    env.stop()
+
     (env, heat_storage, power_meter, cu, plb, thermal_consumer,
      electrical_consumer, code_executer) = get_new_simulation()
+
+    measurements = MeasurementCache(
+        env, cu, plb, heat_storage, thermal_consumer, electrical_consumer)
 
     env.step_function = measurements.take
     thread = SimulationBackgroundRunner(env)
@@ -204,5 +205,5 @@ if __name__ == '__main__':
     else:
         thread = SimulationBackgroundRunner(env)
         thread.start()
-        #app.run('0.0.0.0', 8080, debug=True)
-        run_simple('0.0.0.0', 8080, app, threaded=True)
+        app.run('0.0.0.0', 8080, debug=True, use_reloader=False)
+        #run_simple('0.0.0.0', 8080, app, threaded=True)
