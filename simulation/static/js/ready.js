@@ -201,7 +201,7 @@ function update_setting(data) {
 function initialize_editor() {
     ace.require("ace/ext/language_tools");
     editor = ace.edit("editor");
-    editor.setTheme("ace/theme/monokai");
+    editor.setTheme("ace/theme/github");
     editor.getSession().setMode("ace/mode/python");
     editor.setOptions({
         enableBasicAutocompletion: true,
