@@ -127,7 +127,8 @@ class ThermalConsumer(BaseSystem):
 
     def get_outside_temperature(self, offset_days=0):
         day = (time.gmtime(self.env.now).tm_yday + offset_days) % 365
-        return outside_temperatures_2013[day]
+        hour = time.gmtime(self.env.now).tm_hour
+        return outside_temperatures_2013[day*24 + hour]
 
 
 class SimpleElectricalConsumer(BaseSystem):
