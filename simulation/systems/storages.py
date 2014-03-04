@@ -29,6 +29,7 @@ class HeatStorage(BaseSystem):
             self.output_energy += energy
         else:
             self.empty_count += 1
+            self.output_energy += self.energy_stored()
 
     def energy_stored(self):
         return self.input_energy - self.output_energy
@@ -75,21 +76,25 @@ class PowerMeter(BaseSystem):
         self.current_power_consum = 0.0
 
     def add_energy(self, energy):
-        self.energy_produced = energy
+        self.energy_produced += energy
 
     def consume_energy(self, energy):
-        self.energy_consumed = energy
-
-        balance = (self.energy_produced - self.energy_consumed)
-        # purchase electrical energy if more energy needed than produced
-        if balance < 0:
-            self.total_purchased -= balance
-        else:
-            self.total_fed_in_electricity += balance
+        self.energy_consumed += energy
 
     def get_reward(self):
         return self.total_fed_in_electricity * electrical_feed_in_reward_per_kwh
 
     def get_costs(self):
         return self.total_purchased * electrical_costs_per_kwh
+
+    def step(self):
+        balance = (self.energy_produced - self.energy_consumed)
+        # purchase electrical energy if more energy needed than produced
+        if balance < 0:
+            self.total_purchased -= balance
+        else:
+            self.total_fed_in_electricity += balance
+        self.energy_produced = 0
+        self.energy_consumed = 0
+        
 
