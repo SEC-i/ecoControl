@@ -90,7 +90,7 @@ class ThermalConsumer(BaseSystem):
         # convert to kWh
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
 
-    def get_warmwater_consumption_energy(self):
+    def get_warmwater_consumption_power(self):
         specific_heat_capacity_water = 0.001163708 #kWh/(kg*K)
         time_tuple = time.gmtime(self.env.now)
 
@@ -105,10 +105,10 @@ class ThermalConsumer(BaseSystem):
                 warm_water_demand_workday[(hour+1)%24], weight)
 
         power_demand = demand_liters_per_hour * (self.temperature_warmwater - self.heat_storage.base_temperature) * specific_heat_capacity_water
-        
-        #print power_demand * self.residents
-        energy_demand = power_demand * (self.env.step_size / 3600.0)
-        return energy_demand * self.residents
+        return power_demand * self.residents
+
+    def get_warmwater_consumption_energy(self):
+        return self.get_warmwater_consumption_power() * (self.env.step_size / 3600.0)
 
 
 
