@@ -210,7 +210,7 @@ function initialize_editor() {
 }
 
 function initialize_svg() {
-    $.get("./static/img/simulation.svg", function(data) {
+    $.get("./static/simulation.svg", function(data) {
         var svg_item = document.importNode(data.documentElement, true);
         $("#simulation_setup").append(svg_item);
     }, "xml");
@@ -391,7 +391,8 @@ function initialize_diagram() {
                 type: 'all',
                 text: 'All'
             }],
-            selected: 2
+            selected: 2,
+            inputEnabled: false
         },
         yAxis: {
             min: -10
