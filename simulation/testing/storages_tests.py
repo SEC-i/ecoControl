@@ -45,7 +45,7 @@ class HeatStorageTests(unittest.TestCase):
         self.hs.output_energy = 1
         stored_energy = 9-1
         
-        # get energy needed to get the enrgy needed to reach the target_temperature from zero
+        # get energy needed to get the energy needed to reach the target_temperature from zero
         self.hs.base_temperature = 0
         self.hs.target_temperature = 70
         self.hs.specific_heat_capacity = 0.002
