@@ -18,7 +18,7 @@ class SimulationBackgroundRunner(Thread):
 
 class MeasurementCache():
 
-    def __init__(self, env, cu, plb, heat_storage, thermal_consumer, electrical_consumer, cache_limit=24 * 265):
+    def __init__(self, env, cu, plb, heat_storage, thermal_consumer, electrical_consumer, cache_limit=24 * 365):
         self.values = ['time', 'cu_workload', 'plb_workload', 'hs_temperature',
                        'thermal_consumption', 'outside_temperature', 'electrical_consumption']
 
