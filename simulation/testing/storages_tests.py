@@ -39,7 +39,7 @@ class HeatStorageTests(unittest.TestCase):
         self.hs.output_energy = 1
         self.assertEqual(self.hs.energy_stored(), 2-1)
         
-    def test_get_required_energy(self):
+    def test_get_require_energy(self):
         # target_energy should return the energy needed to fill the storage to its target-temperature
         self.hs.input_energy = 9
         self.hs.output_energy = 1
@@ -55,7 +55,7 @@ class HeatStorageTests(unittest.TestCase):
         # get energy needed to fill storage from the stored enrgy to its target temperature
         required_energy = target_energy-stored_energy
         
-        self.assertEqual(required_energy, self.hs.get_required_energy())
+        self.assertAlmostEqual(required_energy, self.hs.get_require_energy())
         
     def test_add_energy(self):     
         self.hs.input_energy = 0
@@ -168,11 +168,15 @@ class PowerMeterTests(unittest.TestCase):
 
     def test_consume_energy(self):
         self.power_meter.energy_consumed = 0
+        self.power_meter.total_purchased = 0
+        self.power_meter.total_fed_in_electricity = 0
         
         for i in range(20):
             self.power_meter.consume_energy(0.5)
 
         self.assertEqual(self.power_meter.energy_consumed, 20*0.5)
+        self.assertEqual(self.power_meter.total_purchased, 0)
+        self.assertEqual(self.power_meter.total_fed_in_electricity, 0)
     
     def test_get_reward(self):
         self.power_meter.total_fed_in_electricity = 25
@@ -195,7 +199,9 @@ class PowerMeterTests(unittest.TestCase):
     
     def test_step_when_deficit_of_energy(self):
         self.power_meter.energy_consumed = 5
-        self.power_meter.energy_produced = 3 
+        self.power_meter.energy_produced = 3
+        self.power_meter.total_purchased = 0
+        self.power_meter.total_fed_in_electricity = 0
         
         self.power_meter.step()
         
@@ -206,10 +212,22 @@ class PowerMeterTests(unittest.TestCase):
         self.power_meter.energy_consumed = 3
         self.power_meter.energy_produced = 5
         self.power_meter.total_purchased = 0
+        self.power_meter.total_fed_in_electricity = 0
         
         self.power_meter.step()
         
         self.assertEqual(self.power_meter.total_fed_in_electricity, 5-3)
+        self.assertEqual(self.power_meter.total_purchased, 0)
+    
+    def test_step_no_energy_diff(self):
+        self.power_meter.energy_consumed = 1
+        self.power_meter.energy_produced = 1
+        self.power_meter.total_purchased = 0
+        self.power_meter.total_fed_in_electricity = 0
+        
+        self.power_meter.step()
+        
+        self.assertEqual(self.power_meter.total_fed_in_electricity, 0)
         self.assertEqual(self.power_meter.total_purchased, 0)
 
         
