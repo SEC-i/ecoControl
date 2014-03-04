@@ -1,35 +1,6 @@
 var refresh_gui = true;
 var editor = null;
 
-var systems_units = {
-    cu_workload: '%',
-    cu_electrical_production: 'kW',
-    cu_total_electrical_production: 'kWh',
-    cu_thermal_production: 'kW',
-    cu_total_thermal_production: 'kWh',
-    cu_total_gas_consumption: 'kWh',
-    cu_operating_costs: 'Euro',
-    cu_power_ons: 'time(s)',
-    cu_total_hours_of_operation: 'h',
-    hs_temperature: '°C',
-    hs_total_input: 'kWh',
-    hs_total_output: 'kWh',
-    hs_empty_count: 'time(s)',
-    plb_workload: '%',
-    plb_thermal_production: 'kW',
-    plb_total_gas_consumption: 'kWh',
-    plb_operating_costs: 'Euro',
-    plb_power_ons: 'time(s)',
-    plb_total_hours_of_operation: 'h',
-    thermal_consumption: 'kW',
-    total_thermal_consumption: 'kWh',
-    electrical_consumption: 'kW',
-    total_electrical_consumption: 'kWh',
-    total_bilance: 'Euro',
-    infeed_reward: 'Euro',
-    infeed_costs: 'Euro'
-};
-
 var series_data = [{
     name: 'cu_workload',
     data: [],
@@ -206,6 +177,15 @@ function initialize_editor() {
     editor.setOptions({
         enableBasicAutocompletion: true,
         enableSnippets: true
+    });
+    ace.config.loadModule('ace/snippets/snippets', function() {
+        var snippetManager = ace.require('ace/snippets').snippetManager;
+        ace.config.loadModule('ace/snippets/python', function(m) {
+            if (m) {
+                m.snippets = m.snippets.concat(custom_snippets);
+                snippetManager.register(m.snippets, m.scope);
+            }
+        });
     });
 }
 
@@ -391,7 +371,8 @@ function initialize_diagram() {
                 type: 'all',
                 text: 'All'
             }],
-            selected: 2
+            selected: 2,
+            inputEnabled: false
         },
         yAxis: {
             min: -10
