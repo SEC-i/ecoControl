@@ -9,7 +9,7 @@ os.sys.path.insert(0, parent_directory)
 from systems.storages import HeatStorage, PowerMeter
 from environment import ForwardableRealtimeEnvironment
 
-
+'''
 class HeatStorageTests(unittest.TestCase):
 
     def setUp(self):
@@ -143,22 +143,79 @@ class HeatStorageTests(unittest.TestCase):
         # If not the values are physically wrong!
 
 
-
-'''class PowerMeterTests(unittest.TestCase):
+'''
+class PowerMeterTests(unittest.TestCase):
 
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
         self.power_meter = PowerMeter(env=self.env)
+        
+    def test_power_meter_creation(self):
+        self.assertGreater(self.power_meter.electrical_reward_per_kwh, 0)
+        self.assertGreater(self.power_meter.electrical_costs_per_kwh, 0)
+        
+        self.assertEqual(self.power_meter.total_fed_in_electricity, 0)
+        self.assertEqual(self.power_meter.total_purchased, 0)
+        self.assertEqual(self.power_meter.energy_produced, 0) 
+        self.assertEqual(self.power_meter.energy_consumed, 0)
 
     def test_add_energy(self):
-        self.power_meter.add_energy(123)
-        self.assertEqual(
-            self.power_meter.energy_produced, 123)
-        self.assertEqual(self.power_meter.total_fed_in_electricity, 0)
-        self.power_meter.consume_energy(0)
-        self.assertEqual(
-            self.power_meter.total_fed_in_electricity, 123 / self.env.steps_per_measurement)'''
+        self.power_meter.energy_produced = 0
+        for i in range(20):
+            self.power_meter.add_energy(0.5)
 
+        self.assertEqual(self.power_meter.energy_produced, 20*0.5)
+
+    def test_consume_energy(self):
+        self.power_meter.energy_consumed = 0
+        
+        for i in range(20):
+            self.power_meter.consume_energy(0.5)
+
+        self.assertEqual(self.power_meter.energy_consumed, 20*0.5)
+    
+    def test_get_reward(self):
+        self.power_meter.total_fed_in_electricity = 25
+        self.power_meter.electrical_reward_per_kwh = 0.25
+        
+        self.assertEqual(self.power_meter.get_reward(), 25 * 0.25)
+
+    def test_get_costs(self):
+        self.power_meter.total_purchased = 25
+        self.power_meter.electrical_costs_per_kwh = 0.25
+        
+        self.assertEqual(self.power_meter.get_costs(), 25 * 0.25)
+        
+    def test_step_resets_energies(self):
+        self.power_meter.energy_consumed = 3
+        self.power_meter.energy_produced = 5 
+        
+        self.power_meter.step()
+        
+        self.assertEqual(self.power_meter.energy_consumed, 0)
+        self.assertEqual(self.power_meter.energy_produced, 0) 
+    
+    def test_step_when_deficit_of_energy(self):
+        self.power_meter.energy_consumed = 5
+        self.power_meter.energy_produced = 3 
+        
+        self.power_meter.step()
+        
+        self.assertEqual(self.power_meter.total_purchased, 5-3)
+        self.assertEqual(self.power_meter.total_fed_in_electricity, 0)       
+            
+    def test_step_when_excess_of_energy(self):
+        self.power_meter.energy_consumed = 3
+        self.power_meter.energy_produced = 5
+        self.power_meter.total_purchased = 0
+        self.power_meter.total_fed_in_electricity = 0
+        
+        self.power_meter.step()
+        
+        self.assertEqual(self.power_meter.total_fed_in_electricity, 5-3)
+        self.assertEqual(self.power_meter.total_purchased, 0)
+
+        
 
 if __name__ == '__main__':
     unittest.main()
