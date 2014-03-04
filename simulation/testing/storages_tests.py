@@ -168,8 +168,7 @@ class PowerMeterTests(unittest.TestCase):
 
     def test_consume_energy(self):
         self.power_meter.energy_consumed = 0
-        self.power_meter.total_purchased = 0
-        self.power_meter.total_fed_in_electricity = 0
+        self.initialize_purchased_and_fed_in()
         
         for i in range(20):
             self.power_meter.consume_energy(0.5)
@@ -200,8 +199,7 @@ class PowerMeterTests(unittest.TestCase):
     def test_step_when_deficit_of_energy(self):
         self.power_meter.energy_consumed = 5
         self.power_meter.energy_produced = 3
-        self.power_meter.total_purchased = 0
-        self.power_meter.total_fed_in_electricity = 0
+        self.initialize_purchased_and_fed_in()
         
         self.power_meter.step()
         
@@ -211,8 +209,7 @@ class PowerMeterTests(unittest.TestCase):
     def test_step_when_excess_of_energy(self):
         self.power_meter.energy_consumed = 3
         self.power_meter.energy_produced = 5
-        self.power_meter.total_purchased = 0
-        self.power_meter.total_fed_in_electricity = 0
+        self.initialize_purchased_and_fed_in()
         
         self.power_meter.step()
         
@@ -222,13 +219,16 @@ class PowerMeterTests(unittest.TestCase):
     def test_step_no_energy_diff(self):
         self.power_meter.energy_consumed = 1
         self.power_meter.energy_produced = 1
-        self.power_meter.total_purchased = 0
-        self.power_meter.total_fed_in_electricity = 0
+        self.initialize_purchased_and_fed_in()
         
         self.power_meter.step()
         
         self.assertEqual(self.power_meter.total_fed_in_electricity, 0)
         self.assertEqual(self.power_meter.total_purchased, 0)
+        
+    def initialize_purchased_and_fed_in(self):
+        self.power_meter.total_purchased = 0
+        self.power_meter.total_fed_in_electricity = 0
 
         
 
