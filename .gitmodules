@@ -10,3 +10,12 @@
 [submodule "simulation/static/ace-builds"]
 	path = simulation/static/ace-builds
 	url = git@github.com:ajaxorg/ace-builds.git
+[submodule "website/static/bootstrap"]
+	path = website/static/bootstrap
+	url = git@github.com:twbs/bootstrap.git
+[submodule "website/static/highcharts"]
+	path = website/static/highcharts
+	url = git@github.com:highslide-software/highcharts.com.git
+[submodule "website/static/jquery"]
+	path = website/static/jquery
+	url = git@github.com:jquery/jquery.git
