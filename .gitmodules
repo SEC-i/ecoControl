@@ -19,3 +19,6 @@
 [submodule "website/static/jquery"]
 	path = website/static/jquery
 	url = git@github.com:jquery/jquery.git
+[submodule "arduino/sketch/lib/LED_Bar"]
+	path = arduino/sketch/lib/LED_Bar
+	url = git@github.com:Seeed-Studio/Grove_LED_Bar.git
