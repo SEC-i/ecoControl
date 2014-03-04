@@ -1,7 +1,7 @@
 import time
 import math
 
-from data import outside_temperatures_2013, daily_electrical_demand
+from data import outside_temperatures_2013, daily_electrical_demand, warm_water_demand_workday, warm_water_demand_weekend
 from helpers import BaseSystem, sign
 
 
@@ -18,6 +18,7 @@ class ThermalConsumer(BaseSystem):
         self.target_temperature = 20.0
         self.total_consumption = 0.0
         self.temperature_room = 12.0
+        self.temperature_warmwater = 40.0
 
         # list of 24 values representing  target_temperature per hour
 
@@ -27,6 +28,7 @@ class ThermalConsumer(BaseSystem):
         # data from pamiru48
         # has 12 apartments with 22 persons
         self.total_heated_floor = 650.0  # m^2
+        self.residents = 22
         #2.5m high walls
         self.total_heated_volume = self.total_heated_floor * 2.5
         appartments  = 12
@@ -66,7 +68,7 @@ class ThermalConsumer(BaseSystem):
 
     def step(self):
         self.simulate_consumption()
-        consumption = self.get_consumption_energy()
+        consumption = self.get_consumption_energy() + self.get_warmwater_consumption_energy()
         self.total_consumption += consumption
         self.heat_storage.consume_energy(consumption)
 
@@ -82,11 +84,33 @@ class ThermalConsumer(BaseSystem):
 
     def get_consumption_power(self):
         # convert to kW
-        return self.current_power / 1500.0
+        return self.current_power / 1000.0
 
     def get_consumption_energy(self):
         # convert to kWh
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
+
+    def get_warmwater_consumption_energy(self):
+        specific_heat_capacity_water = 0.001163708 #kWh/(kg*K)
+        time_tuple = time.gmtime(self.env.now)
+
+        hour = time_tuple.tm_hour
+        wday = time_tuple.tm_wday
+        weight = time_tuple.tm_min / 60.0
+        if wday in [5,6]: 
+            demand_liters_per_hour = self.linear_interpolation(warm_water_demand_weekend[hour],
+             warm_water_demand_weekend[(hour+1)%24], weight)
+        else:
+            demand_liters_per_hour = self.linear_interpolation(warm_water_demand_workday[hour], 
+                warm_water_demand_workday[(hour+1)%24], weight)
+
+        power_demand = demand_liters_per_hour * (self.temperature_warmwater - self.heat_storage.base_temperature) * specific_heat_capacity_water
+        
+        #print power_demand * self.residents
+        energy_demand = power_demand * (self.env.step_size / 3600.0)
+        return energy_demand * self.residents
+
+
 
     def simulate_consumption(self):
         # calculate variation using daily demand
@@ -129,6 +153,9 @@ class ThermalConsumer(BaseSystem):
         day = (time.gmtime(self.env.now).tm_yday + offset_days) % 365
         hour = time.gmtime(self.env.now).tm_hour
         return outside_temperatures_2013[day*24 + hour]
+
+    def linear_interpolation(self, a,b,x):
+        return a * (1 - x) + b * x
 
 
 class SimpleElectricalConsumer(BaseSystem):
