@@ -1,3 +1,4 @@
+from data import gas_price_per_kwh
 from helpers import BaseSystem, sign
 
 
@@ -5,7 +6,6 @@ class GasPoweredGenerator(BaseSystem):
 
     def __init__(self, env):
         BaseSystem.__init__(self, env)
-        self.gas_price_per_kwh = 0.0655  # Euro
 
         self.running = True
 
@@ -31,7 +31,7 @@ class GasPoweredGenerator(BaseSystem):
             self.env.steps_per_measurement
 
     def get_operating_costs(self):
-        return self.total_gas_consumption * self.gas_price_per_kwh
+        return self.total_gas_consumption * gas_price_per_kwh
 
 
 class CogenerationUnit(GasPoweredGenerator):
@@ -57,25 +57,19 @@ class CogenerationUnit(GasPoweredGenerator):
         self.current_electrical_production = 0.0  # kW
         self.total_electrical_production = 0.0  # kWh
         self.thermal_driven = True
-        self.electrical_driven_overproduction = 1.0  # kWh
+        self.electrical_driven_minimal_production = 1.0  # kWh (electrical)
 
         self.overwrite_workload = None
 
     def step(self):
         if self.running:
             self.calculate_state()
-
-            self.env.log(
-                'CU workload:', '%f %%' % self.workload, 'Total:', '%f kWh (%f Euro)' %
-                (self.total_gas_consumption, self.get_operating_costs()))
-
             self.power_meter.add_energy(
                 self.get_electrical_energy_production())
             self.heat_storage.add_energy(self.get_thermal_energy_production())
             self.consume_gas()
         else:
             self.workload = 0.0
-            self.env.log('Cogeneration unit stopped')
 
     def get_electrical_energy_production(self):
         return self.current_electrical_production / self.env.steps_per_measurement
@@ -100,15 +94,15 @@ class CogenerationUnit(GasPoweredGenerator):
     def get_calculated_workload_thermal(self):
         max_thermal_power = self.thermal_efficiency * self.max_gas_input
         min_thermal_power = max_thermal_power * (self.minimal_workload / 100.0)
-        calculated_power =  self.heat_storage.get_target_energy() + \
-            min_thermal_power - self.heat_storage.energy_stored()
+        calculated_power = self.heat_storage.get_require_energy(
+        ) + min_thermal_power
         return min(calculated_power / max_thermal_power, 1) * 99.0
 
     def get_calculated_workload_electric(self):
         if self.heat_storage.get_temperature() >= self.heat_storage.target_temperature:
             return 0.0
         max_electric_power = self.electrical_efficiency * self.max_gas_input
-        return min((self.power_meter.energy_consumed + self.electrical_driven_overproduction) / max_electric_power, 1) * 99.0
+        return min(max(self.power_meter.current_power_consum, self.electrical_driven_minimal_production) / max_electric_power, 1) * 99.0
 
     def calculate_state(self):
         if self.overwrite_workload is not None:
@@ -121,14 +115,15 @@ class CogenerationUnit(GasPoweredGenerator):
             else:
                 calculated_workload = self.get_calculated_workload_electric()
 
-        self.updateParameters(calculated_workload)
+        self.update_parameters(calculated_workload)
 
-    def updateParameters(self, calculated_workload):
+    def update_parameters(self, calculated_workload):
         old_workload = self.workload
         # ensure smoothly changing workload
         slope = sign(calculated_workload - old_workload)
-        change_speed = 100 / 180  # percent per 3 minutes
-        self.workload += change_speed * slope * self.env.step_size
+        # percent per second --> 3 minutes for full startup
+        change_speed = 1.0 / 180.0 * self.env.step_size  
+        self.workload += change_speed * slope
 
         # make sure that minimal_workload <= workload <= 99.0 or workload =
         # 0
@@ -146,19 +141,14 @@ class CogenerationUnit(GasPoweredGenerator):
                 self.off_time = self.env.now + 10.0 * 60.0  # 5 min
 
         # calulate current consumption and production values
-        self.current_gas_consumption = self.workload / \
-            99.0 * self.max_gas_input
+        self.current_gas_consumption = self.workload / 99.0 * self.max_gas_input
 
-        self.current_electrical_production = self.current_gas_consumption * \
-            self.electrical_efficiency * \
-            self.get_efficiency_loss_factor()
-        self.current_thermal_production = self.current_gas_consumption * \
-            self.thermal_efficiency * self.get_efficiency_loss_factor()
+        self.current_electrical_production = self.current_gas_consumption * self.electrical_efficiency * self.get_efficiency_loss_factor()
+        self.current_thermal_production = self.current_gas_consumption * self.thermal_efficiency * self.get_efficiency_loss_factor()
 
     def consume_gas(self):
         super(CogenerationUnit, self).consume_gas()
-        self.total_electrical_production += self.current_electrical_production / \
-            self.env.steps_per_measurement
+        self.total_electrical_production += self.current_electrical_production * (self.env.step_size / 3600.0)
 
 
 class PeakLoadBoiler(GasPoweredGenerator):
@@ -176,18 +166,10 @@ class PeakLoadBoiler(GasPoweredGenerator):
     def step(self):
         if self.running:
             self.calculate_state()
-
-            self.env.log(
-                'PLB workload:', '%f %%' % self.workload, 'Total:', '%f kWh (%f Euro)' %
-                (self.total_gas_consumption, self.get_operating_costs()))
-
             self.heat_storage.add_energy(self.get_thermal_energy_production())
             self.consume_gas()
         else:
             self.workload = 0.0
-            self.env.log('PLB stopped.')
-
-        self.env.log('=' * 80)
 
     def get_thermal_energy_production(self):
         return self.current_thermal_production / self.env.steps_per_measurement
@@ -205,7 +187,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
                     self.env.measurement_interval
                 self.workload = 99.0
             # turn off if heat storage's target energy is almost reached
-            elif self.heat_storage.energy_stored() + self.current_thermal_production >= self.heat_storage.get_target_energy():
+            elif self.current_thermal_production >= self.heat_storage.get_require_energy():
                 self.workload = 0.0
 
                 if self.off_time <= self.env.now:

@@ -1,3 +1,5 @@
+import time
+
 import simpy
 from simpy.util import start_delayed
 
@@ -30,6 +32,7 @@ def get_new_simulation():
         'plb': plb,
         'thermal_consumer': thermal_consumer,
         'electrical_consumer': electrical_consumer,
+        'time': time,
     })
     env.process(code_executer.loop())
 
