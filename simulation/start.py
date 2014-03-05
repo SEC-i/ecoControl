@@ -74,7 +74,7 @@ def handle_settings():
         if 'plb_max_gas_input' in request.form:
             plb.max_gas_input = float(request.form['plb_max_gas_input'])
 
-        if 'code' in request.form:
+        if 'password' in request.form and request.form['password'] == "InfoProfi" and 'code' in request.form:
             code_executer.code = request.form['code']
 
         daily_thermal_demand = parse_hourly_demand_values(
