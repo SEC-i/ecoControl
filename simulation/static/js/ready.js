@@ -336,7 +336,7 @@ function initialize_diagram() {
     $('#simulation_diagram').highcharts('StockChart', {
         chart: {
             height: 400,
-            zoomType: 'x'
+            zoomType: 'xy'
         },
         rangeSelector: {
             buttons: [{
