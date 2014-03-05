@@ -264,7 +264,8 @@ function initialize_event_handlers() {
 
     $("#editor_button").click(function() {
         $.post("./api/settings/", {
-            code: editor.getValue()
+            code: editor.getValue(),
+            password: $('#password').val()
         }, function(data) {
             editor.setValue(data['editor_code'], 1);
         });
