@@ -1,24 +1,9 @@
-[submodule "simulation/static/bootstrap"]
-	path = simulation/static/bootstrap
-	url = git@github.com:twbs/bootstrap.git
-[submodule "simulation/static/highcharts"]
-	path = simulation/static/highcharts
-	url = git@github.com:highslide-software/highcharts.com.git
-[submodule "simulation/static/jquery-ui"]
-	path = simulation/static/jquery-ui
-	url = git@github.com:jquery/jquery-ui.git
-[submodule "simulation/static/ace-builds"]
-	path = simulation/static/ace-builds
-	url = git@github.com:ajaxorg/ace-builds.git
-[submodule "website/static/bootstrap"]
-	path = website/static/bootstrap
-	url = git@github.com:twbs/bootstrap.git
-[submodule "website/static/highcharts"]
-	path = website/static/highcharts
-	url = git@github.com:highslide-software/highcharts.com.git
-[submodule "website/static/jquery"]
-	path = website/static/jquery
-	url = git@github.com:jquery/jquery.git
 [submodule "arduino/sketch/lib/LED_Bar"]
 	path = arduino/sketch/lib/LED_Bar
 	url = git@github.com:Seeed-Studio/Grove_LED_Bar.git
+[submodule "simulation/static/libs"]
+	path = simulation/static/libs
+	url = git@github.com:BP2013H1/BP2013H1-libs.git
+[submodule "website/static/libs"]
+	path = website/static/libs
+	url = git@github.com:BP2013H1/BP2013H1-libs.git
