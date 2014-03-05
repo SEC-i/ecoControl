@@ -12,6 +12,16 @@ daily_electrical_demand = [     2.684, 2.710, 2.484, 2.364, 2.257, 2.141, 2.139,
 4.465, 4.145,     3.868, 4.694, 4.629, 4.368, 5.761, 6.644, 6.183, 5.534, 4.121, 4.085, 4.149, 4.151, 3.820, 3.588,
 3.474, 3.071, 3.187, 3.321, 3.026, 2.772 ]
 
+"""warmwater demand in liters per person per hour
+read from  2nd diagram on page 33 in
+http://mediatum.ub.tum.de/doc/622179/622179.pdf
+"""
+
+warm_water_demand_workday = [1.7, 1.0, 0.3, 0.05, 0.05, 0.2,0.19, 1.6, 6, 4, 2, 1.5, 1.6,
+							1.5, 1.5, 1.4, 1.45, 1.5, 1.6, 1.7, 1.9, 2.0, 2.2, 2.2, 2.15]
+
+warm_water_demand_weekend = [1.7, 1.0, 0.4, 0.3, 0.1, 0.0, 0.1, 1.0, 1.0, 2.0, 3.8, 4.0, 
+							4.2, 4.0, 3.8, 3.4, 2.9, 3.3, 3.2, 2.7, 3.8, 2.0, 2.1, 2.0]
 
 """ hourly outside temperatures of berlin/schoenefeld 2013
 source http://freemeteo.com/default.asp?pid=20&gid=2950159&la=3&sid=103850&lc=1&ndate --> 1.1.2013 - 31.12.2013, used crawler to gather data of every day"""
