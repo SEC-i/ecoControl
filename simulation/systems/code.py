@@ -4,14 +4,15 @@ import os
 
 class CodeExecuter():
 
-    def __init__(self, env, local_names, local_references):
+    def __init__(self, env, local_variables):
         self.env = env
-        self.local_names = local_names
-        self.local_references = local_references
+        # split keys and values for performance reasons
+        self.local_names = local_variables.keys()
+        self.local_references = local_variables.values()
 
         # initialize code with names of local variables
         self.code = "#"
-        for name in local_names:
+        for name in self.local_names:
             self.code += " " + name
         self.code += "\n"
 
