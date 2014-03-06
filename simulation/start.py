@@ -75,7 +75,7 @@ def handle_settings():
             plb.max_gas_input = float(request.form['plb_max_gas_input'])
 
         if 'password' in request.form and request.form['password'] == "InfoProfi" and 'code' in request.form:
-            code_executer.code = request.form['code']
+            code_executer.create_function(request.form['code'])
 
         daily_thermal_demand = parse_hourly_demand_values(
             'daily_thermal_demand', request.form)
@@ -196,14 +196,27 @@ if __name__ == '__main__':
     if "profile" in sys.argv:
         import cProfile
         import pstats
-        # simulate a year
         env.stop_after_forward = True
         env.forward = 60 * 60 * 24 * 365
+        # cProfile.run("env.run()")
         cProfile.run("env.run()", "stats")
         p = pstats.Stats('stats')
         p.sort_stats('cumtime').print_stats()
+    elif "pypy" in sys.argv:
+        import cProfile
+        env.stop_after_forward = True
+        env.forward = 60 * 60 * 24 * 365
+        cProfile.run("env.run()")
+    elif "simple_profile" in sys.argv:
+        env.stop_after_forward = True
+        env.forward = 60 * 60 * 24 * 365
+        start = time.time()
+        env.run()
+        print time.time() - start
     else:
         thread = SimulationBackgroundRunner(env)
         thread.start()
-        app.run('0.0.0.0', 8080, debug=True, use_reloader=False)
-        #run_simple('0.0.0.0', 8080, app, threaded=True)
+        if "debug" in sys.argv:
+            app.run('0.0.0.0', 8080, debug=True, use_reloader=False)
+        else:
+            run_simple('0.0.0.0', 8080, app, threaded=True)

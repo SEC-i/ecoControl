@@ -2,17 +2,17 @@ import time
 import math
 
 from data import outside_temperatures_2013, daily_electrical_demand, warm_water_demand_workday, warm_water_demand_weekend
-from helpers import BaseSystem, sign
+from helpers import sign
 
 
-class ThermalConsumer(BaseSystem):
+class ThermalConsumer():
 
     """ physically based heating, using formulas from 
     http://www.model.in.tum.de/um/research/groups/ai/fki-berichte/postscript/fki-227-98.pdf and
     http://www.inference.phy.cam.ac.uk/is/papers/DanThermalModellingBuildings.pdf """
 
     def __init__(self, env, heat_storage):
-        BaseSystem.__init__(self, env)
+        self.env = env
         self.heat_storage = heat_storage
 
         self.target_temperature = 20.0
@@ -166,10 +166,10 @@ class ThermalConsumer(BaseSystem):
         return a * (1 - x) + b * x
 
 
-class SimpleElectricalConsumer(BaseSystem):
+class SimpleElectricalConsumer():
 
     def __init__(self, env, power_meter):
-        BaseSystem.__init__(self, env)
+        self.env = env
         self.power_meter = power_meter
 
         self.total_consumption = 0.0  # kWh
