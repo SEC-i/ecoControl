@@ -195,15 +195,6 @@ if __name__ == '__main__':
 
     if "profile" in sys.argv:
         import cProfile
-        import pstats
-        env.stop_after_forward = True
-        env.forward = 60 * 60 * 24 * 365
-        # cProfile.run("env.run()")
-        cProfile.run("env.run()", "stats")
-        p = pstats.Stats('stats')
-        p.sort_stats('cumtime').print_stats()
-    elif "pypy" in sys.argv:
-        import cProfile
         env.stop_after_forward = True
         env.forward = 60 * 60 * 24 * 365
         cProfile.run("env.run()")

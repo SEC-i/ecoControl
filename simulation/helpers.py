@@ -13,6 +13,7 @@ class BulkProcessor(object):
 
     def loop(self):
         while True:
+            # call step function for all processes
             for process in self.processes:
                 process.step()
             yield self.env.timeout(self.env.step_size)

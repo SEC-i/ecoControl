@@ -4,14 +4,17 @@ import os
 
 class CodeExecuter():
 
-    def __init__(self, env, local_variables):
+    def __init__(self, env, local_names, local_references):
         self.env = env
-        self.local_variables = local_variables
+        self.local_names = local_names
+        self.local_references = local_references
 
+        # initialize code with names of local variables
         self.code = "#"
-        for key in local_variables.keys():
-            self.code += " " + key
+        for name in local_names:
+            self.code += " " + name
         self.code += "\n"
+
         self.create_function(self.code)
         self.execution_successful = True
 
@@ -24,7 +27,7 @@ class CodeExecuter():
 
         lines = []
         lines.append("def user_function(%s):" %
-                     (",".join(self.local_variables.keys())))
+                     (",".join(self.local_names)))
 
         for line in self.code.split("\n"):
             lines.append("\t" + line)
@@ -38,7 +41,7 @@ class CodeExecuter():
 
     def step(self):
         try:
-            self._user_function(*self.local_variables.values())
+            self._user_function(*self.local_references)
             self.execution_successful = True
         except:
             if self.env.now % self.env.measurement_interval == 0:

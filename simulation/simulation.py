@@ -26,30 +26,13 @@ def get_new_simulation():
     electrical_consumer = SimpleElectricalConsumer(env, power_meter)
 
     # initilize code executer
-    code_executer = CodeExecuter(env, {
-        'env': env,
-        'heat_storage': heat_storage,
-        'power_meter': power_meter,
-        'cu': cu,
-        'plb': plb,
-        'thermal_consumer': thermal_consumer,
-        'electrical_consumer': electrical_consumer,
-        'time': time,
-    })
+    code_executer = CodeExecuter(env, ['env', 'heat_storage', 'power_meter', 'cu', 'plb', 'thermal_consumer', 'electrical_consumer', 'time'], [
+                                 env, heat_storage, power_meter, cu, plb, thermal_consumer, electrical_consumer, time])
 
     # initialize BulkProcessor and add it to env
     bulk_processor = BulkProcessor(
         env, [code_executer, cu, plb, heat_storage, thermal_consumer, electrical_consumer])
     env.process(bulk_processor.loop())
-
-    # add power system to simulation environment
-    # env.process(thermal_consumer.loop())
-    # env.process(electrical_consumer.loop())
-    # env.process(cu.loop())
-    # env.process(heat_storage.loop())
-
-    # start plb 10h after simulation start
-    # start_delayed(env, plb.loop(), 10 * 3600)
 
     return (env, heat_storage, power_meter, cu, plb,
             thermal_consumer, electrical_consumer, code_executer)
