@@ -5,6 +5,20 @@ from flask import make_response
 from functools import update_wrapper
 
 
+class BulkProcessor(object):
+
+    def __init__(self, env, processes):
+        self.env = env
+        self.processes = processes
+
+    def loop(self):
+        while True:
+            # call step function for all processes
+            for process in self.processes:
+                process.step()
+            yield self.env.timeout(self.env.step_size)
+
+
 class SimulationBackgroundRunner(Thread):
 
     def __init__(self, env):

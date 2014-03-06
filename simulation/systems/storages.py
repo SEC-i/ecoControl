@@ -1,14 +1,13 @@
 from data import electrical_feed_in_reward_per_kwh, electrical_costs_per_kwh
-from helpers import BaseSystem
 
 
-class HeatStorage(BaseSystem):
+class HeatStorage():
 
     def __init__(self, env):
-        BaseSystem.__init__(self, env)
+        self.env = env
 
         # data from pamiru48
-        self.capacity = 25000 # liters  (=kilos)
+        self.capacity = 25000  # liters  (=kilos)
         self.base_temperature = 20.0  # degree Celsius
         self.min_temperature = 55.0  # degree Celsius
         self.target_temperature = 70.0  # degree Celsius
@@ -59,14 +58,14 @@ class HeatStorage(BaseSystem):
 
     def step(self):
         energy_loss = (self.capacity * self.specific_heat_capacity) * \
-            self.temperature_loss #per hour
+            self.temperature_loss  # per hour
         self.output_energy += energy_loss * (self.env.step_size / 3600.0)
 
 
-class PowerMeter(BaseSystem):
+class PowerMeter():
 
     def __init__(self, env):
-        BaseSystem.__init__(self, env)
+        self.env = env
 
         self.total_fed_in_electricity = 0.0  # kWh
         self.total_purchased = 0  # kWh
@@ -96,5 +95,3 @@ class PowerMeter(BaseSystem):
             self.total_fed_in_electricity += balance
         self.energy_produced = 0
         self.energy_consumed = 0
-        
-
