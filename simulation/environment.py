@@ -9,14 +9,14 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
     def __init__(self, initial_time=1356998400, measurement_interval=3600, strict=False):
         RealtimeEnvironment.__init__(
-            self, initial_time, 1.0 / measurement_interval, strict)
+            self, initial_time, 1, strict)
 
         # time to forward
         self.forward = 0
 
         # timings
         self.measurement_interval = measurement_interval
-        self.steps_per_measurement = 30.0  # every 2min
+        self.steps_per_measurement = 3600.0  # every second
         self.step_size = self.measurement_interval / \
             self.steps_per_measurement  # in seconds
 

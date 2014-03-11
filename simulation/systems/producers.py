@@ -2,7 +2,6 @@ from data import gas_price_per_kwh
 from helpers import sign
 
 
-
 class GasPoweredGenerator():
 
     def __init__(self, env):

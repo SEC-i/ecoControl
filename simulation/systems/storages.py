@@ -74,6 +74,8 @@ class PowerMeter():
         self.energy_consumed = 0.0  # kWh
         self.current_power_consum = 0.0
 
+        self.balance = 0  # kWh
+
     def add_energy(self, energy):
         self.energy_produced += energy
 
@@ -87,11 +89,11 @@ class PowerMeter():
         return self.total_purchased * electrical_costs_per_kwh
 
     def step(self):
-        balance = (self.energy_produced - self.energy_consumed)
+        self.balance = (self.energy_produced - self.energy_consumed)
         # purchase electrical energy if more energy needed than produced
-        if balance < 0:
-            self.total_purchased -= balance
+        if self.balance < 0:
+            self.total_purchased -= self.balance
         else:
-            self.total_fed_in_electricity += balance
+            self.total_fed_in_electricity += self.balance
         self.energy_produced = 0
         self.energy_consumed = 0
