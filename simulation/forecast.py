@@ -12,14 +12,21 @@ class Forecast:
         self.env = env
 
         self.forecast_query_date = None
-        self.forecast_temperatures = []
+        self.forecast_temperatures_3hourly = []
+        self.forecast_temperatures_daily = []
 
-    def get_weather_forecast(self):
-        if self.forecast_temperatures != [] and self.forecast_query_date - self.get_date() < 60 * 30 : #only permit forecast queries every 30min, to save some api requests
-            return self.forecast_temperatures
+    def get_weather_forecast(self,hourly = True):
+        if self.forecast_query_date!=None and self.forecast_query_date - self.get_date() < 60 * 30 : #only permit forecast queries every 30min, to save some api requests
+            if hourly and self.forecast_temperatures_3hourly != []:
+                return self.forecast_temperatures_3hourly
+            elif not hourly and self.forecast_temperatures_daily != []:
+                return self.forecast_temperatures_daily
 
-        #3-hourly forecast for 14 days
-        url = "http://openweathermap.org/data/2.3/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5&mode=json"
+        if hourly:
+            #3-hourly forecast for 5 days for Berlin
+            url = "http://openweathermap.org/data/2.3/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5&mode=json"
+        else:
+            url = "http://openweathermap.org/data/2.3/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"
         forecast_temperatures = []
         self.forecast_query_date = self.get_date()
         try:
@@ -32,7 +39,7 @@ class Forecast:
                 except:
                     print "error reading temperatures from: \n", json.dumps(data_set, sort_keys=True, indent=4, separators=(',', ': '))
 
-            print "read ", len(forecast_temperatures), "temperatures"
+            print "read ", len(forecast_temperatures), "temperatures", "hourly = ", hourly
 
 
         except urllib2.URLError, e:
@@ -41,25 +48,39 @@ class Forecast:
         return forecast_temperatures
 
     def get_temperature_estimate(self,date):
+        """get most accurate forecast for given date
+        that can be derived from 5 days forecast, 14 days forecast or from history data"""
         history_data = self.get_average_outside_temperature(date)
-        forecast_data = self.get_forecast_temperature(date)
-        time_passed = datetime.timedelta(seconds=self.forecast_query_date - self.get_date()).days
-        factor = 1.0/time_passed
-        if time_passed < 14.0:
-            weighted_temperature = history_data * (1-factor) + forecast_data * factor
+        forecast_data_hourly = self.get_forecast_temperature_hourly(date)
+        forecast_data_daily = self.get_forecast_temperature_daily(date)
+        time_passed = (date - self.get_date()) / (60.0 * 60.0 * 24) # in days
+        if time_passed < 5.0:
+            return forecast_data_hourly
+        elif time_passed < 14.0:
+            return forecast_data_daily
         else:
-            weighted_temperature = history_data
+            return history_data
 
-        return weighted_temperature
 
-    def get_forecast_temperature(self,date):
-        self.forecast_temperatures = self.get_weather_forecast()
-        time_passed = (self.forecast_query_date - self.get_date()) / (60.0 * 60.0) # in hours
+    def get_forecast_temperature_hourly(self,date):
+        self.forecast_temperatures_3hourly = self.get_weather_forecast(hourly=True)
+        time_passed = int((date - self.get_date()) / (60.0 * 60.0)) # in hours
         weight = (time_passed % 3) / 3.0
-        t0 = self.forecast_temperatures[int(time_passed / 3)]
-        t1 = int(min((time_passed + 1),len(self.forecast_temperatures)-1) / 3)
-        return self.linear_interpolation(t0,t1,weight)
-               #values are measured 3 hourly
+        t0 = min(int(time_passed / 3), len(self.forecast_temperatures_3hourly)-1)
+        t1 = min(t0+1, len(self.forecast_temperatures_3hourly)-1)
+        a0 = self.forecast_temperatures_3hourly[t0]
+        a1 = self.forecast_temperatures_3hourly[t1]
+        return self.mix(a0,a1,weight)
+
+    def get_forecast_temperature_daily(self,date):
+        self.forecast_temperatures_daily = self.get_weather_forecast(hourly=False)
+        time_passed = int((date - self.get_date()) / (60.0 * 60.0)) # in days
+        weight = (time_passed % 24) / 24.0
+        t0 = min(int(time_passed / 24), len(self.forecast_temperatures_daily)-1)
+        t1 = min(t0+1, len(self.forecast_temperatures_daily)-1)
+        a0 = self.forecast_temperatures_daily[t0]
+        a1 = self.forecast_temperatures_daily[t1]
+        return self.mix(a0,a1,weight)
 
 
 
@@ -70,7 +91,7 @@ class Forecast:
         d1 = outside_temperatures_2012[day * 24 + hour] 
         return (d0 + d1) / 2.0
 
-    def linear_interpolation(self, a, b, x):
+    def mix(self, a, b, x):
         return a * (1 - x) + b * x
 
     def get_date(self):
@@ -80,7 +101,11 @@ class Forecast:
 
 
 
-
+print "hourly forecast for next 14 days:"
 
 f=Forecast() 
-print f.get_temperature_estimate(1394549951000) # Tue, 11 Mar 2014 14:59:11 GMT
+t0 = time.time()
+for i in range(14 * 24):
+    print round(f.get_temperature_estimate(t0),2),
+    #f.get_temperature_estimate(t0)
+    t0 += 60 * 60 #1 hour
