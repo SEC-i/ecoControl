@@ -103,7 +103,7 @@ class ThermalConsumer():
         hour = time_tuple.tm_hour
         wday = time_tuple.tm_wday
         weight = time_tuple.tm_min / 60.0
-        if wday in [5, 6]:
+        if wday in [5, 6]: #weekend
             demand_liters_per_hour = self.linear_interpolation(
                 warm_water_demand_weekend[hour],
                 warm_water_demand_weekend[(hour + 1) % 24], weight)
@@ -122,8 +122,7 @@ class ThermalConsumer():
 
     def simulate_consumption(self):
         # calculate variation using daily demand
-        self.target_temperature = self.daily_demand[
-            time.gmtime(self.env.now).tm_hour]
+        self.target_temperature = self.daily_demand[time.gmtime(self.env.now).tm_hour]
 
         self.room_power = self.current_power - self.heat_loss()
         self.calculate_room_temperature()
@@ -137,6 +136,8 @@ class ThermalConsumer():
 
         # clamp to maximum power
         self.current_power = max(min(self.current_power, self.max_power), 0.0)
+
+
 
     def heat_loss(self):
         heat_loss = 0
