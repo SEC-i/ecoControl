@@ -1,5 +1,7 @@
 import traceback
 import os
+from urllib import urlopen, urlencode
+import json
 
 
 class CodeExecuter():
@@ -101,7 +103,7 @@ class UnitControlServer():
     def step(self):
         if self.env.now % 3600 == 0:
             # calculate average values
-            for key, val in self.data:
+            for key, val in self.data.iteritems():
                 val /= 3600.0
 
             # send all data to all devices
@@ -109,10 +111,10 @@ class UnitControlServer():
                 urlopen(
                     "http://localhost:8000/api/device/" +
                     str(device_id) + "/data/",
-                    urlencode([('data', json.dumps(json.loads(self.data)))]))
+                    urlencode([('data', json.dumps(self.data))]))
 
             # reset data
-            for key, val in self.data:
+            for key, val in self.data.iteritems():
                 val = 0
         else:
             self.data['bhkw_consumption'] += self.cu.current_gas_consumption / \
