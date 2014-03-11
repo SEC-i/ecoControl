@@ -5,7 +5,7 @@ from simpy.util import start_delayed
 
 from environment import ForwardableRealtimeEnvironment
 
-from systems.code import CodeExecuter
+from systems.base import CodeExecuter, UnitControlServer
 from systems.producers import CogenerationUnit, PeakLoadBoiler
 from systems.storages import HeatStorage, PowerMeter
 from systems.consumers import ThermalConsumer, SimpleElectricalConsumer
@@ -24,6 +24,8 @@ def get_new_simulation():
     plb = PeakLoadBoiler(env, heat_storage)
     thermal_consumer = ThermalConsumer(env, heat_storage)
     electrical_consumer = SimpleElectricalConsumer(env, power_meter)
+    unit_control_server = UnitControlServer(
+        env, heat_storage, power_meter, cu, plb, thermal_consumer, electrical_consumer)
 
     # initilize code executer
     code_executer = CodeExecuter(env, {
@@ -39,7 +41,7 @@ def get_new_simulation():
 
     # initialize BulkProcessor and add it to env
     bulk_processor = BulkProcessor(
-        env, [code_executer, cu, plb, heat_storage, thermal_consumer, electrical_consumer])
+        env, [code_executer, cu, plb, heat_storage, thermal_consumer, electrical_consumer, unit_control_server])
     env.process(bulk_processor.loop())
 
     return (env, heat_storage, power_meter, cu, plb,

@@ -208,6 +208,6 @@ if __name__ == '__main__':
         thread = SimulationBackgroundRunner(env)
         thread.start()
         if "debug" in sys.argv:
-            app.run('0.0.0.0', 8080, debug=True, use_reloader=False)
+            app.run('0.0.0.0', 8081, debug=True, use_reloader=False)
         else:
-            run_simple('0.0.0.0', 8080, app, threaded=True)
+            run_simple('0.0.0.0', 8081, app, threaded=True)
