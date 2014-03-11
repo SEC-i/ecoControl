@@ -1,8 +1,6 @@
 import time
-import math
 
 from data import outside_temperatures_2013, daily_electrical_demand, warm_water_demand_workday, warm_water_demand_weekend
-from helpers import sign
 
 
 class ThermalConsumer():
@@ -118,7 +116,8 @@ class ThermalConsumer():
         return power_demand * self.residents
 
     def get_warmwater_consumption_energy(self):
-        return self.get_warmwater_consumption_power() * (self.env.step_size / 3600.0)
+        return self.get_warmwater_consumption_power() * \
+             (self.env.step_size / 3600.0)
 
     def simulate_consumption(self):
         # calculate variation using daily demand
@@ -136,7 +135,6 @@ class ThermalConsumer():
 
         # clamp to maximum power
         self.current_power = max(min(self.current_power, self.max_power), 0.0)
-
 
 
     def heat_loss(self):
