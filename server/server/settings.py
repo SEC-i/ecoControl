@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os, sys
+import os
+import sys
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -71,7 +72,7 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'bp2013h1_production',
+            'NAME': 'bp2013h1_forecasting',
             'USER': 'bp2013h1',
             'PASSWORD': 'hirsch',
             'HOST': 'localhost',
@@ -115,8 +116,8 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
+            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
@@ -125,34 +126,34 @@ LOGGING = {
     'handlers': {
         'django': {
             'level': 'WARNING',
-            'class':'logging.handlers.RotatingFileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(os.path.dirname(__file__), '../logs/django.log'),
-            'maxBytes': 1024*1024*4, # 4 MB
+            'maxBytes': 1024 * 1024 * 4,  # 4 MB
             'backupCount': 5,
             'formatter': 'verbose'
         },
         'webapi': {
             'level': 'DEBUG',
-            'class':'logging.handlers.RotatingFileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(os.path.dirname(__file__), '../logs/webapi.log'),
-            'maxBytes': 1024*1024*4, # 4 MB
+            'maxBytes': 1024 * 1024 * 4,  # 4 MB
             'backupCount': 5,
             'formatter': 'verbose'
         },
         'planner': {
             'level': 'DEBUG',
-            'class':'logging.handlers.RotatingFileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(os.path.dirname(__file__), '../logs/planner.log'),
-            'maxBytes': 1024*1024*4, # 4 MB
+            'maxBytes': 1024 * 1024 * 4,  # 4 MB
             'backupCount': 5,
             'formatter': 'verbose'
         },
     },
     'loggers': {
         'django': {
-            'handlers':['django'],
+            'handlers': ['django'],
             'propagate': True,
-            'level':'WARNING',
+            'level': 'WARNING',
         },
         'webapi': {
             'handlers': ['webapi'],
