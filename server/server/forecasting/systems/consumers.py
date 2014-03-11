@@ -1,6 +1,6 @@
 import time
 from data import outside_temperatures_2013, daily_electrical_demand, warm_water_demand_workday, warm_water_demand_weekend
-import weatherforecast.py
+import weatherforecast
 
 
 class ThermalConsumer():
