@@ -1,8 +1,6 @@
 import time
-import math
-
 from data import outside_temperatures_2013, daily_electrical_demand, warm_water_demand_workday, warm_water_demand_weekend
-from helpers import sign
+import weatherforecast.py
 
 
 class ThermalConsumer():
@@ -62,13 +60,18 @@ class ThermalConsumer():
 
         # object factor--> we have some objects, which slow down heating and cooling
         #--> used to make heating and cooling look realistic ;)
-        stuff_weight = self.total_heated_volume * \
-            50.0  # assume 50.0 kilo per m^3 of heatable objects (wood)
+        stuff_weight = self.total_heated_volume * 50.0  # assume 50.0 kilo per m^3 of heatable objects (wood)
         heat_capacity_stuff = stuff_weight * 600.0  # 600 = spec heat cap wood
 
         self.heat_capacity = self.heat_capacity_air + heat_capacity_stuff
 
         self.room_power = self.heat_capacity_air * self.temperature_room
+
+        #############
+        ### Forecasting
+        #############
+        self.weather_forecast = weatherforecast.Forecast(self.env)
+        self.consumption = 0
 
     def step(self):
         self.simulate_consumption()
@@ -162,6 +165,7 @@ class ThermalConsumer():
         day = (time.gmtime(self.env.now).tm_yday + offset_days) % 365
         hour = time.gmtime(self.env.now).tm_hour
         return outside_temperatures_2013[day * 24 + hour]
+
 
     def linear_interpolation(self, a, b, x):
         return a * (1 - x) + b * x
