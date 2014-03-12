@@ -5,6 +5,8 @@ import json
 class UnitControlServer():
 
     def __init__(self, env, heat_storage, power_meter, cu, plb, thermal_consumer, electrical_consumer):
+        self.interval = 10.0  # seconds
+
         self.env = env
         self.heat_storage = heat_storage
         self.power_meter = power_meter
@@ -30,10 +32,10 @@ class UnitControlServer():
         }
 
     def step(self):
-        if self.env.now % 3600 == 0:
+        if self.env.now % self.interval == 0:
             # calculate average values
             for key in ['bhkw_workload', 'plb_workload', 'hs_temperature', 'hs_max_temperature', 'hs_min_temperature']:
-                self.data[key] /= 3600.0
+                self.data[key] /= self.interval
 
             # send all data to all devices
             for device_id in [1, 2, 3, 4, 5, 6]:
