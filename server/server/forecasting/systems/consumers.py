@@ -1,6 +1,5 @@
 import time
 from data import outside_temperatures_2013, daily_electrical_demand, warm_water_demand_workday, warm_water_demand_weekend
-import weatherforecast
 
 
 class ThermalConsumer():
@@ -66,12 +65,6 @@ class ThermalConsumer():
         self.heat_capacity = self.heat_capacity_air + heat_capacity_stuff
 
         self.room_power = self.heat_capacity_air * self.temperature_room
-
-        #############
-        ### Forecasting
-        #############
-        self.weather_forecast = weatherforecast.Forecast(self.env)
-        self.consumption = 0
 
     def step(self):
         self.simulate_consumption()
