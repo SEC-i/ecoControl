@@ -16,7 +16,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
         # timings
         self.measurement_interval = measurement_interval
-        self.steps_per_measurement = 30.0  # every 2min
+        self.steps_per_measurement = 30.0  # every second
         self.step_size = self.measurement_interval / \
             self.steps_per_measurement  # in seconds
 
