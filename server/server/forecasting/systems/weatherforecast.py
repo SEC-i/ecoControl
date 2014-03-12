@@ -17,7 +17,7 @@ class Forecast:
 
     def get_weather_forecast(self, hourly=True):
         #only permit forecast queries every 30min, to save some api requests
-        if self.forecast_query_date != None and self.forecast_query_date - self.get_date() < 60 * 30:
+        if self.forecast_query_date is not None and self.forecast_query_date - self.get_date() < 60 * 30:
             if hourly and self.forecast_temperatures_3hourly != []:
                 return self.forecast_temperatures_3hourly
             elif not hourly and self.forecast_temperatures_daily != []:
@@ -63,19 +63,20 @@ class Forecast:
 
     def get_forecast_temperature_hourly(self, date):
         self.forecast_temperatures_3hourly = self.get_weather_forecast(hourly=True)
-        time_passed = int((date - self.get_date()) / (60.0 * 60.0))  # in hours
+        time_passed = int((self.get_date() - date) / (60.0 * 60.0))  # in hours
         weight = (time_passed % 3) / 3.0
         t0 = min(int(time_passed / 3), len(
             self.forecast_temperatures_3hourly) - 1)
         t1 = min(t0 + 1, len(self.forecast_temperatures_3hourly) - 1)
         a0 = self.forecast_temperatures_3hourly[t0]
         a1 = self.forecast_temperatures_3hourly[t1]
+        print a0,a1,weight
         return self.mix(a0, a1, weight)
 
     def get_forecast_temperature_daily(self, date):
         self.forecast_temperatures_daily = self.get_weather_forecast(
             hourly=False)
-        time_passed = int((date - self.get_date()) / (60.0 * 60.0))  # in days
+        time_passed = int((self.get_date() - date) / (60.0 * 60.0))  # in days
         weight = (time_passed % 24) / 24.0
         t0 = min(int(time_passed / 24), len(
             self.forecast_temperatures_daily) - 1)
@@ -95,8 +96,8 @@ class Forecast:
         return a * (1 - x) + b * x
 
     def get_date(self):
-        return self.env.now
-        # return time.time() #for debugging, use self.env.now otherwise<
+        #return self.env.now
+        return time.time() #for debugging, use self.env.now otherwise<
 
 
 

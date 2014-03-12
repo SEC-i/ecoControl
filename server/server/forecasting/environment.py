@@ -45,10 +45,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
                 raise EmptySchedule()
         else:
             self.handle_step_function()
-            try:
-                RealtimeEnvironment.step(self)
-            except:
-                traceback.print_exc()
+            RealtimeEnvironment.step(self)
 
     def stop(self):
         self.stop_simulation = True

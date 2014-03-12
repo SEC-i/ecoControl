@@ -1,4 +1,5 @@
 from consumers import ThermalConsumer
+from weatherforecast import Forecast
 
 
 class ForecastConsumer(ThermalConsumer):
@@ -6,8 +7,11 @@ class ForecastConsumer(ThermalConsumer):
     def __init__(self, env, heatstorage):
         ThermalConsumer.__init__(self, env, heatstorage)
         self.env = env
-        #consumption since last meausrement
+        self.heat_storage = heatstorage
+        # consumption since last meausrement
         self.consumed = 0
+
+        self.weather_forecast = Forecast(self.env)
 
     def step(self):
         self.simulate_consumption()
