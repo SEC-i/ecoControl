@@ -5,7 +5,7 @@ import json
 class UnitControlServer():
 
     def __init__(self, env, heat_storage, power_meter, cu, plb, thermal_consumer, electrical_consumer):
-        self.interval = 10.0  # seconds
+        self.interval = 60.0  # seconds
 
         self.env = env
         self.heat_storage = heat_storage
