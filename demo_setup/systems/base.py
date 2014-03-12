@@ -32,8 +32,8 @@ class UnitControlServer():
     def step(self):
         if self.env.now % 3600 == 0:
             # calculate average values
-            for key, val in self.data.iteritems():
-                val /= 3600.0
+            for key in self.data:
+                self.data[key] /= 3600.0
 
             # send all data to all devices
             for device_id in [1, 2, 3, 4, 5, 6]:
@@ -43,8 +43,8 @@ class UnitControlServer():
                     urlencode([('data', json.dumps(self.data))]))
 
             # reset data
-            for key, val in self.data.iteritems():
-                val = 0
+            for key in self.data:
+                self.data[key] = 0
         else:
             self.data['bhkw_consumption'] += self.cu.current_gas_consumption / \
                 self.env.steps_per_measurement
