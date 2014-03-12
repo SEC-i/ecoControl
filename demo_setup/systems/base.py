@@ -32,7 +32,7 @@ class UnitControlServer():
     def step(self):
         if self.env.now % 3600 == 0:
             # calculate average values
-            for key in self.data:
+            for key in ['bhkw_workload', 'plb_workload', 'hs_temperature', 'hs_max_temperature', 'hs_min_temperature']:
                 self.data[key] /= 3600.0
 
             # send all data to all devices
