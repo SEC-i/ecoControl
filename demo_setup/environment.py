@@ -7,9 +7,10 @@ from simpy.rt import RealtimeEnvironment
 
 class DemoEnvironment(RealtimeEnvironment):
 
-    def __init__(self, initial_time=1356998400, strict=False):
+    def __init__(self, initial_time=1356998400, strict=False, real_time=False):
         RealtimeEnvironment.__init__(
             self, initial_time, 1.0, strict)
+        self.real_time = real_time
 
         self.measurement_interval = 3600.0
         self.steps_per_measurement = 3600.0
@@ -21,7 +22,11 @@ class DemoEnvironment(RealtimeEnvironment):
         if self.stop_simulation:
             raise EmptySchedule()
 
-        RealtimeEnvironment.step(self)
+        if self.real_time or time.time() <= self.now:
+            RealtimeEnvironment.step(self)
+            self.real_time = True
+        else:
+            Environment.step(self)
 
     def stop(self):
         self.stop_simulation = True

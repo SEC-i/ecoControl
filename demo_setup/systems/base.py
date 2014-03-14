@@ -1,11 +1,14 @@
 from urllib import urlopen, urlencode
 import json
+import datetime
+from django.utils.timezone import utc
 
 
 class UnitControlServer():
 
     def __init__(self, env, heat_storage, power_meter, cu, plb, thermal_consumer, electrical_consumer):
         self.interval = 60.0  # seconds
+        self.id = 1
 
         self.env = env
         self.heat_storage = heat_storage
@@ -37,12 +40,22 @@ class UnitControlServer():
             for key in ['bhkw_workload', 'plb_workload', 'hs_temperature', 'hs_max_temperature', 'hs_min_temperature']:
                 self.data[key] /= self.interval
 
-            # send all data to all devices
-            for device_id in [1, 2, 3, 4, 5, 6]:
-                urlopen(
-                    "http://localhost:8000/api/device/" +
-                    str(device_id) + "/data/",
-                    urlencode([('data', json.dumps(self.data))]))
+            if self.env.real_time:
+                # send all data to all devices
+                for device_id in [1, 2, 3, 4, 5, 6]:
+                    urlopen(
+                        "http://localhost:8000/api/device/" +
+                        str(device_id) + "/data/",
+                        urlencode([('data', json.dumps(self.data))]))
+            else:
+                now = str(datetime.datetime.fromtimestamp(
+                    self.env.now).replace(tzinfo=utc))
+                if self.env.now % 86400 == 0:
+                    print now
+                with open("data.txt", "a") as f:
+                    f.write(str(self.id + 1) + "\t1\t" + str(self.data['bhkw_consumption']) + "\t" + now + "\n" + str(self.id + 2) + "\t2\t" + str(self.data['bhkw_thermal_production']) + "\t" + now + "\n" + str(self.id + 3) + "\t3\t" + str(self.data['bhkw_electrical_production']) + "\t" + now + "\n" + str(self.id + 4) + "\t4\t" + str(self.data['bhkw_workload']) + "\t" + now + "\n" + str(self.id + 5) + "\t5\t" + str(self.data['plb_consumption']) + "\t" + now + "\n" + str(self.id + 6) + "\t6\t" + str(self.data['plb_thermal_production']) + "\t" + now + "\n" + str(self.id + 7) + "\t7\t" + str(self.data['plb_workload']) + "\t" + str(
+                            now) + "\n" + str(self.id + 8) + "\t8\t" + str(self.data['hs_temperature']) + "\t" + now + "\n" + str(self.id + 9) + "\t9\t" + str(self.data['hs_max_temperature']) + "\t" + now + "\n" + str(self.id + 10) + "\t10\t" + str(self.data['hs_min_temperature']) + "\t" + now + "\n" + str(self.id + 11) + "\t11\t" + str(self.data['pm_feed_in']) + "\t" + now + "\n" + str(self.id + 12) + "\t12\t" + str(self.data['pm_purchased_electricity']) + "\t" + now + "\n" + str(self.id + 13) + "\t13\t" + str(self.data['tc_consumption']) + "\t" + now + "\n" + str(self.id + 14) + "\t14\t" + str(self.data['ec_consumption']) + "\t" + now + "\n")
+                self.id += 14
 
             # reset data
             for key in self.data:
