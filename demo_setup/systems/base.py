@@ -49,7 +49,7 @@ class UnitControlServer():
                             str(device_id) + "/data/",
                             urlencode([('data', json.dumps(self.data))]))
                     except:
-                        pass
+                        print "urlopen failed"
             else:
                 now = str(datetime.datetime.fromtimestamp(
                     self.env.now).replace(tzinfo=utc))

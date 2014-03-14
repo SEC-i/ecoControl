@@ -24,7 +24,10 @@ class DemoEnvironment(RealtimeEnvironment):
 
         if self.real_time or time.time() <= self.now:
             RealtimeEnvironment.step(self)
-            self.real_time = True
+
+            if not self.real_time:
+                self.real_time = True
+                print "Switched to RealtimeEnvironment"
         else:
             Environment.step(self)
 
