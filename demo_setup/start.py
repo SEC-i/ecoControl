@@ -28,6 +28,6 @@ unit_control_server = UnitControlServer(
 
 # initialize BulkProcessor and add it to env
 bulk_processor = BulkProcessor(
-    env, [cu, plb, heat_storage, thermal_consumer, electrical_consumer, unit_control_server])
+    env, [cu, plb, heat_storage, thermal_consumer, electrical_consumer, power_meter, unit_control_server])
 env.process(bulk_processor.loop())
 env.run()
