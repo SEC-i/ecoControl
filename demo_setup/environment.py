@@ -22,14 +22,14 @@ class DemoEnvironment(RealtimeEnvironment):
         if self.stop_simulation:
             raise EmptySchedule()
 
-        if self.real_time or time.time() <= self.now:
+        if self.real_time:
             RealtimeEnvironment.step(self)
-
-            if not self.real_time:
-                self.real_time = True
-                print "Switched to RealtimeEnvironment"
         else:
-            Environment.step(self)
+            while self.now < time.time():
+                Environment.step(self)
+
+            self.env_start = time.time()
+            self.real_time = True
 
     def stop(self):
         self.stop_simulation = True
