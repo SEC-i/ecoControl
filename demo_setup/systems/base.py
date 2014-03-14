@@ -43,10 +43,13 @@ class UnitControlServer():
             if self.env.real_time:
                 # send all data to all devices
                 for device_id in [1, 2, 3, 4, 5, 6]:
-                    urlopen(
-                        "http://localhost:8000/api/device/" +
-                        str(device_id) + "/data/",
-                        urlencode([('data', json.dumps(self.data))]))
+                    try:
+                        urlopen(
+                            "http://localhost:8000/api/device/" +
+                            str(device_id) + "/data/",
+                            urlencode([('data', json.dumps(self.data))]))
+                    except:
+                        pass
             else:
                 now = str(datetime.datetime.fromtimestamp(
                     self.env.now).replace(tzinfo=utc))
