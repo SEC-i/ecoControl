@@ -2,6 +2,7 @@ from urllib import urlopen, urlencode
 import json
 import datetime
 from django.utils.timezone import utc
+import pytz
 
 
 class UnitControlServer():
@@ -52,7 +53,7 @@ class UnitControlServer():
                         print "urlopen failed"
             else:
                 now = str(datetime.datetime.fromtimestamp(
-                    self.env.now).replace(tzinfo=utc))
+                    self.env.now).replace(tzinfo=pytz.timezone('CET')))
                 if self.env.now % 86400 == 0:
                     print now
                 with open("data.txt", "a") as f:
