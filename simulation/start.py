@@ -74,8 +74,8 @@ def handle_settings():
         if 'plb_max_gas_input' in request.form:
             plb.max_gas_input = float(request.form['plb_max_gas_input'])
 
-        if 'code' in request.form:
-            code_executer.code = request.form['code']
+        if 'password' in request.form and request.form['password'] == "InfoProfi" and 'code' in request.form:
+            code_executer.create_function(request.form['code'])
 
         daily_thermal_demand = parse_hourly_demand_values(
             'daily_thermal_demand', request.form)
@@ -120,13 +120,14 @@ def handle_simulation():
 
 
 def reset_simulation():
-    global env, heat_storage, power_meter, cu, plb, thermal_consumer, electrical_consumer, code_executer
-    try:
-        env.exit(1)
-    except StopIteration:
-        pass
+    global env, heat_storage, power_meter, cu, plb, thermal_consumer, electrical_consumer, code_executer, measurements
+    env.stop()
+
     (env, heat_storage, power_meter, cu, plb, thermal_consumer,
      electrical_consumer, code_executer) = get_new_simulation()
+
+    measurements = MeasurementCache(
+        env, cu, plb, heat_storage, thermal_consumer, electrical_consumer)
 
     env.step_function = measurements.take
     thread = SimulationBackgroundRunner(env)
@@ -194,15 +195,19 @@ if __name__ == '__main__':
 
     if "profile" in sys.argv:
         import cProfile
-        import pstats
-        # simulate a year
         env.stop_after_forward = True
         env.forward = 60 * 60 * 24 * 365
-        cProfile.run("env.run()", "stats")
-        p = pstats.Stats('stats')
-        p.sort_stats('cumtime').print_stats()
+        cProfile.run("env.run()")
+    elif "simple_profile" in sys.argv:
+        env.stop_after_forward = True
+        env.forward = 60 * 60 * 24 * 365
+        start = time.time()
+        env.run()
+        print time.time() - start
     else:
         thread = SimulationBackgroundRunner(env)
         thread.start()
-        #app.run('0.0.0.0', 8080, debug=True)
-        run_simple('0.0.0.0', 8080, app, threaded=True)
+        if "debug" in sys.argv:
+            app.run('0.0.0.0', 8080, debug=True, use_reloader=False)
+        else:
+            run_simple('0.0.0.0', 8080, app, threaded=True)

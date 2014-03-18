@@ -1,23 +1,24 @@
 import time
 import math
 
-from data import outside_temperatures_2013, daily_electrical_demand
-from helpers import BaseSystem, sign
+from data import outside_temperatures_2013, daily_electrical_demand, warm_water_demand_workday, warm_water_demand_weekend
+from helpers import sign
 
 
-class ThermalConsumer(BaseSystem):
+class ThermalConsumer():
 
     """ physically based heating, using formulas from 
     http://www.model.in.tum.de/um/research/groups/ai/fki-berichte/postscript/fki-227-98.pdf and
     http://www.inference.phy.cam.ac.uk/is/papers/DanThermalModellingBuildings.pdf """
 
     def __init__(self, env, heat_storage):
-        BaseSystem.__init__(self, env)
+        self.env = env
         self.heat_storage = heat_storage
 
         self.target_temperature = 20.0
         self.total_consumption = 0.0
         self.temperature_room = 12.0
+        self.temperature_warmwater = 40.0
 
         # list of 24 values representing  target_temperature per hour
 
@@ -27,14 +28,17 @@ class ThermalConsumer(BaseSystem):
         # data from pamiru48
         # has 12 apartments with 22 persons
         self.total_heated_floor = 650.0  # m^2
-        #2.5m high walls
+        self.residents = 22
+        # 2.5m high walls
         self.total_heated_volume = self.total_heated_floor * 2.5
-        appartments  = 12
+        appartments = 12
         avg_rooms_per_appartment = 4
-        avg_room_volume = self.total_heated_volume / (appartments * avg_rooms_per_appartment)
-        #avg surface of a cube side, so multiply with 6 to get the whole surface
-        avg_wall_size = avg_room_volume ** (2.0/3.0) #m^2
-        #lets have each appartment have an average of 1.5 outer walls
+        avg_room_volume = self.total_heated_volume / \
+            (appartments * avg_rooms_per_appartment)
+        # avg surface of a cube side, so multiply with 6 to get the whole
+        # surface
+        avg_wall_size = avg_room_volume ** (2.0 / 3.0)  # m^2
+        # lets have each appartment have an average of 1.5 outer walls
         self.outer_wall_surface = avg_wall_size * appartments * 1.5
         # assume 100W heating demand per m^2, rule of thumb for new housings
         self.max_power = self.total_heated_floor * 100.0  # W
@@ -43,55 +47,82 @@ class ThermalConsumer(BaseSystem):
         # m^2, avg per room, avg rooms per appartments, appartments
         self.window_surface = 4 * 4 * 12
 
-
         specific_heat_capacity_brick = 1360 * 10 ** 6  # J/(m^3 * K)
-        # J / K, approximation for 5 walls including ceiling, 0.36m wall thickness, 
-        heat_cap_brick_per_room = specific_heat_capacity_brick *  (avg_wall_size * 5 * 0.36)
+        # J / K, approximation for 5 walls including ceiling, 0.36m wall
+        # thickness,
+        heat_cap_brick_per_room = specific_heat_capacity_brick * \
+            (avg_wall_size * 5 * 0.36)
         # avg rooms per appartent,number of appartments
         self.heat_cap_brick = heat_cap_brick_per_room * 4 * 12
 
         #J /( m^3 * K)
         self.specific_heat_capacity_air = 1290.0
-        self.heat_capacity_air = self.specific_heat_capacity_air * self.total_heated_volume
+        self.heat_capacity_air = self.specific_heat_capacity_air * \
+            self.total_heated_volume
 
-        #object factor--> we have some objects, which slow down heating and cooling
+        # object factor--> we have some objects, which slow down heating and cooling
         #--> used to make heating and cooling look realistic ;)
-        stuff_weight = self.total_heated_volume *  50.0 #assume 50.0 kilo per m^3 of heatable objects (wood)
-        heat_capacity_stuff = stuff_weight * 600.0 #600 = spec heat cap wood
+        stuff_weight = self.total_heated_volume * \
+            50.0  # assume 50.0 kilo per m^3 of heatable objects (wood)
+        heat_capacity_stuff = stuff_weight * 600.0  # 600 = spec heat cap wood
 
-        self.heat_capacity =  self.heat_capacity_air + heat_capacity_stuff
-        
+        self.heat_capacity = self.heat_capacity_air + heat_capacity_stuff
+
         self.room_power = self.heat_capacity_air * self.temperature_room
-
 
     def step(self):
         self.simulate_consumption()
-        consumption = self.get_consumption_energy()
+        consumption = self.get_consumption_energy(
+        ) + self.get_warmwater_consumption_energy()
         self.total_consumption += consumption
         self.heat_storage.consume_energy(consumption)
 
     def calculate_room_temperature(self):
-        gas_constant = 287.0 # J/(kg*K)
+        gas_constant = 287.0  # J/(kg*K)
         temperature_kelvin = self.temperature_room + 273
-        normal_pressure = 101325.0 #pascal
+        normal_pressure = 101325.0  # pascal
 
         nominator = gas_constant * temperature_kelvin
         denominator = normal_pressure * self.heat_capacity
-        temp_delta = nominator / denominator * self.room_power * self.env.step_size
+        temp_delta = nominator / denominator * \
+            self.room_power * self.env.step_size
         self.temperature_room += temp_delta
 
     def get_consumption_power(self):
         # convert to kW
-        return self.current_power / 1500.0
+        return self.current_power / 1000.0
 
     def get_consumption_energy(self):
         # convert to kWh
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
 
+    def get_warmwater_consumption_power(self):
+        specific_heat_capacity_water = 0.001163708  # kWh/(kg*K)
+        time_tuple = time.gmtime(self.env.now)
+
+        hour = time_tuple.tm_hour
+        wday = time_tuple.tm_wday
+        weight = time_tuple.tm_min / 60.0
+        if wday in [5, 6]: #weekend
+            demand_liters_per_hour = self.linear_interpolation(
+                warm_water_demand_weekend[hour],
+                warm_water_demand_weekend[(hour + 1) % 24], weight)
+        else:
+            demand_liters_per_hour = self.linear_interpolation(
+                warm_water_demand_workday[hour],
+                warm_water_demand_workday[(hour + 1) % 24], weight)
+
+        power_demand = demand_liters_per_hour * \
+            (self.temperature_warmwater - self.heat_storage.base_temperature) * \
+            specific_heat_capacity_water
+        return power_demand * self.residents
+
+    def get_warmwater_consumption_energy(self):
+        return self.get_warmwater_consumption_power() * (self.env.step_size / 3600.0)
+
     def simulate_consumption(self):
         # calculate variation using daily demand
-        self.target_temperature = self.daily_demand[
-            time.gmtime(self.env.now).tm_hour]
+        self.target_temperature = self.daily_demand[time.gmtime(self.env.now).tm_hour]
 
         self.room_power = self.current_power - self.heat_loss()
         self.calculate_room_temperature()
@@ -99,12 +130,14 @@ class ThermalConsumer(BaseSystem):
         # the heating powers to full capacity in 10 min
         slope = self.max_power * (self.env.step_size / (60 * 10.0))
         if self.temperature_room > self.target_temperature:
-            self.current_power -= slope 
+            self.current_power -= slope
         else:
             self.current_power += slope
 
         # clamp to maximum power
         self.current_power = max(min(self.current_power, self.max_power), 0.0)
+
+
 
     def heat_loss(self):
         heat_loss = 0
@@ -115,7 +148,7 @@ class ThermalConsumer(BaseSystem):
         heat_flow_window = self.window_surface * k_window * d
         heat_loss += heat_flow_window
 
-        #semi good isolated wall
+        # semi good isolated wall
         k_wall = 0.5
         layers = 10
         layer_depth = 0.1
@@ -128,13 +161,16 @@ class ThermalConsumer(BaseSystem):
     def get_outside_temperature(self, offset_days=0):
         day = (time.gmtime(self.env.now).tm_yday + offset_days) % 365
         hour = time.gmtime(self.env.now).tm_hour
-        return outside_temperatures_2013[day*24 + hour]
+        return outside_temperatures_2013[day * 24 + hour]
+
+    def linear_interpolation(self, a, b, x):
+        return a * (1 - x) + b * x
 
 
-class SimpleElectricalConsumer(BaseSystem):
+class SimpleElectricalConsumer():
 
     def __init__(self, env, power_meter):
-        BaseSystem.__init__(self, env)
+        self.env = env
         self.power_meter = power_meter
 
         self.total_consumption = 0.0  # kWh

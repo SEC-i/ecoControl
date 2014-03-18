@@ -1,26 +1,48 @@
 import traceback
 import os
 
-from helpers import BaseSystem
 
-
-class CodeExecuter(BaseSystem):
+class CodeExecuter():
 
     def __init__(self, env, local_variables):
-        BaseSystem.__init__(self, env)
-        self.local_variables = local_variables
+        self.env = env
+        # split keys and values for performance reasons
+        self.local_names = local_variables.keys()
+        self.local_references = local_variables.values()
 
+        # initialize code with names of local variables
         self.code = "#"
-        for key in local_variables.keys():
-            self.code += " " + key
+        for name in self.local_names:
+            self.code += " " + name
         self.code += "\n"
 
+        self.create_function(self.code)
         self.execution_successful = True
-        self.snippet_folder = "snippets"
+
+        parent_directory = os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__)))
+        self.snippet_folder = parent_directory + "/snippets"
+
+    def create_function(self, code):
+        self.code = code
+
+        lines = []
+        lines.append("def user_function(%s):" %
+                     (",".join(self.local_names)))
+
+        for line in self.code.split("\n"):
+            lines.append("\t" + line)
+        lines.append("\tpass")  # make sure function is not empty
+
+        source = "\n".join(lines)
+        namespace = {}
+        exec source in namespace  # execute code in namespace
+
+        self._user_function = namespace['user_function']
 
     def step(self):
         try:
-            exec(self.code, self.local_variables)
+            self._user_function(*self.local_references)
             self.execution_successful = True
         except:
             if self.env.now % self.env.measurement_interval == 0:

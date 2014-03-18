@@ -24,9 +24,13 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         self.step_function = None
 
         self.last_step = self.now
+        self.stop_simulation = False
         self.stop_after_forward = False
 
     def step(self):
+        if self.stop_simulation:
+            raise EmptySchedule()
+
         if self.forward > 0:
             forward_to = self.now + self.forward
             sim_delta = self.forward - self.now
@@ -45,6 +49,9 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
                 RealtimeEnvironment.step(self)
             except:
                 traceback.print_exc()
+
+    def stop(self):
+        self.stop_simulation = True
 
     def handle_step_function(self):
         # call step_function whenever time has changed

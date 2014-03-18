@@ -10,9 +10,10 @@
     <title>Power System Simulation</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="./static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./static/libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
      <!-- jQuery UI CSS core CSS -->
-    <link rel="stylesheet" href="./static/css/smoothness/jquery-ui-1.10.4.custom.min.css">
+    <link rel="stylesheet" href="./static/libs/jquery-ui/css/jquery-ui.min.css">
+    <link rel="stylesheet" href="./static/libs/jquery-ui/css/jquery.ui.slider.min.css">
 
     <!-- Custom styles -->
     <link href="./static/css/basic.css" rel="stylesheet">
@@ -68,7 +69,7 @@
                   </a>
                 </h4>
               </div>
-              <div id="data_container" class="panel-collapse collapse in">
+              <div id="data_container" class="panel-collapse collapse">
                 <div class="panel-body">
                   <div class="row">
                     <div class="col-sm-4">
@@ -409,15 +410,15 @@
               <div class="panel-heading">
                 <h4 class="panel-title">
                   <a data-toggle="collapse" href="#editor_container">
-                    Rule System
+                    Code Editor
                     <span class="badge badge-success pull-right code_execution_status">OK</span>
                   </a>
                 </h4>
               </div>
-              <div id="editor_container" class="panel-collapse collapse in">
+              <div id="editor_container" class="panel-collapse collapse">
                 <div class="panel-body">
                   <div class="row">
-                    <div class="col-lg-6">
+                    <div class="col-lg-5">
                       <p>
                         <form id="save_snippet" class="form-inline" role="form">
                           <div class="form-group">
@@ -427,7 +428,14 @@
                         </form>
                       </p>
                     </div>
-                    <div class="col-lg-6 text-right">
+                    <div class="col-lg-2 text-center">
+                      <p>
+                        <form id="save_snippet" class="form-inline" role="form">
+                          <input type="password" class="form-control" id="password" placeholder="Password" required>
+                        </form>
+                      </p>
+                    </div>
+                    <div class="col-lg-5 text-right">
                       <p>
                         <form id="load_snippet" class="form-inline" role="form">
                           <div class="form-group">
@@ -455,7 +463,7 @@
                   </a>
                 </h4>
               </div>
-              <div id="setup_container" class="panel-collapse collapse out">
+              <div id="setup_container" class="panel-collapse collapse in">
                 <div class="panel-body">
                   <div id="simulation_setup" class="svg_container"></div>
                 </div>
@@ -469,17 +477,22 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="./static/js/jquery-1.11.0.min.js"></script>
-    <script src="./static/js/jquery-ui-1.10.4.custom.min.js"></script>
-    <script src="./static/js/bootstrap.min.js"></script>
+    <script src="./static/libs/jquery/jquery.min.js"></script>
+    <script src="./static/libs/jquery-ui/js/jquery.ui.core.min.js"></script>
+    <script src="./static/libs/jquery-ui/js/jquery.ui.widget.min.js"></script>
+    <script src="./static/libs/jquery-ui/js/jquery.ui.mouse.min.js"></script>
+    <script src="./static/libs/jquery-ui/js/jquery.ui.slider.min.js"></script>
+    <script src="./static/libs/bootstrap/js/bootstrap.min.js"></script>
 
-    <script src="./static/js/hs/highstock.js"></script>
-    <script src="./static/js/hs/modules/no-data-to-display.js"></script>
-    <script src="./static/js/hs/modules/exporting.js"></script>
+    <script src="./static/libs/highstock/highstock.js"></script>
+    <script src="./static/libs/highstock/modules/no-data-to-display.js"></script>
+    <script src="./static/libs/highstock/modules/exporting.js"></script>
 
-    <script src="./static/js/ace/ace.js"></script>
-    <script src="./static/js/ace/ext-language_tools.js"></script>
+    <script src="./static/libs/ace/ace.js"></script>
+    <script src="./static/libs/ace/ext-language_tools.js"></script>
 
+    <script src="./static/js/systems_units.js"></script>
+    <script src="./static/js/snippets.js"></script>
     <script src="./static/js/ready.js"></script>
   </body>
 </html>

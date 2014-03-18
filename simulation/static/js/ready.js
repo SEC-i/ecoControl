@@ -1,35 +1,6 @@
 var refresh_gui = true;
 var editor = null;
 
-var systems_units = {
-    cu_workload: '%',
-    cu_electrical_production: 'kW',
-    cu_total_electrical_production: 'kWh',
-    cu_thermal_production: 'kW',
-    cu_total_thermal_production: 'kWh',
-    cu_total_gas_consumption: 'kWh',
-    cu_operating_costs: 'Euro',
-    cu_power_ons: 'time(s)',
-    cu_total_hours_of_operation: 'h',
-    hs_temperature: '°C',
-    hs_total_input: 'kWh',
-    hs_total_output: 'kWh',
-    hs_empty_count: 'time(s)',
-    plb_workload: '%',
-    plb_thermal_production: 'kW',
-    plb_total_gas_consumption: 'kWh',
-    plb_operating_costs: 'Euro',
-    plb_power_ons: 'time(s)',
-    plb_total_hours_of_operation: 'h',
-    thermal_consumption: 'kW',
-    total_thermal_consumption: 'kWh',
-    electrical_consumption: 'kW',
-    total_electrical_consumption: 'kWh',
-    total_bilance: 'Euro',
-    infeed_reward: 'Euro',
-    infeed_costs: 'Euro'
-};
-
 var series_data = [{
     name: 'cu_workload',
     data: [],
@@ -50,6 +21,12 @@ var series_data = [{
     }
 }, {
     name: 'thermal_consumption',
+    data: [],
+    tooltip: {
+        valueSuffix: ' kW'
+    }
+}, {
+    name: 'warmwater_consumption',
     data: [],
     tooltip: {
         valueSuffix: ' kW'
@@ -88,8 +65,9 @@ $(function() {
                     series_data[1]['data'].push([timestamp, parseFloat(data['plb_workload'][i])]);
                     series_data[2]['data'].push([timestamp, parseFloat(data['hs_temperature'][i])]);
                     series_data[3]['data'].push([timestamp, parseFloat(data['thermal_consumption'][i])]);
-                    series_data[4]['data'].push([timestamp, parseFloat(data['outside_temperature'][i])]);
-                    series_data[5]['data'].push([timestamp, parseFloat(data['electrical_consumption'][i])]);
+                    series_data[4]['data'].push([timestamp, parseFloat(data['warmwater_consumption'][i])]);
+                    series_data[5]['data'].push([timestamp, parseFloat(data['outside_temperature'][i])]);
+                    series_data[6]['data'].push([timestamp, parseFloat(data['electrical_consumption'][i])]);
                 };
             }).done(function() {
                 initialize_diagram();
@@ -148,6 +126,7 @@ function update_diagram(data) {
         [],
         [],
         [],
+        [],
         []
     ];
     for (var i = 0; i < data['time'].length; i++) {
@@ -156,8 +135,9 @@ function update_diagram(data) {
         new_data[1].push([timestamp, data['plb_workload'][i]]);
         new_data[2].push([timestamp, data['hs_temperature'][i]]);
         new_data[3].push([timestamp, data['thermal_consumption'][i]]);
-        new_data[4].push([timestamp, data['outside_temperature'][i]]);
-        new_data[5].push([timestamp, data['electrical_consumption'][i]]);
+        new_data[4].push([timestamp, data['warmwater_consumption'][i]]);
+        new_data[5].push([timestamp, data['outside_temperature'][i]]);
+        new_data[6].push([timestamp, data['electrical_consumption'][i]]);
     };
 
     for (var i = new_data.length - 1; i >= 0; i--) {
@@ -206,6 +186,15 @@ function initialize_editor() {
     editor.setOptions({
         enableBasicAutocompletion: true,
         enableSnippets: true
+    });
+    ace.config.loadModule('ace/snippets/snippets', function() {
+        var snippetManager = ace.require('ace/snippets').snippetManager;
+        ace.config.loadModule('ace/snippets/python', function(m) {
+            if (m) {
+                m.snippets = m.snippets.concat(custom_snippets);
+                snippetManager.register(m.snippets, m.scope);
+            }
+        });
     });
 }
 
@@ -284,7 +273,8 @@ function initialize_event_handlers() {
 
     $("#editor_button").click(function() {
         $.post("./api/settings/", {
-            code: editor.getValue()
+            code: editor.getValue(),
+            password: $('#password').val()
         }, function(data) {
             editor.setValue(data['editor_code'], 1);
         });
@@ -307,8 +297,7 @@ function initialize_event_handlers() {
         $.post("./api/simulation/", {
             reset: 1
         });
-        location.reload(true);
-        event.preventDefault();
+        // location.reload(true);
     });
 
     $("#save_snippet").submit(function(event) {
@@ -356,7 +345,8 @@ function initialize_diagram() {
     // Create the chart
     $('#simulation_diagram').highcharts('StockChart', {
         chart: {
-            height: 400
+            height: 400,
+            zoomType: 'xy'
         },
         rangeSelector: {
             buttons: [{
@@ -391,7 +381,8 @@ function initialize_diagram() {
                 type: 'all',
                 text: 'All'
             }],
-            selected: 2
+            selected: 2,
+            inputEnabled: false
         },
         yAxis: {
             min: -10

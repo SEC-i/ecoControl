@@ -5,6 +5,20 @@ from flask import make_response
 from functools import update_wrapper
 
 
+class BulkProcessor(object):
+
+    def __init__(self, env, processes):
+        self.env = env
+        self.processes = processes
+
+    def loop(self):
+        while True:
+            # call step function for all processes
+            for process in self.processes:
+                process.step()
+            yield self.env.timeout(self.env.step_size)
+
+
 class SimulationBackgroundRunner(Thread):
 
     def __init__(self, env):
@@ -18,9 +32,9 @@ class SimulationBackgroundRunner(Thread):
 
 class MeasurementCache():
 
-    def __init__(self, env, cu, plb, heat_storage, thermal_consumer, electrical_consumer, cache_limit=24 * 265):
+    def __init__(self, env, cu, plb, heat_storage, thermal_consumer, electrical_consumer, cache_limit=24 * 365):
         self.values = ['time', 'cu_workload', 'plb_workload', 'hs_temperature',
-                       'thermal_consumption', 'outside_temperature', 'electrical_consumption']
+                       'thermal_consumption', 'warmwater_consumption', 'outside_temperature', 'electrical_consumption']
 
         self.env = env
         self.cu = cu
@@ -61,10 +75,13 @@ class MeasurementCache():
             return self.heat_storage.get_temperature()
         if value == 'thermal_consumption':
             return self.thermal_consumer.get_consumption_power()
+        if value == 'warmwater_consumption':
+            return self.thermal_consumer.get_warmwater_consumption_power()
         if value == 'outside_temperature':
             return self.thermal_consumer.get_outside_temperature()
         if value == 'electrical_consumption':
             return self.electrical_consumer.get_consumption_power()
+
         return 0
 
 
