@@ -37,6 +37,7 @@ class GasPoweredGenerator(BaseSystem):
 class CogenerationUnit(GasPoweredGenerator):
 
     def __init__(self, env, heat_storage, power_meter):
+
         GasPoweredGenerator.__init__(self, env)
         self.heat_storage = heat_storage
 
