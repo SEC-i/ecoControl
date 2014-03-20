@@ -15,7 +15,10 @@ from helpers import BulkProcessor
 
 
 class Simulation(object):
-    def __init__(self):
+    def __init__(self,copyconstructed=False):
+
+        if copyconstructed:
+            return
          # initialize real-time environment
         self.env = ForwardableRealtimeEnvironment()
 
@@ -44,6 +47,20 @@ class Simulation(object):
             self.env, [self.code_executer, self.cu, self.plb, self.heat_storage, self.thermal_consumer, self.electrical_consumer])
         self.env.process(self.bulk_processor.loop())
 
+    @classmethod
+    def copyconstruct(cls, otherSimulation):
+        simulation = Simulation()
+        simulation.env = ForwardableRealtimeEnvironment(otherSimulation.env.initial_time,otherSimulation.env.measurement_interval)
+        simulation.env.env_start = otherSimulation.env.env_start
+        simulation.heat_storage = HeatStorage.copyconstruct(simulation.env, otherSimulation.heat_storage)
+
+        return simulation
+
+
+
     def get_systems(self):
         return (self.env, self.heat_storage, self.power_meter, self.cu, self.plb,
             self.thermal_consumer, self.electrical_consumer, self.code_executer)
+
+    def forward(self, seconds):
+        self.env.forward = seconds

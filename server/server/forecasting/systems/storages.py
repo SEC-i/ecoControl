@@ -20,6 +20,12 @@ class HeatStorage():
         self.empty_count = 0
         self.temperature_loss = 3.0 / 24.0  # loss per hour
 
+    @classmethod
+    def copyconstruct(cls, env, otherStorage):
+        heatstorage = HeatStorage(env)
+        heatstorage.__dict__ = otherStorage.__dict__.copy()    # just a shallow copy
+        return heatstorage
+
     def add_energy(self, energy):
         self.input_energy += energy
 

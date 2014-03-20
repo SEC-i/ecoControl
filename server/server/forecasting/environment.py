@@ -13,6 +13,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
         # time to forward
         self.forward = 0
+        self.initial_time = initial_time
 
         # timings
         self.measurement_interval = measurement_interval
