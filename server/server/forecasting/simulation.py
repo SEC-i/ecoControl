@@ -9,38 +9,41 @@ from systems.code import CodeExecuter
 from systems.producers import CogenerationUnit, PeakLoadBoiler
 from systems.storages import HeatStorage, PowerMeter
 from systems.consumers import ThermalConsumer, SimpleElectricalConsumer
+from systems.forecastconsumer import ForecastConsumer
 
 from helpers import BulkProcessor
 
 
-def get_new_simulation():
-    # initialize real-time environment
-    env = ForwardableRealtimeEnvironment()
+class Simulation(object):
+    def __init__(self):
+         # initialize real-time environment
+        self.env = ForwardableRealtimeEnvironment()
 
-    # initialize power systems
-    heat_storage = HeatStorage(env)
-    power_meter = PowerMeter(env)
-    cu = CogenerationUnit(env, heat_storage, power_meter)
-    plb = PeakLoadBoiler(env, heat_storage)
-    thermal_consumer = ThermalConsumer(env, heat_storage)
-    electrical_consumer = SimpleElectricalConsumer(env, power_meter)
+        # initialize power systems
+        self.heat_storage = HeatStorage(self.env)
+        self.power_meter = PowerMeter(self.env)
+        self.cu = CogenerationUnit(self.env, self.heat_storage, self.power_meter)
+        self.plb = PeakLoadBoiler(self.env, self.heat_storage)
+        self.thermal_consumer = ForecastConsumer(self.env, self.heat_storage)
+        self.electrical_consumer = SimpleElectricalConsumer(self.env, self.power_meter)
 
-    # initilize code executer
-    code_executer = CodeExecuter(env, {
-        'env': env,
-        'heat_storage': heat_storage,
-        'power_meter': power_meter,
-        'cu': cu,
-        'plb': plb,
-        'thermal_consumer': thermal_consumer,
-        'electrical_consumer': electrical_consumer,
-        'time': time,
-    })
+        # initilize code executer
+        self.code_executer = CodeExecuter(self.env, {
+            'env': self.env,
+            'heat_storage': self.heat_storage,
+            'power_meter': self.power_meter,
+            'cu': self.cu,
+            'plb': self.plb,
+            'thermal_consumer': self.thermal_consumer,
+            'electrical_consumer': self.electrical_consumer,
+            'time': time,
+        })
 
-    # initialize BulkProcessor and add it to env
-    bulk_processor = BulkProcessor(
-        env, [code_executer, cu, plb, heat_storage, thermal_consumer, electrical_consumer])
-    env.process(bulk_processor.loop())
+        # initialize BulkProcessor and add it to env
+        self.bulk_processor = BulkProcessor(
+            self.env, [self.code_executer, self.cu, self.plb, self.heat_storage, self.thermal_consumer, self.electrical_consumer])
+        self.env.process(self.bulk_processor.loop())
 
-    return (env, heat_storage, power_meter, cu, plb,
-            thermal_consumer, electrical_consumer, code_executer)
+    def get_systems(self):
+        return (self.env, self.heat_storage, self.power_meter, self.cu, self.plb,
+            self.thermal_consumer, self.electrical_consumer, self.code_executer)

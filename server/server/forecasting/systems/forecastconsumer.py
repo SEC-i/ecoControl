@@ -22,3 +22,5 @@ class ForecastConsumer(ThermalConsumer):
 
     def get_outside_temperature(self):
         return self.weather_forecast.get_temperature_estimate(self.env.now)
+
+    

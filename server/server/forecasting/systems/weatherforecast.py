@@ -70,7 +70,6 @@ class Forecast:
         t1 = min(t0 + 1, len(self.forecast_temperatures_3hourly) - 1)
         a0 = self.forecast_temperatures_3hourly[t0]
         a1 = self.forecast_temperatures_3hourly[t1]
-        print a0,a1,weight
         return self.mix(a0, a1, weight)
 
     def get_forecast_temperature_daily(self, date):
@@ -98,15 +97,3 @@ class Forecast:
     def get_date(self):
         #return self.env.now
         return time.time() #for debugging, use self.env.now otherwise<
-
-
-
-
-# print "hourly forecast for next 14 days:"
-
-# f=Forecast()
-# t0 = time.time()
-# for i in range(14 * 24):
-#     print round(f.get_temperature_estimate(t0),2),
-# f.get_temperature_estimate(t0)
-# t0 += 60 * 60 #1 hour
