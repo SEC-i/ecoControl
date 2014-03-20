@@ -94,24 +94,79 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertIsNone(self.cu.overwrite_workload)
         
     def test_step_not_running(self):
+        self.cu.workload = 1
         self.cu.running = False
         
         self.cu.step()
         
         self.assertEqual(self.cu.workload, 0)
-        self.fail('finish test')
         
-    def test_step_running_thermal(self):
-        self.cu.running = True
-        self.cu.workload = 50
+    def test_step_running_thermal_turn_up_workload(self):
+        last_workload = 50
+        
+        self.initialize_cu_running()
         self.cu.thermal_driven = True
+        self.cu.workload = last_workload
+        self.power_meter.energy_produced = 0.0
         self.heat_storage.required_energy = 10
         
-        # usage = 
-        # anahnd aktueller workload und modus ablesen
-        # waermebedarf von storage erfrageb
-        # wie viel gas verbraucht wird
-        # wie viel Stom und waerme produziert wird.  
+        self.cu.step()
+        
+        # expected_workload = required_energy/max_gas_amount_input*thermal_efficiency
+        # expected_workload ca 0.81, which is greater than the last workload of 50%
+        # and greater than the minimal workload.
+        
+        self.assertGreater(self.cu.workload, last_workload)
+        self.assertGreater(self.cu.total_gas_consumption, 0)
+        self.assertGreater(self.power_meter.energy_produced, 0)
+        
+    def test_step_running_thermal_turn_down_workload(self):
+        last_workload = 80
+        
+        self.initialize_cu_running()
+        self.cu.thermal_driven = True
+        self.cu.workload = last_workload
+        self.power_meter.energy_produced = 0.0
+        self.heat_storage.required_energy = 5
+        
+        self.cu.step()
+        
+        # expected_workload = required_energy/max_gas_amount_input*thermal_efficiency
+        # expected_workload ca 0.40, which is less than the last workload of 80%
+        # and greater than the minimal workload.
+        
+        self.assertLess(self.cu.workload, last_workload)
+        self.assertGreater(self.cu.total_gas_consumption, 0) 
+        self.assertGreater(self.power_meter.energy_produced, 0)
+        
+    def test_step_running_thermal_too_little_workload(self):
+        last_workload = 80
+        
+        self.initialize_cu_running()
+        self.cu.workload = last_workload
+        self.cu.thermal_driven = True        
+        self.heat_storage.required_energy = 0
+        self.power_meter.energy_produced = 0.0
+        
+        self.cu.step()
+        
+        # expected_workload = required_energy/max_gas_amount_input*thermal_efficiency
+        # expected_workload ca 0.40, which is less than the last workload of 80%
+        # and greater than the minimal workload.
+        
+        self.assertEqual(self.cu.workload, 0)
+        self.assertEqual(self.cu.total_gas_consumption, 0)
+        self.assertEqual(self.power_meter.energy_produced, 0)
+        
+    
+    def initialize_cu_running(self):
+        self.cu.running = True
+        self.cu.max_gas_input = 19.0
+        self.cu.thermal_efficiency = 0.65
+        self.cu.total_gas_consumption = 0.0
+        self.cu.minimal_workload = 40.0
+        
+    
         
 
 if __name__ == '__main__':
