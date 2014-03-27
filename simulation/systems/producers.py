@@ -11,7 +11,7 @@ class GasPoweredGenerator():
         self.running = True
 
         self.workload = 0
-        self.current_gas_consumption = 0  # kWh
+        self.current_gas_consumption = 0  # kW
         self.current_thermal_production = 0  # kWh
         self.total_gas_consumption = 0.0  # kWh
         self.total_thermal_production = 0.0  # kWh
