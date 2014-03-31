@@ -91,8 +91,23 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertTrue(self.cu.thermal_driven)
         self.assertGreaterEqual(self.cu.electrical_driven_minimal_production, 0),
 
-        self.assertIsNone(self.cu.overwrite_workload)
-        
+        self.assertIsNone(self.cu.overwrite_workload)        
+        ####
+        # test step()
+        ####        
+        '''step calculates a new workload depending on mode
+        if the workload is too low, the cu will be turned off and the effective workload is zero
+        if the workload is too high, the cu will be running at a workload of 99 %
+        in dependence of the workload the attributes 
+        energy_produced of the power_meter will be increased
+        input_energy of the heat_storage will be increased
+        cu:
+        the total_electrical_production
+        the total_gas_consumption
+        total_thermal_production 
+        dito
+        the cu has to be turned on (running = true)
+        and it musn't be paused (self_offtime active)'''
     def test_step_not_running(self):
         self.cu.workload = 1
         self.cu.running = False
@@ -158,6 +173,84 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertEqual(self.cu.total_gas_consumption, 0)
         self.assertEqual(self.power_meter.energy_produced, 0)
         
+    def test_step_thermal(self):
+        self.cu.running = True
+        
+        now = self.env.now
+        self.cu.off_time = now - 1
+        
+        self.cu.thermal_driven = True 
+        
+        gas_input = 19.0
+        self.cu.max_gas_input = gas_input
+        thermal_efficiency = 0.65
+        self.cu.thermal_efficiency = thermal_efficiency
+        electrical_efficiency = 0.25
+        self.cu.electrical_efficiency = electrical_efficiency
+        self.cu.minimal_workload = 0.0
+        required_energy = 5.0
+        self.heat_storage.required_energy = required_energy
+        
+        total_electrical_production = 0.0
+        self.cu.total_electrical_production = total_electrical_production
+        
+        total_gas_consumption = 0.0
+        self.cu.total_gas_consumption = total_gas_consumption
+        
+        total_gas_consumption = 0.0
+        self.cu.total_gas_consumption = total_gas_consumption
+        
+        total_thermal_production = 0.0
+        self.cu.total_thermal_production = total_thermal_production
+        
+        self.cu.step()
+        
+        expected_workload = required_energy/(gas_input*thermal_efficiency)*99 # ca 0.4 * 99 = 40.1(%)
+        new_gas_consumption = gas_input*expected_workload/99.0*self.env.step_size/(60*60)
+        total_gas_consumption += new_gas_consumption
+        
+        new_electrical_energy = gas_input*expected_workload/99.0 * electrical_efficiency \
+            * self.cu.get_efficiency_loss_factor() * self.env.step_size/(60*60)            
+        total_electrical_production += new_electrical_energy
+        
+        new_thermal_energy = gas_input*expected_workload/99.0 * thermal_efficiency \
+            * self.cu.get_efficiency_loss_factor() * self.env.step_size/(60*60)            
+        total_thermal_production += new_thermal_energy   
+        
+        self.assertEqual(self.cu.workload, expected_workload)
+        self.assertAlmostEqual(self.cu.total_gas_consumption, total_gas_consumption)
+        self.assertEqual(self.cu.total_electrical_production, total_electrical_production)
+        self.assertEqual(self.cu.total_thermal_production, total_thermal_production)
+
+        """
+        def test_step_running_electric_correct_workload(self):
+        self.cu.running = True
+        
+        self.heat_storage.target_temperature = 100
+        self.heat_storage.temperature = 0
+        
+        now = self.env.now
+        self.cu.off_time = now - 1
+        self.cu.thermal_driven = False 
+        
+        gas_input = 19.0
+        self.cu.max_gas_input = gas_input
+        thermal_efficiency = 0.65
+        self.cu.thermal_efficiency = thermal_efficiency
+        electrical_efficiency = 0.25
+        self.cu.electrical_efficiency = electrical_efficiency
+        self.cu.minimal_workload = 1.0
+        required_energy = 3.0
+        self.power_meter.current_power_consum = required_energy
+        self.power_meter.energy_produced = 0.0
+        self.cu.total_gas_consumption = 0.0
+        
+        self.cu.step()
+        
+        expected_workload = required_energy/(gas_input*electrical_efficiency)*99
+        
+        self.assertEqual(self.cu.workload, expected_workload)"""
+        
     def test_get_electrical_energy_production(self):
         # the method should return the energy produced in one time intervall
         self.cu.current_electrical_production = 20.0
@@ -193,7 +286,6 @@ class CogenerationUnitTest(unittest.TestCase):
         # given efficiency is reached only on maximum workload
         # at minumum workload the efficiency is decreased with
         # max_efficiency_loss
-        
         self.cu.workload = 40
         self.cu.minimal_workload = 40
         self.cu.max_efficiency_loss = 5
@@ -212,7 +304,7 @@ class CogenerationUnitTest(unittest.TestCase):
         self.cu.thermal_efficiency = thermal_efficiency
         
         max_energy = thermal_efficiency*gas_input
-        expected_workload = required_energy/max_energy   
+        expected_workload = required_energy/max_energy *100.0 
         
         calculated_result = self.cu.get_calculated_workload_thermal()
         
@@ -264,6 +356,13 @@ class CogenerationUnitTest(unittest.TestCase):
         self.fail('learn first update parameters!')
         
         
+    def initialize_cu_running(self):
+        self.cu.running = True
+        self.cu.max_gas_input = 19.0
+        self.cu.thermal_efficiency = 0.65
+        self.cu.total_gas_consumption = 0.0
+        self.cu.minimal_workload = 40.0
+'''       
     def test_update_parameters_power_on_count(self):
         # the bhkw was turned off
         # the new workload is sane
@@ -410,15 +509,7 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertEqual(self.cu.total_hours_of_operation, total_hours_of_operation)
 
      #def test_consume_gas(self):
-     #pass
-    
-    
-    def initialize_cu_running(self):
-        self.cu.running = True
-        self.cu.max_gas_input = 19.0
-        self.cu.thermal_efficiency = 0.65
-        self.cu.total_gas_consumption = 0.0
-        self.cu.minimal_workload = 40.0
+     #pass'''
         
     
         
