@@ -173,60 +173,62 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertEqual(self.cu.total_gas_consumption, 0)
         self.assertEqual(self.power_meter.energy_produced, 0)
         
+    def initialize_cu_valid(self):
+		self.cu.running = True
+		now = self.env.now
+		self.cu.off_time = now - 1
+        
+    def initialize_cu_with_values(self, gas_input, thermal_efficiency, \
+			electrical_efficiency, total_electrical_production, total_gas_consumption,\
+			total_thermal_production):
+		self.cu.max_gas_input = gas_input
+		self.cu.thermal_efficiency = thermal_efficiency
+		self.cu.electrical_efficiency = electrical_efficiency
+		self.cu.total_electrical_production = total_electrical_production
+		self.cu.total_gas_consumption = total_gas_consumption
+		self.cu.total_thermal_production = total_thermal_production
+		      
     def test_step_thermal(self):
 		#initialize with valid parameters
-        self.cu.running = True
+		self.initialize_cu_valid()
+		self.cu.thermal_driven = True
+		# initialize values
+		gas_input = 19.0
+		thermal_efficiency = 0.65
+		electrical_efficiency = 0.25	        
+		total_electrical_production = 0.0
+		total_gas_consumption = 0.0
+		total_thermal_production = 0.0
         
-        now = self.env.now
-        self.cu.off_time = now - 1
+		self.initialize_cu_with_values(gas_input, thermal_efficiency, \
+			electrical_efficiency, total_electrical_production, \
+			total_gas_consumption, total_thermal_production)
+			
+		self.cu.minimal_workload = 0.0
+		required_energy = 5.0
+		self.heat_storage.required_energy = required_energy
+		self.cu.step()
         
-        self.cu.thermal_driven = True 
+		expected_workload = required_energy/(gas_input*thermal_efficiency)*99 # ca 0.4 * 99 = 40.1(%)
+		new_gas_consumption = gas_input*expected_workload/99.0*self.env.step_size/(60*60)
+		total_gas_consumption += new_gas_consumption
         
-        # initialize values
-        gas_input = 19.0
-        self.cu.max_gas_input = gas_input
-        thermal_efficiency = 0.65
-        self.cu.thermal_efficiency = thermal_efficiency
-        electrical_efficiency = 0.25
-        self.cu.electrical_efficiency = electrical_efficiency
-        self.cu.minimal_workload = 0.0
-        required_energy = 5.0
-        self.heat_storage.required_energy = required_energy
-        
-        total_electrical_production = 0.0
-        self.cu.total_electrical_production = total_electrical_production
-        
-        total_gas_consumption = 0.0
-        self.cu.total_gas_consumption = total_gas_consumption
-
-        total_thermal_production = 0.0
-        self.cu.total_thermal_production = total_thermal_production
-        
-        self.cu.step()
-        
-        expected_workload = required_energy/(gas_input*thermal_efficiency)*99 # ca 0.4 * 99 = 40.1(%)
-        new_gas_consumption = gas_input*expected_workload/99.0*self.env.step_size/(60*60)
-        total_gas_consumption += new_gas_consumption
-        
-        new_electrical_energy = gas_input*expected_workload/99.0 * electrical_efficiency \
+		new_electrical_energy = gas_input*expected_workload/99.0 * electrical_efficiency \
             * self.cu.get_efficiency_loss_factor() * self.env.step_size/(60*60)            
-        total_electrical_production += new_electrical_energy
+		total_electrical_production += new_electrical_energy
         
-        new_thermal_energy = gas_input*expected_workload/99.0 * thermal_efficiency \
+		new_thermal_energy = gas_input*expected_workload/99.0 * thermal_efficiency \
             * self.cu.get_efficiency_loss_factor() * self.env.step_size/(60*60)            
-        total_thermal_production += new_thermal_energy   
+		total_thermal_production += new_thermal_energy   
         
-        self.assertEqual(self.cu.workload, expected_workload)
-        self.assertAlmostEqual(self.cu.total_gas_consumption, total_gas_consumption)
-        self.assertEqual(self.cu.total_electrical_production, total_electrical_production)
-        self.assertEqual(self.cu.total_thermal_production, total_thermal_production)
+		self.assertEqual(self.cu.workload, expected_workload)
+		self.assertAlmostEqual(self.cu.total_gas_consumption, total_gas_consumption)
+		self.assertEqual(self.cu.total_electrical_production, total_electrical_production)
+		self.assertEqual(self.cu.total_thermal_production, total_thermal_production)
         
     def test_step_electric(self):
 		#initialize with valid parameters
-        self.cu.running = True
-        
-        now = self.env.now
-        self.cu.off_time = now - 1
+        self.initialize_cu_valid()
         
         self.cu.thermal_driven = False 
         
@@ -234,25 +236,21 @@ class CogenerationUnitTest(unittest.TestCase):
         self.heat_storage.target_temperature = 90.0
         
         # initialize values
-        gas_input = 19.0
-        self.cu.max_gas_input = gas_input
-        thermal_efficiency = 0.65
-        self.cu.thermal_efficiency = thermal_efficiency
-        electrical_efficiency = 0.25
-        self.cu.electrical_efficiency = electrical_efficiency
+		# initialize values
+		gas_input = 19.0
+		thermal_efficiency = 0.65
+		electrical_efficiency = 0.25	        
+		total_electrical_production = 0.0
+		total_gas_consumption = 0.0
+		total_thermal_production = 0.0
+        
+		self.initialize_cu_with_values(gas_input, thermal_efficiency, \
+			electrical_efficiency, total_electrical_production, \
+			total_gas_consumption, total_thermal_production)
+        
         self.cu.minimal_workload = 0.0
         required_energy = 2.0
         self.power_meter.current_power_consum = required_energy
-        
-        total_electrical_production = 0.0
-        self.cu.total_electrical_production = total_electrical_production
-        
-        total_gas_consumption = 0.0
-        self.cu.total_gas_consumption = total_gas_consumption
-        
-        total_thermal_production = 0.0
-        self.cu.total_thermal_production = total_thermal_production
-        
         self.cu.step()
         
         expected_workload = required_energy/(gas_input*electrical_efficiency)*99 # ca 0.4 * 99 = 40.1(%)
