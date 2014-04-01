@@ -272,6 +272,45 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertEqual(self.cu.total_electrical_production, total_electrical_production)
         self.assertAlmostEqual(self.cu.total_thermal_production, total_thermal_production)
         
+    def test_step_turn_on_forbidden(self):
+		#initialize with valid parameters
+        self.cu.running = True
+        
+        now = self.env.now
+        self.cu.off_time = now + 1
+        
+        self.cu.thermal_driven = False 
+        
+        self.heat_storage.temperature = 0.0
+        self.heat_storage.target_temperature = 90.0
+        
+        # initialize values
+        gas_input = 19.0
+        self.cu.max_gas_input = gas_input
+        thermal_efficiency = 0.65
+        self.cu.thermal_efficiency = thermal_efficiency
+        electrical_efficiency = 0.25
+        self.cu.electrical_efficiency = electrical_efficiency
+        self.cu.minimal_workload = 0.0
+        required_energy = 2.0
+        self.power_meter.current_power_consum = required_energy
+        
+        total_electrical_production = 0.0
+        self.cu.total_electrical_production = total_electrical_production
+        
+        total_gas_consumption = 0.0
+        self.cu.total_gas_consumption = total_gas_consumption
+        
+        total_thermal_production = 0.0
+        self.cu.total_thermal_production = total_thermal_production
+        
+        self.cu.step()
+                
+        self.assertEqual(self.cu.workload, 0)
+        self.assertAlmostEqual(self.cu.total_gas_consumption, 0)
+        self.assertEqual(self.cu.total_electrical_production, 0)
+        self.assertAlmostEqual(self.cu.total_thermal_production, 0)
+        
     def test_get_electrical_energy_production(self):
         # the method should return the energy produced in one time intervall
         self.cu.current_electrical_production = 20.0
