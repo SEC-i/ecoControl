@@ -151,7 +151,7 @@ class CogenerationUnitTest(unittest.TestCase):
 			electrical_efficiency, total_electrical_production, \
 			total_gas_consumption, total_thermal_production)
 			
-		self.cu.minimal_workload = 0.0
+		self.cu.minimal_workload = 5.0
 		required_energy = 5.0
 		self.heat_storage.required_energy = required_energy
 		self.cu.step()
@@ -250,10 +250,8 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertAlmostEqual(self.cu.total_thermal_production, 0)
         
     def test_step_turn_target_temperature_reached(self):
-		self.initialize_cu_valid()
-        
-        self.cu.thermal_driven = False 
-        
+        self.initialize_cu_valid()
+        self.cu.thermal_driven = False
         self.heat_storage.temperature = 10.0
         self.heat_storage.target_temperature = 10.0
         
