@@ -11,7 +11,7 @@ from systems.storages import HeatStorage, PowerMeter
 from systems.consumers import ThermalConsumer, SimpleElectricalConsumer
 from systems.forecastconsumer import ForecastConsumer
 
-from helpers import BulkProcessor
+from helpers import BulkProcessor, SimulationBackgroundRunner
 
 
 class Simulation(object):
@@ -53,6 +53,11 @@ class Simulation(object):
         simulation.env = ForwardableRealtimeEnvironment(otherSimulation.env.initial_time,otherSimulation.env.measurement_interval)
         simulation.env.env_start = otherSimulation.env.env_start
         simulation.heat_storage = HeatStorage.copyconstruct(simulation.env, otherSimulation.heat_storage)
+
+
+
+        thread = SimulationBackgroundRunner(simulation.env)
+        thread.start()
 
         return simulation
 

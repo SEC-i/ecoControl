@@ -1,10 +1,12 @@
 from data import electrical_feed_in_reward_per_kwh, electrical_costs_per_kwh
+from basesystem import BaseSystem
 
 
-class HeatStorage():
+class HeatStorage(BaseSystem):
 
     def __init__(self, env):
-        self.env = env
+        super(HeatStorage, self).__init__(env)
+       
 
         # data from pamiru48
         self.capacity = 25000  # liters  (=kilos)
@@ -19,12 +21,6 @@ class HeatStorage():
         self.output_energy = 0.0  # kWh
         self.empty_count = 0
         self.temperature_loss = 3.0 / 24.0  # loss per hour
-
-    @classmethod
-    def copyconstruct(cls, env, otherStorage):
-        heatstorage = HeatStorage(env)
-        heatstorage.__dict__ = otherStorage.__dict__.copy()    # just a shallow copy
-        return heatstorage
 
     def add_energy(self, energy):
         self.input_energy += energy
@@ -68,10 +64,10 @@ class HeatStorage():
         self.output_energy += energy_loss * (self.env.step_size / 3600.0)
 
 
-class PowerMeter():
+class PowerMeter(BaseSystem):
 
     def __init__(self, env):
-        self.env = env
+        super(PowerMeter, self).__init__(env)
 
         self.total_fed_in_electricity = 0.0  # kWh
         self.total_purchased = 0  # kWh

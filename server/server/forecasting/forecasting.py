@@ -12,13 +12,15 @@ class Forecasting:
         #self.measure_cache = MeasurementCache()
 
 
-    def forecast_until(self, seconds):
+    def forecast_for(self, seconds):
         new_simulation = Simulation.copyconstruct(self.simulation)
         new_simulation.env.forward = seconds
+        while new_simulation.forward > 0:
+            print new_simulation.heat_storage.input_energy
 
 
 
 
 
 f = Forecasting()
-f.forecast_until(60 * 60* 10)
+f.forecast_for(60 * 60* 10)

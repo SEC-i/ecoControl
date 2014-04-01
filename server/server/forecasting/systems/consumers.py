@@ -1,15 +1,17 @@
 import time
 from data import outside_temperatures_2013, daily_electrical_demand, warm_water_demand_workday, warm_water_demand_weekend
+from basesystem import BaseSystem
 
 
-class ThermalConsumer():
+class ThermalConsumer(BaseSystem):
 
     """ physically based heating, using formulas from 
     http://www.model.in.tum.de/um/research/groups/ai/fki-berichte/postscript/fki-227-98.pdf and
     http://www.inference.phy.cam.ac.uk/is/papers/DanThermalModellingBuildings.pdf """
 
     def __init__(self, env, heat_storage):
-        self.env = env
+        super(ThermalConsumer, self).__init__(env)
+
         self.heat_storage = heat_storage
 
         self.target_temperature = 20.0
@@ -65,6 +67,14 @@ class ThermalConsumer():
         self.heat_capacity = self.heat_capacity_air + heat_capacity_stuff
 
         self.room_power = self.heat_capacity_air * self.temperature_room
+
+    @classmethod
+    def copyconstruct(cls, env, other_thermal_consumer, heat_storage):
+        thermal_consumer = ThermalConsumer(env,heat_storage)
+        thermal_consumer.__dict__ = other_thermal_consumer.__dict__.copy()    # just a shallow copy, so no dict copy
+        return thermal_consumer
+
+
 
     def step(self):
         self.simulate_consumption()
@@ -164,16 +174,24 @@ class ThermalConsumer():
         return a * (1 - x) + b * x
 
 
-class SimpleElectricalConsumer():
+class SimpleElectricalConsumer(BaseSystem):
 
     def __init__(self, env, power_meter):
-        self.env = env
+        super(SimpleElectricalConsumer, self).__init__(env)
+
         self.power_meter = power_meter
 
         self.total_consumption = 0.0  # kWh
 
         # list of 24 values representing relative demand per hour
         self.demand_variation = [1 for i in range(24)]
+
+    @classmethod
+    def copyconstruct(cls, env, other_electrical_consumer, power_meter):
+        electrical_consumer = SimpleElectricalConsumer(env)
+        electrical_consumer.__dict__ = other_electrical_consumer.__dict__.copy()    # just a shallow copy, so no dict copy
+        electrical_consumer.power_meter = power_meter 
+        return electrical_consumer
 
     def step(self):
         consumption = self.get_consumption_energy()
