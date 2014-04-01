@@ -174,6 +174,7 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertEqual(self.power_meter.energy_produced, 0)
         
     def test_step_thermal(self):
+		#initialize with valid parameters
         self.cu.running = True
         
         now = self.env.now
@@ -181,6 +182,7 @@ class CogenerationUnitTest(unittest.TestCase):
         
         self.cu.thermal_driven = True 
         
+        # initialize values
         gas_input = 19.0
         self.cu.max_gas_input = gas_input
         thermal_efficiency = 0.65
@@ -196,10 +198,7 @@ class CogenerationUnitTest(unittest.TestCase):
         
         total_gas_consumption = 0.0
         self.cu.total_gas_consumption = total_gas_consumption
-        
-        total_gas_consumption = 0.0
-        self.cu.total_gas_consumption = total_gas_consumption
-        
+
         total_thermal_production = 0.0
         self.cu.total_thermal_production = total_thermal_production
         
@@ -221,35 +220,57 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertAlmostEqual(self.cu.total_gas_consumption, total_gas_consumption)
         self.assertEqual(self.cu.total_electrical_production, total_electrical_production)
         self.assertEqual(self.cu.total_thermal_production, total_thermal_production)
-
-        """
-        def test_step_running_electric_correct_workload(self):
-        self.cu.running = True
         
-        self.heat_storage.target_temperature = 100
-        self.heat_storage.temperature = 0
+    def test_step_electric(self):
+		#initialize with valid parameters
+        self.cu.running = True
         
         now = self.env.now
         self.cu.off_time = now - 1
+        
         self.cu.thermal_driven = False 
         
+        self.heat_storage.temperature = 0.0
+        self.heat_storage.target_temperature = 90.0
+        
+        # initialize values
         gas_input = 19.0
         self.cu.max_gas_input = gas_input
         thermal_efficiency = 0.65
         self.cu.thermal_efficiency = thermal_efficiency
         electrical_efficiency = 0.25
         self.cu.electrical_efficiency = electrical_efficiency
-        self.cu.minimal_workload = 1.0
-        required_energy = 3.0
+        self.cu.minimal_workload = 0.0
+        required_energy = 2.0
         self.power_meter.current_power_consum = required_energy
-        self.power_meter.energy_produced = 0.0
-        self.cu.total_gas_consumption = 0.0
+        
+        total_electrical_production = 0.0
+        self.cu.total_electrical_production = total_electrical_production
+        
+        total_gas_consumption = 0.0
+        self.cu.total_gas_consumption = total_gas_consumption
+        
+        total_thermal_production = 0.0
+        self.cu.total_thermal_production = total_thermal_production
         
         self.cu.step()
         
-        expected_workload = required_energy/(gas_input*electrical_efficiency)*99
+        expected_workload = required_energy/(gas_input*electrical_efficiency)*99 # ca 0.4 * 99 = 40.1(%)
+        new_gas_consumption = gas_input*expected_workload/99.0*self.env.step_size/(60*60)
+        total_gas_consumption += new_gas_consumption
         
-        self.assertEqual(self.cu.workload, expected_workload)"""
+        new_electrical_energy = gas_input*expected_workload/99.0 * electrical_efficiency \
+            * self.cu.get_efficiency_loss_factor() * self.env.step_size/(60*60)            
+        total_electrical_production += new_electrical_energy
+        
+        new_thermal_energy = gas_input*expected_workload/99.0 * thermal_efficiency \
+            * self.cu.get_efficiency_loss_factor() * self.env.step_size/(60*60)            
+        total_thermal_production += new_thermal_energy   
+        
+        self.assertEqual(self.cu.workload, expected_workload)
+        self.assertAlmostEqual(self.cu.total_gas_consumption, total_gas_consumption)
+        self.assertEqual(self.cu.total_electrical_production, total_electrical_production)
+        self.assertAlmostEqual(self.cu.total_thermal_production, total_thermal_production)
         
     def test_get_electrical_energy_production(self):
         # the method should return the energy produced in one time intervall
@@ -294,7 +315,9 @@ class CogenerationUnitTest(unittest.TestCase):
         
         self.assertEqual(calculated_loss, 1-0.05)
      
-    def test_get_calculated_workload_thermal(self): 
+    def test_get_calculated_workload_thermal(self):
+		# the function returns the needed workload based on the thermal demand
+		# dont't know why but the workload is mapped to 0-99
         required_energy = 5
         gas_input = 20 # unit is energy: kWh
         thermal_efficiency = 0.6
@@ -304,14 +327,15 @@ class CogenerationUnitTest(unittest.TestCase):
         self.cu.thermal_efficiency = thermal_efficiency
         
         max_energy = thermal_efficiency*gas_input
-        expected_workload = required_energy/max_energy *100.0 
+        expected_workload = required_energy/max_energy *99.0 
         
         calculated_result = self.cu.get_calculated_workload_thermal()
         
         self.assertEqual(calculated_result, expected_workload) 
           
     def test_get_calculated_workload_electric(self):
-        # assumption the heat storage isn't filled
+        # the function returns the needed workload based on the electric demand
+		# dont't know why but the workload is mapped to 0-99
         self.heat_storage.target_temperature = 100
         self.heat_storage.temperature = 0
         
@@ -329,7 +353,7 @@ class CogenerationUnitTest(unittest.TestCase):
         
         calculated_result = self.cu.get_calculated_workload_electric()
         
-        self.assertAlmostEqual(calculated_result, expected_workload*100*0.99) 
+        self.assertAlmostEqual(calculated_result, expected_workload*99.0) 
        # self.assertAlmostEqual(calculated_result, expected_workload)
         
     def test_get_calculated_workload_electric_heat_storage_filled(self):
