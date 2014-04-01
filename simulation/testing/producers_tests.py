@@ -220,6 +220,7 @@ class CogenerationUnitTest(unittest.TestCase):
 		#initialize with valid parameters
         self.cu.running = True
         
+        # the offtime is effective!
         now = self.env.now
         self.cu.off_time = now + 1
         
@@ -227,6 +228,34 @@ class CogenerationUnitTest(unittest.TestCase):
         
         self.heat_storage.temperature = 0.0
         self.heat_storage.target_temperature = 90.0
+        
+        # initialize values
+        gas_input = 19.0
+        thermal_efficiency = 0.65
+        electrical_efficiency = 0.25
+        total_electrical_production = 0.0
+        total_gas_consumption = 0.0
+        total_thermal_production = 0.0
+        self.initialize_cu_with_values(gas_input, thermal_efficiency, \
+			electrical_efficiency, total_electrical_production, \
+			total_gas_consumption, total_thermal_production)
+        required_energy = 2.0
+        self.power_meter.current_power_consum = required_energy
+        
+        self.cu.step()
+                
+        self.assertEqual(self.cu.workload, 0)
+        self.assertAlmostEqual(self.cu.total_gas_consumption, 0)
+        self.assertEqual(self.cu.total_electrical_production, 0)
+        self.assertAlmostEqual(self.cu.total_thermal_production, 0)
+        
+    def test_step_turn_target_temperature_reached(self):
+		self.initialize_cu_valid()
+        
+        self.cu.thermal_driven = False 
+        
+        self.heat_storage.temperature = 10.0
+        self.heat_storage.target_temperature = 10.0
         
         # initialize values
         gas_input = 19.0
