@@ -105,6 +105,8 @@ class CogenerationUnitTest(unittest.TestCase):
         of 99 %
         the cu has to be turned on (running = true)
         and it musn't be paused (self_offtime active)
+        if the heat storage is too hot, the cu musn't produce energy
+            although there is a demand for electrical energy        
         in dependence of the workload the attributes 
         of the cu:
         the total_electrical_production
@@ -232,6 +234,8 @@ class CogenerationUnitTest(unittest.TestCase):
         self.cu.minimal_workload = 0.0
         required_energy = 2.0
         self.power_meter.current_power_consum = required_energy
+        self.heat_storage.input_energy = 0
+        self.power_meter.energy_produced = 0
         self.cu.step()
         
         expected_workload = required_energy/(gas_input*electrical_efficiency)*99 # ca 0.4 * 99 = 40.1(%)
@@ -246,10 +250,20 @@ class CogenerationUnitTest(unittest.TestCase):
             * self.cu.get_efficiency_loss_factor() * self.env.step_size/(60*60)            
         total_thermal_production += new_thermal_energy   
         
+        expected_energy_produced = self.cu.get_electrical_energy_production()
+        expected_input_energy = self.cu.get_thermal_energy_production() 
+         
         self.assertEqual(self.cu.workload, expected_workload)
-        self.assertAlmostEqual(self.cu.total_gas_consumption, total_gas_consumption)
-        self.assertEqual(self.cu.total_electrical_production, total_electrical_production)
-        self.assertAlmostEqual(self.cu.total_thermal_production, total_thermal_production)
+        self.assertEqual(self.cu.total_electrical_production, \
+            total_electrical_production)
+        self.assertAlmostEqual(self.cu.total_gas_consumption, \
+            total_gas_consumption)
+        self.assertAlmostEqual(self.cu.total_thermal_production, \
+            total_thermal_production)
+        self.assertEqual(self.power_meter.energy_produced, \
+            expected_energy_produced)
+        self.assertEqual(self.heat_storage.input_energy, expected_input_energy)
+        
         
     def test_step_turn_on_forbidden(self):
         #initialize with valid parameters
@@ -276,13 +290,17 @@ class CogenerationUnitTest(unittest.TestCase):
             total_gas_consumption, total_thermal_production)
         required_energy = 2.0
         self.power_meter.current_power_consum = required_energy
+        self.heat_storage.input_energy = 0
+        self.power_meter.energy_produced = 0
         
         self.cu.step()
                 
         self.assertEqual(self.cu.workload, 0)
-        self.assertAlmostEqual(self.cu.total_gas_consumption, 0)
         self.assertEqual(self.cu.total_electrical_production, 0)
-        self.assertAlmostEqual(self.cu.total_thermal_production, 0)
+        self.assertEqual(self.cu.total_gas_consumption, 0)
+        self.assertEqual(self.cu.total_thermal_production, 0)
+        self.assertEqual(self.power_meter.energy_produced, 0)
+        self.assertEqual(self.heat_storage.input_energy, 0)
         
     def test_step_turn_target_temperature_reached(self):
         self.initialize_cu_valid()
@@ -302,13 +320,72 @@ class CogenerationUnitTest(unittest.TestCase):
             total_gas_consumption, total_thermal_production)
         required_energy = 2.0
         self.power_meter.current_power_consum = required_energy
+        self.heat_storage.input_energy = 0
+        self.power_meter.energy_produced = 0
         
         self.cu.step()
                 
         self.assertEqual(self.cu.workload, 0)
-        self.assertAlmostEqual(self.cu.total_gas_consumption, 0)
         self.assertEqual(self.cu.total_electrical_production, 0)
-        self.assertAlmostEqual(self.cu.total_thermal_production, 0)
+        self.assertEqual(self.cu.total_gas_consumption, 0)
+        self.assertEqual(self.cu.total_thermal_production, 0)
+        self.assertEqual(self.power_meter.energy_produced, 0)
+        self.assertEqual(self.heat_storage.input_energy, 0)
+        
+    def test_step_workload_too_high(self):
+        #initialize with valid parameters
+        self.initialize_cu_valid()
+        
+        self.cu.thermal_driven = False 
+        
+        self.heat_storage.temperature = 0.0
+        self.heat_storage.target_temperature = 90.0
+        
+        # initialize values
+        gas_input = 19.0
+        thermal_efficiency = 0.65
+        electrical_efficiency = 0.25
+        total_electrical_production = 0.0
+        total_gas_consumption = 0.0
+        total_thermal_production = 0.0
+        
+        self.initialize_cu_with_values(gas_input, thermal_efficiency, \
+            electrical_efficiency, total_electrical_production, \
+            total_gas_consumption, total_thermal_production)
+            
+        self.cu.minimal_workload = 0.0
+        required_energy = 500.0
+        self.power_meter.current_power_consum = required_energy
+        self.heat_storage.input_energy = 0
+        self.power_meter.energy_produced = 0
+        self.cu.step()
+        
+        expected_workload = 99
+        new_gas_consumption = gas_input*expected_workload/99.0*self.env.step_size/(60*60)
+        total_gas_consumption += new_gas_consumption
+        
+        new_electrical_energy = gas_input*expected_workload/99.0 * electrical_efficiency \
+            * self.cu.get_efficiency_loss_factor() * self.env.step_size/(60*60)            
+        total_electrical_production += new_electrical_energy
+        
+        new_thermal_energy = gas_input*expected_workload/99.0 * thermal_efficiency \
+            * self.cu.get_efficiency_loss_factor() * self.env.step_size/(60*60)            
+        total_thermal_production += new_thermal_energy   
+        
+        expected_energy_produced = self.cu.get_electrical_energy_production()
+        expected_input_energy = self.cu.get_thermal_energy_production() 
+         
+        self.assertEqual(self.cu.workload, expected_workload)
+        self.assertEqual(self.cu.total_electrical_production, \
+            total_electrical_production)
+        self.assertAlmostEqual(self.cu.total_gas_consumption, \
+            total_gas_consumption)
+        self.assertAlmostEqual(self.cu.total_thermal_production, \
+            total_thermal_production)
+        self.assertEqual(self.power_meter.energy_produced, \
+            expected_energy_produced)
+        self.assertEqual(self.heat_storage.input_energy, expected_input_energy)
+        
         
     def test_get_electrical_energy_production(self):
         # the method should return the energy produced in one time intervall
