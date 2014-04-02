@@ -65,13 +65,23 @@ class CogenerationUnit(GasPoweredGenerator):
 
     def step(self):
         if self.running:
-            self.calculate_state()
+            presumable_workload = self.calculate_new_workload()
+            self.update_parameters(presumable_workload)
             self.power_meter.add_energy(
                 self.get_electrical_energy_production())
             self.heat_storage.add_energy(self.get_thermal_energy_production())
             self.consume_gas()
         else:
             self.workload = 0.0
+            
+    def calculate_new_workload(self):
+        if self.overwrite_workload is not None:
+            calculated_workload = self.overwrite_workload
+        elif self.thermal_driven:
+            calculated_workload = self.get_calculated_workload_thermal()
+        else:
+            calculated_workload = self.get_calculated_workload_electric()
+        return calculated_workload
 
     def get_electrical_energy_production(self):
         return self.current_electrical_production / self.env.steps_per_measurement
@@ -104,19 +114,6 @@ class CogenerationUnit(GasPoweredGenerator):
             return 0.0
         max_electric_power = self.electrical_efficiency * self.max_gas_input
         return min(max(self.power_meter.current_power_consum, self.electrical_driven_minimal_production) / max_electric_power, 1) * 99.0
-
-    def calculate_state(self):
-        if self.overwrite_workload is not None:
-            calculated_workload = self.overwrite_workload
-        else:
-            old_workload = self.workload
-
-            if self.thermal_driven:
-                calculated_workload = self.get_calculated_workload_thermal()
-            else:
-                calculated_workload = self.get_calculated_workload_electric()
-
-        self.update_parameters(calculated_workload)
 
     def update_parameters(self, calculated_workload):
         old_workload = self.workload

@@ -295,6 +295,41 @@ class CogenerationUnitTest(unittest.TestCase):
             
         self.assertEqual(expected_energy, result_energy)
         
+    def test_calculate_new_workload(self):
+        # calculates a workload
+        # it considers overwrites workload and 
+        # the mode
+        # the offtime
+        
+        
+        #consider mode thermal
+        self.heat_storage.required_energy = 3
+        expected_workload = self.cu.get_calculated_workload_thermal()
+        self.cu.thermal_driven = True
+        calculated_workload = self.cu.calculate_new_workload()
+        self.assertEqual(calculated_workload, expected_workload, "thermal workload is wrong")
+        
+        #consider mode electric
+        self.heat_storage.target_temperature = 1000
+        self.power_meter.current_power_consum = 3
+        expected_workload = self.cu.get_calculated_workload_electric()
+        self.cu.thermal_driven = False
+        calculated_workload = self.cu.calculate_new_workload()
+        self.assertEqual(calculated_workload, expected_workload, \
+                            "electrical workload is wrong expected: {0}. got: {1}"\
+                            .format(expected_workload, calculated_workload))
+        
+        #consider overwrite of workload
+        self.heat_storage.required_energy = 3
+        expected_workload = self.cu.get_calculated_workload_thermal()
+        self.cu.thermal_driven = True
+        self.cu.overwrite_workload = 25.0
+        calculated_workload = self.cu.calculate_new_workload()
+        self.assertEqual(calculated_workload, 25.0, \
+                            "overwritten workload is wrong expected: {0}. got: {1}"\
+                            .format(25.0, calculated_workload))
+        
+        
     def test_get_operating_costs(self):
         # are sum of gas_costs and maintenance
         self.cu.total_gas_consumption = 6.0
@@ -373,16 +408,6 @@ class CogenerationUnitTest(unittest.TestCase):
         calculated_result = self.cu.get_calculated_workload_electric()
         
         self.assertAlmostEqual(calculated_result, 0)
-
-       
-    def test_calculate_state(self):
-        # test for modes: thermal or electrical drive
-        # checks for overwrite command 
-        # calculates a workload
-        # sanitizes the workload
-        # sets cu attributes based on the new workload
-        self.fail('not yet written')
-        
      
     def initialize_cu_valid(self):
         self.cu.running = True
