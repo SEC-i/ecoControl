@@ -8,7 +8,7 @@ import time
 class SimulationManager:  
 
     def __init__(self):
-        self.main_simulation = Simulation()
+        self.main_simulation = Simulation(time.time())
 
         sim = self.main_simulation
         self.measurements = MeasurementCache(sim.env, sim.cu, sim.plb, sim.heat_storage,
@@ -22,13 +22,18 @@ class SimulationManager:
     def forecast_for(self, seconds):
 
         new_simulation = Simulation.copyconstruct(self.main_simulation)
-        new_simulation.env.forward = seconds
-        new_simulation.env.stop_after_forward = True
+
+
+        measurements = MeasurementCache(new_simulation.env, new_simulation.cu, new_simulation.plb, new_simulation.heat_storage,
+        new_simulation.thermal_consumer, new_simulation.electrical_consumer)
 
         thread = SimulationBackgroundRunner(new_simulation.env)
         thread.start()
+        
+        new_simulation.env.forward = seconds
+        new_simulation.env.stop_after_forward = True
 
-        return new_simulation
+        return (new_simulation, measurements)
 
 
 # f = SimulationManager()

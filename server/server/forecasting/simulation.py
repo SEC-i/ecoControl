@@ -15,12 +15,12 @@ from helpers import BulkProcessor, SimulationBackgroundRunner
 
 
 class Simulation(object):
-    def __init__(self,copyconstructed=False):
+    def __init__(self,initial_time=1356998400,copyconstructed=False):
 
         if copyconstructed:
             return
          # initialize real-time environment
-        self.env = ForwardableRealtimeEnvironment()
+        self.env = ForwardableRealtimeEnvironment(initial_time=initial_time)
 
         # initialize power systems
         self.heat_storage = HeatStorage(self.env)
