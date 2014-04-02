@@ -99,14 +99,9 @@ class CogenerationUnitTest(unittest.TestCase):
         # test step()
         ####        
         '''step calculates a new workload depending on the mode
-        if the workload is too low, the cu will be turned off 
-        and the effective workload is zero
-        if the workload is too high, the cu will be running at a workload 
-        of 99 %
-        the cu has to be turned on (running = true)
-        and it musn't be paused (self_offtime active)
-        if the heat storage is too hot, the cu musn't produce energy
-            although there is a demand for electrical energy        
+
+    
+       
         in dependence of the workload the attributes 
         of the cu:
         the total_electrical_production
@@ -133,6 +128,8 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertEqual(self.heat_storage.input_energy, 0)
         
     def test_step_running_thermal_too_little_workload(self):
+        '''if the workload is too low, the cu will be turned off 
+        and the effective workload is zero'''
         last_workload = 80
         
         self.initialize_cu_running()
@@ -238,16 +235,20 @@ class CogenerationUnitTest(unittest.TestCase):
         self.power_meter.energy_produced = 0
         self.cu.step()
         
-        expected_workload = required_energy/(gas_input*electrical_efficiency)*99 # ca 0.4 * 99 = 40.1(%)
-        new_gas_consumption = gas_input*expected_workload/99.0*self.env.step_size/(60*60)
+        expected_workload = required_energy/(gas_input*electrical_efficiency) * \
+            99 # ca 0.4 * 99 = 40.1(%)
+        new_gas_consumption = gas_input*expected_workload/99.0 * \
+        self.env.step_size/(60*60)
         total_gas_consumption += new_gas_consumption
         
-        new_electrical_energy = gas_input*expected_workload/99.0 * electrical_efficiency \
-            * self.cu.get_efficiency_loss_factor() * self.env.step_size/(60*60)            
+        new_electrical_energy = gas_input*expected_workload/99.0 * \
+            electrical_efficiency * self.cu.get_efficiency_loss_factor() * \
+            self.env.step_size/(60*60)            
         total_electrical_production += new_electrical_energy
         
-        new_thermal_energy = gas_input*expected_workload/99.0 * thermal_efficiency \
-            * self.cu.get_efficiency_loss_factor() * self.env.step_size/(60*60)            
+        new_thermal_energy = gas_input*expected_workload/99.0 * \
+            thermal_efficiency * self.cu.get_efficiency_loss_factor() * \
+            self.env.step_size/(60*60)            
         total_thermal_production += new_thermal_energy   
         
         expected_energy_produced = self.cu.get_electrical_energy_production()
@@ -266,6 +267,7 @@ class CogenerationUnitTest(unittest.TestCase):
         
         
     def test_step_turn_on_forbidden(self):
+        ''' the cu musn't be paused (self_offtime active)'''
         #initialize with valid parameters
         self.cu.running = True
         
@@ -303,6 +305,8 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertEqual(self.heat_storage.input_energy, 0)
         
     def test_step_turn_target_temperature_reached(self):
+        '''if the heat storage is too hot, the cu musn't produce energy
+            although there is a demand for electrical energy'''
         self.initialize_cu_valid()
         self.cu.thermal_driven = False
         self.heat_storage.temperature = 10.0
@@ -333,6 +337,9 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertEqual(self.heat_storage.input_energy, 0)
         
     def test_step_workload_too_high(self):
+        '''if the workload is too high, the cu will be running at a workload 
+        of 99 %'''
+        
         #initialize with valid parameters
         self.initialize_cu_valid()
         
@@ -361,15 +368,18 @@ class CogenerationUnitTest(unittest.TestCase):
         self.cu.step()
         
         expected_workload = 99
-        new_gas_consumption = gas_input*expected_workload/99.0*self.env.step_size/(60*60)
+        new_gas_consumption = gas_input*expected_workload/99.0 * \
+            self.env.step_size/(60*60)
         total_gas_consumption += new_gas_consumption
         
-        new_electrical_energy = gas_input*expected_workload/99.0 * electrical_efficiency \
+        new_electrical_energy = gas_input*expected_workload/99.0 * \
+            electrical_efficiency \
             * self.cu.get_efficiency_loss_factor() * self.env.step_size/(60*60)            
         total_electrical_production += new_electrical_energy
         
-        new_thermal_energy = gas_input*expected_workload/99.0 * thermal_efficiency \
-            * self.cu.get_efficiency_loss_factor() * self.env.step_size/(60*60)            
+        new_thermal_energy = gas_input*expected_workload/99.0 * \
+            thermal_efficiency * self.cu.get_efficiency_loss_factor() * \
+            self.env.step_size/(60*60)            
         total_thermal_production += new_thermal_energy   
         
         expected_energy_produced = self.cu.get_electrical_energy_production()
@@ -419,7 +429,8 @@ class CogenerationUnitTest(unittest.TestCase):
         expected_workload = self.cu.get_calculated_workload_thermal()
         self.cu.thermal_driven = True
         calculated_workload = self.cu.calculate_new_workload()
-        self.assertEqual(calculated_workload, expected_workload, "thermal workload is wrong")
+        self.assertEqual(calculated_workload, expected_workload, \
+            "thermal workload is wrong")
         
         #consider mode electric
         self.heat_storage.target_temperature = 1000
@@ -428,7 +439,8 @@ class CogenerationUnitTest(unittest.TestCase):
         self.cu.thermal_driven = False
         calculated_workload = self.cu.calculate_new_workload()
         self.assertEqual(calculated_workload, expected_workload, \
-                            "electrical workload is wrong expected: {0}. got: {1}"\
+                            "electrical workload is wrong expected: \
+                            {0}. got: {1}"\
                             .format(expected_workload, calculated_workload))
         
         #consider overwrite of workload
@@ -437,8 +449,8 @@ class CogenerationUnitTest(unittest.TestCase):
         self.cu.thermal_driven = True
         self.cu.overwrite_workload = 25.0
         calculated_workload = self.cu.calculate_new_workload()
-        self.assertEqual(calculated_workload, 25.0, \
-                            "overwritten workload is wrong expected: {0}. got: {1}"\
+        self.assertEqual(calculated_workload, 25.0, "overwritten workload \
+                            is wrong expected: {0}. got: {1}"\
                             .format(25.0, calculated_workload))
         
         
@@ -446,7 +458,8 @@ class CogenerationUnitTest(unittest.TestCase):
         # are sum of gas_costs and maintenance
         self.cu.total_gas_consumption = 6.0
         self.cu.total_electrical_production = 3
-        # needed, because the maintenance_costs are calculated out of the electrical_production
+        # needed, because the maintenance_costs are calculated 
+        # out of the electrical_production
         
         result = self.cu.get_operating_costs()
         
@@ -534,8 +547,8 @@ class CogenerationUnitTest(unittest.TestCase):
         self.cu.minimal_workload = 40.0
         
     def initialize_cu_with_values(self, gas_input, thermal_efficiency, \
-            electrical_efficiency, total_electrical_production, total_gas_consumption,\
-            total_thermal_production):
+            electrical_efficiency, total_electrical_production, \
+            total_gas_consumption, total_thermal_production):
         self.cu.max_gas_input = gas_input
         self.cu.thermal_efficiency = thermal_efficiency
         self.cu.electrical_efficiency = electrical_efficiency
