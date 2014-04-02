@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import time
+from simulationmanager import SimulationManager
 
-from simulation import get_new_simulation
 from helpers import SimulationBackgroundRunner, MeasurementCache, parse_hourly_demand_values
 
-SIMULATED_TIME =  60 * 60 * 24 * 7
+SIMULATED_TIME =  60 * 60 * 24 * 365
 
 
 class Plotting(object):
@@ -13,25 +13,25 @@ class Plotting(object):
         self.values = ['time', 'cu_workload', 'plb_workload', 'hs_temperature',
                'thermal_consumption', 'outside_temperature', 'electrical_consumption']
         
-        (self.env, self.heat_storage, self.power_meter, self.cu, self.plb, self.thermal_consumer,
-         self.electrical_consumer, self.code_executer) = get_new_simulation()
+        self.simulation_manager = SimulationManager()
+        self.simulation_manager.simulation_start()
+        self.env  = self.simulation_manager.main_simulation.env
 
         self.env.stop_after_forward = True
         self.env.forward = SIMULATED_TIME
+
+        
         
         self.data = {}
         for name in self.values:
             self.data[name] = []
 
-        thread = SimulationBackgroundRunner(self.env)
-        thread.start()
-
         while self.env.now < self.env.now + self.env.forward:
             if self.env.now % self.env.measurement_interval == 0:
                 for value in self.values:
-                    self.data[value].append(self.get_mapped_value(value))
+                    self.data[value].append(self.simulation_manager.measurements.get_mapped_value(value))
 
-        thread.join()
+
 
         
         # evenly sampled time at xxx intervals

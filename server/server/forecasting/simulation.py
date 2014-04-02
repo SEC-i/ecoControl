@@ -41,7 +41,7 @@ class Simulation(object):
         simulation.heat_storage = HeatStorage.copyconstruct(simulation.env, otherSimulation.heat_storage)
 
         simulation.power_meter = PowerMeter.copyconstruct(simulation.env,otherSimulation.power_meter)
-        simulation.thermal_consumer = ThermalConsumer.copyconstruct(simulation.env, otherSimulation.thermal_consumer, simulation.heat_storage)
+        simulation.thermal_consumer = ForecastConsumer.copyconstruct(simulation.env, otherSimulation.thermal_consumer, simulation.heat_storage)
         simulation.electrical_consumer = SimpleElectricalConsumer.copyconstruct(simulation.env, otherSimulation.electrical_consumer, simulation.power_meter)
 
         simulation.cu = CogenerationUnit.copyconstruct(simulation.env, otherSimulation.cu, simulation.heat_storage, simulation.power_meter)

@@ -34,13 +34,15 @@ class Forecast:
             result = urllib2.urlopen(url)
             jsondata = result.read()
             data = json.loads(jsondata)
+
             for data_set in data["list"]:
                 try:
                     forecast_temperatures.append(data_set["main"]["temp"])
                 except:
-                    print "error reading temperatures from: \n", json.dumps(data_set, sort_keys=True, indent=4, separators=(',', ': '))
-
+                    if "gdps" not in data_set: #last value of data seams always to be gdps
+                        print "error reading temperatures from: \n", json.dumps(data_set, sort_keys=True, indent=4, separators=(',', ': '))
             print "read ", len(forecast_temperatures), "temperatures", "hourly = ", hourly
+
 
         except urllib2.URLError, e:
             handleError(e)
