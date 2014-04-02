@@ -13,6 +13,14 @@ class ForecastConsumer(ThermalConsumer):
 
         self.weather_forecast = Forecast(self.env)
 
+    @classmethod
+    def copyconstruct(cls, env, other_thermal_consumer, heat_storage):
+        thermal_consumer = ThermalConsumer(env,heat_storage)
+        thermal_consumer.__dict__ = other_thermal_consumer.__dict__.copy()    # just a shallow copy, so no dict copy
+        return thermal_consumer
+
+
+
     def step(self):
         self.simulate_consumption()
         consumption = self.get_consumption_energy() + self.get_warmwater_consumption_energy()

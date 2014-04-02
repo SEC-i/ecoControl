@@ -9,6 +9,19 @@ class Forecasting:
 
     def __init__(self):
         self.simulation = Simulation()
+
+        sim = self.simulation
+        self.measurements = MeasurementCache(sim.env, sim.cu, sim.plb, sim.heat_storage,
+         sim.thermal_consumer, sim.electrical_consumer)
+
+
+        thread = SimulationBackgroundRunner(sim.env)
+        thread.start()
+
+        while True:
+            print self.measurements.get()
+            time.sleep(0.1)
+
         #self.measure_cache = MeasurementCache()
 
 
@@ -23,4 +36,4 @@ class Forecasting:
 
 
 f = Forecasting()
-f.forecast_for(60 * 60* 10)
+#f.forecast_for(60 * 60* 10)
