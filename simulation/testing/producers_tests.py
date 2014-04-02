@@ -235,12 +235,12 @@ class CogenerationUnitTest(unittest.TestCase):
         calculated_result = self.cu.get_calculated_workload_electric()
         
         self.assertAlmostEqual(calculated_result, 0)
-'''       
+       
     def test_update_parameters_power_on_count(self):
-        # the bhkw was turned off
-        # the new workload is sane
-        # and the bhkw can be turned on again
-        # the bhkw should increment the power on count
+        ''' the bhkw should increment the power on count
+        the bhkw was turned off
+        the new workload is sane
+        and the bhkw can be turned on again'''
         precalculated_workload = 35 
         power_on_count = 0
         self.cu.minimal_workload = 20
@@ -265,6 +265,7 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertEqual(self.cu.workload, 0)
         
     def test_update_parameters_workload_off_time_effective(self):
+        '''If the offtime is in the future the bhkw must stay turned off.'''
         precalculated_workload = 10 
         self.cu.minimal_workload = 20
 
@@ -276,6 +277,7 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertEqual(self.cu.workload, 0)
         
     def test_update_parameters_normal_workload(self):
+        '''The workload shouldn't be altered if the workload is valid.'''
         precalculated_workload = 35 
         self.cu.minimal_workload = 20
 
@@ -287,6 +289,7 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertEqual(self.cu.workload, precalculated_workload)
         
     def test_update_parameters_too_high_workload(self):
+        '''If the workload is greater than 99 it should be truncated to 99.'''
         precalculated_workload = 109
         #assumption: max workload: 99
 
@@ -304,8 +307,13 @@ class CogenerationUnitTest(unittest.TestCase):
         max_gas_input = 20
         self.cu.max_gas_input = max_gas_input
         
+        effective_workload = precalculated_workload/99.0 
+        # the method assumes the precalculated workload is mapped to 0-9
+         
         electrical_efficiency = 0.2
+        self.cu.electrical_efficiency = electrical_efficiency
         thermal_effiency = 0.7
+        self.cu.thermal_efficiency = thermal_effiency
         
         now = self.env.now
         self.cu.off_time = now - 1
@@ -315,16 +323,13 @@ class CogenerationUnitTest(unittest.TestCase):
         
         self.cu.update_parameters(precalculated_workload)
         
-        # assumption: max_gas_input is energy per stepsize
-        # but the unit of current_gas_consumption is power
-        expected_gas_consumption = (precalculated_workload*max_gas_input)/self.env.step_size
+        expected_gas_consumption = (effective_workload*max_gas_input)
         efficiency_loss = self.cu.get_efficiency_loss_factor()
         expected_electrical_production = expected_gas_consumption * electrical_efficiency* efficiency_loss
         expected_thermal_production = expected_gas_consumption * thermal_effiency* efficiency_loss
         # assumption: self.env.step_size are seconds per step
         expected_hours_of_operation = total_hours_of_operation + self.env.step_size/(60.0*60.0)
         
-        #the following will fail, the method uses an incomprehensible 0.99 factor
         self.assertEqual(self.cu.current_gas_consumption, \
             expected_gas_consumption)
         self.assertEqual(self.cu.current_electrical_production, \
