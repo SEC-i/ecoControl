@@ -98,24 +98,28 @@ class CogenerationUnitTest(unittest.TestCase):
         ####
         # test step()
         ####        
-        '''step calculates a new workload depending on mode
+        '''step calculates a new workload depending on the mode
         if the workload is too low, the cu will be turned off 
         and the effective workload is zero
         if the workload is too high, the cu will be running at a workload 
         of 99 %
+        the cu has to be turned on (running = true)
+        and it musn't be paused (self_offtime active)
         in dependence of the workload the attributes 
-        energy_produced of the power_meter will be increased
-        input_energy of the heat_storage will be increased
-        cu:
+        of the cu:
         the total_electrical_production
         the total_gas_consumption
         total_thermal_production 
-        dito
-        the cu has to be turned on (running = true)
-        and it musn't be paused (self_offtime active)'''
+        will be altered
+        energy_produced of the power_meter will be increased
+        input_energy of the heat_storage will be increased
+        '''
+        
     def test_step_not_running(self):
         self.cu.workload = 1
         self.cu.running = False
+        self.cu.thermal_driven = True        
+        self.heat_storage.required_energy = 20
         
         self.cu.step()
         
