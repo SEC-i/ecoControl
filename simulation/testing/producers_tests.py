@@ -715,10 +715,12 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         self.cu.thermal_driven = True 
         required_energy = 0.0
         self.heat_storage.required_energy = required_energy
+        minimal_off_time = 40.0 * 60.0
+        self.cu.minimal_off_time = minimal_off_time
         
         self.cu.step()
         
-        self.assertGreater(self.cu.off_time, self.off_time)
+        self.assertGreater(self.cu.off_time, self.off_time + minimal_off_time)
         
     def calculate_energy(self, workload, efficiency):
         return self.max_gas_input * workload/99.0 * efficiency * \
