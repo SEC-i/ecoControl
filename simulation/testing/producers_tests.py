@@ -150,7 +150,8 @@ class CogenerationUnitTest(unittest.TestCase):
     def test_calculate_new_workload(self):
         # calculates a workload
         # it considers overwrites workload and 
-        # the mode        
+        # the mode and
+        # offtime
         
         #consider mode thermal
         self.heat_storage.required_energy = 3
@@ -398,6 +399,31 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
             expected_current_thermal_production)
         self.assertEqual(self.cu.total_hours_of_operation, \
             self.total_hours_of_operation)
+            
+    def test_consume_gas(self):
+        '''increases total_gas_consumtion,
+        total_thermal_production and
+        total_electrical_production
+        all are measured in energy'''
+        self.cu.total_gas_consumption = 0
+        self.cu.total_thermal_production = 0
+        self.cu.total_electrical_production = 0
+        self.cu.current_gas_consumption = 5 # unit is power in kW
+        self.cu.current_thermal_production = 4 # same
+        self.cu.current_electrical_production = 1 # same
+        
+        self.cu.consume_gas()
+        
+        expected_total_gas_consumption = 5 / self.env.steps_per_measurement
+        expected_total_thermal_production = 4 / self.env.steps_per_measurement
+        expected_total_electrical_production = 1 / self.env.steps_per_measurement
+        
+        self.assertEqual(self.cu.total_gas_consumption,\
+            expected_total_gas_consumption)
+        self.assertEqual(self.cu.total_thermal_production,\
+            expected_total_thermal_production)
+        self.assertEqual(self.cu.total_electrical_production,\
+            expected_total_electrical_production)
     
 class CogenerationUnitMethodStepTest(unittest.TestCase):
     def setUp(self):
@@ -451,6 +477,7 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
 #        will be altered
 #        energy_produced of the power_meter will be increased
 #        input_energy of the heat_storage will be increased
+#        if the cu is turned off. a off time must be set.
 #        '''
         
     def test_step_not_running(self):
@@ -663,30 +690,6 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
     def calculate_workload(self, energy_demand, efficiency):
         return energy_demand/(self.max_gas_input * efficiency) * 99
         
-    def consume_gas(self):
-        '''increases total_gas_consumtion,
-        total_thermal_production and
-        total_electrical_production
-        all are measured in energy'''
-        self.cu.total_gas_consumption = 0
-        self.cu.total_thermal_production = 0
-        self.cu.total_electrical_production = 0
-        self.cu.current_gas_consumption = 5 # unit is power in kW
-        self.cu.current_thermal_production = 4 # same
-        self.cu.current_electrical_production = 1 # same
-        
-        self.cu.consume_gas()
-        
-        expected_total_gas_consumption = 5 / self.env.steps_per_measurement
-        expected_total_thermal_production = 4 / self.env.steps_per_measurement
-        expected_total_electrical_production = 1 / self.env.steps_per_measurement
-        
-        self.assertEqual(self.cu.total_gas_consumption,\
-            expected_total_gas_consumption)
-        self.assertEqual(self.cu.total_thermal_production,\
-            expected_total_thermal_production)
-        self.assertEqual(self.cu.total_electrical_production,\
-            expected_total_electrical_production)
         
 if __name__ == '__main__':
     unittest.main()
