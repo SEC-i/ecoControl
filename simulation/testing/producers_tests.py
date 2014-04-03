@@ -21,14 +21,27 @@ class GasPoweredGeneratorTests(unittest.TestCase):
     def test_gas_powered_generator_creation(self):
         self.assertTrue(self.g_generator.running)
 
-        self.assertEqual(self.g_generator.workload, 0)
-        self.assertEqual(self.g_generator.current_gas_consumption, 0)
-        self.assertEqual(self.g_generator.current_thermal_production, 0) 
-        self.assertEqual(self.g_generator.total_gas_consumption, 0.0)
-        self.assertEqual(self.g_generator.total_thermal_production, 0.0)
-
-        self.assertEqual(self.g_generator.total_hours_of_operation, 0)
-        self.assertEqual(self.g_generator.power_on_count, 0)
+        self.assertEqual(self.g_generator.workload, 0,\
+            "wrong workload. expected: {0} got: {1}"\
+            .format(0, self.g_generator.workload))
+        self.assertEqual(self.g_generator.current_gas_consumption, 0,\
+             "wrong current_gas_consumption. expected: {0} got: {1}"\
+            .format(0, self.g_generator.current_gas_consumption))   
+        self.assertEqual(self.g_generator.current_thermal_production, 0,\
+             "wrong current_thermal_production. expected: {0} got: {1}"\
+            .format(0,self.g_generator.current_thermal_production)) 
+        self.assertEqual(self.g_generator.total_gas_consumption, 0.0,\
+             "wrong total_gas_consumption. expected: {0} got: {1}"\
+            .format(0,self.g_generator.total_gas_consumption)) 
+        self.assertEqual(self.g_generator.total_thermal_production, 0.0,\
+            "wrong total_thermal_production. expected: {0} got: {1}"\
+            .format(0,self.g_generator.total_thermal_production))
+        self.assertEqual(self.g_generator.total_hours_of_operation, 0,\
+            "wrong total_hours_of_operation. expected: {0} got: {1}"\
+            .format(0,self.g_generator.total_hours_of_operation))        
+        self.assertEqual(self.g_generator.power_on_count, 0, \
+            "wrong power_on_count. expected: {0} got: {1}"\
+            .format(0,self.g_generator.power_on_count))
     
     def test_start(self):
         self.g_generator.running = False
