@@ -53,7 +53,7 @@ class CogenerationUnit(GasPoweredGenerator):
 
         self.minimal_workload = 40.0  # %
 
-        self.minimal_off_time = 5.0 * 60.0
+        self.minimal_off_time = 10.0 * 60.0
         self.off_time = self.env.now
 
         self.current_electrical_production = 0.0  # kW
@@ -138,7 +138,7 @@ class CogenerationUnit(GasPoweredGenerator):
         else:
             self.workload = 0.0
             if self.off_time <= self.env.now:
-                self.off_time = self.env.now + 10.0 * 60.0  # 5 min
+                self.off_time = self.env.now + self.minimal_off_time
 
         # calulate current consumption and production values
         self.current_gas_consumption = self.workload / \
@@ -194,8 +194,8 @@ class PeakLoadBoiler(GasPoweredGenerator):
             elif self.current_thermal_production >= self.heat_storage.get_require_energy():
                 self.workload = 0.0
 
-                '''if self.off_time <= self.env.now:
-                    self.off_time = self.env.now + 3 * 60.0  # 3 min'''
+                if self.off_time <= self.env.now:
+                    self.off_time = self.env.now + 3 * 60.0  # 3 min
 
         # calulate current consumption and production values
         self.current_gas_consumption = self.workload / \
