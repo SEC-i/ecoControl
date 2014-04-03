@@ -309,10 +309,7 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         the new workload is sane
         and the cu can be turned on again'''
         precalculated_workload = 35 
-        self.cu.minimal_workload = 20
         self.cu.workload = 0 # means the cu was turned off
-        now = self.env.now
-        self.cu.off_time = now - 1
         power_on_count = 0
         self.cu.power_on_count = power_on_count
         
@@ -324,10 +321,7 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         ''' the cu musn't increment the power on count
         if the cu was turned on'''
         precalculated_workload = 35 
-        self.cu.minimal_workload = 20
         self.cu.workload = 25 # means the cu was turned on
-        now = self.env.now
-        self.cu.off_time = now - 1
         power_on_count = 0
         self.cu.power_on_count = power_on_count
         
@@ -337,9 +331,6 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
 
     def test_update_parameters_too_low_workload(self):
         precalculated_workload = 10 
-        self.cu.minimal_workload = 20
-        now = self.env.now
-        self.cu.off_time = now - 1
         old_hours = self.total_hours_of_operation
         
         self.cu.update_parameters(precalculated_workload)
@@ -354,9 +345,7 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
     def test_update_parameters_workload_off_time_effective(self):
         '''If the offtime is in the future the bhkw must stay turned off.'''
         precalculated_workload = 10 
-        self.cu.minimal_workload = 20
-        now = self.env.now
-        self.cu.off_time = now + 1
+        self.cu.off_time = self.env.now + 1
         old_hours = self.total_hours_of_operation
         
         self.cu.update_parameters(precalculated_workload)
@@ -371,35 +360,20 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
     def test_update_parameters_too_high_workload(self):
         '''If the workload is greater than 99 it should be truncated to 99.'''
         precalculated_workload = 109
-
-        #initialize parameters
-        self.cu.minimal_workload = 20
-
-        now = self.env.now
-        self.cu.off_time = now - 1
-        
-        gas_input = 20.0
-        self.cu.max_gas_input = gas_input
-        electrical_efficiency = 0.25
-        self.cu.electrical_efficiency = electrical_efficiency
-        thermal_efficiency = 0.7
-        self.cu.thermal_efficiency = thermal_efficiency
-        total_hours_of_operation = 0
-        self.cu.total_hours_of_operation = total_hours_of_operation
         
         self.cu.update_parameters(precalculated_workload)
         
-        expected_current_gas_consumption = gas_input
+        expected_current_gas_consumption = self.gas_input
             
         complete_current_power = expected_current_gas_consumption * \
             self.cu.get_efficiency_loss_factor() 
         
-        expected_current_electrical_production = electrical_efficiency * \
+        expected_current_electrical_production = self.electrical_efficiency * \
             complete_current_power
-        expected_current_thermal_production = thermal_efficiency * \
+        expected_current_thermal_production = self.thermal_efficiency * \
             complete_current_power
         # assumption: self.env.step_size are seconds per step
-        total_hours_of_operation += self.env.step_size/(60.0*60.0)
+        self.total_hours_of_operation += self.env.step_size/(60.0*60.0)
         
         self.assertEqual(self.cu.workload, 99) 
         self.assertEqual(self.cu.current_gas_consumption, \
@@ -409,7 +383,7 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         self.assertEqual(self.cu.current_thermal_production, \
             expected_current_thermal_production)
         self.assertEqual(self.cu.total_hours_of_operation, \
-            total_hours_of_operation)
+            self.total_hours_of_operation)
         
 
 
