@@ -77,6 +77,8 @@ class CogenerationUnit(GasPoweredGenerator):
     def calculate_new_workload(self):
         if self.overwrite_workload is not None:
             calculated_workload = self.overwrite_workload
+        elif self.off_time > self.env.now:
+            calculated_workload = 0.0
         elif self.thermal_driven:
             calculated_workload = self.get_calculated_workload_thermal()
         else:

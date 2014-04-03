@@ -183,6 +183,7 @@ class CogenerationUnitTest(unittest.TestCase):
                             .format(25.0, calculated_workload))
                             
         #consider offtime
+        self.cu.overwrite_workload = None
         self.heat_storage.required_energy = 3
         expected_workload = 0
         self.cu.thermal_driven = True
