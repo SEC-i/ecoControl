@@ -63,6 +63,25 @@ class GasPoweredGeneratorTests(unittest.TestCase):
         
         self.assertEqual(self.g_generator.get_operating_costs(), \
                             4*gas_price_per_kwh)
+                            
+    def test_consume_gas(self):
+        '''increases total_gas_consumtion 
+        and total_thermal_production
+        both are measured in energy'''
+        self.g_generator.total_gas_consumption = 0
+        self.g_generator.total_thermal_production = 0
+        self.g_generator.current_gas_consumption = 5 # unit is power in kW
+        self.g_generator.current_thermal_production = 4 # also kW
+        
+        self.g_generator.consume_gas()
+        
+        expected_total_gas_consumption = 5 / self.env.steps_per_measurement
+        expected_total_thermal_production = 4 / self.env.steps_per_measurement
+        
+        self.assertEqual(self.g_generator.total_gas_consumption,\
+            expected_total_gas_consumption)
+        self.assertEqual(self.g_generator.total_thermal_production,\
+            expected_total_thermal_production)
         
 class CogenerationUnitTest(unittest.TestCase):
 
@@ -96,9 +115,6 @@ class CogenerationUnitTest(unittest.TestCase):
 
         self.assertIsNone(self.cu.overwrite_workload) 
            
-
-        
-        
     def test_get_electrical_energy_production(self):
         # the method should return the energy produced in one time intervall
         self.cu.current_electrical_production = 20.0 # Energy per hour
@@ -114,7 +130,6 @@ class CogenerationUnitTest(unittest.TestCase):
         self.cu.current_thermal_production = 20.0 # Energy per hour
         self.env.steps_per_measurement = 2.0 # twice per hour
         expected_energy = 20.0/2.0
-        
         result_energy = self.cu.get_thermal_energy_production()
             
         self.assertEqual(expected_energy, result_energy)
@@ -232,9 +247,6 @@ class CogenerationUnitTest(unittest.TestCase):
         calculated_result = self.cu.get_calculated_workload_electric()
         
         self.assertAlmostEqual(calculated_result, 0)
-
-    #def test_consume_gas(self):
-    #pass'''
 
 class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
     def setUp(self):
@@ -373,10 +385,6 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
             expected_current_thermal_production)
         self.assertEqual(self.cu.total_hours_of_operation, \
             self.total_hours_of_operation)
-        
-
-
-
     
 class CogenerationUnitMethodStepTest(unittest.TestCase):
     def setUp(self):
@@ -641,6 +649,31 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
             
     def calculate_workload(self, energy_demand, efficiency):
         return energy_demand/(self.max_gas_input * efficiency) * 99
+        
+    def consume_gas(self):
+        '''increases total_gas_consumtion,
+        total_thermal_production and
+        total_electrical_production
+        all are measured in energy'''
+        self.cu.total_gas_consumption = 0
+        self.cu.total_thermal_production = 0
+        self.cu.total_electrical_production = 0
+        self.cu.current_gas_consumption = 5 # unit is power in kW
+        self.cu.current_thermal_production = 4 # same
+        self.cu.current_electrical_production = 1 # same
+        
+        self.cu.consume_gas()
+        
+        expected_total_gas_consumption = 5 / self.env.steps_per_measurement
+        expected_total_thermal_production = 4 / self.env.steps_per_measurement
+        expected_total_electrical_production = 1 / self.env.steps_per_measurement
+        
+        self.assertEqual(self.cu.total_gas_consumption,\
+            expected_total_gas_consumption)
+        self.assertEqual(self.cu.total_thermal_production,\
+            expected_total_thermal_production)
+        self.assertEqual(self.cu.total_electrical_production,\
+            expected_total_electrical_production)
         
 if __name__ == '__main__':
     unittest.main()
