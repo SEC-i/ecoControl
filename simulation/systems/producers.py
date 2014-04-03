@@ -192,8 +192,8 @@ class PeakLoadBoiler(GasPoweredGenerator):
             elif self.current_thermal_production >= self.heat_storage.get_require_energy():
                 self.workload = 0.0
 
-                if self.off_time <= self.env.now:
-                    self.off_time = self.env.now + 3 * 60.0  # 3 min
+                '''if self.off_time <= self.env.now:
+                    self.off_time = self.env.now + 3 * 60.0  # 3 min'''
 
         # calulate current consumption and production values
         self.current_gas_consumption = self.workload / \

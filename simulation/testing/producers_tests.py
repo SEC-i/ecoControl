@@ -400,6 +400,22 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         self.assertEqual(self.cu.total_hours_of_operation, \
             self.total_hours_of_operation)
             
+    def test_update_parameters_turn_bhkw_off(self):
+        '''If the cu is turned off, there must be an offtime
+        which determines the time the cu stays turned off
+        '''
+        self.cu.workload = 30
+        new_workload = 0
+        self.cu.thermal_driven = True 
+        required_energy = 0.0
+        self.heat_storage.required_energy = required_energy
+        off_time = self.env.now 
+        self.cu.off_time = off_time
+        
+        self.cu.update_parameters(new_workload)
+        
+        self.assertGreater(self.cu.off_time, off_time)
+            
     def test_consume_gas(self):
         '''increases total_gas_consumtion,
         total_thermal_production and
@@ -686,7 +702,6 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         '''
         self.cu.workload = 30
         self.cu.thermal_driven = True 
-     
         required_energy = 0.0
         self.heat_storage.required_energy = required_energy
         
