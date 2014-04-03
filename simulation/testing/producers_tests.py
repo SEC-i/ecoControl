@@ -254,22 +254,9 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         self.cu.thermal_efficiency = self.thermal_efficiency
         self.total_hours_of_operation = 1
         self.cu.total_hours_of_operation = self.total_hours_of_operation
-
-    # test_update_parameters()
-    #   if offtime is effective, workload = 0
-    #   sets:
-    #       workload
-    #       power_off_count (own testcase, both directions)
-    #       hours of operation
-    #       truncates workload to minimal workload if workload 
-    #           is to low (own testcase)
-    #       truncates workload to 99 it too big (own testcase)
-    #       current gas consumptiom
-    #       current electrical production
-    #       current thermal production
     
     def test_update_parameters_normal_workload(self):
-        '''The workload shouldn't be altered if the workload is valid.
+        '''The given workload shouldn't be altered if the workload is valid.
             current gas consumption,
             current electrical production,
             current thermal production and
@@ -295,7 +282,8 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         self.total_hours_of_operation += self.env.step_size/(60.0*60.0)
         
         self.assertEqual(self.cu.workload, precalculated_workload) 
-        self.assertEqual(self.cu.current_gas_consumption, expected_current_gas_consumption)
+        self.assertEqual(self.cu.current_gas_consumption, \
+            expected_current_gas_consumption)
         self.assertEqual(self.cu.current_electrical_production, \
             expected_current_electrical_production)
         self.assertEqual(self.cu.current_thermal_production, \
@@ -305,8 +293,7 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
     
     def test_update_parameters_power_on_count(self):
         ''' the cu should increment the power on count
-        if the cu was turned off,
-        the new workload is sane
+        if the cu was turned off
         and the cu can be turned on again'''
         precalculated_workload = 35 
         self.cu.workload = 0 # means the cu was turned off
@@ -330,6 +317,8 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         self.assertEqual(self.cu.power_on_count, power_on_count)
 
     def test_update_parameters_too_low_workload(self):
+        ''' The workload should be zero if the given workload is
+        less than the minimal workload.'''
         precalculated_workload = 10 
         old_hours = self.total_hours_of_operation
         
