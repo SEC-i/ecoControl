@@ -720,7 +720,8 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         
         self.cu.step()
         
-        self.assertGreaterEqual(self.cu.off_time, self.off_time + minimal_off_time)
+        self.assertGreaterEqual(self.cu.off_time, \
+            self.off_time + minimal_off_time)
         
     def calculate_energy(self, workload, efficiency):
         return self.max_gas_input * workload/99.0 * efficiency * \

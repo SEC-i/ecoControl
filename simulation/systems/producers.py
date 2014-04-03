@@ -1,7 +1,4 @@
 from data import gas_price_per_kwh
-from helpers import sign
-
-
 
 class GasPoweredGenerator():
 
@@ -112,22 +109,20 @@ class CogenerationUnit(GasPoweredGenerator):
         return min(calculated_power / max_thermal_power, 1) * 99.0
 
     def get_calculated_workload_electric(self):
-        if self.heat_storage.get_temperature() >= self.heat_storage.target_temperature:
+        if self.heat_storage.get_temperature() >= \
+        self.heat_storage.target_temperature:
             return 0.0
         max_electric_power = self.electrical_efficiency * self.max_gas_input
-        return min(max(self.power_meter.current_power_consum, self.electrical_driven_minimal_production) / max_electric_power, 1) * 99.0
+        return min(max(self.power_meter.current_power_consum, \
+            self.electrical_driven_minimal_production) \
+            / max_electric_power, 1) * 99.0
 
     def update_parameters(self, calculated_workload):
         old_workload = self.workload
-        # ensure smoothly changing workload
-        slope = sign(calculated_workload - old_workload)
-        # percent per second --> 3 minutes for full startup
-        change_speed = 1.0 / 180.0 * self.env.step_size
-        self.workload += change_speed * slope
 
         # make sure that minimal_workload <= workload <= 99.0 or workload =
         # 0
-        if calculated_workload >= self.minimal_workload and self.off_time <= self.env.now:
+        if calculated_workload >= self.minimal_workload:
             # detect if power has been turned on
             if old_workload == 0:
                 self.power_on_count += 1
@@ -191,7 +186,8 @@ class PeakLoadBoiler(GasPoweredGenerator):
                     self.env.measurement_interval
                 self.workload = 99.0
             # turn off if heat storage's target energy is almost reached
-            elif self.current_thermal_production >= self.heat_storage.get_require_energy():
+            elif self.current_thermal_production >= \
+            self.heat_storage.get_require_energy():
                 self.workload = 0.0
 
                 if self.off_time <= self.env.now:
