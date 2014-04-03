@@ -238,7 +238,7 @@ class CogenerationUnitTest(unittest.TestCase):
     #   sets:
     #       workload
     #       power_off_count (own testcase, both directions)
-    #       hours of operation (own testcase, both directions)
+    #       hours of operation
     #       truncates workload to minimal workload if workload 
     #           is to low (own testcase)
     #       truncates workload to 99 it too big (own testcase)
@@ -249,8 +249,9 @@ class CogenerationUnitTest(unittest.TestCase):
     def test_update_parameters_normal_workload(self):
         '''The workload shouldn't be altered if the workload is valid.
             current gas consumption,
-            current electrical production and
-            current thermal production
+            current electrical production,
+            current thermal production and
+            total_hours_of_operation
             should be set.
         '''
         precalculated_workload = 35 
@@ -267,7 +268,8 @@ class CogenerationUnitTest(unittest.TestCase):
         self.cu.electrical_efficiency = electrical_efficiency
         thermal_efficiency = 0.7
         self.cu.thermal_efficiency = thermal_efficiency
-        
+        total_hours_of_operation = 1
+        self.cu.total_hours_of_operation = total_hours_of_operation
         
         self.cu.update_parameters(precalculated_workload)
         
@@ -282,18 +284,23 @@ class CogenerationUnitTest(unittest.TestCase):
         expected_current_thermal_production = thermal_efficiency * \
             complete_current_power
         
+        # assumption: self.env.step_size are seconds per step
+        total_hours_of_operation += self.env.step_size/(60.0*60.0)
+        
         self.assertEqual(self.cu.workload, precalculated_workload) 
         self.assertEqual(self.cu.current_gas_consumption, expected_current_gas_consumption)
         self.assertEqual(self.cu.current_electrical_production, \
             expected_current_electrical_production)
         self.assertEqual(self.cu.current_thermal_production, \
             expected_current_thermal_production)
+        self.assertEqual(self.cu.total_hours_of_operation, \
+            total_hours_of_operation)
     
     def test_update_parameters_power_on_count(self):
-        ''' the bhkw should increment the power on count
-        the bhkw was turned off
+        ''' the cu should increment the power on count
+        if the cu was turned off,
         the new workload is sane
-        and the bhkw can be turned on again'''
+        and the cu can be turned on again'''
         precalculated_workload = 35 
         self.cu.minimal_workload = 20
         self.cu.workload = 0 # means the cu was turned off
@@ -305,13 +312,28 @@ class CogenerationUnitTest(unittest.TestCase):
         self.cu.update_parameters(precalculated_workload)
         
         self.assertEqual(self.cu.power_on_count, power_on_count+1)
+        
+    def test_update_parameters_power_on_count_unaffected(self):
+        ''' the cu musn't increment the power on count
+        if the cu was turned on'''
+        precalculated_workload = 35 
+        self.cu.minimal_workload = 20
+        self.cu.workload = 25 # means the cu was turned on
+        now = self.env.now
+        self.cu.off_time = now - 1
+        power_on_count = 0
+        self.cu.power_on_count = power_on_count
+        
+        self.cu.update_parameters(precalculated_workload)
+        
+        self.assertEqual(self.cu.power_on_count, power_on_count)
 
     def test_update_parameters_too_low_workload(self):
         precalculated_workload = 10 
         self.cu.minimal_workload = 20
-
         now = self.env.now
         self.cu.off_time = now - 1
+        total_hours_of_operation = 0
         
         self.cu.update_parameters(precalculated_workload)
         
@@ -319,14 +341,16 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertEqual(self.cu.current_gas_consumption, 0)
         self.assertEqual(self.cu.current_electrical_production, 0)
         self.assertEqual(self.cu.current_thermal_production, 0)
+        self.assertEqual(self.cu.total_hours_of_operation, \
+            total_hours_of_operation)
         
     def test_update_parameters_workload_off_time_effective(self):
         '''If the offtime is in the future the bhkw must stay turned off.'''
         precalculated_workload = 10 
         self.cu.minimal_workload = 20
-
         now = self.env.now
         self.cu.off_time = now + 1
+        total_hours_of_operation = 0
         
         self.cu.update_parameters(precalculated_workload)
         
@@ -334,6 +358,8 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertEqual(self.cu.current_gas_consumption, 0)
         self.assertEqual(self.cu.current_electrical_production, 0)
         self.assertEqual(self.cu.current_thermal_production, 0)
+        self.assertEqual(self.cu.total_hours_of_operation, \
+            total_hours_of_operation)
         
     def test_update_parameters_too_high_workload(self):
         '''If the workload is greater than 99 it should be truncated to 99.'''
@@ -351,6 +377,8 @@ class CogenerationUnitTest(unittest.TestCase):
         self.cu.electrical_efficiency = electrical_efficiency
         thermal_efficiency = 0.7
         self.cu.thermal_efficiency = thermal_efficiency
+        total_hours_of_operation = 0
+        self.cu.total_hours_of_operation = total_hours_of_operation
         
         self.cu.update_parameters(precalculated_workload)
         
@@ -363,6 +391,8 @@ class CogenerationUnitTest(unittest.TestCase):
             complete_current_power
         expected_current_thermal_production = thermal_efficiency * \
             complete_current_power
+        # assumption: self.env.step_size are seconds per step
+        total_hours_of_operation += self.env.step_size/(60.0*60.0)
         
         self.assertEqual(self.cu.workload, 99) 
         self.assertEqual(self.cu.current_gas_consumption, \
@@ -371,22 +401,6 @@ class CogenerationUnitTest(unittest.TestCase):
             expected_current_electrical_production)
         self.assertEqual(self.cu.current_thermal_production, \
             expected_current_thermal_production)
-
-    def test_update_parameters_increase_hours_of_operation(self):
-        precalculated_workload = 35 
-        self.cu.minimal_workload = 20
-        
-        now = self.env.now
-        self.cu.off_time = now - 1
-        
-        total_hours_of_operation = 1
-        self.cu.total_hours_of_operation = total_hours_of_operation
-        
-        self.cu.update_parameters(precalculated_workload)
-    
-        # assumption: self.env.step_size are seconds per step
-        total_hours_of_operation += self.env.step_size/(60.0*60.0)
-        
         self.assertEqual(self.cu.total_hours_of_operation, \
             total_hours_of_operation)
         
