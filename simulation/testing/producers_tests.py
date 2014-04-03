@@ -446,7 +446,8 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         self.minimal_workload = 40.0
         self.cu.minimal_workload = self.minimal_workload
         self.cu.minimal_off_time = 5.0 * 60.0
-        self.cu.off_time = self.env.now
+        self.off_time = self.env.now
+        self.cu.off_time = self.off_time
         self.current_electrical_production = 0.0 
         self.cu.current_electrical_production = self.current_electrical_production
         self.total_electrical_production = 0.0
@@ -678,7 +679,21 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         self.assertEqual(self.power_meter.energy_produced, \
             new_electrical_energy)
         self.assertEqual(self.heat_storage.input_energy, new_thermal_energy)
-            
+        
+    def test_step_turn_bhkw_off(self):
+        '''If the cu is turned off, there must be an offtime
+        which determines the time the cu stays turned off
+        '''
+        self.cu.workload = 30
+        self.cu.thermal_driven = True 
+     
+        required_energy = 0.0
+        self.heat_storage.required_energy = required_energy
+        
+        self.cu.step()
+        
+        self.assertGreater(self.cu.off_time, self.off_time)
+        
     def calculate_energy(self, workload, efficiency):
         return self.max_gas_input * workload/99.0 * efficiency * \
             self.cu.get_efficiency_loss_factor() * self.env.step_size/(60*60)
