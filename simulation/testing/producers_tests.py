@@ -181,6 +181,16 @@ class CogenerationUnitTest(unittest.TestCase):
         self.assertEqual(calculated_workload, 25.0, "overwritten workload \
                             is wrong expected: {0}. got: {1}"\
                             .format(25.0, calculated_workload))
+                            
+        #consider offtime
+        self.heat_storage.required_energy = 3
+        expected_workload = 0
+        self.cu.thermal_driven = True
+        self.cu.off_time = self.env.now + 1
+        calculated_workload = self.cu.calculate_new_workload()
+        self.assertEqual(calculated_workload, expected_workload, "overwritten workload \
+                            is wrong expected: {0}. got: {1}"\
+                            .format(expected_workload, calculated_workload))
     
     def test_get_operating_costs(self):
         # are sum of gas_costs and maintenance
