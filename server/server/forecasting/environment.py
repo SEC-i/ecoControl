@@ -23,6 +23,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
         # function which gets called every step
         self.step_function = None
+        self.step_function_kwarguments = {}
 
         self.last_step = self.now
         self.stop_simulation = False
@@ -55,7 +56,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         # call step_function whenever time has changed
         if self.now > self.last_step and self.step_function is not None:
             self.last_step = self.now
-            self.step_function()
+            self.step_function(self.step_function_kwarguments)
 
     def get_day_of_year(self):
         return time.gmtime(self.now).tm_yday

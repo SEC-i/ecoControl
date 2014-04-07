@@ -6,7 +6,7 @@ from simulationmanager import SimulationManager
 from helpers import SimulationBackgroundRunner, MeasurementCache
 
 SIMULATED_TIME_MAIN =  60 * 60 * 24 * 5
-SIMULATED_TIME_FORECAST = 60 * 60 * 24 * 5
+SIMULATED_TIME_FORECAST = 60 * 60 * 24 * 365
 
 
 class Plotting(object):
@@ -33,17 +33,27 @@ class Plotting(object):
         for name in self.measure_values:
             data[name] = []
 
-        (simulation, measurements) = self.simulation_manager.forecast_for(simulated_time)
-        env = simulation.env 
+        env = self.env #DEBUG
+        measurements = self.simulation_manager.measurements
+        #supply environment with measurement function
+        env.step_function = self.measurement_function
+        env.step_function_kwarguments = {"env" : env, "measurement_cache" : measurements, "data" : data}
+
+        #(simulation, measurements) = self.simulation_manager.forecast_for(simulated_time)
+        self.simulation_manager.main_simulation.env.forward = simulated_time #DEBUG
+
+
+        self.simulation_manager.main_simulation
+
+
+        
+
+        start = env.now
         
 
         while env.forward > 0 :
-            if env.now % measurement_interval == 0: 
-                for value in self.measure_values:
-                    data[value].append(measurements.get_mapped_value(value))
+            time.sleep(0.2)
 
-        print env.forward       
-        print data
         # evenly sampled time at xxx intervals
         t = np.arange(0.0,simulated_time,simulated_time/len(data["time"]))
 
@@ -51,7 +61,7 @@ class Plotting(object):
         print len(t),len(data["time"])
         t = t[0:len(data["time"])]
         
-        self.plot_dataset("Energy Conversion")
+        self.plot_dataset(t, data, "Energy Conversion")
         plt.show(block=True)
 
     
@@ -61,6 +71,15 @@ class Plotting(object):
         device = self.simulation.devices[dev_id]
         sensor = self.simulation.get_sensor(dev_id,sensor_name=parts[0])
         return sensor.name + " of " + device.name +  " in " +  sensor.unit
+
+    def measurement_function(self,kwargs):
+        env = kwargs["env"]
+        measurements = kwargs["measurement_cache"]
+        data = kwargs["data"]
+
+        if env.now % 3600 == 0.0:
+            for value in self.measure_values:
+                    data[value].append(measurements.get_mapped_value(value))
 
 
     def plot_dataset(self, timedata, sensordata, title):
@@ -90,7 +109,7 @@ class Plotting(object):
         plt.xlabel('Simulated time in seconds')
         #plt.ylabel('Celsius')
         plt.title(title)
-        plt.axis([0,SIMULATED_TIME, 0,100])
+        plt.axis([0,SIMULATED_TIME_FORECAST, 0,100])
         plt.grid(True)
         
 

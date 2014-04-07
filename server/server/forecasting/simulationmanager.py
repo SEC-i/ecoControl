@@ -3,12 +3,13 @@ from helpers import SimulationBackgroundRunner, MeasurementCache, parse_hourly_d
 import sys
 import os
 import time
+from copy import deepcopy
 
 
 class SimulationManager:  
 
     def __init__(self):
-        self.main_simulation = Simulation(time.time())
+        self.main_simulation = Simulation()
 
         sim = self.main_simulation
         self.measurements = MeasurementCache(sim.env, sim.cu, sim.plb, sim.heat_storage,
@@ -21,7 +22,9 @@ class SimulationManager:
 
     def forecast_for(self, seconds):
 
-        new_simulation = Simulation.copyconstruct(self.main_simulation)
+        t0 = time.time()
+        new_simulation = copy.deepcopy(self.main_simulation) #Simulation.copyconstruct(self.main_simulation)
+        print "time for copying a new simulation: ", time.time() - t0, " seconds"
 
 
         measurements = MeasurementCache(new_simulation.env, new_simulation.cu, new_simulation.plb, new_simulation.heat_storage,
@@ -34,7 +37,3 @@ class SimulationManager:
         new_simulation.env.stop_after_forward = True
 
         return (new_simulation, measurements)
-
-
-# f = SimulationManager()
-# f.forecast_for(60 * 60* 10)

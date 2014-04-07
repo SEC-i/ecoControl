@@ -14,10 +14,11 @@ class ForecastConsumer(ThermalConsumer):
         self.weather_forecast = Forecast(self.env)
 
     @classmethod
-    def copyconstruct(cls, env, other_thermal_consumer, heat_storage):
-        thermal_consumer = ThermalConsumer(env,heat_storage)
-        thermal_consumer.__dict__ = other_thermal_consumer.__dict__.copy()    # just a shallow copy, so no dict copy
-        return thermal_consumer
+    def copyconstruct(cls, env, other_forecast_consumer, heat_storage):
+        forecast_consumer = ForecastConsumer(env,heat_storage)
+        forecast_consumer.__dict__ = other_forecast_consumer.__dict__.copy()    # just a shallow copy, so no dict copy
+        forecast_consumer.heat_storage = heatstorage
+        return forecast_consumer
 
 
 
