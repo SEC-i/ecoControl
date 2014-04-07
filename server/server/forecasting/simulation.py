@@ -37,7 +37,9 @@ class Simulation(object):
     @classmethod
     def copyconstruct(cls, old_sim):
         new_sim = Simulation(copyconstructed=True)
-        env = ForwardableRealtimeEnvironment(old_sim.env.initial_time, old_sim.env.measurement_interval)
+        #start new simulation at timepoint of old simulation
+        env = ForwardableRealtimeEnvironment(old_sim.env.now, old_sim.env.measurement_interval)
+
         new_sim.env = env
         new_sim.env.env_start = old_sim.env.env_start
         new_sim.heat_storage = HeatStorage.copyconstruct(env, old_sim.heat_storage)
