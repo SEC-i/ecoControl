@@ -12,6 +12,9 @@ from mocks import HeatStorageMock
 
 from systems.data import gas_price_per_kwh
 
+def assert_message(actual_value, expected_value):
+    return "expected: {0}. got: {1}".format(expected_value, actual_value)
+
 class GasPoweredGeneratorTests(unittest.TestCase):
 
     def setUp(self):
@@ -21,32 +24,30 @@ class GasPoweredGeneratorTests(unittest.TestCase):
     def test_gas_powered_generator_creation(self):
         self.assertTrue(self.g_generator.running)
 
-        self.assertEqual(self.g_generator.workload, 0,\
-            "wrong workload. expected: {0} got: {1}"\
-            .format(0, self.g_generator.workload))
-        self.assertEqual(self.g_generator.current_gas_consumption, 0,\
-             "wrong current_gas_consumption. expected: {0} got: {1}"\
-            .format(0, self.g_generator.current_gas_consumption))   
-        self.assertEqual(self.g_generator.current_thermal_production, 0,\
-             "wrong current_thermal_production. expected: {0} got: {1}"\
-            .format(0,self.g_generator.current_thermal_production)) 
-        self.assertEqual(self.g_generator.total_gas_consumption, 0.0,\
-             "wrong total_gas_consumption. expected: {0} got: {1}"\
-            .format(0,self.g_generator.total_gas_consumption)) 
-        self.assertEqual(self.g_generator.total_thermal_production, 0.0,\
-            "wrong total_thermal_production. expected: {0} got: {1}"\
-            .format(0,self.g_generator.total_thermal_production))
-        self.assertEqual(self.g_generator.total_hours_of_operation, 0,\
-            "wrong total_hours_of_operation. expected: {0} got: {1}"\
-            .format(0,self.g_generator.total_hours_of_operation))        
-        self.assertEqual(self.g_generator.power_on_count, 0, \
-            "wrong power_on_count. expected: {0} got: {1}"\
-            .format(0,self.g_generator.power_on_count))
+        self.assertEqual(self.g_generator.workload, 0,
+            "wrong workload. "+ assert_message(self.g_generator.workload, 0))
+        self.assertEqual(self.g_generator.current_gas_consumption, 0,
+             "wrong current_gas_consumption. " + 
+             assert_message(self.g_generator.current_gas_consumption,0))   
+        self.assertEqual(self.g_generator.current_thermal_production, 0,
+            "wrong current_thermal_production" +
+            assert_message(self.g_generator.current_thermal_production, 0)) 
+        self.assertEqual(self.g_generator.total_gas_consumption, 0,
+            "wrong total_gas_consumption. " +
+            assert_message(self.g_generator.total_gas_consumption, 0)) 
+        self.assertEqual(self.g_generator.total_thermal_production, 0.0,
+            "wrong total_thermal_production. " + 
+            assert_message(self.g_generator.total_thermal_production, 0))
+        self.assertEqual(self.g_generator.total_hours_of_operation, 0,
+            "wrong total_hours_of_operation. " +
+            assert_message(self.g_generator.total_hours_of_operation, 0))        
+        self.assertEqual(self.g_generator.power_on_count, 0,
+            "wrong power_on_count. " + 
+            assert_message(self.g_generator.power_on_count, 0.0))
     
     def test_start(self):
         self.g_generator.running = False
         self.g_generator.start()
-        
         self.assertTrue(self.g_generator.running)    
         
         
@@ -55,21 +56,6 @@ class GasPoweredGeneratorTests(unittest.TestCase):
         self.g_generator.stop()
         
         self.assertFalse(self.g_generator.running)
-    
-    def test_consume_gas(self):
-        # Attention! The assumption of the generator is that the measurement- 
-        # intervall ist always one hour
-        # Otherwise the values are physically wrong because their unit is kWh!
-         self.g_generator.total_gas_consumption = 0.0
-         self.g_generator.total_thermal_production = 0.0
-         self.g_generator.current_gas_consumption = 3.0
-         self.g_generator.current_thermal_production = 4.0
-         self.env.steps_per_measurement = 20.0
-         
-         self.g_generator.consume_gas()
-         
-         self.assertEqual(self.g_generator.total_gas_consumption, 3/20.0)
-         self.assertEqual(self.g_generator.total_thermal_production, 4/20.0)
         
     def test_get_operating_costs(self):
         self.g_generator.total_gas_consumption = 4
@@ -91,10 +77,16 @@ class GasPoweredGeneratorTests(unittest.TestCase):
         expected_total_gas_consumption = 5 / self.env.steps_per_measurement
         expected_total_thermal_production = 4 / self.env.steps_per_measurement
         
-        self.assertEqual(self.g_generator.total_gas_consumption,\
-            expected_total_gas_consumption)
-        self.assertEqual(self.g_generator.total_thermal_production,\
-            expected_total_thermal_production)
+        self.assertEqual(self.g_generator.total_gas_consumption,
+            expected_total_gas_consumption, 
+            "wrong total_gas_consumption. " +
+            assert_message(self.g_generator.total_gas_consumption, 
+            expected_total_gas_consumption,))
+        self.assertEqual(self.g_generator.total_thermal_production,
+            expected_total_thermal_production,
+            "wrong total_thermal_production. " +
+            assert_message(self.g_generator.total_thermal_production, 
+                expected_total_thermal_production))            
         
 class CogenerationUnitTest(unittest.TestCase):
 
@@ -178,9 +170,9 @@ class CogenerationUnitTest(unittest.TestCase):
         self.cu.thermal_driven = True
         self.cu.overwrite_workload = 25.0
         calculated_workload = self.cu.calculate_new_workload()
-        self.assertEqual(calculated_workload, 25.0, "overwritten workload \
-                            is wrong expected: {0}. got: {1}"\
-                            .format(25.0, calculated_workload))
+        self.assertEqual(calculated_workload, 25.0, 
+            "overwritten workload is wrong expected: {0}. got: {1}"
+            .format(25.0, calculated_workload))
                             
         #consider offtime
         self.cu.overwrite_workload = None
@@ -189,9 +181,9 @@ class CogenerationUnitTest(unittest.TestCase):
         self.cu.thermal_driven = True
         self.cu.off_time = self.env.now + 1
         calculated_workload = self.cu.calculate_new_workload()
-        self.assertEqual(calculated_workload, expected_workload, "overwritten workload \
-                            is wrong expected: {0}. got: {1}"\
-                            .format(expected_workload, calculated_workload))
+        self.assertEqual(calculated_workload, expected_workload,
+            "overwritten workload is wrong expected: {0}. got: {1}"
+            .format(expected_workload, calculated_workload))
     
     def test_get_operating_costs(self):
         # are sum of gas_costs and maintenance
@@ -202,8 +194,8 @@ class CogenerationUnitTest(unittest.TestCase):
         
         result = self.cu.get_operating_costs()
         
-        self.assertGreater(result, gas_price_per_kwh*6.0) 
         # greater because of additional maintenance costs
+        self.assertGreater(result, gas_price_per_kwh*6.0)        
         
     def test_get_efficiency_loss_factor(self):
         # given efficiency is reached only on maximum workload
@@ -318,15 +310,29 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         # assumption: self.env.step_size are seconds per step
         self.total_hours_of_operation += self.env.step_size/(60.0*60.0)
         
-        self.assertEqual(self.cu.workload, precalculated_workload) 
-        self.assertEqual(self.cu.current_gas_consumption, \
-            expected_current_gas_consumption)
-        self.assertEqual(self.cu.current_electrical_production, \
-            expected_current_electrical_production)
-        self.assertEqual(self.cu.current_thermal_production, \
-            expected_current_thermal_production)
-        self.assertEqual(self.cu.total_hours_of_operation, \
-            self.total_hours_of_operation)
+        self.assertEqual(self.cu.workload, precalculated_workload,
+            "new workload is wrong. " +
+            assert_message(self.cu.workload, precalculated_workload)) 
+        self.assertEqual(self.cu.current_gas_consumption,
+            expected_current_gas_consumption,
+            "current_gas_consumption is wrong. " +
+            assert_message(self.cu.current_gas_consumption, 
+                expected_current_gas_consumption))
+        self.assertEqual(self.cu.current_electrical_production,
+            expected_current_electrical_production,
+            "current_electrical_production is wrong. " +
+            assert_message( self.cu.current_electrical_production ,
+                expected_current_electrical_production))
+        self.assertEqual(self.cu.current_thermal_production,
+            expected_current_thermal_production,
+            "current_thermal_production is wrong. " +
+            assert_message( self.cu.current_thermal_production,
+                expected_current_thermal_production))
+        self.assertEqual(self.cu.total_hours_of_operation,
+            self.total_hours_of_operation,
+            "total_hours_of_operation is wrong. " +
+            assert_message(self.cu.total_hours_of_operation, 
+                self.total_hours_of_operation))
     
     def test_update_parameters_power_on_count(self):
         ''' the cu should increment the power on count
@@ -361,12 +367,21 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         
         self.cu.update_parameters(precalculated_workload)
         
-        self.assertEqual(self.cu.workload, 0)
-        self.assertEqual(self.cu.current_gas_consumption, 0)
-        self.assertEqual(self.cu.current_electrical_production, 0)
-        self.assertEqual(self.cu.current_thermal_production, 0)
-        self.assertEqual(self.cu.total_hours_of_operation, \
-            old_hours)
+        self.assertEqual(self.cu.workload, 0,
+            "workload is wrong. " +
+            assert_message(self.cu.workload, 0))
+        self.assertEqual(self.cu.current_gas_consumption, 0,
+            "current_gas_consumption is wrong. " +
+            assert_message(self.cu.current_gas_consumption, 0))
+        self.assertEqual(self.cu.current_electrical_production, 0,
+            "current_electrical_production is wrong. " +
+            assert_message(self.cu.current_electrical_production, 0))
+        self.assertEqual(self.cu.current_thermal_production, 0,
+            "current_thermal_production is wrong. " +
+            assert_message(self.cu.current_thermal_production, 0))
+        self.assertEqual(self.cu.total_hours_of_operation, old_hours,
+            "total_hours_of_operation is wrong. " +
+            assert_message(self.cu.total_hours_of_operation, old_hours))
         
     def test_update_parameters_workload_off_time_effective(self):
         '''If the offtime is in the future the bhkw must stay turned off.'''
@@ -376,17 +391,26 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         
         self.cu.update_parameters(precalculated_workload)
         
-        self.assertEqual(self.cu.workload, 0)
-        self.assertEqual(self.cu.current_gas_consumption, 0)
-        self.assertEqual(self.cu.current_electrical_production, 0)
-        self.assertEqual(self.cu.current_thermal_production, 0)
-        self.assertEqual(self.cu.total_hours_of_operation, \
-            old_hours)
+        self.assertEqual(self.cu.workload, 0,
+            "workload is wrong. " +
+            assert_message(self.cu.workload, 0))
+        self.assertEqual(self.cu.current_gas_consumption, 0,
+            "current_gas_consumption is wrong. " +
+            assert_message(self.cu.current_gas_consumption, 0))
+        self.assertEqual(self.cu.current_electrical_production, 0,
+            "current_electrical_production is wrong." +
+            assert_message(self.cu.current_electrical_production, 0))
+        self.assertEqual(self.cu.current_thermal_production, 0,
+            "current_thermal_production is wrong . " +
+            assert_message(self.cu.current_thermal_production, 0))
+        self.assertEqual(self.cu.total_hours_of_operation, old_hours,
+            "total_hours_of_operation is wrong. " +
+            assert_message(self.cu.total_hours_of_operation, old_hours))
         
     def test_update_parameters_too_high_workload(self):
         '''If the workload is greater than 99 it should be truncated to 99.'''
         precalculated_workload = 109
-        
+
         self.cu.update_parameters(precalculated_workload)
         
         expected_current_gas_consumption = self.gas_input
@@ -401,15 +425,29 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         # assumption: self.env.step_size are seconds per step
         self.total_hours_of_operation += self.env.step_size/(60.0*60.0)
         
-        self.assertEqual(self.cu.workload, 99) 
-        self.assertEqual(self.cu.current_gas_consumption, \
-            expected_current_gas_consumption)
-        self.assertEqual(self.cu.current_electrical_production, \
-            expected_current_electrical_production)
-        self.assertEqual(self.cu.current_thermal_production, \
-            expected_current_thermal_production)
-        self.assertEqual(self.cu.total_hours_of_operation, \
-            self.total_hours_of_operation)
+        self.assertEqual(self.cu.workload, 99,
+            "wrong workload. " +
+            assert_message(self.cu.workload, 99)) 
+        self.assertEqual(self.cu.current_gas_consumption,
+            expected_current_gas_consumption,
+            "wrong current_gas_consumption. " +
+            assert_message(self.cu.current_gas_consumption,
+            expected_current_gas_consumption))
+        self.assertEqual(self.cu.current_electrical_production,
+            expected_current_electrical_production,
+            "wrong expected_current_electrical_production. " +
+            assert_message(self.cu.current_electrical_production,
+            expected_current_electrical_production))
+        self.assertEqual(self.cu.current_thermal_production,
+            expected_current_thermal_production,
+            "wrong current_thermal_production. " +
+            assert_message(self.cu.current_thermal_production,
+            expected_current_thermal_production))
+        self.assertEqual(self.cu.total_hours_of_operation,
+            self.total_hours_of_operation,
+            "wrong total_hours_of_operation. " +
+            assert_message(self.cu.total_hours_of_operation,
+            self.total_hours_of_operation))
             
     def test_update_parameters_turn_bhkw_off(self):
         '''If the cu is turned off, there must be an offtime
@@ -445,12 +483,21 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         expected_total_thermal_production = 4 / self.env.steps_per_measurement
         expected_total_electrical_production = 1 / self.env.steps_per_measurement
         
-        self.assertEqual(self.cu.total_gas_consumption,\
-            expected_total_gas_consumption)
-        self.assertEqual(self.cu.total_thermal_production,\
-            expected_total_thermal_production)
-        self.assertEqual(self.cu.total_electrical_production,\
-            expected_total_electrical_production)
+        self.assertEqual(self.cu.total_gas_consumption,
+            expected_total_gas_consumption,
+            "wrong total_gas_consumption. " +
+            assert_message(self.cu.total_gas_consumption,
+            expected_total_gas_consumption))
+        self.assertEqual(self.cu.total_thermal_production,
+            expected_total_thermal_production,
+            "wrong total_thermal_production " +
+            assert_message(self.cu.total_thermal_production,
+            expected_total_thermal_production))
+        self.assertEqual(self.cu.total_electrical_production,
+            expected_total_electrical_production,
+            "wrong total_electrical_production" + 
+            assert_message(self.cu.total_electrical_production,
+            expected_total_electrical_production))
     
 class CogenerationUnitMethodStepTest(unittest.TestCase):
     def setUp(self):
@@ -516,12 +563,23 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         
         self.cu.step()
         
-        self.assertEqual(self.cu.workload, 0)
-        self.assertEqual(self.cu.total_electrical_production, 0)
-        self.assertEqual(self.cu.total_gas_consumption, 0)
-        self.assertEqual(self.cu.total_thermal_production, 0)
-        self.assertEqual(self.power_meter.energy_produced, 0)
-        self.assertEqual(self.heat_storage.input_energy, 0)
+        self.assertEqual(self.cu.workload, 0, "wrong workload. " + 
+            assert_message(self.cu.workload, 0))
+        self.assertEqual(self.cu.total_electrical_production, 0, 
+            "wrong total_electrical_production. " + 
+            assert_message(self.cu.total_electrical_production, 0))
+        self.assertEqual(self.cu.total_gas_consumption, 0,
+            "wrong total_gas_consumption. " + 
+            assert_message(self.cu.total_gas_consumption, 0))
+        self.assertEqual(self.cu.total_thermal_production, 0,
+            "wrong total_thermal_production. " +
+            assert_message(self.cu.total_thermal_production, 0))
+        self.assertEqual(self.power_meter.energy_produced, 0,
+            "wrong energy_produced (power_meter). " + 
+            assert_message(self.power_meter.energy_produced, 0))
+        self.assertEqual(self.heat_storage.input_energy, 0,
+            "wrong input_energy (heat_storage). " +
+            assert_message(self.heat_storage.input_energy, 0))
         
     def test_step_running_thermal_too_little_workload(self):
         '''if the workload is too low, the cu will be turned off 
@@ -537,12 +595,23 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         # = required_energy/max_gas_amount_input*thermal_efficiency
         # 0.1/(19*0.65) < 40 (minimal workload)
         
-        self.assertEqual(self.cu.workload, 0)
-        self.assertEqual(self.cu.total_electrical_production, 0)
-        self.assertEqual(self.cu.total_gas_consumption, 0)
-        self.assertEqual(self.cu.total_thermal_production, 0)
-        self.assertEqual(self.power_meter.energy_produced, 0)
-        self.assertEqual(self.heat_storage.input_energy, 0)
+        self.assertEqual(self.cu.workload, 0, "wrong workload. " + 
+            assert_message(self.cu.workload, 0))
+        self.assertEqual(self.cu.total_electrical_production, 0, 
+            "wrong total_electrical_production. " + 
+            assert_message(self.cu.total_electrical_production, 0))
+        self.assertEqual(self.cu.total_gas_consumption, 0,
+            "wrong total_gas_consumption. " + 
+            assert_message(self.cu.total_gas_consumption, 0))
+        self.assertEqual(self.cu.total_thermal_production, 0,
+            "wrong total_thermal_production. " +
+            assert_message(self.cu.total_thermal_production, 0))
+        self.assertEqual(self.power_meter.energy_produced, 0,
+            "wrong energy_produced (power_meter). " + 
+            assert_message(self.power_meter.energy_produced, 0))
+        self.assertEqual(self.heat_storage.input_energy, 0,
+            "wrong input_energy (heat_storage). " +
+            assert_message(self.heat_storage.input_energy, 0))
               
     def test_step_thermal(self):
         #if the mode is thermal the cu will produce energy 
@@ -570,17 +639,34 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         expected_energy_produced = self.cu.get_electrical_energy_production()
         expected_input_energy = self.cu.get_thermal_energy_production() 
          
-        self.assertAlmostEqual(self.cu.workload, expected_workload)
-        self.assertAlmostEqual(self.cu.total_electrical_production, \
-            self.total_electrical_production)
-        self.assertAlmostEqual(self.cu.total_gas_consumption, \
-            self.total_gas_consumption)
-        self.assertAlmostEqual(self.cu.total_thermal_production, \
-            self.total_thermal_production)
-        self.assertAlmostEqual(self.power_meter.energy_produced, \
-            expected_energy_produced)
-        self.assertAlmostEqual(self.heat_storage.input_energy, \
-            expected_input_energy)
+        self.assertAlmostEqual(self.cu.workload, expected_workload,
+            "wrong workload. " + 
+            assert_message(self.cu.workload, expected_workload))
+        self.assertAlmostEqual(self.cu.total_electrical_production,
+            self.total_electrical_production, 
+            msg="wrong total_electrical_production. " +
+            assert_message(self.cu.total_electrical_production,
+            self.total_electrical_production))
+        self.assertAlmostEqual(self.cu.total_gas_consumption,
+            self.total_gas_consumption, 
+            msg="wrong total_gas_consumption. " + 
+            assert_message(self.cu.total_gas_consumption,
+                self.total_gas_consumption))
+        self.assertAlmostEqual(self.cu.total_thermal_production,
+            self.total_thermal_production, 
+            msg="wrong total_thermal_production. " +
+            assert_message(self.cu.total_thermal_production,
+            self.total_thermal_production))
+        self.assertAlmostEqual(self.power_meter.energy_produced, 
+            expected_energy_produced,
+            msg= "wrong energy_produced(power_meter)" +
+            assert_message(self.power_meter.energy_produced, 
+            expected_energy_produced))
+        self.assertAlmostEqual(self.heat_storage.input_energy,
+            expected_input_energy,
+            msg= "wrong input_energy(heat storage)" + 
+            assert_message(self.heat_storage.input_energy,
+            expected_input_energy))
         
     def test_step_electric(self):
         #if the mode is electric the cu will produce energy 
@@ -595,34 +681,51 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
     
         self.cu.step()
         
-        expected_workload = self.calculate_workload(required_energy, \
+        expected_workload = self.calculate_workload(required_energy,
                                 self.electrical_efficiency)
         
         new_gas_consumption = self.calculate_gas_consumption(expected_workload)
         self.total_gas_consumption += new_gas_consumption
         
-        new_electrical_energy = self.calculate_energy(expected_workload, \
+        new_electrical_energy = self.calculate_energy(expected_workload,
                                     self.electrical_efficiency)            
         self.total_electrical_production += new_electrical_energy
         
-        new_thermal_energy = self.calculate_energy(expected_workload, \
+        new_thermal_energy = self.calculate_energy(expected_workload,
                                     self.thermal_efficiency)            
         self.total_thermal_production += new_thermal_energy   
         
         expected_energy_produced = self.cu.get_electrical_energy_production()
         expected_input_energy = self.cu.get_thermal_energy_production() 
          
-        self.assertAlmostEqual(self.cu.workload, expected_workload)
-        self.assertAlmostEqual(self.cu.total_electrical_production, \
-            self.total_electrical_production)
-        self.assertAlmostEqual(self.cu.total_gas_consumption, \
-            self.total_gas_consumption)
-        self.assertAlmostEqual(self.cu.total_thermal_production, \
-            self.total_thermal_production)
-        self.assertAlmostEqual(self.power_meter.energy_produced, \
-            expected_energy_produced)
-        self.assertAlmostEqual(self.heat_storage.input_energy, \
-            expected_input_energy)
+        self.assertAlmostEqual(self.cu.workload, expected_workload, 
+            "wrong workload " + 
+            assert_message(self.cu.workload, expected_workload))
+        self.assertAlmostEqual(self.cu.total_electrical_production,
+            self.total_electrical_production,
+            "wrong total_electrical_production " +
+            assert_message(self.cu.total_electrical_production,
+            self.total_electrical_production))
+        self.assertAlmostEqual(self.cu.total_gas_consumption,
+            self.total_gas_consumption,
+            "wrong total_gas_consumption " +
+            assert_message(self.cu.total_gas_consumption,
+            self.total_gas_consumption))
+        self.assertAlmostEqual(self.cu.total_thermal_production,
+            self.total_thermal_production,
+            "wrong total_thermal_production. " +
+            assert_message(self.cu.total_thermal_production,
+            self.total_thermal_production))
+        self.assertAlmostEqual(self.power_meter.energy_produced,
+            expected_energy_produced,
+            "wrong energy_produced(power_meter)" +
+            assert_message(self.power_meter.energy_produced,
+            expected_energy_produced))
+        self.assertAlmostEqual(self.heat_storage.input_energy,
+            expected_input_energy,
+            "wrong input_energy(heat_storage)" +
+            assert_message(self.heat_storage.input_energy,
+            expected_input_energy))
         
         
     def test_step_turn_on_forbidden(self):
@@ -644,12 +747,23 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         
         self.cu.step()
                 
-        self.assertEqual(self.cu.workload, 0)
-        self.assertEqual(self.cu.total_electrical_production, 0)
-        self.assertEqual(self.cu.total_gas_consumption, 0)
-        self.assertEqual(self.cu.total_thermal_production, 0)
-        self.assertEqual(self.power_meter.energy_produced, 0)
-        self.assertEqual(self.heat_storage.input_energy, 0)
+        self.assertEqual(self.cu.workload, 0, "wrong workload " + 
+            assert_message(self.cu.workload, 0))
+        self.assertEqual(self.cu.total_electrical_production, 0,
+            "wrong total_electrical_production " +
+            assert_message(self.cu.total_electrical_production, 0))  
+        self.assertEqual(self.cu.total_gas_consumption, 0,
+            "wrong total_gas_consumption. " +
+            assert_message(self.cu.total_gas_consumption, 0))
+        self.assertEqual(self.cu.total_thermal_production, 0,
+            "wrong total_thermal_production " +
+            assert_message(self.cu.total_thermal_production, 0))  
+        self.assertEqual(self.power_meter.energy_produced, 0,
+            "energy_produced(power_meter) " + 
+            assert_message(self.power_meter.energy_produced, 0))
+        self.assertEqual(self.heat_storage.input_energy, 0,
+            "wrong input_energy (heat storage). " +
+            assert_message(self.heat_storage.input_energy, 0))
         
     def test_step_turn_target_temperature_reached(self):
         '''if the heat storage is too hot, the cu musn't produce energy
@@ -663,12 +777,23 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         
         self.cu.step()
                 
-        self.assertEqual(self.cu.workload, 0)
-        self.assertEqual(self.cu.total_electrical_production, 0)
-        self.assertEqual(self.cu.total_gas_consumption, 0)
-        self.assertEqual(self.cu.total_thermal_production, 0)
-        self.assertEqual(self.power_meter.energy_produced, 0)
-        self.assertEqual(self.heat_storage.input_energy, 0)
+        self.assertEqual(self.cu.workload, 0, "wrong workload " + 
+            assert_message(self.cu.workload, 0))
+        self.assertEqual(self.cu.total_electrical_production, 0,
+            "wrong total_electrical_production " +
+            assert_message(self.cu.total_electrical_production, 0))  
+        self.assertEqual(self.cu.total_gas_consumption, 0,
+            "wrong total_gas_consumption. " +
+            assert_message(self.cu.total_gas_consumption, 0))
+        self.assertEqual(self.cu.total_thermal_production, 0,
+            "wrong total_thermal_production " +
+            assert_message(self.cu.total_thermal_production, 0))  
+        self.assertEqual(self.power_meter.energy_produced, 0,
+            "energy_produced(power_meter) " + 
+            assert_message(self.power_meter.energy_produced, 0))
+        self.assertEqual(self.heat_storage.input_energy, 0,
+            "wrong input_energy (heat storage). " +
+            assert_message(self.heat_storage.input_energy, 0))
         
     def test_step_workload_too_high(self):
         '''if the workload is too high, the cu will be running at a workload 
@@ -688,23 +813,34 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         new_gas_consumption = self.calculate_gas_consumption(expected_workload)
         self.total_gas_consumption += new_gas_consumption
         
-        new_electrical_energy = self.calculate_energy(expected_workload, \
+        new_electrical_energy = self.calculate_energy(expected_workload,
                                     self.electrical_efficiency)           
         self.total_electrical_production += new_electrical_energy
         
-        new_thermal_energy = self.calculate_energy(expected_workload, \
+        new_thermal_energy = self.calculate_energy(expected_workload,
                                     self.thermal_efficiency)             
         self.total_thermal_production += new_thermal_energy    
          
-        self.assertEqual(self.cu.workload, expected_workload)
-        self.assertEqual(self.cu.total_electrical_production, \
-            self.total_electrical_production)
-        self.assertAlmostEqual(self.cu.total_gas_consumption, \
-            self.total_gas_consumption)
-        self.assertAlmostEqual(self.cu.total_thermal_production, \
-            self.total_thermal_production)
-        self.assertEqual(self.power_meter.energy_produced, \
-            new_electrical_energy)
+        self.assertEqual(self.cu.workload, expected_workload, 
+            "wrong workload" +
+            assert_message(self.cu.workload, expected_workload))
+        self.assertEqual(self.cu.total_electrical_production,
+            self.total_electrical_production,
+            "wrong total_electrical_production. " + 
+            assert_message(self.cu.total_electrical_production,
+            self.total_electrical_production))
+        self.assertAlmostEqual(self.cu.total_gas_consumption,
+            self.total_gas_consumption, 
+            "total_gas_consumption " + assert_message(
+                self.cu.total_gas_consumption, self.total_gas_consumption))
+        self.assertAlmostEqual(self.cu.total_thermal_production,
+            self.total_thermal_production, "wrong total_thermal_production" + 
+                assert_message(self.cu.total_thermal_production,
+                self.total_thermal_production)) 
+        self.assertEqual(self.power_meter.energy_produced,
+            new_electrical_energy, "wrong energy_produced (power_meter)" + 
+            assert_message(self.power_meter.energy_produced,
+            new_electrical_energy))
         self.assertEqual(self.heat_storage.input_energy, new_thermal_energy)
         
     def test_step_turn_bhkw_off(self):
