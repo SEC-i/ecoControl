@@ -71,7 +71,9 @@ class ThermalConsumer(BaseSystem):
     @classmethod
     def copyconstruct(cls, env, other_thermal_consumer, heat_storage):
         thermal_consumer = ThermalConsumer(env,heat_storage)
-        thermal_consumer.__dict__ = other_thermal_consumer.__dict__.copy()    # just a shallow copy, so no dict copy
+        thermal_consumer.__dict__ = other_thermal_consumer.__dict__.copy()
+        thermal_consumer.heat_storage = heat_storage
+        thermal_consumer.env = env
         return thermal_consumer
 
 
@@ -191,6 +193,7 @@ class SimpleElectricalConsumer(BaseSystem):
         electrical_consumer = SimpleElectricalConsumer(env, power_meter)
         electrical_consumer.__dict__ = other_electrical_consumer.__dict__.copy()    # just a shallow copy, so no dict copy
         electrical_consumer.power_meter = power_meter 
+        electrical_consumer.env = env
         return electrical_consumer
 
     def step(self):

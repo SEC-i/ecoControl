@@ -35,25 +35,28 @@ class Simulation(object):
 
 
     @classmethod
-    def copyconstruct(cls, otherSimulation):
-        simulation = Simulation(copyconstructed=True)
-        simulation.env = ForwardableRealtimeEnvironment(otherSimulation.env.initial_time,otherSimulation.env.measurement_interval)
-        simulation.env.env_start = otherSimulation.env.env_start
-        simulation.heat_storage = HeatStorage.copyconstruct(simulation.env, otherSimulation.heat_storage)
+    def copyconstruct(cls, old_sim):
+        new_sim = Simulation(copyconstructed=True)
+        env = ForwardableRealtimeEnvironment(old_sim.env.initial_time, old_sim.env.measurement_interval)
+        new_sim.env = env
+        new_sim.env.env_start = old_sim.env.env_start
+        new_sim.heat_storage = HeatStorage.copyconstruct(env, old_sim.heat_storage)
 
-        simulation.power_meter = PowerMeter.copyconstruct(simulation.env,otherSimulation.power_meter)
-        #simulation.thermal_consumer = ForecastConsumer.copyconstruct(simulation.env, otherSimulation.thermal_consumer, simulation.heat_storage)
-        simulation.thermal_consumer = ThermalConsumer.copyconstruct(simulation.env, otherSimulation.thermal_consumer, simulation.heat_storage)
-        simulation.electrical_consumer = SimpleElectricalConsumer.copyconstruct(simulation.env, otherSimulation.electrical_consumer, simulation.power_meter)
+        new_sim.power_meter = PowerMeter.copyconstruct(env,old_sim.power_meter)
+        #new_sim.thermal_consumer = ForecastConsumer.copyconstruct(new_sim.env, old_sim.thermal_consumer, new_sim.heat_storage)
+        new_sim.thermal_consumer = ThermalConsumer.copyconstruct(env,
+                 old_sim.thermal_consumer, new_sim.heat_storage)
 
-        simulation.cu = CogenerationUnit.copyconstruct(simulation.env, otherSimulation.cu, simulation.heat_storage, simulation.power_meter)
-        simulation.plb = PeakLoadBoiler.copyconstruct(simulation.env, otherSimulation.plb, otherSimulation.heat_storage)
+        new_sim.electrical_consumer = SimpleElectricalConsumer.copyconstruct(env, old_sim.electrical_consumer, new_sim.power_meter)
+
+        new_sim.plb = PeakLoadBoiler.copyconstruct(env, old_sim.plb, new_sim.heat_storage)
+        new_sim.cu = CogenerationUnit.copyconstruct(env, old_sim.cu, new_sim.heat_storage, new_sim.power_meter)
 
 
-        simulation.initialize_helpers()
+        new_sim.initialize_helpers()
 
 
-        return simulation
+        return new_sim
 
 
 

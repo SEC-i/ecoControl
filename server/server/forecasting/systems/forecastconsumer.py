@@ -18,6 +18,7 @@ class ForecastConsumer(ThermalConsumer):
         forecast_consumer = ForecastConsumer(env,heat_storage)
         forecast_consumer.__dict__ = other_forecast_consumer.__dict__.copy()    # just a shallow copy, so no dict copy
         forecast_consumer.heat_storage = heatstorage
+        forecast_consumer.env = env
         return forecast_consumer
 
 

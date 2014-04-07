@@ -15,7 +15,7 @@ class Plotting(object):
                'thermal_consumption', 'outside_temperature', 'electrical_consumption']
         
         self.simulation_manager = SimulationManager()
-        self.simulation_manager.simulation_start()
+       # self.simulation_manager.simulation_start()
         self.env  = self.simulation_manager.main_simulation.env
 
         #self.env.stop_after_forward = True
@@ -33,23 +33,16 @@ class Plotting(object):
         for name in self.measure_values:
             data[name] = []
 
-        env = self.env #DEBUG
-        measurements = self.simulation_manager.measurements
+        (simulation, measurements) = self.simulation_manager.forecast_for(simulated_time)
+        env = simulation.env
+
+        thread = SimulationBackgroundRunner(env)
+        thread.start()
+        #self.simulation_manager.main_simulation.env.forward = simulated_time #DEBUG
         #supply environment with measurement function
         env.step_function = self.measurement_function
         env.step_function_kwarguments = {"env" : env, "measurement_cache" : measurements, "data" : data}
 
-        #(simulation, measurements) = self.simulation_manager.forecast_for(simulated_time)
-        self.simulation_manager.main_simulation.env.forward = simulated_time #DEBUG
-
-
-        self.simulation_manager.main_simulation
-
-
-        
-
-        start = env.now
-        
 
         while env.forward > 0 :
             time.sleep(0.2)
