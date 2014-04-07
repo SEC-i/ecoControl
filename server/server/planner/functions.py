@@ -7,6 +7,7 @@ from server.webapi.plugins import arduino,raspberrypi
 
 logger = logging.getLogger('planner')
 
+last_sensor_entries = []
 
 def simple_moisture_check():
     sensor_ids = [1,2,18] #plant ids
@@ -17,8 +18,8 @@ def simple_moisture_check():
             summed_value += float(sensor_entry.value)
         summed_value /= 3.0
 
-        if summed_value < 200:
-            logger.warning("Sensor values very low (maybe damaged)")
+        if simple_sensor_check(sensor_entries) != 0:
+            logger.warning("Sensor value changed quickly (maybe damaged)")
             raspberrypi.handle_post_data({'switch_number':2, 'switch_state':'on'})
             return
 
@@ -28,6 +29,19 @@ def simple_moisture_check():
     except SensorEntry.DoesNotExist:
         logger.warning("No SensorEntries found")
 
+def simple_sensor_check(sensor_entries):
+    if last_sensor_entries:
+        # compare last value with new one
+        for new_sensor_entry in sensor_entries:
+            if new_sensor_entry.value < 10:
+                return -1
+            for old_sensor_entry in last_sensor_entries:
+                if new_sensor_entry.id == old_sensor_entry.id:
+                    if abs(new_sensor_entry.value - old_sensor_entry.value) > 50:
+                        return -2
+
+    last_sensor_entries = sensor_entries
+    return 0
 
 def simple_battery_check():
     try:
