@@ -23,13 +23,15 @@ def simple_moisture_check():
             raspberrypi.handle_post_data({'switch_number':2, 'switch_state':'on'})
             return
 
-        if summed_value < 500:
+        if summed_value < 400:
             arduino.handle_post_data({'water_plants':1})
+            logger.debug("Water plants")
     
     except SensorEntry.DoesNotExist:
         logger.warning("No SensorEntries found")
 
 def simple_sensor_check(sensor_entries):
+    global last_sensor_entries
     if last_sensor_entries:
         # compare last value with new one
         for new_sensor_entry in sensor_entries:
