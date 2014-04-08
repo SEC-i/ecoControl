@@ -38,8 +38,8 @@ def simple_sensor_check(sensor_entries):
             if new_sensor_entry.value < 10:
                 return -1
             for old_sensor_entry in last_sensor_entries:
-                if new_sensor_entry.id == old_sensor_entry.id:
-                    if abs(new_sensor_entry.value - old_sensor_entry.value) > 50:
+                if new_sensor_entry.sensor == old_sensor_entry.sensor:
+                    if abs(float(new_sensor_entry.value) - float(old_sensor_entry.value)) > 50:
                         return -2
 
     last_sensor_entries = sensor_entries
