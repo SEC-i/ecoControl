@@ -27,8 +27,8 @@ class Simulation(object):
         self.power_meter = PowerMeter(self.env)
         self.cu = CogenerationUnit(self.env, self.heat_storage, self.power_meter)
         self.plb = PeakLoadBoiler(self.env, self.heat_storage)
-        #self.thermal_consumer = ForecastConsumer(self.env, self.heat_storage)
-        self.thermal_consumer = ThermalConsumer(self.env, self.heat_storage)
+        self.thermal_consumer = ForecastConsumer(self.env, self.heat_storage)
+        #self.thermal_consumer = ThermalConsumer(self.env, self.heat_storage)
         self.electrical_consumer = SimpleElectricalConsumer(self.env, self.power_meter)
 
         self.initialize_helpers()
@@ -45,9 +45,9 @@ class Simulation(object):
         new_sim.heat_storage = HeatStorage.copyconstruct(env, old_sim.heat_storage)
 
         new_sim.power_meter = PowerMeter.copyconstruct(env,old_sim.power_meter)
-        #new_sim.thermal_consumer = ForecastConsumer.copyconstruct(new_sim.env, old_sim.thermal_consumer, new_sim.heat_storage)
-        new_sim.thermal_consumer = ThermalConsumer.copyconstruct(env,
-                 old_sim.thermal_consumer, new_sim.heat_storage)
+        new_sim.thermal_consumer = ForecastConsumer.copyconstruct(new_sim.env, old_sim.thermal_consumer, new_sim.heat_storage)
+        #new_sim.thermal_consumer = ThermalConsumer.copyconstruct(env,
+        #          old_sim.thermal_consumer, new_sim.heat_storage)
 
         new_sim.electrical_consumer = SimpleElectricalConsumer.copyconstruct(env, old_sim.electrical_consumer, new_sim.power_meter)
 

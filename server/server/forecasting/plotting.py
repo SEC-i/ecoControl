@@ -1,12 +1,15 @@
 import matplotlib.pyplot as plt
+import matplotlib.dates as md
 import numpy as np
 import time
 from simulationmanager import SimulationManager
+import datetime
 
 from helpers import SimulationBackgroundRunner, MeasurementCache
+from rulestrategy import RuleStrategy
 
 SIMULATED_TIME_MAIN =  60 * 60 * 24 * 10
-SIMULATED_TIME_FORECAST = 60 * 60 * 24 * 365
+SIMULATED_TIME_FORECAST = 60 * 60 * 24 * 100
 
 
 class Plotting(object):
@@ -14,21 +17,8 @@ class Plotting(object):
         self.measure_values = ['time', 'cu_workload', 'plb_workload', 'hs_temperature',
                'thermal_consumption', 'outside_temperature', 'electrical_consumption']
         
-        self.simulation_manager = SimulationManager()
-        t0 = time.time()
-        self.simulation_manager.forward_main(SIMULATED_TIME_MAIN,blocking=True) #5 days
-        print "time for main simulation: ", time.time() - t0, " seconds"
-        #wait before starting new simulation
-        
-
-        #self.env.stop_after_forward = True
-        #self.env.forward = SIMULATED_TIME_MAIN # 5days
-
-
+        self.simulation_manager = SimulationManager(initial_time=1396915200) #8.4.2014
         self.plot_new_simulation(SIMULATED_TIME_FORECAST, 60, "Forecast1")
-
-
-        
 
 
     def plot_new_simulation(self, simulated_time, measurement_interval, title,  datasheet = None):
@@ -36,54 +26,54 @@ class Plotting(object):
         for name in self.measure_values:
             data[name] = []
 
-        (simulation, measurements) = self.simulation_manager.forecast_for(simulated_time)
+        (simulation, measurements) = self.simulation_manager.forecast_for(simulated_time, blocking=False)
         env = simulation.env
-
-
-        #self.simulation_manager.main_simulation.env.forward = simulated_time #DEBUG
+        
+        rule_strategy = RuleStrategy(env, self.simulation_manager)
+        
         #supply environment with measurement function
-        env.step_function = self.measurement_function
-        env.step_function_kwarguments = {"env" : env, "measurement_cache" : measurements, "data" : data}
-
+        env.register_step_function(self.measure_function, {"env" : env, "measurement_cache" : measurements, "data" : data, "rule_strategy": rule_strategy})
 
         while env.forward > 0 :
             time.sleep(0.2)
-
-        # evenly sampled time at xxx intervals
-        t = np.arange(0.0,simulated_time,simulated_time/len(data["time"]))
-
-        #cut to the actual length of simulation data
-        print len(t),len(data["time"])
-        t = t[0:len(data["time"])]
+        
+        t = []
+        for value in data["time"]:
+            t.append(datetime.datetime.fromtimestamp(value))
         
         self.plot_dataset(t, data, "Energy Conversion")
         plt.show(block=True)
-
     
-    def get_line_name(self,concat_name):
-        parts = concat_name.split(".")
-        dev_id = int(parts[1])
-        device = self.simulation.devices[dev_id]
-        sensor = self.simulation.get_sensor(dev_id,sensor_name=parts[0])
-        return sensor.name + " of " + device.name +  " in " +  sensor.unit
-
-    def measurement_function(self,kwargs):
+    def step_function(self, kwargs):
+        self.measure_function(kwargs)
+        if "rule_strategy" in kwargs:
+            rule_strategy = kwargs["rule_strategy"]
+            rule_strategy.step_function()
+        
+    
+    def measure_function(self,kwargs):
         env = kwargs["env"]
-        measurements = kwargs["measurement_cache"]
-        data = kwargs["data"]
 
         if env.now % 3600 == 0.0:
+            measurements = kwargs["measurement_cache"]
+            data = kwargs["data"]
             for value in self.measure_values:
-                    data[value].append(measurements.get_mapped_value(value))
-
+                data[value].append(measurements.get_mapped_value(value))
 
     def plot_dataset(self, timedata, sensordata, title):
 
-        
         fig, ax = plt.subplots()
+        #format datetime for matplot
+        datenums=md.date2num(timedata)
+
+        xfmt = md.DateFormatter('%Y-%m-%d %H:%M:%S')
+        ax.xaxis.set_major_formatter(xfmt)
+        
+        ax.xaxis_date()
         
         for name,sensorvals in sensordata.items():
-            ax.plot(timedata,sensorvals,label=name)
+            if name != "time":
+                ax.plot(datenums,sensorvals,label=name)
         
         # Now add the legend with some customizations.
         legend = ax.legend(loc='upper center', shadow=True)
@@ -98,13 +88,11 @@ class Plotting(object):
         
         for label in legend.get_lines():
             label.set_linewidth(1.5)  # the legend line widt
-        #plt.plot(t,data[1]["workload BHKW"])
-        
-        
+
+        plt.subplots_adjust(bottom=0.2)
         plt.xlabel('Simulated time in seconds')
-        #plt.ylabel('Celsius')
         plt.title(title)
-        plt.axis([0,SIMULATED_TIME_FORECAST, 0,100])
+        plt.xticks( rotation=90 )
         plt.grid(True)
         
 

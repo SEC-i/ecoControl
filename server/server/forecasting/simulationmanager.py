@@ -8,8 +8,12 @@ from copy import deepcopy
 
 class SimulationManager:  
 
-    def __init__(self):
-        self.main_simulation = Simulation()
+    def __init__(self, initial_time=None):
+        if initial_time != None:
+            self.main_simulation = Simulation(initial_time=initial_time)
+        else:
+            self.main_simulation = Simulation()
+        
 
         sim = self.main_simulation
         self.measurements = MeasurementCache(sim.env, sim.cu, sim.plb, sim.heat_storage,

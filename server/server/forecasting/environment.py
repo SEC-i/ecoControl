@@ -60,3 +60,8 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
     def get_day_of_year(self):
         return time.gmtime(self.now).tm_yday
+    
+    
+    def register_step_function(self, function, kwargs={}):
+        self.step_function = function
+        self.step_function_kwarguments = kwargs
