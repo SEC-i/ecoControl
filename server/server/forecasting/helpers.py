@@ -60,6 +60,11 @@ class MeasurementCache():
             output.append((value, list(self.data[index])))
         return output
 
+    def get_last(self, value):
+        index = self.data.index(value)
+        return self.data[index][-1] #return newest item
+
+
     def clear(self):
         for i in self.data:
             self.data[i].clear()

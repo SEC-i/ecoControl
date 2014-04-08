@@ -5,7 +5,7 @@ from simulationmanager import SimulationManager
 
 from helpers import SimulationBackgroundRunner, MeasurementCache
 
-SIMULATED_TIME_MAIN =  60 * 60 * 24 * 160
+SIMULATED_TIME_MAIN =  60 * 60 * 24 * 10
 SIMULATED_TIME_FORECAST = 60 * 60 * 24 * 365
 
 
@@ -15,13 +15,12 @@ class Plotting(object):
                'thermal_consumption', 'outside_temperature', 'electrical_consumption']
         
         self.simulation_manager = SimulationManager()
-        self.simulation_manager.forward_main(SIMULATED_TIME_MAIN) #5 days
-
-        #wait before starting new simulation
         t0 = time.time()
-        while self.simulation_manager.is_main_forwarding():
-            time.sleep(0.2)
+        self.simulation_manager.forward_main(SIMULATED_TIME_MAIN,blocking=True) #5 days
         print "time for main simulation: ", time.time() - t0, " seconds"
+        #wait before starting new simulation
+        
+
         #self.env.stop_after_forward = True
         #self.env.forward = SIMULATED_TIME_MAIN # 5days
 
