@@ -137,8 +137,6 @@ class ThermalConsumer():
         # clamp to maximum power
         self.current_power = max(min(self.current_power, self.max_power), 0.0)
 
-
-
     def heat_loss(self):
         heat_loss = 0
         d = self.temperature_room - self.get_outside_temperature()

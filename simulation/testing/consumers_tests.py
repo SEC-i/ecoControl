@@ -46,7 +46,8 @@ class ThermalConsumerTests(unittest.TestCase):
         self.assertGreater(self.consumer.current_power, last_current_power)
         
     def test_simulate_consumption_decrease_current_power(self):
-        '''the current_power should be decreased if the current temperature 
+        '''Current_power is the new power, it determines the energy-consumption
+        the current_power should be decreased if the current temperature 
         is below the target temperature'''
         self.consumer.temperature_room = 30
         self.consumer.target_temperature = 0
@@ -58,10 +59,19 @@ class ThermalConsumerTests(unittest.TestCase):
         self.assertLess(self.consumer.current_power, last_current_power)
         
         
-    def test_room_power_simulate_consumption(self):
-        # sets self.room_power power,
-        # the current power of the heating of the room
-        # the value comes from the former current_power
+    def test_simulate_consumption_room_power(self):
+        ''' self.room_power is the power, depending on the desired power
+        and the cooling of the room.
+        room_power is the last ideal power reduced by the energyloss of a room 
+        it determines the actual temperature in the room.
+        '''
+        last_current_power = 20
+        self.consumer.current_power = last_current_power
+        
+        self.consumer.simulate_consumption()
+        
+        self.assertLessEqual(self.consumer.room_power, last_current_power)
+                
     
         '''def test_temperature_room(self):
         # during simulate_consumption
