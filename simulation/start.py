@@ -33,8 +33,11 @@ def get_forecast_data():
     if request.method == "GET" or ("forecast_time" not in request.form):
         (sim,measurements) = simulation_manager.forecast_for(two_weeks, blocking=True)
     else:
+        #callback function to set different values on forecasted simulation
+        def set_sim_values(sim):
+            set_values(request.form, sim)
         forecast_time = int(request.form["forecast_time"])
-        (sim,measurements) = simulation_manager.forecast_for(forecast_time, blocking=True)
+        (sim,measurements) = simulation_manager.forecast_for(forecast_time, blocking=True, pre_start_callback=set_sim_values)
         
     return jsonify(sim.get_measurements(measurements))
 
@@ -52,49 +55,57 @@ def handle_code():
 
     return jsonify({'editor_code': code_executer.code})
 
+def set_values(settings_dict, simulation=None):
+    if simulation==None:
+        s = simulation_manager.main_simulation
+    else:
+        s = simulation
+    if 'hs_capacity' in settings_dict:
+        s.heat_storage.capacity = float(settings_dict['hs_capacity'])
+    if 'hs_min_temperature' in settings_dict:
+        s.heat_storage.min_temperature = float(
+            settings_dict['hs_min_temperature'])
+    if 'hs_target_temperature' in settings_dict:
+        s.heat_storage.target_temperature = float(
+            settings_dict['hs_target_temperature'])
+    if 'cu_max_gas_input' in settings_dict:
+        s.cu.max_gas_input = float(settings_dict['cu_max_gas_input'])
+    if 'cu_mode' in settings_dict:
+        s.cu.thermal_driven = settings_dict['cu_mode'] == "thermal_driven"
+    if 'cu_minimal_workload' in settings_dict:
+        s.cu.minimal_workload = float(settings_dict['cu_minimal_workload'])
+    if 'cu_electrical_efficiency' in settings_dict:
+        s.cu.electrical_efficiency = float(
+            settings_dict['cu_electrical_efficiency']) / 100.0
+    if 'cu_electrical_driven_minimal_production' in settings_dict:
+        s.cu.electrical_driven_minimal_production = float(
+            settings_dict['cu_electrical_driven_minimal_production'])
+    if 'cu_thermal_efficiency' in settings_dict:
+        s.cu.thermal_efficiency = float(
+            settings_dict['cu_thermal_efficiency']) / 100.0
+    if 'plb_max_gas_input' in settings_dict:
+        s.plb.max_gas_input = float(settings_dict['plb_max_gas_input'])
+
+    if 'password' in settings_dict and settings_dict['password'] == "InfoProfi" and 'code' in settings_dict:
+        s.code_executer.create_function(settings_dict['code'])
+
+    daily_thermal_demand = parse_hourly_demand_values(
+        'daily_thermal_demand', settings_dict)
+    if len(daily_thermal_demand) == 24:
+        s.thermal_consumer.daily_demand = daily_thermal_demand
+
+    daily_electrical_variation = parse_hourly_demand_values(
+        'daily_electrical_variation', settings_dict)
+    if len(daily_electrical_variation) == 24:
+        s.electrical_consumer.demand_variation = daily_electrical_variation
+    
+
 
 @app.route('/api/settings/', methods=['GET', 'POST'])
 def handle_settings():
     if request.method == "POST":
-        if 'hs_capacity' in request.form:
-            heat_storage.capacity = float(request.form['hs_capacity'])
-        if 'hs_min_temperature' in request.form:
-            heat_storage.min_temperature = float(
-                request.form['hs_min_temperature'])
-        if 'hs_target_temperature' in request.form:
-            heat_storage.target_temperature = float(
-                request.form['hs_target_temperature'])
-        if 'cu_max_gas_input' in request.form:
-            cu.max_gas_input = float(request.form['cu_max_gas_input'])
-        if 'cu_mode' in request.form:
-            cu.thermal_driven = request.form['cu_mode'] == "thermal_driven"
-        if 'cu_minimal_workload' in request.form:
-            cu.minimal_workload = float(request.form['cu_minimal_workload'])
-        if 'cu_electrical_efficiency' in request.form:
-            cu.electrical_efficiency = float(
-                request.form['cu_electrical_efficiency']) / 100.0
-        if 'cu_electrical_driven_minimal_production' in request.form:
-            cu.electrical_driven_minimal_production = float(
-                request.form['cu_electrical_driven_minimal_production'])
-        if 'cu_thermal_efficiency' in request.form:
-            cu.thermal_efficiency = float(
-                request.form['cu_thermal_efficiency']) / 100.0
-        if 'plb_max_gas_input' in request.form:
-            plb.max_gas_input = float(request.form['plb_max_gas_input'])
-
-        if 'password' in request.form and request.form['password'] == "InfoProfi" and 'code' in request.form:
-            code_executer.create_function(request.form['code'])
-
-        daily_thermal_demand = parse_hourly_demand_values(
-            'daily_thermal_demand', request.form)
-        if len(daily_thermal_demand) == 24:
-            thermal_consumer.daily_demand = daily_thermal_demand
-
-        daily_electrical_variation = parse_hourly_demand_values(
-            'daily_electrical_variation', request.form)
-        if len(daily_electrical_variation) == 24:
-            electrical_consumer.demand_variation = daily_electrical_variation
-
+        set_values(request.form)
+        
     return jsonify({
         'hs_capacity': heat_storage.capacity,
         'hs_min_temperature': heat_storage.min_temperature,
@@ -111,6 +122,7 @@ def handle_settings():
         'editor_code': code_executer.code,
         'code_snippets': code_executer.snippets_list()
     })
+    
 
 
 @app.route('/api/simulation/', methods=['POST'])
@@ -136,11 +148,6 @@ def export_data(filename):
                 export_file.write(line)
         return True
     return False
-
-
-
-
-
 
 
 if __name__ == '__main__':
