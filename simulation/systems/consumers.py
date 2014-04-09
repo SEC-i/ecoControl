@@ -1,5 +1,5 @@
 import time
-from data import outside_temperatures_2013, daily_electrical_demand, warm_water_demand_workday, warm_water_demand_weekend
+from data import outside_temperatures_2013, weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_workday, warm_water_demand_weekend
 from basesystem import BaseSystem
 
 
@@ -206,8 +206,15 @@ class SimpleElectricalConsumer(BaseSystem):
         time_tuple = time.gmtime(self.env.now)
         quarter = int(time_tuple.tm_min / 15.0)
         quarters = (time_tuple.tm_hour * 4 + quarter) % (4 * 24)
-        # calculate variation using daily demand and variation
-        return daily_electrical_demand[quarters] * self.demand_variation[time_tuple.tm_hour]
+        days = time_tuple.tm_wday + 1 # days 0-6 converted to 1-7
+        # Summer: 1 May (120) - 1 October (273)
+        yday = time_tuple.tm_yday
+        if yday > 120 and yday < 273:
+            demand = weekly_electrical_demand_summer[quarters * days]
+        else:
+            demand = weekly_electrical_demand_winter[quarters * days]
+        # calculate variation using demand and variation
+        return demand * self.demand_variation[time_tuple.tm_hour]
 
     def get_consumption_energy(self):
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
