@@ -123,7 +123,7 @@ class ThermalConsumer():
     def simulate_consumption(self):
         # calculate variation using daily demand
         self.target_temperature = self.daily_demand[time.gmtime(self.env.now).tm_hour]
-
+        
         self.room_power = self.current_power - self.heat_loss()
         self.calculate_room_temperature()
 
