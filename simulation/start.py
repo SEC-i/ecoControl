@@ -8,12 +8,14 @@ from flask import Flask, jsonify, render_template, request
 from werkzeug.serving import run_simple
 app = Flask(__name__)
 
-from simulation import get_new_simulation
+from simulation import Simulation
 from helpers import SimulationBackgroundRunner, MeasurementCache, parse_hourly_demand_values
 
 
+simulation = Simulation()
+
 (env, heat_storage, power_meter, cu, plb, thermal_consumer,
- electrical_consumer, code_executer) = get_new_simulation()
+ electrical_consumer, code_executer) = simulation.get_systems()
 
 # initialize MeasurementCache
 measurements = MeasurementCache(
@@ -122,14 +124,16 @@ def handle_simulation():
 def reset_simulation():
     global env, heat_storage, power_meter, cu, plb, thermal_consumer, electrical_consumer, code_executer, measurements
     env.stop()
-
+    
+    simulation = Simulation()
     (env, heat_storage, power_meter, cu, plb, thermal_consumer,
-     electrical_consumer, code_executer) = get_new_simulation()
+     electrical_consumer, code_executer) = simulation.get_systems()
 
     measurements = MeasurementCache(
         env, cu, plb, heat_storage, thermal_consumer, electrical_consumer)
 
-    env.step_function = measurements.take
+    env.register_step_function(measurements.take)
+    
     thread = SimulationBackgroundRunner(env)
     thread.start()
 
@@ -191,7 +195,7 @@ def get_total_bilance():
 
 if __name__ == '__main__':
 
-    env.step_function = measurements.take
+    env.register_step_function(measurements.take)
 
     if "profile" in sys.argv:
         import cProfile

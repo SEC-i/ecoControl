@@ -13,15 +13,17 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
         # time to forward
         self.forward = 0
+        self.initial_time = initial_time
 
         # timings
         self.measurement_interval = measurement_interval
-        self.steps_per_measurement = 30.0  # every second
+        self.steps_per_measurement = 30.0  # every 2min
         self.step_size = self.measurement_interval / \
             self.steps_per_measurement  # in seconds
 
         # function which gets called every step
         self.step_function = None
+        self.step_function_kwarguments = {}
 
         self.last_step = self.now
         self.stop_simulation = False
@@ -45,10 +47,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
                 raise EmptySchedule()
         else:
             self.handle_step_function()
-            try:
-                RealtimeEnvironment.step(self)
-            except:
-                traceback.print_exc()
+            RealtimeEnvironment.step(self)
 
     def stop(self):
         self.stop_simulation = True
@@ -57,7 +56,17 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         # call step_function whenever time has changed
         if self.now > self.last_step and self.step_function is not None:
             self.last_step = self.now
-            self.step_function()
+            if self.step_function_kwarguments != {}:
+                self.step_function(self.step_function_kwarguments)
+            else:
+                self.step_function()
 
     def get_day_of_year(self):
         return time.gmtime(self.now).tm_yday
+    
+    
+    def register_step_function(self, function, kwargs={}):
+        if self.step_function != None:
+            print "overwriting existing step_function ", self.step_function, " !"
+        self.step_function = function
+        self.step_function_kwarguments = kwargs

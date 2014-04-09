@@ -1,83 +1,80 @@
 import matplotlib.pyplot as plt
+import matplotlib.dates as md
 import numpy as np
 import time
+from simulationmanager import SimulationManager
+import datetime
 
-from simulation import get_new_simulation
-from helpers import SimulationBackgroundRunner, MeasurementCache, parse_hourly_demand_values
+from helpers import SimulationBackgroundRunner, MeasurementCache
+from rulestrategy import RuleStrategy
 
-SIMULATED_TIME =  60 * 60 * 24 * 7
+SIMULATED_TIME_MAIN =  60 * 60 * 24 * 10
+SIMULATED_TIME_FORECAST = 60 * 60 * 24 * 100
 
 
 class Plotting(object):
     def __init__(self):
-        self.values = ['time', 'cu_workload', 'plb_workload', 'hs_temperature',
+        self.measure_values = ['time', 'cu_workload', 'plb_workload', 'hs_temperature',
                'thermal_consumption', 'outside_temperature', 'electrical_consumption']
         
-        (self.env, self.heat_storage, self.power_meter, self.cu, self.plb, self.thermal_consumer,
-         self.electrical_consumer, self.code_executer) = get_new_simulation()
+        self.simulation_manager = SimulationManager(initial_time=1396915200) #8.4.2014
+        self.plot_new_simulation(SIMULATED_TIME_FORECAST, 60, "Forecast1")
 
-        self.env.stop_after_forward = True
-        self.env.forward = SIMULATED_TIME
+
+    def plot_new_simulation(self, simulated_time, measurement_interval, title,  datasheet = None):
+        data = {}
+        for name in self.measure_values:
+            data[name] = []
+
+        (simulation, measurements) = self.simulation_manager.forecast_for(simulated_time, blocking=False)
+        env = simulation.env
         
-        self.data = {}
-        for name in self.values:
-            self.data[name] = []
-
-        thread = SimulationBackgroundRunner(self.env)
-        thread.start()
-
-        while self.env.now < self.env.now + self.env.forward:
-            if self.env.now % self.env.measurement_interval == 0:
-                for value in self.values:
-                    self.data[value].append(self.get_mapped_value(value))
-
-        thread.join()
-
+        rule_strategy = RuleStrategy(env, self.simulation_manager)
         
-        # evenly sampled time at xxx intervals
-        self.t = np.arange(0.0,SIMULATED_TIME,SIMULATED_TIME/len(self.data["cu_workload"]))
+        #supply environment with measurement function
+        env.register_step_function(self.step_function, {"env" : env, "measurement_cache" : measurements, "data" : data, "rule_strategy" : rule_strategy})
 
+        while env.forward > 0 :
+            time.sleep(0.2)
         
-        #cut to the actual length of simulation data
-        print len(self.t),len(self.data["cu_workload"])
-        self.t = self.t[0:len(self.data["cu_workload"])]
+        t = []
+        for value in data["time"]:
+            t.append(datetime.datetime.fromtimestamp(value))
         
-        self.plot_dataset("Energy Conversion")
+        self.plot_dataset(t, data, "Energy Conversion")
         plt.show(block=True)
     
-    def get_line_name(self,concat_name):
-        parts = concat_name.split(".")
-        dev_id = int(parts[1])
-        device = self.simulation.devices[dev_id]
-        sensor = self.simulation.get_sensor(dev_id,sensor_name=parts[0])
-        return sensor.name + " of " + device.name +  " in " +  sensor.unit
+    def step_function(self, kwargs):
+        self.measure_function(kwargs)
+        if "rule_strategy" in kwargs:
+            rule_strategy = kwargs["rule_strategy"]
+            rule_strategy.step_function()
 
+        
     
-    def get_mapped_value(self, value):
-        if value == 'time':
-            return self.env.now
-        if value == 'cu_workload':
-            return self.cu.workload
-        if value == 'plb_workload':
-            return self.plb.workload
-        if value == 'hs_temperature':
-            return self.heat_storage.get_temperature()
-        if value == 'thermal_consumption':
-            return self.thermal_consumer.get_consumption_power()
-        if value == 'outside_temperature':
-            return self.thermal_consumer.get_outside_temperature()
-        if value == 'electrical_consumption':
-            return self.electrical_consumer.get_consumption_power()
-        return 0
+    def measure_function(self,kwargs):
+        env = kwargs["env"]
 
+        if env.now % 3600 == 0.0:
+            measurements = kwargs["measurement_cache"]
+            data = kwargs["data"]
+            for value in self.measure_values:
+                data[value].append(measurements.get_mapped_value(value))
 
-    def plot_dataset(self,title):
+    def plot_dataset(self, timedata, sensordata, title):
 
-        
         fig, ax = plt.subplots()
+        #format datetime for matplot
+        datenums=md.date2num(timedata)
+
+        xfmt = md.DateFormatter('%Y-%m-%d %H:%M:%S')
+        ax.xaxis.set_major_formatter(xfmt)
         
-        for name,sensorvals in self.data.items():
-            ax.plot(self.t,sensorvals,label=name)
+        ax.xaxis_date()
+        
+        for name,sensorvals in sensordata.items():
+            if name != "time":
+                ax.plot(datenums,sensorvals,label=name)
         
         # Now add the legend with some customizations.
         legend = ax.legend(loc='upper center', shadow=True)
@@ -92,13 +89,11 @@ class Plotting(object):
         
         for label in legend.get_lines():
             label.set_linewidth(1.5)  # the legend line widt
-        #plt.plot(t,data[1]["workload BHKW"])
-        
-        
+
+        plt.subplots_adjust(bottom=0.2)
         plt.xlabel('Simulated time in seconds')
-        #plt.ylabel('Celsius')
         plt.title(title)
-        plt.axis([0,SIMULATED_TIME, 0,100])
+        plt.xticks( rotation=90 )
         plt.grid(True)
         
 

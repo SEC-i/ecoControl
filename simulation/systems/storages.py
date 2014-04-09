@@ -1,10 +1,12 @@
 from data import electrical_feed_in_reward_per_kwh, electrical_costs_per_kwh
+from basesystem import BaseSystem
 
 
-class HeatStorage():
+class HeatStorage(BaseSystem):
 
     def __init__(self, env):
-        self.env = env
+        super(HeatStorage, self).__init__(env)
+       
 
         # data from pamiru48
         self.capacity = 25000  # liters  (=kilos)
@@ -62,10 +64,10 @@ class HeatStorage():
         self.output_energy += energy_loss * (self.env.step_size / 3600.0)
 
 
-class PowerMeter():
+class PowerMeter(BaseSystem):
 
     def __init__(self, env):
-        self.env = env
+        super(PowerMeter, self).__init__(env)
 
         self.total_fed_in_electricity = 0.0  # kWh
         self.total_purchased = 0  # kWh
@@ -73,8 +75,6 @@ class PowerMeter():
         self.energy_produced = 0.0  # kWh
         self.energy_consumed = 0.0  # kWh
         self.current_power_consum = 0.0
-
-        self.balance = 0  # kWh
 
     def add_energy(self, energy):
         self.energy_produced += energy
@@ -89,11 +89,11 @@ class PowerMeter():
         return self.total_purchased * electrical_costs_per_kwh
 
     def step(self):
-        self.balance = (self.energy_produced - self.energy_consumed)
+        balance = (self.energy_produced - self.energy_consumed)
         # purchase electrical energy if more energy needed than produced
-        if self.balance < 0:
-            self.total_purchased -= self.balance
+        if balance < 0:
+            self.total_purchased -= balance
         else:
-            self.total_fed_in_electricity += self.balance
+            self.total_fed_in_electricity += balance
         self.energy_produced = 0
         self.energy_consumed = 0

@@ -1,11 +1,12 @@
 from data import gas_price_per_kwh
 from helpers import sign
+from basesystem import BaseSystem
 
 
-class GasPoweredGenerator():
+class GasPoweredGenerator(BaseSystem):
 
     def __init__(self, env):
-        self.env = env
+        super(GasPoweredGenerator, self).__init__(env)
 
         self.running = True
 
@@ -60,6 +61,16 @@ class CogenerationUnit(GasPoweredGenerator):
         self.electrical_driven_minimal_production = 1.0  # kWh (electrical)
 
         self.overwrite_workload = None
+
+    @classmethod
+    def copyconstruct(cls, env, other_cu, heat_storage, power_meter):
+        cu = CogenerationUnit(env, heat_storage, power_meter)
+        cu.__dict__ = other_cu.__dict__.copy()
+        #copy will also copy references for heatstorage and powermeter, so we have to change refences manually
+        cu.heat_storage = heat_storage
+        cu.power_meter = power_meter
+        cu.env = env
+        return cu
 
     def step(self):
         if self.running:
@@ -166,6 +177,14 @@ class PeakLoadBoiler(GasPoweredGenerator):
         self.off_time = self.env.now
 
         self.overwrite_workload = None
+
+    @classmethod
+    def copyconstruct(cls, env, other_plb, heat_storage):
+        plb = PeakLoadBoiler(env, heat_storage)
+        plb.__dict__ = other_plb.__dict__.copy()
+        plb.heat_storage = heat_storage
+        plb.env = env
+        return plb
 
     def step(self):
         if self.running:
