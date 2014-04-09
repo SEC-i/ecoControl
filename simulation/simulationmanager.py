@@ -56,8 +56,9 @@ class SimulationManager:
         else:
             new_sim = Simulation.copyconstruct(self.main_simulation)
         
-
-
+        if pre_start_callback != None:
+            pre_start_callback(new_sim)
+        
         measurements = MeasurementCache(new_sim.env, new_sim.cu, new_sim.plb, new_sim.heat_storage,
         new_sim.thermal_consumer, new_sim.electrical_consumer)
         new_sim.env.register_step_function(measurements.take)
@@ -71,7 +72,7 @@ class SimulationManager:
         else:
             t0 = time.time()
             new_sim.env.run()
-            print "time for blocking forecast: ", time.time() - t0, " seconds. simulated hours: ", seconds / (60.0 * 60.0)
+            print "time for forecast: ", time.time() - t0, " seconds. simulated hours: ", seconds / (60.0 * 60.0)
 
         return (new_sim, measurements)
     
