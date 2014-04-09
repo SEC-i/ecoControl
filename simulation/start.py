@@ -27,6 +27,16 @@ def index():
 def get_data():
     return jsonify(simulation_manager.get_main_measurements())
 
+@app.route('/api/forecast_data/', methods=['GET','POST'])
+def get_forecast_data():
+    two_weeks = 3600.0 * 24 * 14
+    if request.method == "GET" or ("forecast_time" not in request.form):
+        (sim,measurements) = simulation_manager.forecast_for(two_weeks, blocking=True)
+    else:
+        forecast_time = int(request.form["forecast_time"])
+        (sim,measurements) = simulation_manager.forecast_for(forecast_time, blocking=True)
+        
+    return jsonify(sim.get_measurements(measurements))
 
 @app.route('/api/code/', methods=['GET', 'POST'])
 def handle_code():
