@@ -15,11 +15,15 @@ from helpers import BulkProcessor, SimulationBackgroundRunner
 
 
 class Simulation(object):
+    #initial_time = Tuesday 1st January 2013 12:00:00
     def __init__(self,initial_time=1356998400,copyconstructed=False):
 
         if copyconstructed:
             return
-         # initialize real-time environment
+        # initialize real-time environment
+        if initial_time % 3600 != 0.0 :
+            #ensure that initial_time always at full hour, to avoid measurement bug
+            initial_time = (int(initial_time) / 3600) * 3600.0 
         self.env = ForwardableRealtimeEnvironment(initial_time=initial_time)
 
         # initialize power systems
@@ -86,4 +90,48 @@ class Simulation(object):
         self.bulk_processor = BulkProcessor(
             self.env, [self.code_executer, self.cu, self.plb, self.heat_storage, self.thermal_consumer, self.electrical_consumer])
         self.env.process(self.bulk_processor.loop())
+    
+    def get_total_bilance(self):
+        return self.cu.get_operating_costs() + self.plb.get_operating_costs() - \
+            self.power_meter.get_reward() + self.power_meter.get_costs()
+    
+    def get_measurements(self, measurements):
+        output = [
+            ('cu_electrical_production',
+             [round(self.cu.current_electrical_production, 2)]),
+            ('cu_total_electrical_production',
+             [round(self.cu.total_electrical_production, 2)]),
+            ('cu_thermal_production', [round(self.cu.current_thermal_production, 2)]),
+            ('cu_total_thermal_production',
+             [round(self.cu.total_thermal_production, 2)]),
+            ('cu_total_gas_consumption', [round(self.cu.total_gas_consumption, 2)]),
+            ('cu_operating_costs', [round(self.cu.get_operating_costs(), 2)]),
+            ('cu_power_ons', [self.cu.power_on_count]),
+            ('cu_total_hours_of_operation',
+             [round(self.cu.total_hours_of_operation, 2)]),
+            ('plb_thermal_production', [round(self.plb.current_thermal_production, 2)]),
+            ('plb_total_gas_consumption', [round(self.plb.total_gas_consumption, 2)]),
+            ('plb_operating_costs', [round(self.plb.get_operating_costs(), 2)]),
+            ('plb_power_ons', [self.plb.power_on_count]),
+            ('plb_total_hours_of_operation',
+             [round(self.plb.total_hours_of_operation, 2)]),
+            ('hs_total_input', [round(self.heat_storage.input_energy, 2)]),
+            ('hs_total_output', [round(self.heat_storage.output_energy, 2)]),
+            ('hs_empty_count', [round(self.heat_storage.empty_count, 2)]),
+            ('total_thermal_consumption',
+             [round(self.thermal_consumer.total_consumption, 2)]),
+            ('total_electrical_consumption',
+             [round(self.electrical_consumer.total_consumption, 2)]),
+            ('infeed_reward', [round(self.power_meter.get_reward(), 2)]),
+            ('infeed_costs', [round(self.power_meter.get_costs(), 2)]),
+            ('total_bilance', [round(self.get_total_bilance(), 2)]),
+            ('code_execution_status',
+             [1 if self.code_executer.execution_successful else 0]) ]
+        
+        output +=  measurements.get()
+        
+    
+        return dict(output)
+        
+    
 

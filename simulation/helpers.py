@@ -1,7 +1,7 @@
 from threading import Thread
 from collections import deque
 
-from flask import make_response
+from flask import make_response, request
 from functools import update_wrapper
 
 

@@ -18,6 +18,9 @@ class SimulationManager:
         sim = self.main_simulation
         self.measurements = MeasurementCache(sim.env, sim.cu, sim.plb, sim.heat_storage,
         sim.thermal_consumer, sim.electrical_consumer)
+        
+        sim.env.register_step_function(self.measurements.take)
+        
         self.thread = None
 
     def simulation_start(self, blocking = False):
@@ -80,4 +83,10 @@ class SimulationManager:
         self.main_simulation.env.forward = seconds
         if self.thread == None or not self.thread.isAlive():
             self.simulation_start(blocking)
+            
+    def get_main_measurements(self):
+        return self.main_simulation.get_measurements(self.measurements)
+            
+
+
         

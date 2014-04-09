@@ -8,18 +8,14 @@ from flask import Flask, jsonify, render_template, request
 from werkzeug.serving import run_simple
 app = Flask(__name__)
 
-from simulation import Simulation
-from helpers import SimulationBackgroundRunner, MeasurementCache, parse_hourly_demand_values
+from helpers import SimulationBackgroundRunner,  parse_hourly_demand_values
+from simulationmanager import SimulationManager
 
-
-simulation = Simulation()
+simulation_manager = SimulationManager(time.time()) #time.time()
 
 (env, heat_storage, power_meter, cu, plb, thermal_consumer,
- electrical_consumer, code_executer) = simulation.get_systems()
+ electrical_consumer, code_executer) = simulation_manager.main_simulation.get_systems()
 
-# initialize MeasurementCache
-measurements = MeasurementCache(
-    env, cu, plb, heat_storage, thermal_consumer, electrical_consumer)
 
 
 @app.route('/')
@@ -29,7 +25,7 @@ def index():
 
 @app.route('/api/data/', methods=['GET'])
 def get_data():
-    return jsonify(get_measurements())
+    return jsonify(simulation_manager.get_main_measurements())
 
 
 @app.route('/api/code/', methods=['GET', 'POST'])
@@ -111,8 +107,6 @@ def handle_settings():
 def handle_simulation():
     if 'forward' in request.form and request.form['forward'] != "":
         env.forward = float(request.form['forward']) * 60 * 60
-    if 'reset' in request.form:
-        reset_simulation()
     if 'export' in request.form:
         if export_data(request.form['export']):
             return "1"
@@ -121,26 +115,9 @@ def handle_simulation():
     return "1"
 
 
-def reset_simulation():
-    global env, heat_storage, power_meter, cu, plb, thermal_consumer, electrical_consumer, code_executer, measurements
-    env.stop()
-    
-    simulation = Simulation()
-    (env, heat_storage, power_meter, cu, plb, thermal_consumer,
-     electrical_consumer, code_executer) = simulation.get_systems()
-
-    measurements = MeasurementCache(
-        env, cu, plb, heat_storage, thermal_consumer, electrical_consumer)
-
-    env.register_step_function(measurements.take)
-    
-    thread = SimulationBackgroundRunner(env)
-    thread.start()
-
-
 def export_data(filename):
     if os.path.splitext(filename)[1] == ".json":
-        data = get_measurements()
+        data = simulation_manager.get_main_measurements()
         for key in data:
             data[key] = data[key][-1]
         data = json.dumps(data, sort_keys=True, indent=4)
@@ -151,51 +128,13 @@ def export_data(filename):
     return False
 
 
-def get_measurements():
-    output = [
-        ('cu_electrical_production',
-         [round(cu.current_electrical_production, 2)]),
-        ('cu_total_electrical_production',
-         [round(cu.total_electrical_production, 2)]),
-        ('cu_thermal_production', [round(cu.current_thermal_production, 2)]),
-        ('cu_total_thermal_production',
-         [round(cu.total_thermal_production, 2)]),
-        ('cu_total_gas_consumption', [round(cu.total_gas_consumption, 2)]),
-        ('cu_operating_costs', [round(cu.get_operating_costs(), 2)]),
-        ('cu_power_ons', [cu.power_on_count]),
-        ('cu_total_hours_of_operation',
-         [round(cu.total_hours_of_operation, 2)]),
-        ('plb_thermal_production', [round(plb.current_thermal_production, 2)]),
-        ('plb_total_gas_consumption', [round(plb.total_gas_consumption, 2)]),
-        ('plb_operating_costs', [round(plb.get_operating_costs(), 2)]),
-        ('plb_power_ons', [plb.power_on_count]),
-        ('plb_total_hours_of_operation',
-         [round(plb.total_hours_of_operation, 2)]),
-        ('hs_total_input', [round(heat_storage.input_energy, 2)]),
-        ('hs_total_output', [round(heat_storage.output_energy, 2)]),
-        ('hs_empty_count', [round(heat_storage.empty_count, 2)]),
-        ('total_thermal_consumption',
-         [round(thermal_consumer.total_consumption, 2)]),
-        ('total_electrical_consumption',
-         [round(electrical_consumer.total_consumption, 2)]),
-        ('infeed_reward', [round(power_meter.get_reward(), 2)]),
-        ('infeed_costs', [round(power_meter.get_costs(), 2)]),
-        ('total_bilance', [round(get_total_bilance(), 2)]),
-        ('code_execution_status',
-         [1 if code_executer.execution_successful else 0])
-    ] + measurements.get()
-
-    return dict(output)
 
 
-def get_total_bilance():
-    return cu.get_operating_costs() + plb.get_operating_costs() - \
-        power_meter.get_reward() + power_meter.get_costs()
+
 
 
 if __name__ == '__main__':
 
-    env.register_step_function(measurements.take)
 
     if "profile" in sys.argv:
         import cProfile
@@ -209,8 +148,7 @@ if __name__ == '__main__':
         env.run()
         print time.time() - start
     else:
-        thread = SimulationBackgroundRunner(env)
-        thread.start()
+        simulation_manager.simulation_start()
         if "debug" in sys.argv:
             app.run('0.0.0.0', 8080, debug=True, use_reloader=False)
         else:
