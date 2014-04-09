@@ -1,64 +1,116 @@
 var refresh_gui = true;
 var editor = null;
 
+var forecasting_interval = 24 * 15;
+
 var series_data = [{
-    name: 'cu_workload',
-    data: [],
-    tooltip: {
-        valueSuffix: ' %'
-    }
+        name: 'cu_workload',
+        data: [],
+        tooltip: {
+            valueSuffix: ' %'
+        }
 }, {
-    name: 'plb_workload',
-    data: [],
-    tooltip: {
-        valueSuffix: ' %'
-    }
+        name: 'plb_workload',
+        data: [],
+        tooltip: {
+            valueSuffix: ' %'
+        }
 }, {
-    name: 'hs_temperature',
-    data: [],
-    tooltip: {
-        valueSuffix: ' °C'
-    }
+        name: 'hs_temperature',
+        data: [],
+        tooltip: {
+            valueSuffix: ' °C'
+        }
 }, {
-    name: 'thermal_consumption',
-    data: [],
-    tooltip: {
-        valueSuffix: ' kW'
-    }
+        name: 'thermal_consumption',
+        data: [],
+        tooltip: {
+            valueSuffix: ' kW'
+        }
 }, {
-    name: 'warmwater_consumption',
-    data: [],
-    tooltip: {
-        valueSuffix: ' kW'
-    }
+        name: 'warmwater_consumption',
+        data: [],
+        tooltip: {
+            valueSuffix: ' kW'
+        }
 }, {
-    name: 'outside_temperature',
-    data: [],
-    tooltip: {
-        valueSuffix: ' °C'
-    }
+        name: 'outside_temperature',
+        data: [],
+        tooltip: {
+            valueSuffix: ' °C'
+        }
 }, {
-    name: 'electrical_consumption',
-    data: [],
-    tooltip: {
-        valueSuffix: ' kW'
-    }
+        name: 'electrical_consumption',
+        data: [],
+        tooltip: {
+            valueSuffix: ' kW'
+        }
+},
+    {
+        name: 'cu_workload_forecasting',
+        data: [],
+        dashStyle: 'longdash',
+        tooltip: {
+            valueSuffix: ' %'
+        }
+}, {
+        name: 'plb_workload_forecasting',
+        data: [],
+        dashStyle: 'longdash',
+        tooltip: {
+            valueSuffix: ' %'
+        }
+}, {
+        name: 'hs_temperature_forecasting',
+        data: [],
+        dashStyle: 'longdash',
+        tooltip: {
+            valueSuffix: ' °C'
+        }
+}, {
+        name: 'thermal_consumption_forecasting',
+        data: [],
+        dashStyle: 'longdash',
+        tooltip: {
+            valueSuffix: ' kW'
+        }
+}, {
+        name: 'warmwater_consumption_forecasting',
+        data: [],
+        tooltip: {
+            valueSuffix: ' kW'
+        }
+}, {
+        name: 'outside_temperature_forecasting',
+        data: [],
+        dashStyle: 'longdash',
+        tooltip: {
+            valueSuffix: ' °C'
+        }
+}, {
+        name: 'electrical_consumption_forecasting',
+        data: [],
+        dashStyle: 'longdash',
+        tooltip: {
+            valueSuffix: ' kW'
+        }
 }];
 
+
 // READY
-$(function() {
+$(function () {
     initialize_editor();
     initialize_svg();
     initialize_hourly_demands();
     initialize_event_handlers();
 
-    $.getJSON("./api/settings/", function(data) {
+    $.getJSON("./api/settings/", function (data) {
         update_setting(data);
-    }).done(function() {
-        $.getJSON("./api/code/", function(data) {
+    }).done(function () {
+        $.getJSON("./api/code/", function (data) {
             editor.setValue(data['editor_code'], 1);
-        }).done(function() {
-            $.getJSON("./api/data/", function(data) {
+        }).done(function () {
+            $.getJSON("./api/data/", function (data) {
                 for (var i = 0; i < data['time'].length; i++) {
                     var timestamp = get_timestamp(data['time'][i]);
                     series_data[0]['data'].push([timestamp, parseFloat(data['cu_workload'][i])]);
@@ -68,11 +120,28 @@ $(function() {
                     series_data[4]['data'].push([timestamp, parseFloat(data['warmwater_consumption'][i])]);
                     series_data[5]['data'].push([timestamp, parseFloat(data['outside_temperature'][i])]);
                     series_data[6]['data'].push([timestamp, parseFloat(data['electrical_consumption'][i])]);
+
                 };
-            }).done(function() {
+                var help = data['time'].length;
+                timestamp_new = get_timestamp(data['time'][help - 1]);
+                var interval = Math.min(forecasting_interval, data['time'].length);
+                for (var i = 1; i <= interval; i++) {
+                    var timestamp_new = get_timestamp(data['time'][data['time'].length - 1]) + i * 60 * 60 * 1000;
+                    var calculated_i = data['time'].length - 1 - interval + i;
+
+                    series_data[7]['data'].push([timestamp_new, parseFloat(data['cu_workload'][calculated_i])]);
+                    series_data[8]['data'].push([timestamp_new, parseFloat(data['plb_workload'][calculated_i])]);
+                    series_data[9]['data'].push([timestamp_new, parseFloat(data['hs_temperature'][calculated_i])]);
+                    series_data[10]['data'].push([timestamp_new, parseFloat(data['thermal_consumption'][calculated_i])]);
+                    series_data[11]['data'].push([timestamp_new, parseFloat(data['warmwater_consumption'][calculated_i])]);
+                    series_data[12]['data'].push([timestamp_new, parseFloat(data['outside_temperature'][calculated_i])]);
+                    series_data[13]['data'].push([timestamp_new, parseFloat(data['electrical_consumption'][calculated_i])]);
+                };
+
+            }).done(function () {
                 initialize_diagram();
                 // set up refresh loop
-                setInterval(function() {
+                setInterval(function () {
                     refresh();
                 }, 2000);
             });
@@ -83,7 +152,7 @@ $(function() {
 // UPDATING
 function refresh() {
     if (refresh_gui) {
-        $.getJSON("./api/data/", function(data) {
+        $.getJSON("./api/data/", function (data) {
             update_setup(data);
             update_diagram(data);
         });
@@ -91,27 +160,27 @@ function refresh() {
 }
 
 function update_setup(data) {
-    $.each(data, function(key, value) {
+    $.each(data, function (key, value) {
         value = value[value.length - 1];
         var item = $('.' + key);
         if (item.length) { // check if item exists
             switch (key) {
-                case "time":
-                    item.text(format_date(new Date(parseFloat(value) * 1000)));
-                    break;
-                case "code_execution_status":
-                    if (value == 1) {
-                        item.removeClass('badge-danger');
-                        item.addClass('badge-success');
-                        item.text('OK');
-                    } else {
-                        item.removeClass('badge-success');
-                        item.addClass('badge-danger');
-                        item.text('Fail');
-                    }
-                    break;
-                default:
-                    item.text(value + " " + systems_units[key]);
+            case "time":
+                item.text(format_date(new Date(parseFloat(value) * 1000)));
+                break;
+            case "code_execution_status":
+                if (value == 1) {
+                    item.removeClass('badge-danger');
+                    item.addClass('badge-success');
+                    item.text('OK');
+                } else {
+                    item.removeClass('badge-success');
+                    item.addClass('badge-danger');
+                    item.text('Fail');
+                }
+                break;
+            default:
+                item.text(value + " " + systems_units[key]);
             }
         }
     });
@@ -121,6 +190,13 @@ function update_diagram(data) {
     var chart = $('#simulation_diagram').highcharts();
 
     new_data = [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
         [],
         [],
         [],
@@ -139,6 +215,22 @@ function update_diagram(data) {
         new_data[5].push([timestamp, data['outside_temperature'][i]]);
         new_data[6].push([timestamp, data['electrical_consumption'][i]]);
     };
+    var interval = Math.min(forecasting_interval, data['time'].length);
+    for (var i = 1; i <= interval; i++) {
+        var timestamp_new = get_timestamp(data['time'][data['time'].length - 1]) + i * 60 * 60 * 1000;
+        var calculated_i = data['time'].length - 1 - interval + i;
+
+
+        new_data[7].push([timestamp_new, data['cu_workload'][calculated_i]]);
+        new_data[8].push([timestamp_new, data['plb_workload'][calculated_i]]);
+        new_data[9].push([timestamp_new, data['hs_temperature'][calculated_i]]);
+        new_data[10].push([timestamp_new, data['thermal_consumption'][calculated_i]]);
+        new_data[11].push([timestamp_new, data['warmwater_consumption'][calculated_i]]);
+        new_data[12].push([timestamp_new, data['outside_temperature'][calculated_i]]);
+        new_data[13].push([timestamp_new, data['electrical_consumption'][calculated_i]]);
+    };
+
+
 
     for (var i = new_data.length - 1; i >= 0; i--) {
         chart.series[i].setData(new_data[i], false);
@@ -148,31 +240,31 @@ function update_diagram(data) {
 }
 
 function update_setting(data) {
-    $.each(data, function(key, value) {
+    $.each(data, function (key, value) {
         switch (key) {
-            case "daily_thermal_demand":
-                $.each(value, function(index, hour_value) {
-                    $("#daily_thermal_demand_" + index).slider("value", hour_value * 100);
-                });
-                break;
-            case "daily_electrical_variation":
-                $.each(value, function(index, hour_value) {
-                    $("#daily_electrical_variation_" + index).slider("value", hour_value * 10000);
-                });
-                break;
-            case "cu_mode":
-                if (value == 0)
-                    $("#cu_mode_thermal_driven").attr('checked', true);
-                else
-                    $("#cu_mode_electrical_driven").attr('checked', true);
-                break;
-            case "code_snippets":
-                $.each(value, function(index, snippet_name) {
-                    $("#snippets").append('<option>' + snippet_name + '</option>');
-                });
-                break;
-            default:
-                $("#form_" + key).val(value);
+        case "daily_thermal_demand":
+            $.each(value, function (index, hour_value) {
+                $("#daily_thermal_demand_" + index).slider("value", hour_value * 100);
+            });
+            break;
+        case "daily_electrical_variation":
+            $.each(value, function (index, hour_value) {
+                $("#daily_electrical_variation_" + index).slider("value", hour_value * 10000);
+            });
+            break;
+        case "cu_mode":
+            if (value == 0)
+                $("#cu_mode_thermal_driven").attr('checked', true);
+            else
+                $("#cu_mode_electrical_driven").attr('checked', true);
+            break;
+        case "code_snippets":
+            $.each(value, function (index, snippet_name) {
+                $("#snippets").append('<option>' + snippet_name + '</option>');
+            });
+            break;
+        default:
+            $("#form_" + key).val(value);
         }
     });
 }
@@ -187,9 +279,9 @@ function initialize_editor() {
         enableBasicAutocompletion: true,
         enableSnippets: true
     });
-    ace.config.loadModule('ace/snippets/snippets', function() {
+    ace.config.loadModule('ace/snippets/snippets', function () {
         var snippetManager = ace.require('ace/snippets').snippetManager;
-        ace.config.loadModule('ace/snippets/python', function(m) {
+        ace.config.loadModule('ace/snippets/python', function (m) {
             if (m) {
                 m.snippets = m.snippets.concat(custom_snippets);
                 snippetManager.register(m.snippets, m.scope);
@@ -199,7 +291,7 @@ function initialize_editor() {
 }
 
 function initialize_svg() {
-    $.get("./static/img/simulation.svg", function(data) {
+    $.get("./static/img/simulation.svg", function (data) {
         var svg_item = document.importNode(data.documentElement, true);
         $("#simulation_setup").append(svg_item);
     }, "xml");
@@ -218,11 +310,11 @@ function initialize_hourly_demands() {
         range: "min",
         animate: true,
         orientation: "vertical",
-        slide: function(event, ui) {
+        slide: function (event, ui) {
             var text = "(Current value: " + ui.value / 100 + "C)";
             $("#daily_thermal_demand_info").text(text);
         },
-        stop: function(event, ui) {
+        stop: function (event, ui) {
             $("#daily_thermal_demand_info").text('');
         }
     });
@@ -234,18 +326,18 @@ function initialize_hourly_demands() {
         range: "min",
         animate: true,
         orientation: "vertical",
-        slide: function(event, ui) {
+        slide: function (event, ui) {
             var text = "(Current value: " + ui.value / 100 + "%)";
             $("#daily_electrical_variation_info").text(text);
         },
-        stop: function(event, ui) {
+        stop: function (event, ui) {
             $("#daily_electrical_variation_info").text('');
         }
     });
 }
 
 function initialize_event_handlers() {
-    $("#settings").submit(function(event) {
+    $("#settings").submit(function (event) {
         var post_data = $("#settings").serialize();
         for (var i = 0; i < 24; i++) {
             post_data += "&daily_thermal_demand_" + i + "=" + ($("#daily_thermal_demand_" + i).slider("value") / 100);
@@ -253,11 +345,11 @@ function initialize_event_handlers() {
         for (var i = 0; i < 24; i++) {
             post_data += "&daily_electrical_variation_" + i + "=" + ($("#daily_electrical_variation_" + i).slider("value") / 10000);
         }
-        $.post("./api/settings/", post_data, function(data) {
+        $.post("./api/settings/", post_data, function (data) {
             $("#settings_button").removeClass("btn-primary");
             $("#settings_button").addClass("btn-success");
             update_setting(data);
-            setTimeout(function() {
+            setTimeout(function () {
                 $("#settings_button").removeClass("btn-success");
                 $("#settings_button").addClass("btn-primary");
             }, 500);
@@ -265,22 +357,22 @@ function initialize_event_handlers() {
         event.preventDefault();
     });
 
-    $(".fast_forward_button").click(function(event) {
+    $(".fast_forward_button").click(function (event) {
         $.post("./api/simulation/", {
             forward: $(this).val()
         });
     });
 
-    $("#editor_button").click(function() {
+    $("#editor_button").click(function () {
         $.post("./api/settings/", {
             code: editor.getValue(),
             password: $('#password').val()
-        }, function(data) {
+        }, function (data) {
             editor.setValue(data['editor_code'], 1);
         });
     });
 
-    $("#pause_refresh").click(function(event) {
+    $("#pause_refresh").click(function (event) {
         refresh_gui = !refresh_gui;
         if (refresh_gui) {
             $("#pause_refresh span").removeClass('glyphicon-pause');
@@ -293,24 +385,24 @@ function initialize_event_handlers() {
         event.preventDefault();
     });
 
-    $("#reset_simulation").click(function(event) {
+    $("#reset_simulation").click(function (event) {
         $.post("./api/simulation/", {
             reset: 1
         });
         // location.reload(true);
     });
 
-    $("#save_snippet").submit(function(event) {
+    $("#save_snippet").submit(function (event) {
         $.post("./api/code/", {
             save_snippet: $("#snippet_name").val(),
             code: editor.getValue()
-        }, function(data) {
+        }, function (data) {
             editor.setValue(data['editor_code'], 1);
 
             // refresh snippet list
             if ('code_snippets' in data) {
                 $("#snippets").html('');
-                $.each(data['code_snippets'], function(index, snippet_name) {
+                $.each(data['code_snippets'], function (index, snippet_name) {
                     $("#snippets").append('<option>' + snippet_name + '</option>');
                 });
             }
@@ -318,16 +410,16 @@ function initialize_event_handlers() {
         event.preventDefault();
     });
 
-    $("#load_snippet").submit(function(event) {
+    $("#load_snippet").submit(function (event) {
         $.post("./api/code/", {
             snippet: $("#snippets").val()
-        }, function(data) {
+        }, function (data) {
             editor.setValue(data['editor_code'], 1);
         });
         event.preventDefault();
     });
 
-    $("#export_data").submit(function(event) {
+    $("#export_data").submit(function (event) {
         $.post("./api/simulation/", {
             export: $("#export_name").val()
         });
