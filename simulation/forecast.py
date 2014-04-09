@@ -16,7 +16,9 @@ class Forecast:
         self.forecast_temperatures_daily = []
 
     def get_weather_forecast(self,hourly = True):
-        if self.forecast_query_date!=None and self.forecast_query_date - self.get_date() < 60 * 30 : #only permit forecast queries every 30min, to save some api requests
+        if self.forecast_query_date!=None and \
+        self.forecast_query_date - self.get_date() < 60 * 30 : 
+        #only permit forecast queries every 30min, to save some api requests
             if hourly and self.forecast_temperatures_3hourly != []:
                 return self.forecast_temperatures_3hourly
             elif not hourly and self.forecast_temperatures_daily != []:
