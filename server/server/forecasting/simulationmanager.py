@@ -47,16 +47,17 @@ class SimulationManager:
     """
     def forecast_for(self, seconds,blocking=False,pre_start_callback=None, copy_sim=None):
 
-        t0 = time.time()
+        
         if copy_sim != None:
             new_sim = Simulation.copyconstruct(copy_sim)
         else:
             new_sim = Simulation.copyconstruct(self.main_simulation)
-        print "time for copying a new simulation: ", time.time() - t0, " seconds"
+        
 
 
         measurements = MeasurementCache(new_sim.env, new_sim.cu, new_sim.plb, new_sim.heat_storage,
         new_sim.thermal_consumer, new_sim.electrical_consumer)
+        new_sim.env.register_step_function(measurements.take)
 
         new_sim.env.forward = seconds
         new_sim.env.stop_after_forward = True
@@ -65,7 +66,9 @@ class SimulationManager:
             thread = SimulationBackgroundRunner(new_sim.env)
             thread.start()
         else:
+            t0 = time.time()
             new_sim.env.run()
+            print "time for blocking forecast: ", time.time() - t0, " seconds. simulated hours: ", seconds / (60.0 * 60.0)
 
         return (new_sim, measurements)
     

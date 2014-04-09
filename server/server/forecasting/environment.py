@@ -56,12 +56,17 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         # call step_function whenever time has changed
         if self.now > self.last_step and self.step_function is not None:
             self.last_step = self.now
-            self.step_function(self.step_function_kwarguments)
+            if self.step_function_kwarguments != {}:
+                self.step_function(self.step_function_kwarguments)
+            else:
+                self.step_function()
 
     def get_day_of_year(self):
         return time.gmtime(self.now).tm_yday
     
     
     def register_step_function(self, function, kwargs={}):
+        if self.step_function != None:
+            print "overwriting existing step_function ", self.step_function, " !"
         self.step_function = function
         self.step_function_kwarguments = kwargs

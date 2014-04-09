@@ -13,25 +13,26 @@ class RuleStrategy(object):
     def __init__(self, env, simulation_manager):
         self.env = env
         self.simulation_manager = simulation_manager
+        #try not to use plb
+        self.simulation_manager.main_simulation.plb.overwrite_workload = 0.0
 
-
-    #priorities:
-    #1 ensure heatstorage 
 
     def validate_heatstorage_fill(self):
-        #prerequisites: None --> use last settings
         #forecast for one week
         (sim,measurements) = self.simulation_manager.forecast_for(FORECAST_TIME, blocking=True)
-                #can cu run on this settings for next week?
-        if measurements.get_last("hs_temperature") < sim.heatstorage.min_temp:
-            #step1: set up full power run
+        last_temp = measurements.get_last("hs_temperature")
+        
+        if last_temp < sim.heat_storage.min_temperature:
             print "under temp"
-
 
             def sim_settings(sim):
                 sim.cu.overwrite_workload=100.0
     
             (sim1,measurements1) = self.simulation_manager.forecast_for(FORECAST_TIME, blocking=True, pre_start_callback=sim_settings)
+            
+            
+            
+            
             
     def step_function(self):
         if self.env.now % (60 * 60 * 24 * 3) == 0.0:

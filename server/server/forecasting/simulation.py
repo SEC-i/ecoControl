@@ -33,7 +33,7 @@ class Simulation(object):
 
         self.initialize_helpers()
 
-
+    """returns a copy of the simulation, starting at the timepoint of the old simulation""" 
     @classmethod
     def copyconstruct(cls, old_sim):
         new_sim = Simulation(copyconstructed=True)

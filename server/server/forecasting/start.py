@@ -193,7 +193,7 @@ def get_total_bilance():
 
 if __name__ == '__main__':
 
-    env.step_function = measurements.take
+    env.register_step_function(measurements.take)
 
     if "profile" in sys.argv:
         import cProfile

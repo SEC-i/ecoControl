@@ -61,8 +61,12 @@ class MeasurementCache():
         return output
 
     def get_last(self, value):
-        index = self.data.index(value)
-        return self.data[index][-1] #return newest item
+        index = self.values.index(value)
+        if len(self.data[index]) > 0:
+            print len(self.data[index])
+            return self.data[index][-1] #return newest item
+        else:
+            return None
 
 
     def clear(self):

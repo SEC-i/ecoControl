@@ -32,7 +32,7 @@ class Plotting(object):
         rule_strategy = RuleStrategy(env, self.simulation_manager)
         
         #supply environment with measurement function
-        env.register_step_function(self.measure_function, {"env" : env, "measurement_cache" : measurements, "data" : data, "rule_strategy": rule_strategy})
+        env.register_step_function(self.step_function, {"env" : env, "measurement_cache" : measurements, "data" : data, "rule_strategy" : rule_strategy})
 
         while env.forward > 0 :
             time.sleep(0.2)
@@ -49,6 +49,7 @@ class Plotting(object):
         if "rule_strategy" in kwargs:
             rule_strategy = kwargs["rule_strategy"]
             rule_strategy.step_function()
+
         
     
     def measure_function(self,kwargs):
