@@ -21,16 +21,16 @@ class ThermalConsumerTests(unittest.TestCase):
         energy wird aus dem Heatstorage entnommen
         '''
     '''def test_simulate_consumption(self):
-        # sets self.target_temperature(the demand of warmth)
+        #x sets self.target_temperature(the demand of warmth)
         # dependent on the current time
-        # sets self.room_power power,
-        # the current power of the heating of the room
+        #x sets self.room_power power,
+        #x the current power of the heating of the room
 
         # self.calculate_room_temperature()
         #    #sets self.temperature_room
 
-        # sets self.current_power
-        # encreases the current power if its too cold, else decreases
+        #x sets self.current_power 
+        #x encreases the current power if its too cold, else decreases
         it'''
     
     def test_simulate_consumption_increase_current_power(self):
@@ -61,7 +61,7 @@ class ThermalConsumerTests(unittest.TestCase):
         
     def test_simulate_consumption_room_power(self):
         ''' self.room_power is the power, depending on the desired power
-        and the cooling of the room.
+        and _the cooling of the room.
         room_power is the last ideal power reduced by the energyloss of a room 
         it determines the actual temperature in the room.
         '''
@@ -73,12 +73,56 @@ class ThermalConsumerTests(unittest.TestCase):
         self.assertLessEqual(self.consumer.room_power, last_current_power)
                 
     
-        '''def test_temperature_room(self):
-        # during simulate_consumption
-        # set by calculate_room_temperature
-        # depends on room_power,
-        # heat capacity
-        # time delta'''
+    def test_calculate_room_temperature_considers_room_power(self):
+        ''' The room_temperature depends on
+        the room_power,
+        the passed time between the steps and the
+        room_temperature. If one of the parameter is changed, 
+        the temperature will change.'''   
+        
+        first_result = self.calculate_room_temperature_with_parameters(
+            room_power=20, step_size=20, temperature=20)        
+        second_result = self.calculate_room_temperature_with_parameters(
+            room_power=30, step_size=20, temperature=20) 
+        self.assertNotEqual(first_result, second_result)
+        
+    def test_calculate_room_temperature_considers_step_size(self):
+        ''' The room_temperature depends on
+        the room_power,
+        the passed time between the steps and the
+        room_temperature. If one of the parameter is changed, 
+        the temperature will change.'''    
+        
+        first_result = self.calculate_room_temperature_with_parameters(
+            room_power=20, step_size=20, temperature=20)        
+        second_result = self.calculate_room_temperature_with_parameters(
+            room_power=20, step_size=30, temperature=20) 
+        self.assertNotEqual(first_result, second_result)
+        
+    def test_calculate_room_temperature_considers_room_temperature(self):
+        ''' The room_temperature depends on
+        the room_power,
+        the passed time between the steps and the
+        room_temperature. If one of the parameter is changed, 
+        the temperature will change.'''  
+          
+        
+        first_result = self.calculate_room_temperature_with_parameters(
+            room_power=20, step_size=20, temperature=20)        
+        second_result = self.calculate_room_temperature_with_parameters(
+            room_power=20, step_size=20, temperature=30) 
+        self.assertNotEqual(first_result, second_result)
+        
+    def calculate_room_temperature_with_parameters(self, room_power=0, 
+                step_size=10, temperature=20 ):
+        self.consumer.room_power = room_power
+        self.consumer.env.step_size = step_size
+        self.consumer.temperature_room = temperature
+        
+        self.consumer.calculate_room_temperature()
+        
+        return self.consumer.temperature_room
+        
         
     def test_target_temperature_simulate_consumption(self):
         '''the target temperature of the consumer should be set
