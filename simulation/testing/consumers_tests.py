@@ -20,18 +20,13 @@ class ThermalConsumerTests(unittest.TestCase):
         total_consumption wird erhoeht
         energy wird aus dem Heatstorage entnommen
         '''
-    '''def test_simulate_consumption(self):
-        #x sets self.target_temperature(the demand of warmth)
-        # dependent on the current time
-        #x sets self.room_power power,
-        #x the current power of the heating of the room
-
-        # self.calculate_room_temperature()
-        #    #sets self.temperature_room
-
-        #x sets self.current_power 
-        #x encreases the current power if its too cold, else decreases
-        it'''
+    
+    def test_get_warmwater_consumption_power(self):
+        ''' number of residents.
+        consumption dependent from week and weekend
+        .. and a consumer class own interpolation method.
+        '''    
+    
     
     def test_simulate_consumption_increase_current_power(self):
         '''the current_power should be increased if the current temperature 
@@ -105,8 +100,7 @@ class ThermalConsumerTests(unittest.TestCase):
         the passed time between the steps and the
         room_temperature. If one of the parameter is changed, 
         the temperature will change.'''  
-          
-        
+                  
         first_result = self.calculate_room_temperature_with_parameters(
             room_power=20, step_size=20, temperature=20)        
         second_result = self.calculate_room_temperature_with_parameters(
@@ -144,7 +138,10 @@ class ThermalConsumerTests(unittest.TestCase):
             consumer.simulate_consumption()
 
             expected_temperature = daily_demand[current_time]
-            self.assertEqual(consumer.target_temperature, expected_temperature)
+            self.assertEqual(consumer.target_temperature, expected_temperature,
+                "current hour: {0} expected: {1} got: {2}".format(
+                    current_time, consumer.target_temperature, 
+                    expected_temperature))
         
         '''def test_calculate_room_temperature(self):
         # sets the room_temperature with respect to
