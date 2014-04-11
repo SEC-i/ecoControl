@@ -2,7 +2,8 @@ var refresh_gui = true;
 var editor = null;
 
 var colors = ['#2f7ed8', '#0d233a', '#8bbc21', '#910000', '#1aadce', '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a'];
-var forecast_colors = ['#225999', '#000000', '#5c7d16', '#520000', '#13788f', '#201230', '#b36a32', '#5675a6', '#851919', '#728a49'];
+var forecast_colors = ['#3895ff', '#153a61', '#a8e329', '#b80000', '#20cef5', '#623896', '#ffa561', '#9ac1ff', '#eb2d2d', '#c6f07f'];
+var unsaved_colors = ['#225999', '#000000', '#5c7d16', '#520000', '#13788f', '#201230', '#b36a32', '#5675a6', '#851919', '#728a49'];
 
 var series_data = [{
         name: 'cu_workload',
@@ -57,59 +58,123 @@ var series_data = [{
     {
         name: 'cu_workload_forecasting',
         data: [],
-        color: colors[0],
-        dashStyle: 'longdash',
+        color: forecast_colors[0],
+        dashStyle: 'shortdash',
         tooltip: {
             valueSuffix: ' %'
         }
 }, {
         name: 'plb_workload_forecasting',
         data: [],
-        color: colors[1],
-        dashStyle: 'longdash',
+        color: forecast_colors[1],
+        dashStyle: 'shortdash',
         tooltip: {
             valueSuffix: ' %'
         }
 }, {
         name: 'hs_temperature_forecasting',
         data: [],
-        color: colors[2],
-        dashStyle: 'longdash',
+        color: forecast_colors[2],
+        dashStyle: 'shortdash',
         tooltip: {
             valueSuffix: ' °C'
         }
 }, {
         name: 'thermal_consumption_forecasting',
         data: [],
-        color: colors[3],
-        dashStyle: 'longdash',
+        color: forecast_colors[3],
+        dashStyle: 'shortdash',
         tooltip: {
             valueSuffix: ' kW'
         }
 }, {
         name: 'warmwater_consumption_forecasting',
         data: [],
-        color: colors[4],
+        color: forecast_colors[4],
         tooltip: {
             valueSuffix: ' kW'
         }
 }, {
         name: 'outside_temperature_forecasting',
         data: [],
-        color: colors[5],
-        dashStyle: 'longdash',
+        color: forecast_colors[5],
+        dashStyle: 'shortdash',
         tooltip: {
             valueSuffix: ' °C'
         }
 }, {
         name: 'electrical_consumption_forecasting',
         data: [],
-        color: colors[6],
+        color: forecast_colors[6],
+        dashStyle: 'shortdash',
+        tooltip: {
+            valueSuffix: ' kW'
+        }
+}, {
+        name: 'cu_workload_forecasting_unsaved',
+        data: [],
+        color: unsaved_colors[0],
+        visible: false,
+        dashStyle: 'longdash',
+        tooltip: {
+            valueSuffix: ' %'
+        }
+}, {
+        name: 'plb_workload_forecasting_unsaved',
+        data: [],
+        color: unsaved_colors[1],
+        visible: false,
+        dashStyle: 'longdash',
+        tooltip: {
+            valueSuffix: ' %'
+        }
+}, {
+        name: 'hs_temperature_forecasting_unsaved',
+        data: [],
+        color: unsaved_colors[2],
+        visible: false,
+        dashStyle: 'longdash',
+        tooltip: {
+            valueSuffix: ' °C'
+        }
+}, {
+        name: 'thermal_consumption_forecasting_unsaved',
+        data: [],
+        color: unsaved_colors[3],
+        visible: false,
         dashStyle: 'longdash',
         tooltip: {
             valueSuffix: ' kW'
         }
-}];
+}, {
+        name: 'warmwater_consumption_forecasting_unsaved',
+        data: [],
+        color: unsaved_colors[4],
+        visible: false,
+        dashStyle: 'longdash',
+        tooltip: {
+            valueSuffix: ' kW'
+        }
+}, {
+        name: 'outside_temperature_forecasting_unsaved',
+        data: [],
+        color: unsaved_colors[5],
+        visible: false,
+        dashStyle: 'longdash',
+        tooltip: {
+            valueSuffix: ' °C'
+        }
+}, {
+        name: 'electrical_consumption_forecasting_unsaved',
+        data: [],
+        color: unsaved_colors[6],
+        visible: false,
+        dashStyle: 'longdash',
+        tooltip: {
+            valueSuffix: ' kW'
+        }
+}
+]
 
 
 // READY
@@ -154,7 +219,7 @@ $(function () {
                 // set up refresh loop
                 setInterval(function () {
                     refresh();
-                }, 2000);
+                }, 3000);
             });
         });
     });
@@ -171,6 +236,7 @@ function refresh() {
 }
 
 function update_setup(data) {
+    data = data['current'];
     $.each(data, function (key, value) {
         value = value[value.length - 1];
         var item = $('.' + key);
@@ -250,84 +316,33 @@ function update_diagram(data) {
 
 function update_forecast(data){
     var chart = $('#simulation_diagram').highcharts();
-    console.log(chart.series.length);
-    for(var i = chart.series.length - 15; i > 0; i--){
-        chart.series[chart.series.length - 1].remove();
-    }
-    console.log(chart.series.length);
 
-    var forecast_series = [{
-                name: 'cu_workload_forecasting_unsaved',
-                data: [],
-                color: forecast_colors[0],
-                dashStyle: 'shortdash',
-                tooltip: {
-                    valueSuffix: ' %'
-                }
-        }, {
-                name: 'plb_workload_forecasting_unsaved',
-                data: [],
-                color: forecast_colors[1],
-                dashStyle: 'shortdash',
-                tooltip: {
-                    valueSuffix: ' %'
-                }
-        }, {
-                name: 'hs_temperature_forecasting_unsaved',
-                data: [],
-                color: forecast_colors[2],
-                dashStyle: 'shortdash',
-                tooltip: {
-                    valueSuffix: ' °C'
-                }
-        }, {
-                name: 'thermal_consumption_forecasting_unsaved',
-                data: [],
-                color: forecast_colors[3],
-                dashStyle: 'shortdash',
-                tooltip: {
-                    valueSuffix: ' kW'
-                }
-        }, {
-                name: 'warmwater_consumption_forecasting_unsaved',
-                data: [],
-                color: forecast_colors[4],
-                dashStyle: 'shortdash',
-                tooltip: {
-                    valueSuffix: ' kW'
-                }
-        }, {
-                name: 'outside_temperature_forecasting_unsaved',
-                data: [],
-                color: forecast_colors[5],
-                dashStyle: 'shortdash',
-                tooltip: {
-                    valueSuffix: ' °C'
-                }
-        }, {
-                name: 'electrical_consumption_forecasting_unsaved',
-                data: [],
-                color: forecast_colors[6],
-                dashStyle: 'shortdash',
-                tooltip: {
-                    valueSuffix: ' kW'
-                }
-        }
-    ]
+    new_data = [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+    ];
+
     for (var i = 0; i < data['time'].length; i++) {
         var timestamp = get_timestamp(data['time'][i]);
-        forecast_series[0]['data'].push([timestamp, data['cu_workload'][i]]);
-        forecast_series[1]['data'].push([timestamp, data['plb_workload'][i]]);
-        forecast_series[2]['data'].push([timestamp, data['hs_temperature'][i]]);
-        forecast_series[3]['data'].push([timestamp, data['thermal_consumption'][i]]);
-        forecast_series[4]['data'].push([timestamp, data['warmwater_consumption'][i]]);
-        forecast_series[5]['data'].push([timestamp, data['outside_temperature'][i]]);
-        forecast_series[6]['data'].push([timestamp, data['electrical_consumption'][i]]);
+        new_data[0].push([timestamp, data['cu_workload'][i]]);
+        new_data[1].push([timestamp, data['plb_workload'][i]]);
+        new_data[2].push([timestamp, data['hs_temperature'][i]]);
+        new_data[3].push([timestamp, data['thermal_consumption'][i]]);
+        new_data[4].push([timestamp, data['warmwater_consumption'][i]]);
+        new_data[5].push([timestamp, data['outside_temperature'][i]]);
+        new_data[6].push([timestamp, data['electrical_consumption'][i]]);
     };
 
-    for (var i = 0; i < forecast_series.length; i++) {
-        chart.addSeries(forecast_series[i], false);
-    }
+    for (var i = 0; i < 7; i++) {
+        chart.series[15+i].setData(new_data[i], false);
+        chart.series[15+i].setVisible(true, false);
+    };
+
     chart.redraw();
 }
 
