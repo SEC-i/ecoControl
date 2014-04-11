@@ -339,8 +339,8 @@ function update_forecast(data){
     };
 
     for (var i = 0; i < 7; i++) {
-        chart.series[15+i].setData(new_data[i], false);
-        chart.series[15+i].setVisible(true, false);
+        chart.series[14+i].setData(new_data[i], false);
+        chart.series[14+i].setVisible(true, false);
     };
 
     chart.redraw();
@@ -462,7 +462,7 @@ function initialize_event_handlers() {
                 var chart = $('#simulation_diagram').highcharts();
                 // hide unsaved forecasts
                 for (var i = 0; i < 7; i++) {
-                    chart.series[15+i].setVisible(false, false);
+                    chart.series[14+i].setVisible(false, false);
                 };
                 chart.redraw();
             }, 500);
