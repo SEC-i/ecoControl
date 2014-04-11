@@ -459,6 +459,12 @@ function initialize_event_handlers() {
             setTimeout(function () {
                 $("#settings_button").removeClass("btn-success");
                 $("#settings_button").addClass("btn-primary");
+                var chart = $('#simulation_diagram').highcharts();
+                // hide unsaved forecasts
+                for (var i = 0; i < 7; i++) {
+                    chart.series[15+i].setVisible(false, false);
+                };
+                chart.redraw();
             }, 500);
         });
         event.preventDefault();
