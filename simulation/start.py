@@ -3,9 +3,9 @@ import os
 import time
 import json
 
-
 from flask import Flask, jsonify, render_template, request
 from werkzeug.serving import run_simple
+from flask_helpers import gzipped
 app = Flask(__name__)
 
 from helpers import SimulationBackgroundRunner,  parse_hourly_demand_values
@@ -23,6 +23,7 @@ def index():
 
 
 @app.route('/api/data/', methods=['GET'])
+@gzipped
 def get_data():
     two_weeks = 3600.0 * 24 * 180
     (sim, measurements) = simulation_manager.forecast_for(
@@ -34,6 +35,7 @@ def get_data():
 
 
 @app.route('/api/forecasts/', methods=['GET', 'POST'])
+@gzipped
 def get_forecast_data():
     two_weeks = 3600.0 * 24 * 180
     if request.method == "POST" and 'forecast_time' in request.form:
