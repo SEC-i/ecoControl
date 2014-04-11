@@ -25,8 +25,49 @@ class ThermalConsumerTests(unittest.TestCase):
         ''' number of residents.
         consumption dependent from week and weekend
         .. and a consumer class own interpolation method.
-        '''    
+        '''
+        #self.consumer.residents
+        #current time aka self.env.now
+        #self.consumer.temperature_warmwater
+        #heat_storage.base_temperature
+
+    def test_get_warmwater_consumption_power_considers_heat_storage_base(self):
+        '''
+        the result should be depending on the base temperature of the
+        heate storage.
+        '''
+        base_temperature = 15
+        first_result = self.get_warmwater_consumption_power_with_parameters(
+            residents=22,
+            time_in_seconds=10,
+            temperature=20,
+            heat_storage_base=base_temperature)
+        
+        base_temperature = 20
+        second_result = self.get_warmwater_consumption_power_with_parameters(
+            residents=22,
+            time_in_seconds=10,
+            temperature=20,
+            heat_storage_base=base_temperature)
+        self.assertNotEqual(first_result, second_result, 
+            "changed base temperature of heat storage didn't result in different warmwater powers.")
     
+    def get_warmwater_consumption_power_with_parameters(self, residents=0, 
+                time_in_seconds=10, temperature=20, heat_storage_base=15):
+        ''' the result depends on the number of residents,
+        the current time aka self.env.now
+        the temperature of warm water and 
+        the base_temperatur of the heat_storage'''
+        self.consumer.residents = residents
+        env = ForwardableRealtimeEnvironment(initial_time=time_in_seconds)
+        self.consumer.env = env   
+        self.consumer.temperature_warmwater = temperature
+        
+        heat_storage = HeatStorage(env)
+        heat_storage.base_temperature = heat_storage_base
+        self.consumer.heat_storage = heat_storage
+        
+        return self.consumer.get_warmwater_consumption_power()
     
     def test_simulate_consumption_increase_current_power(self):
         '''the current_power should be increased if the current temperature 
@@ -112,9 +153,7 @@ class ThermalConsumerTests(unittest.TestCase):
         self.consumer.room_power = room_power
         self.consumer.env.step_size = step_size
         self.consumer.temperature_room = temperature
-        
         self.consumer.calculate_room_temperature()
-        
         return self.consumer.temperature_room
         
         

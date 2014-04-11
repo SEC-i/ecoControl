@@ -72,8 +72,8 @@ class ThermalConsumer():
 
     def step(self):
         self.simulate_consumption()
-        consumption = self.get_consumption_energy(
-        ) + self.get_warmwater_consumption_energy()
+        consumption = self.get_consumption_energy()
+        + self.get_warmwater_consumption_energy()
         self.total_consumption += consumption
         self.heat_storage.consume_energy(consumption)
 
