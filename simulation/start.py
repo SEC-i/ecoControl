@@ -24,7 +24,7 @@ def index():
 
 @app.route('/api/data/', methods=['GET'])
 def get_data():
-    two_weeks = 3600.0 * 24 * 14
+    two_weeks = 3600.0 * 24 * 180
     (sim, measurements) = simulation_manager.forecast_for(
         two_weeks, blocking=True)
     return jsonify({
@@ -35,7 +35,7 @@ def get_data():
 
 @app.route('/api/forecasts/', methods=['GET', 'POST'])
 def get_forecast_data():
-    two_weeks = 3600.0 * 24 * 14
+    two_weeks = 3600.0 * 24 * 180
     if request.method == "POST" and 'forecast_time' in request.form:
         # callback function to set different values on forecasted simulation
 

@@ -478,7 +478,7 @@ function initialize_event_handlers() {
         for (var i = 0; i < 24; i++) {
             post_data += "&daily_electrical_variation_" + i + "=" + ($("#daily_electrical_variation_" + i).slider("value") / 10000);
         }
-        post_data += "&forecast_time=" + 3600.0 * 24 * 14;
+        post_data += "&forecast_time=" + 3600.0 * 24 * 180;
         $.post("./api/forecasts/", post_data, function (data) {
             update_forecast(data);
         });
