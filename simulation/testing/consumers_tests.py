@@ -71,9 +71,7 @@ class ThermalConsumerTests(unittest.TestCase):
             temperature=20,
             heat_storage_base=15)
         self.assertNotEqual(first_result, second_result, 
-            "changed number of reesidents storage didn't result in different warmwater powers.")
-    
-    
+            "changed number of residents storage didn't result in different warmwater powers.")    
     
     def get_warmwater_consumption_power_with_parameters(self, residents=0, 
                 time_in_seconds=10, temperature=20, heat_storage_base=15):
