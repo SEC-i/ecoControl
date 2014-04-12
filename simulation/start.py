@@ -3,19 +3,19 @@ import os
 import time
 import json
 
-
 from flask import Flask, jsonify, render_template, request
 from werkzeug.serving import run_simple
+from flask_helpers import gzipped
 app = Flask(__name__)
 
 from helpers import SimulationBackgroundRunner,  parse_hourly_demand_values
 from simulationmanager import SimulationManager
 
-simulation_manager = SimulationManager(time.time()) #time.time()
+DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 30
 
+simulation_manager = SimulationManager(time.time())  # time.time()
 (env, heat_storage, power_meter, cu, plb, thermal_consumer,
  electrical_consumer, code_executer) = simulation_manager.main_simulation.get_systems()
-
 
 
 @app.route('/')
@@ -24,22 +24,32 @@ def index():
 
 
 @app.route('/api/data/', methods=['GET'])
+@gzipped
 def get_data():
-    return jsonify(simulation_manager.get_main_measurements())
+    (sim, measurements) = simulation_manager.forecast_for(
+        DEFAULT_FORECAST_INTERVAL, blocking=True)
+    return jsonify({
+        'past': simulation_manager.get_main_measurements(),
+        'future': sim.get_measurements(measurements)
+    })
 
-@app.route('/api/forecast_data/', methods=['GET','POST'])
+
+@app.route('/api/forecasts/', methods=['GET', 'POST'])
+@gzipped
 def get_forecast_data():
-    two_weeks = 3600.0 * 24 * 14
-    if request.method == "GET" or ("forecast_time" not in request.form):
-        (sim,measurements) = simulation_manager.forecast_for(two_weeks, blocking=True)
-    else:
-        #callback function to set different values on forecasted simulation
+    if request.method == "POST" and 'forecast_time' in request.form:
+        # callback function to set different values on forecasted simulation
         def set_sim_values(sim):
             set_values(request.form, sim)
         forecast_time = int(request.form["forecast_time"])
-        (sim,measurements) = simulation_manager.forecast_for(forecast_time, blocking=True, pre_start_callback=set_sim_values)
-        
+        (sim, measurements) = simulation_manager.forecast_for(
+            forecast_time, blocking=True, pre_start_callback=set_sim_values)
+    else:
+        (sim, measurements) = simulation_manager.forecast_for(
+            DEFAULT_FORECAST_INTERVAL, blocking=True)
+
     return jsonify(sim.get_measurements(measurements))
+
 
 @app.route('/api/code/', methods=['GET', 'POST'])
 def handle_code():
@@ -55,8 +65,9 @@ def handle_code():
 
     return jsonify({'editor_code': code_executer.code})
 
+
 def set_values(settings_dict, simulation=None):
-    if simulation==None:
+    if simulation == None:
         s = simulation_manager.main_simulation
     else:
         s = simulation
@@ -98,14 +109,13 @@ def set_values(settings_dict, simulation=None):
         'daily_electrical_variation', settings_dict)
     if len(daily_electrical_variation) == 24:
         s.electrical_consumer.demand_variation = daily_electrical_variation
-    
 
 
 @app.route('/api/settings/', methods=['GET', 'POST'])
 def handle_settings():
     if request.method == "POST":
         set_values(request.form)
-        
+
     return jsonify({
         'hs_capacity': heat_storage.capacity,
         'hs_min_temperature': heat_storage.min_temperature,
@@ -122,7 +132,6 @@ def handle_settings():
         'editor_code': code_executer.code,
         'code_snippets': code_executer.snippets_list()
     })
-    
 
 
 @app.route('/api/simulation/', methods=['POST'])
@@ -152,7 +161,6 @@ def export_data(filename):
 
 if __name__ == '__main__':
 
-
     if "profile" in sys.argv:
         import cProfile
         env.stop_after_forward = True
@@ -169,4 +177,5 @@ if __name__ == '__main__':
         if "debug" in sys.argv:
             app.run('0.0.0.0', 8080, debug=True, use_reloader=False)
         else:
+            app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
             run_simple('0.0.0.0', 8080, app, threaded=True)

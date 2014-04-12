@@ -1,102 +1,6 @@
 var refresh_gui = true;
 var editor = null;
 
-var forecasting_interval = 24 * 15;
-
-var series_data = [{
-        name: 'cu_workload',
-        data: [],
-        tooltip: {
-            valueSuffix: ' %'
-        }
-}, {
-        name: 'plb_workload',
-        data: [],
-        tooltip: {
-            valueSuffix: ' %'
-        }
-}, {
-        name: 'hs_temperature',
-        data: [],
-        tooltip: {
-            valueSuffix: ' °C'
-        }
-}, {
-        name: 'thermal_consumption',
-        data: [],
-        tooltip: {
-            valueSuffix: ' kW'
-        }
-}, {
-        name: 'warmwater_consumption',
-        data: [],
-        tooltip: {
-            valueSuffix: ' kW'
-        }
-}, {
-        name: 'outside_temperature',
-        data: [],
-        tooltip: {
-            valueSuffix: ' °C'
-        }
-}, {
-        name: 'electrical_consumption',
-        data: [],
-        tooltip: {
-            valueSuffix: ' kW'
-        }
-},
-    {
-        name: 'cu_workload_forecasting',
-        data: [],
-        dashStyle: 'longdash',
-        tooltip: {
-            valueSuffix: ' %'
-        }
-}, {
-        name: 'plb_workload_forecasting',
-        data: [],
-        dashStyle: 'longdash',
-        tooltip: {
-            valueSuffix: ' %'
-        }
-}, {
-        name: 'hs_temperature_forecasting',
-        data: [],
-        dashStyle: 'longdash',
-        tooltip: {
-            valueSuffix: ' °C'
-        }
-}, {
-        name: 'thermal_consumption_forecasting',
-        data: [],
-        dashStyle: 'longdash',
-        tooltip: {
-            valueSuffix: ' kW'
-        }
-}, {
-        name: 'warmwater_consumption_forecasting',
-        data: [],
-        tooltip: {
-            valueSuffix: ' kW'
-        }
-}, {
-        name: 'outside_temperature_forecasting',
-        data: [],
-        dashStyle: 'longdash',
-        tooltip: {
-            valueSuffix: ' °C'
-        }
-}, {
-        name: 'electrical_consumption_forecasting',
-        data: [],
-        dashStyle: 'longdash',
-        tooltip: {
-            valueSuffix: ' kW'
-        }
-}];
-
-
 // READY
 $(function () {
     initialize_editor();
@@ -110,164 +14,15 @@ $(function () {
         $.getJSON("./api/code/", function (data) {
             editor.setValue(data['editor_code'], 1);
         }).done(function () {
-            $.getJSON("./api/data/", function (data) {
-                for (var i = 0; i < data['time'].length; i++) {
-                    var timestamp = get_timestamp(data['time'][i]);
-                    series_data[0]['data'].push([timestamp, parseFloat(data['cu_workload'][i])]);
-                    series_data[1]['data'].push([timestamp, parseFloat(data['plb_workload'][i])]);
-                    series_data[2]['data'].push([timestamp, parseFloat(data['hs_temperature'][i])]);
-                    series_data[3]['data'].push([timestamp, parseFloat(data['thermal_consumption'][i])]);
-                    series_data[4]['data'].push([timestamp, parseFloat(data['warmwater_consumption'][i])]);
-                    series_data[5]['data'].push([timestamp, parseFloat(data['outside_temperature'][i])]);
-                    series_data[6]['data'].push([timestamp, parseFloat(data['electrical_consumption'][i])]);
-
-                };
-                var help = data['time'].length;
-                timestamp_new = get_timestamp(data['time'][help - 1]);
-                var interval = Math.min(forecasting_interval, data['time'].length);
-                for (var i = 1; i <= interval; i++) {
-                    var timestamp_new = get_timestamp(data['time'][data['time'].length - 1]) + i * 60 * 60 * 1000;
-                    var calculated_i = data['time'].length - 1 - interval + i;
-
-                    series_data[7]['data'].push([timestamp_new, parseFloat(data['cu_workload'][calculated_i])]);
-                    series_data[8]['data'].push([timestamp_new, parseFloat(data['plb_workload'][calculated_i])]);
-                    series_data[9]['data'].push([timestamp_new, parseFloat(data['hs_temperature'][calculated_i])]);
-                    series_data[10]['data'].push([timestamp_new, parseFloat(data['thermal_consumption'][calculated_i])]);
-                    series_data[11]['data'].push([timestamp_new, parseFloat(data['warmwater_consumption'][calculated_i])]);
-                    series_data[12]['data'].push([timestamp_new, parseFloat(data['outside_temperature'][calculated_i])]);
-                    series_data[13]['data'].push([timestamp_new, parseFloat(data['electrical_consumption'][calculated_i])]);
-                };
-
-            }).done(function () {
-                initialize_diagram();
-                // set up refresh loop
-                setInterval(function () {
-                    refresh();
-                }, 2000);
-            });
+            initialize_diagram();
+            refresh();
+            // set up refresh loop
+            setInterval(function () {
+                refresh();
+            }, 2000);
         });
     });
 });
-
-// UPDATING
-function refresh() {
-    if (refresh_gui) {
-        $.getJSON("./api/data/", function (data) {
-            update_setup(data);
-            update_diagram(data);
-        });
-    }
-}
-
-function update_setup(data) {
-    $.each(data, function (key, value) {
-        value = value[value.length - 1];
-        var item = $('.' + key);
-        if (item.length) { // check if item exists
-            switch (key) {
-            case "time":
-                item.text(format_date(new Date(parseFloat(value) * 1000)));
-                break;
-            case "code_execution_status":
-                if (value == 1) {
-                    item.removeClass('badge-danger');
-                    item.addClass('badge-success');
-                    item.text('OK');
-                } else {
-                    item.removeClass('badge-success');
-                    item.addClass('badge-danger');
-                    item.text('Fail');
-                }
-                break;
-            default:
-                item.text(value + " " + systems_units[key]);
-            }
-        }
-    });
-}
-
-function update_diagram(data) {
-    var chart = $('#simulation_diagram').highcharts();
-
-    new_data = [
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        []
-    ];
-    for (var i = 0; i < data['time'].length; i++) {
-        var timestamp = get_timestamp(data['time'][i]);
-        new_data[0].push([timestamp, data['cu_workload'][i]]);
-        new_data[1].push([timestamp, data['plb_workload'][i]]);
-        new_data[2].push([timestamp, data['hs_temperature'][i]]);
-        new_data[3].push([timestamp, data['thermal_consumption'][i]]);
-        new_data[4].push([timestamp, data['warmwater_consumption'][i]]);
-        new_data[5].push([timestamp, data['outside_temperature'][i]]);
-        new_data[6].push([timestamp, data['electrical_consumption'][i]]);
-    };
-    var interval = Math.min(forecasting_interval, data['time'].length);
-    for (var i = 1; i <= interval; i++) {
-        var timestamp_new = get_timestamp(data['time'][data['time'].length - 1]) + i * 60 * 60 * 1000;
-        var calculated_i = data['time'].length - 1 - interval + i;
-
-
-        new_data[7].push([timestamp_new, data['cu_workload'][calculated_i]]);
-        new_data[8].push([timestamp_new, data['plb_workload'][calculated_i]]);
-        new_data[9].push([timestamp_new, data['hs_temperature'][calculated_i]]);
-        new_data[10].push([timestamp_new, data['thermal_consumption'][calculated_i]]);
-        new_data[11].push([timestamp_new, data['warmwater_consumption'][calculated_i]]);
-        new_data[12].push([timestamp_new, data['outside_temperature'][calculated_i]]);
-        new_data[13].push([timestamp_new, data['electrical_consumption'][calculated_i]]);
-    };
-
-
-
-    for (var i = new_data.length - 1; i >= 0; i--) {
-        chart.series[i].setData(new_data[i], false);
-    };
-
-    chart.redraw();
-}
-
-function update_setting(data) {
-    $.each(data, function (key, value) {
-        switch (key) {
-        case "daily_thermal_demand":
-            $.each(value, function (index, hour_value) {
-                $("#daily_thermal_demand_" + index).slider("value", hour_value * 100);
-            });
-            break;
-        case "daily_electrical_variation":
-            $.each(value, function (index, hour_value) {
-                $("#daily_electrical_variation_" + index).slider("value", hour_value * 10000);
-            });
-            break;
-        case "cu_mode":
-            if (value == 0)
-                $("#cu_mode_thermal_driven").attr('checked', true);
-            else
-                $("#cu_mode_electrical_driven").attr('checked', true);
-            break;
-        case "code_snippets":
-            $.each(value, function (index, snippet_name) {
-                $("#snippets").append('<option>' + snippet_name + '</option>');
-            });
-            break;
-        default:
-            $("#form_" + key).val(value);
-        }
-    });
-}
 
 // INITIALIZATIONS
 function initialize_editor() {
@@ -352,9 +107,29 @@ function initialize_event_handlers() {
             setTimeout(function () {
                 $("#settings_button").removeClass("btn-success");
                 $("#settings_button").addClass("btn-primary");
+                var chart = $('#simulation_diagram').highcharts();
+                // hide unsaved forecasts
+                for (var i = 0; i < 7; i++) {
+                    chart.series[14+i].setVisible(false, false);
+                };
+                chart.redraw();
             }, 500);
         });
         event.preventDefault();
+    });
+
+    $("#settings").change(function () {
+        var post_data = $("#settings").serialize();
+        for (var i = 0; i < 24; i++) {
+            post_data += "&daily_thermal_demand_" + i + "=" + ($("#daily_thermal_demand_" + i).slider("value") / 100);
+        }
+        for (var i = 0; i < 24; i++) {
+            post_data += "&daily_electrical_variation_" + i + "=" + ($("#daily_electrical_variation_" + i).slider("value") / 10000);
+        }
+        post_data += "&forecast_time=" + 3600.0 * 24 * 30;
+        $.post("./api/forecasts/", post_data, function (data) {
+            update_forecast(data);
+        });
     });
 
     $(".fast_forward_button").click(function (event) {
@@ -466,15 +241,40 @@ function initialize_diagram() {
                 type: 'month',
                 text: '1M'
             }, {
+                count: 2,
+                type: 'month',
+                text: '2M'
+            }, {
+                count: 3,
+                type: 'month',
+                text: '3M'
+            }, {
                 count: 6,
                 type: 'month',
                 text: '6M'
             }, {
+                count: 9,
+                type: 'month',
+                text: '9M'
+            }, {
                 type: 'all',
                 text: 'All'
             }],
-            selected: 2,
+            selected: 6,
             inputEnabled: false
+        },
+        xAxis: {
+            plotLines: [{
+                value: 0,
+                width: 2,
+                color: 'red',
+                label: {
+                    text: 'Now',
+                    align: 'right',
+                    y: 32,
+                    x: 6
+                }
+            }]
         },
         yAxis: {
             min: -10
@@ -482,12 +282,15 @@ function initialize_diagram() {
         tooltip: {
             valueDecimals: 2
         },
+        lang: {
+            noData: "Loading data..."
+        },
         plotOptions: {
             series: {
                 marker: {
                     enabled: false
                 },
-                lineWidth: 1,
+                lineWidth: 1.5,
             }
         },
         series: series_data,
@@ -495,14 +298,4 @@ function initialize_diagram() {
             enabled: false
         }
     });
-}
-
-// HELPERS
-function format_date(date) {
-    date = date.toString();
-    return date.substring(0, date.length - 15);
-}
-
-function get_timestamp(string) {
-    return new Date(parseFloat(string) * 1000).getTime();
 }
