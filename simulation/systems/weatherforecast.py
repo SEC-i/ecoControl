@@ -16,7 +16,7 @@ class Forecast:
         self.forecast_temperatures_daily = []
 
     def get_weather_forecast(self, hourly=True):
-        #only permit forecast queries every 30min, to save some api requests
+        # only permit forecast queries every 30min, to save some api requests
         if self.forecast_query_date is not None and self.forecast_query_date - self.get_date() < 60 * 30:
             if hourly and self.forecast_temperatures_3hourly != []:
                 return self.forecast_temperatures_3hourly
@@ -39,10 +39,10 @@ class Forecast:
                 try:
                     forecast_temperatures.append(data_set["main"]["temp"])
                 except:
-                    if "gdps" not in data_set: #last value of data seams always to be gdps
+                    #last value of data seams always to be gdps
+                    if "gdps" not in data_set:
                         print "error reading temperatures from: \n", json.dumps(data_set, sort_keys=True, indent=4, separators=(',', ': '))
             print "read ", len(forecast_temperatures), "temperatures", "hourly = ", hourly
-
 
         except urllib2.URLError, e:
             handleError(e)
@@ -56,7 +56,7 @@ class Forecast:
         time_passed = (date - time.time()) / (60.0 * 60.0 * 24)  # in days
         if time_passed < 0.0 or time_passed > 13.0:
             return history_data
-        
+
         forecast_data_hourly = self.get_forecast_temperature_hourly(date)
         forecast_data_daily = self.get_forecast_temperature_daily(date)
         if time_passed < 5.0:
@@ -65,7 +65,8 @@ class Forecast:
             return forecast_data_daily
 
     def get_forecast_temperature_hourly(self, date):
-        self.forecast_temperatures_3hourly = self.get_weather_forecast(hourly=True)
+        self.forecast_temperatures_3hourly = self.get_weather_forecast(
+            hourly=True)
         time_passed = int((date - time.time()) / (60.0 * 60.0))  # in hours
         weight = (time_passed % 3) / 3.0
         t0 = min(int(time_passed / 3), len(
@@ -76,7 +77,8 @@ class Forecast:
         return self.mix(a0, a1, weight)
 
     def get_forecast_temperature_daily(self, date):
-        self.forecast_temperatures_daily = self.get_weather_forecast(hourly=False)
+        self.forecast_temperatures_daily = self.get_weather_forecast(
+            hourly=False)
         time_passed = int((date - time.time()) / (60.0 * 60.0))  # in days
         weight = (time_passed % 24) / 24.0
         t0 = min(int(time_passed / 24), len(
@@ -97,5 +99,5 @@ class Forecast:
         return a * (1 - x) + b * x
 
     def get_date(self):
-        #return self.env.now
-        return time.time() #for debugging, use self.env.now otherwise<
+        # return self.env.now
+        return time.time()  # for debugging, use self.env.now otherwise<

@@ -6,7 +6,6 @@ class HeatStorage(BaseSystem):
 
     def __init__(self, env):
         super(HeatStorage, self).__init__(env)
-       
 
         # data from pamiru48
         self.capacity = 25000  # liters  (=kilos)

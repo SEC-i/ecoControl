@@ -66,7 +66,8 @@ class CogenerationUnit(GasPoweredGenerator):
     def copyconstruct(cls, env, other_cu, heat_storage, power_meter):
         cu = CogenerationUnit(env, heat_storage, power_meter)
         cu.__dict__ = other_cu.__dict__.copy()
-        #copy will also copy references for heatstorage and powermeter, so we have to change refences manually
+        # copy will also copy references for heatstorage and powermeter, so we
+        # have to change refences manually
         cu.heat_storage = heat_storage
         cu.power_meter = power_meter
         cu.env = env

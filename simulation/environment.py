@@ -63,8 +63,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
     def get_day_of_year(self):
         return time.gmtime(self.now).tm_yday
-    
-    
+
     def register_step_function(self, function, kwargs={}):
         if self.step_function != None:
             print "overwriting existing step_function ", self.step_function, " !"

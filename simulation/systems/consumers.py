@@ -61,7 +61,8 @@ class ThermalConsumer(BaseSystem):
 
         # object factor--> we have some objects, which slow down heating and cooling
         #--> used to make heating and cooling look realistic ;)
-        stuff_weight = self.total_heated_volume * 50.0  # assume 50.0 kilo per m^3 of heatable objects (wood)
+        stuff_weight = self.total_heated_volume * \
+            50.0  # assume 50.0 kilo per m^3 of heatable objects (wood)
         heat_capacity_stuff = stuff_weight * 600.0  # 600 = spec heat cap wood
 
         self.heat_capacity = self.heat_capacity_air + heat_capacity_stuff
@@ -70,13 +71,11 @@ class ThermalConsumer(BaseSystem):
 
     @classmethod
     def copyconstruct(cls, env, other_thermal_consumer, heat_storage):
-        thermal_consumer = ThermalConsumer(env,heat_storage)
+        thermal_consumer = ThermalConsumer(env, heat_storage)
         thermal_consumer.__dict__ = other_thermal_consumer.__dict__.copy()
         thermal_consumer.heat_storage = heat_storage
         thermal_consumer.env = env
         return thermal_consumer
-
-
 
     def step(self):
         self.simulate_consumption()
@@ -111,7 +110,7 @@ class ThermalConsumer(BaseSystem):
         hour = time_tuple.tm_hour
         wday = time_tuple.tm_wday
         weight = time_tuple.tm_min / 60.0
-        if wday in [5, 6]: #weekend
+        if wday in [5, 6]:  # weekend
             demand_liters_per_hour = self.linear_interpolation(
                 warm_water_demand_weekend[hour],
                 warm_water_demand_weekend[(hour + 1) % 24], weight)
@@ -130,7 +129,8 @@ class ThermalConsumer(BaseSystem):
 
     def simulate_consumption(self):
         # calculate variation using daily demand
-        self.target_temperature = self.daily_demand[time.gmtime(self.env.now).tm_hour]
+        self.target_temperature = self.daily_demand[
+            time.gmtime(self.env.now).tm_hour]
 
         self.room_power = self.current_power - self.heat_loss()
         self.calculate_room_temperature()
@@ -144,8 +144,6 @@ class ThermalConsumer(BaseSystem):
 
         # clamp to maximum power
         self.current_power = max(min(self.current_power, self.max_power), 0.0)
-
-
 
     def heat_loss(self):
         heat_loss = 0
@@ -171,7 +169,6 @@ class ThermalConsumer(BaseSystem):
         hour = time.gmtime(self.env.now).tm_hour
         return outside_temperatures_2013[day * 24 + hour]
 
-
     def linear_interpolation(self, a, b, x):
         return a * (1 - x) + b * x
 
@@ -191,8 +188,10 @@ class SimpleElectricalConsumer(BaseSystem):
     @classmethod
     def copyconstruct(cls, env, other_electrical_consumer, power_meter):
         electrical_consumer = SimpleElectricalConsumer(env, power_meter)
-        electrical_consumer.__dict__ = other_electrical_consumer.__dict__.copy()    # just a shallow copy, so no dict copy
-        electrical_consumer.power_meter = power_meter 
+        # just a shallow copy, so no dict copy
+        electrical_consumer.__dict__ = other_electrical_consumer.__dict__.copy(
+        )
+        electrical_consumer.power_meter = power_meter
         electrical_consumer.env = env
         return electrical_consumer
 
@@ -206,7 +205,7 @@ class SimpleElectricalConsumer(BaseSystem):
         time_tuple = time.gmtime(self.env.now)
         quarter = int(time_tuple.tm_min / 15.0)
         quarters = (time_tuple.tm_hour * 4 + quarter) % (4 * 24)
-        days = time_tuple.tm_wday + 1 # days 0-6 converted to 1-7
+        days = time_tuple.tm_wday + 1  # days 0-6 converted to 1-7
         # Summer: 1 May (120) - 1 October (273)
         yday = time_tuple.tm_yday
         if yday > 120 and yday < 273:

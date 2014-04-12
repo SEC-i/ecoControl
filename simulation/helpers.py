@@ -64,10 +64,9 @@ class MeasurementCache():
         index = self.values.index(value)
         if len(self.data[index]) > 0:
             print len(self.data[index])
-            return self.data[index][-1] #return newest item
+            return self.data[index][-1]  # return newest item
         else:
             return None
-
 
     def clear(self):
         for i in self.data:
