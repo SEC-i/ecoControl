@@ -2,6 +2,7 @@
 branches:
   only:
     - master
+    - forecasting
 # Tell Travis to notify us by email
 notifications:
   email:
