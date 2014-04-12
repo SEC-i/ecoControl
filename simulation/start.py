@@ -173,6 +173,7 @@ if __name__ == '__main__':
         env.run()
         print time.time() - start
     else:
+        env.forward = 60 * 60 * 24 * 30
         simulation_manager.simulation_start()
         if "debug" in sys.argv:
             app.run('0.0.0.0', 8080, debug=True, use_reloader=False)
