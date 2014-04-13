@@ -562,6 +562,20 @@
               <div id="editor_container" class="panel-collapse collapse">
                 <div class="panel-body">
                   <div class="row">
+                    <div class="col-lg-6">
+                      <button type="submit" id="editor_button" class="btn btn-primary btn-block">Apply</button>
+                    </div>
+                    <div class="col-lg-6">
+                      <button type="submit" id="editor_simulate_button" class="btn btn-warning btn-block">Simulate</button>
+                    </div>
+                  </div>
+                  <br />
+                  <div class="row">
+                    <div class="col-lg-12">
+                      <pre id="editor"></pre>
+                    </div>
+                  </div>
+                  <div class="row">
                     <div class="col-lg-5">
                       <p>
                         <form id="save_snippet" class="form-inline" role="form">
@@ -590,12 +604,6 @@
                       </p>
                     </div>
                   </div>
-                  <div class="row">
-                    <div class="col-lg-12">
-                      <pre id="editor"></pre>
-                      <button type="submit" id="editor_button" class="btn btn-primary btn-block">Update</button>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -607,7 +615,7 @@
                   </a>
                 </h4>
               </div>
-              <div id="setup_container" class="panel-collapse collapse in">
+              <div id="setup_container" class="panel-collapse collapse">
                 <div class="panel-body">
                   <div id="simulation_setup" class="svg_container"></div>
                 </div>

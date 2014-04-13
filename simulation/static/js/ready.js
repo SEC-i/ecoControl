@@ -107,12 +107,7 @@ function initialize_event_handlers() {
             setTimeout(function () {
                 $("#settings_button").removeClass("btn-success");
                 $("#settings_button").addClass("btn-primary");
-                var chart = $('#simulation_diagram').highcharts();
-                // hide unsaved forecasts
-                for (var i = 0; i < 7; i++) {
-                    chart.series[14+i].setVisible(false, false);
-                };
-                chart.redraw();
+                hide_forecasts();
             }, 500);
         });
         event.preventDefault();
@@ -143,7 +138,18 @@ function initialize_event_handlers() {
             code: editor.getValue(),
             password: $('#password').val()
         }, function (data) {
+            hide_forecasts();
             editor.setValue(data['editor_code'], 1);
+        });
+    });
+
+    $("#editor_simulate_button").click(function () {
+        $.post("./api/forecasts/", {
+            code: editor.getValue(),
+            password: $('#password').val(),
+            forecast_time: 3600.0 * 24 * 30
+        }, function (data) {
+            update_forecast(data);
         });
     });
 
