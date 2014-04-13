@@ -71,6 +71,7 @@
               </div>
               <div id="data_container" class="panel-collapse collapse">
                 <div class="panel-body">
+                  <h4>Current Date: <span id="live_data_time"></span></h4>
                   <div class="row">
                     <div class="col-sm-4">
                       <h5>Consumption & Production</h5>
@@ -206,6 +207,149 @@
                             <th class="active">Empty Count:</th>
                             <td class="text-center">
                               <span class="hs_empty_count"></span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <hr />
+                  <h4>Date of Prediction: <span id="live_data_time_predicted"></span></h4>
+                  <div class="row">
+                    <div class="col-sm-4">
+                      <h5>Consumption & Production</h5>
+                      <table class="table table-bordered table-condensed small">
+                        <tbody>
+                          <tr>
+                            <th class="active col-md-7">Total Thermal Consumption:</th>
+                            <td class="text-center">
+                              <span class="total_thermal_consumption_predicted"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Total Electrical Consumption:</th>
+                            <td class="text-center">
+                              <span class="total_electrical_consumption_predicted"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Electrical Infeed Reward:</th>
+                            <td class="text-center">
+                              <span class="infeed_reward_predicted"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Electrical Infeed Costs:</th>
+                            <td class="text-center">
+                              <span class="infeed_costs_predicted"></span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    <h5>Total Costs</h5>
+                      <table class="table table-bordered table-condensed small">
+                        <tbody>
+                          <tr>
+                            <th class="active col-md-7">Total Bilance:</th>
+                            <td class="text-center">
+                              <span class="total_bilance_predicted"></span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="col-sm-4">
+                      <h5>Cogeneration Unit</h5>
+                      <table class="table table-bordered table-condensed small">
+                        <tbody>
+                          <tr>
+                            <th class="active col-md-7">Operating Costs:</th>
+                            <td class="text-center">
+                              <span class="cu_operating_costs_predicted"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Total Electrical Production:</th>
+                            <td class="text-center">
+                              <span class="cu_total_electrical_production_predicted"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Total Thermal Production:</th>
+                            <td class="text-center">
+                              <span class="cu_total_thermal_production_predicted"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Total Gas Consumption:</th>
+                            <td class="text-center">
+                              <span class="cu_total_gas_consumption_predicted"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Power-Ons:</th>
+                            <td class="text-center">
+                              <span class="cu_power_ons_predicted"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Total Hours:</th>
+                            <td class="text-center">
+                              <span class="cu_total_hours_of_operation_predicted"></span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="col-sm-4">
+                      <h5>Peak Load Boiler</h5>
+                      <table class="table table-bordered table-condensed small">
+                        <tbody>
+                          <tr>
+                            <th class="active col-md-7">Operating Costs:</th>
+                            <td class="text-center">
+                              <span class="plb_operating_costs_predicted"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Total Gas Consumption:</th>
+                            <td class="text-center">
+                              <span class="plb_total_gas_consumption_predicted"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Power-Ons:</th>
+                            <td class="text-center">
+                              <span class="plb_power_ons_predicted"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Total Hours:</th>
+                            <td class="text-center">
+                              <span class="plb_total_hours_of_operation_predicted"></span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <h5>Heat Storage</h5>
+                      <table class="table table-bordered table-condensed small">
+                        <tbody>
+                          <tr>
+                            <th class="active col-md-7">Total Input:</th>
+                            <td class="text-center">
+                              <span class="hs_total_inpu_predictedt"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Total Output:</th>
+                            <td class="text-center">
+                              <span class="hs_total_output_predicted"></span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <th class="active">Empty Count:</th>
+                            <td class="text-center">
+                              <span class="hs_empty_count_predicted"></span>
                             </td>
                           </tr>
                         </tbody>

@@ -8,12 +8,18 @@ function refresh() {
 }
 
 function update_setup(data) {
-    data = data['past'];
-    $.each(data, function (key, value) {
-        value = value[value.length - 1];
-        var item = $('.' + key);
-        if (item.length) { // check if item exists
-            switch (key) {
+    $.each(data['past'], function (key, value) {
+        update_item(key, value[value.length - 1], '');
+    });
+    $.each(data['future'], function (key, value) {
+        update_item(key, value[value.length - 1], '_predicted');
+    });
+}
+
+function update_item(key, value, suffix) {
+    var item = $('.' + key + suffix);
+    if (item.length) { // check if item exists
+        switch (key) {
             case "time":
                 item.text($.format.date(new Date(parseFloat(value) * 1000), "dd.MM.yyyy HH:MM"));
                 break;
@@ -30,9 +36,11 @@ function update_setup(data) {
                 break;
             default:
                 item.text(value + " " + systems_units[key]);
-            }
         }
-    });
+    }
+    if (key == "time"){
+        $('#live_data_time' + suffix).text($.format.date(new Date(parseFloat(value) * 1000), "dd.MM.yyyy HH:MM"));
+    }
 }
 
 function update_diagram(data) {
