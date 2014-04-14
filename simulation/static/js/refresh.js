@@ -1,8 +1,11 @@
+var current_time = 0;
+
 function refresh() {
     if (refresh_gui) {
-        $.getJSON("./api/data/", function (data) {
+        $.getJSON("./api/data/" + current_time + "/", function (data) {
             update_setup(data);
             update_diagram(data);
+            current_time = data['past']['time'][data['past']['time'].length - 1];
         });
     }
 }
@@ -55,39 +58,32 @@ function update_diagram(data) {
         [],
         [],
         [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
         []
     ];
     for (var i = 0; i < past['time'].length; i++) {
         var timestamp = get_timestamp(past['time'][i]);
-        new_data[0].push([timestamp, past['cu_workload'][i]]);
-        new_data[1].push([timestamp, past['plb_workload'][i]]);
-        new_data[2].push([timestamp, past['hs_temperature'][i]]);
-        new_data[3].push([timestamp, past['thermal_consumption'][i]]);
-        new_data[4].push([timestamp, past['warmwater_consumption'][i]]);
-        new_data[5].push([timestamp, past['outside_temperature'][i]]);
-        new_data[6].push([timestamp, past['electrical_consumption'][i]]);
+        chart.series[0].addPoint([timestamp, past['cu_workload'][i]], false);
+        chart.series[1].addPoint([timestamp, past['plb_workload'][i]], false);
+        chart.series[2].addPoint([timestamp, past['hs_temperature'][i]], false);
+        chart.series[3].addPoint([timestamp, past['thermal_consumption'][i]], false);
+        chart.series[4].addPoint([timestamp, past['warmwater_consumption'][i]], false);
+        chart.series[5].addPoint([timestamp, past['outside_temperature'][i]], false);
+        chart.series[6].addPoint([timestamp, past['electrical_consumption'][i]], false);
     };
     chart.xAxis[0].plotLinesAndBands[0].options['value'] = timestamp; // moves vertical line to end of past data set
     for (var i = 0; i < future['time'].length; i++) {
         var timestamp = get_timestamp(future['time'][i]);
-        new_data[7].push([timestamp, future['cu_workload'][i]]);
-        new_data[8].push([timestamp, future['plb_workload'][i]]);
-        new_data[9].push([timestamp, future['hs_temperature'][i]]);
-        new_data[10].push([timestamp, future['thermal_consumption'][i]]);
-        new_data[11].push([timestamp, future['warmwater_consumption'][i]]);
-        new_data[12].push([timestamp, future['outside_temperature'][i]]);
-        new_data[13].push([timestamp, future['electrical_consumption'][i]]);
+        new_data[0].push([timestamp, future['cu_workload'][i]]);
+        new_data[1].push([timestamp, future['plb_workload'][i]]);
+        new_data[2].push([timestamp, future['hs_temperature'][i]]);
+        new_data[3].push([timestamp, future['thermal_consumption'][i]]);
+        new_data[4].push([timestamp, future['warmwater_consumption'][i]]);
+        new_data[5].push([timestamp, future['outside_temperature'][i]]);
+        new_data[6].push([timestamp, future['electrical_consumption'][i]]);
     };
 
     for (var i = new_data.length - 1; i >= 0; i--) {
-        chart.series[i].setData(new_data[i], false);
+        chart.series[7 + i].setData(new_data[i], false);
     };
 
     chart.redraw();

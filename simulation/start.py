@@ -34,6 +34,16 @@ def get_data():
     })
 
 
+@app.route('/api/data/<int:timestamp>/')
+def get_delta_data(timestamp):
+    (sim, measurements) = simulation_manager.forecast_for(
+        DEFAULT_FORECAST_INTERVAL, blocking=True)
+    return jsonify({
+        'past': simulation_manager.get_main_measurements(start=timestamp),
+        'future': sim.get_measurements(measurements)
+    })
+
+
 @app.route('/api/forecasts/', methods=['GET', 'POST'])
 @gzipped
 def get_forecast_data():
@@ -173,7 +183,7 @@ if __name__ == '__main__':
         env.run()
         print time.time() - start
     else:
-        env.forward = 60 * 60 * 24 * 30
+        simulation_manager.forward_main(60 * 60 * 24 * 30, blocking=True)
         simulation_manager.simulation_start()
         if "debug" in sys.argv:
             app.run('0.0.0.0', 8080, debug=True, use_reloader=False)
