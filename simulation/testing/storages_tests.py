@@ -1,11 +1,5 @@
 import unittest
 
-# add parent folder to path
-import os
-parent_directory = os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__)))
-os.sys.path.insert(0, parent_directory)
-
 from systems.storages import HeatStorage, PowerMeter
 from environment import ForwardableRealtimeEnvironment
 
