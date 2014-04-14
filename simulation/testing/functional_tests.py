@@ -19,7 +19,7 @@ class ForecastTestCase(unittest.TestCase):
         try:
             inaccurracy = fcast.get_current_inaccurency()
         except AttributeError:
-            self.fail("the forecasting have the method get_current_inaccurency'")
+            self.fail("the forecasting should the method get_current_inaccurency'")
 
 if __name__ == '__main__':
     unittest.main()
