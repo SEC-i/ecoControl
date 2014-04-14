@@ -15,11 +15,11 @@ class ForecastTestCase(unittest.TestCase):
         self.assertIn('forecast_inaccurracy', rv.data)
         
     def test_forecast_has_inaccurracy(self):
-        forecast = Forecast()
+        fcast = forecast.Forecast()
         try:
-            inaccurracy = forecast.get_current_inaccurency()
+            inaccurracy = fcast.get_current_inaccurency()
         except AttributeError:
-            self.fail("the forecasting should have the method get_current_inaccurency'")
+            self.fail("the forecasting have the method get_current_inaccurency'")
 
 if __name__ == '__main__':
     unittest.main()
