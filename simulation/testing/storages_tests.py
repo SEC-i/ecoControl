@@ -230,7 +230,3 @@ class PowerMeterTests(unittest.TestCase):
 
         self.assertEqual(self.power_meter.total_fed_in_electricity, 0)
         self.assertEqual(self.power_meter.total_purchased, 0)
-
-
-if __name__ == '__main__':
-    unittest.main()

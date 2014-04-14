@@ -1,6 +1,7 @@
 import unittest
 
 import start
+from forecasting import Forecast
 
 
 class ForecastTestCase(unittest.TestCase):
@@ -16,6 +17,3 @@ class ForecastTestCase(unittest.TestCase):
         except AttributeError:
             self.fail(
                 "the forecasting should the method get_current_inaccurency'")
-
-if __name__ == '__main__':
-    unittest.main()

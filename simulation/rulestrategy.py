@@ -1,5 +1,5 @@
 import time
-from simulationmanager import SimulationManager
+from core import SimulationManager
 
 FORECAST_TIME = 60 * 60 * 24 * 7
 SIMULATED_TIME_MAIN = 60 * 60 * 24 * 10
