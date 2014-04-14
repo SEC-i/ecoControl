@@ -1,7 +1,7 @@
 import unittest
 
 import start
-from forecasting import Forecast
+from forecasting_script import Forecast
 
 
 class ForecastTestCase(unittest.TestCase):
