@@ -103,7 +103,7 @@ class Simulation(object):
         return self.cu.get_operating_costs() + self.plb.get_operating_costs() - \
             self.power_meter.get_reward() + self.power_meter.get_costs()
 
-    def get_measurements(self, measurements):
+    def get_measurements(self, measurements, start=None):
         output = [
             ('cu_electrical_production',
              [round(self.cu.current_electrical_production, 2)]),
@@ -141,6 +141,6 @@ class Simulation(object):
             ('code_execution_status',
              [1 if self.code_executer.execution_successful else 0])]
 
-        output += measurements.get()
+        output += measurements.get(start)
 
         return dict(output)

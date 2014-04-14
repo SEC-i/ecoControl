@@ -85,5 +85,5 @@ class SimulationManager:
         if self.thread == None or not self.thread.isAlive():
             self.simulation_start(blocking)
 
-    def get_main_measurements(self):
-        return self.main_simulation.get_measurements(self.measurements)
+    def get_main_measurements(self, start=None):
+        return self.main_simulation.get_measurements(self.measurements, start)
