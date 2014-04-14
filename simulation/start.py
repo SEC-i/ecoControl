@@ -9,7 +9,7 @@ from flask_helpers import gzipped
 app = Flask(__name__)
 
 from helpers import SimulationBackgroundRunner,  parse_hourly_demand_values
-from simulationmanager import SimulationManager
+from core import SimulationManager
 
 DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 30
 

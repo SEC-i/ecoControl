@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as md
 import numpy as np
 import time
-from simulationmanager import SimulationManager
+from core import SimulationManager
 import datetime
 
 from helpers import SimulationBackgroundRunner, MeasurementCache
