@@ -23,7 +23,5 @@ install:
 script:
   - cd server
   - python manage.py test
-  - cd ../simulation/testing
-  - nosetests
-#  - cd ../simulation
-#  - python test.py
+  - cd ..
+  - nosetests simulation/testing
