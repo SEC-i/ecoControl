@@ -6,7 +6,7 @@ parent_directory = os.path.dirname(
 os.sys.path.insert(0, parent_directory)
 
 import start
-import forecast
+from forecast import Forecast
 
 class ForecastTestCase(unittest.TestCase):
 
@@ -15,7 +15,7 @@ class ForecastTestCase(unittest.TestCase):
         self.assertIn('forecast_inaccurracy', rv.data)
         
     def test_forecast_has_inaccurracy(self):
-        fcast = forecast.Forecast()
+        fcast = Forecast()
         try:
             inaccurracy = fcast.get_current_inaccurency()
         except AttributeError:
