@@ -16,4 +16,4 @@ script:
   - cd server
   - python manage.py test
   - cd ..
-  - nosetests simulation/testing
+  - nosetests simulation
