@@ -1,5 +1,5 @@
 from consumers import ThermalConsumer
-from weatherforecast import Forecast
+from forecasting.weatherforecast import Forecast
 
 
 class ForecastConsumer(ThermalConsumer):

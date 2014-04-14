@@ -1,7 +1,6 @@
 import urllib2
 import json
-import systems.data
-from systems.data import *
+from systems.data import outside_temperatures_2013,outside_temperatures_2012
 import time
 import datetime
 

@@ -4,8 +4,7 @@ from math import sqrt
 from numpy import array
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
-from data import weekly_electrical_demand_winter 
-
+from simulation.systems.data import weekly_electrical_demand_winter
 
 """Holt-Winters algorithms to forecasting
 Coded in Python 2 by: Andre Queiroz
