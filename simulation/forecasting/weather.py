@@ -58,7 +58,7 @@ class WeatherForecast:
         """get most accurate forecast for given date
         that can be derived from 5 days forecast, 14 days forecast or from history data"""
         history_data = self.get_average_outside_temperature(date)
-        time_passed = (date - self.get_data()) / (60.0 * 60.0 * 24)  # in days
+        time_passed = (date - self.get_date()) / (60.0 * 60.0 * 24)  # in days
         if time_passed < 0.0 or time_passed > 13.0:
             return history_data
 
