@@ -3,7 +3,6 @@ import time
 import json
 
 from flask import Flask, jsonify, render_template, request
-from werkzeug.serving import run_simple
 from server.helpers import gzipped
 app = Flask(__name__)
 
