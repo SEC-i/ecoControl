@@ -1,9 +1,11 @@
-from data import gas_price_per_kwh
+from helpers import sign
+from systems import BaseSystem
 
-class GasPoweredGenerator():
+
+class GasPoweredGenerator(BaseSystem):
 
     def __init__(self, env):
-        self.env = env
+        super(GasPoweredGenerator, self).__init__(env)
 
         self.running = True
 
@@ -15,6 +17,8 @@ class GasPoweredGenerator():
 
         self.total_hours_of_operation = 0
         self.power_on_count = 0
+
+        self.gas_costs = 0.0655  # Euro
 
     def start(self):
         self.running = True
@@ -29,7 +33,7 @@ class GasPoweredGenerator():
             self.env.steps_per_measurement
 
     def get_operating_costs(self):
-        return self.total_gas_consumption * gas_price_per_kwh
+        return self.total_gas_consumption * self.gas_costs
 
 
 class CogenerationUnit(GasPoweredGenerator):
@@ -60,6 +64,17 @@ class CogenerationUnit(GasPoweredGenerator):
 
         self.overwrite_workload = None
 
+    @classmethod
+    def copyconstruct(cls, env, other_cu, heat_storage, power_meter):
+        cu = CogenerationUnit(env, heat_storage, power_meter)
+        cu.__dict__ = other_cu.__dict__.copy()
+        # copy will also copy references for heatstorage and powermeter, so we
+        # have to change refences manually
+        cu.heat_storage = heat_storage
+        cu.power_meter = power_meter
+        cu.env = env
+        return cu
+
     def step(self):
         if self.running:
             presumable_workload = self.calculate_new_workload()
@@ -70,7 +85,7 @@ class CogenerationUnit(GasPoweredGenerator):
             self.consume_gas()
         else:
             self.workload = 0.0
-            
+
     def calculate_new_workload(self):
         if self.overwrite_workload is not None:
             calculated_workload = self.overwrite_workload
@@ -110,12 +125,12 @@ class CogenerationUnit(GasPoweredGenerator):
 
     def get_calculated_workload_electric(self):
         if self.heat_storage.get_temperature() >= \
-        self.heat_storage.target_temperature:
+            self.heat_storage.target_temperature:
             return 0.0
         max_electric_power = self.electrical_efficiency * self.max_gas_input
-        return min(max(self.power_meter.current_power_consum, \
-            self.electrical_driven_minimal_production) \
-            / max_electric_power, 1) * 99.0
+        return min(max(self.power_meter.current_power_consum,
+                       self.electrical_driven_minimal_production)
+                   / max_electric_power, 1) * 99.0
 
     def update_parameters(self, calculated_workload):
         old_workload = self.workload
@@ -162,6 +177,14 @@ class PeakLoadBoiler(GasPoweredGenerator):
 
         self.overwrite_workload = None
 
+    @classmethod
+    def copyconstruct(cls, env, other_plb, heat_storage):
+        plb = PeakLoadBoiler(env, heat_storage)
+        plb.__dict__ = other_plb.__dict__.copy()
+        plb.heat_storage = heat_storage
+        plb.env = env
+        return plb
+
     def step(self):
         if self.running:
             self.calculate_state()
@@ -187,7 +210,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
                 self.workload = 99.0
             # turn off if heat storage's target energy is almost reached
             elif self.current_thermal_production >= \
-            self.heat_storage.get_require_energy():
+                self.heat_storage.get_require_energy():
                 self.workload = 0.0
 
                 if self.off_time <= self.env.now:

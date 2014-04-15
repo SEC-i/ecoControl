@@ -1,7 +1,8 @@
 from threading import Thread
 from collections import deque
+import itertools
 
-from flask import make_response
+from flask import make_response, request
 from functools import update_wrapper
 
 
@@ -54,11 +55,28 @@ class MeasurementCache():
             for index, value in enumerate(self.values):
                 self.data[index].append(round(self.get_mapped_value(value), 2))
 
-    def get(self):
+    def get(self, start=None):
+        if start is not None:
+            i = 0
+            while i < len(self.data[0]) and start + 1 > self.data[0][i]:
+                i += 1
+
         output = []
         for index, value in enumerate(self.values):
-            output.append((value, list(self.data[index])))
+            if start is not None:
+                output.append(
+                    (value, list(itertools.islice(self.data[index], i, None))))
+            else:
+                output.append((value, list(self.data[index])))
         return output
+
+    def get_last(self, value):
+        index = self.values.index(value)
+        if len(self.data[index]) > 0:
+            print len(self.data[index])
+            return self.data[index][-1]  # return newest item
+        else:
+            return None
 
     def clear(self):
         for i in self.data:

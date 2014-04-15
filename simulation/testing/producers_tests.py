@@ -10,7 +10,7 @@ from systems.producers import CogenerationUnit, GasPoweredGenerator
 from systems.storages import HeatStorage, PowerMeter
 from mocks import HeatStorageMock
 
-from systems.data import gas_price_per_kwh
+gas_price_per_kwh = 0.0655
 
 def values_comparison(actual_value, expected_value):
     return "expected: {0}. got: {1}".format(expected_value, actual_value)

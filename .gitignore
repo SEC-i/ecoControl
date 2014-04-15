@@ -1,5 +1,5 @@
-/simulation/exports/*
-!/simulation/exports/example.json
+/simulation/server/data/exports/*
+!/simulation/server/data/exports/example.json
 
 *.py[cod]
 *.py~
@@ -45,5 +45,3 @@ nosetests.xml
 *.log
 
 sftp-config-alt2.json
-
-simulation/stats
