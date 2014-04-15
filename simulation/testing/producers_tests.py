@@ -1,11 +1,6 @@
 import unittest
 
-# add parent folder to path
-import os
-parent_directory = os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__)))
-os.sys.path.insert(0, parent_directory)
-from environment import ForwardableRealtimeEnvironment
+from core.environment import ForwardableRealtimeEnvironment
 from systems.producers import CogenerationUnit, GasPoweredGenerator
 from systems.storages import HeatStorage, PowerMeter
 from mocks import HeatStorageMock
@@ -870,6 +865,3 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
     def calculate_workload(self, energy_demand, efficiency):
         return energy_demand/(self.max_gas_input * efficiency) * 99
         
-        
-if __name__ == '__main__':
-    unittest.main()
