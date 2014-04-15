@@ -44,7 +44,12 @@ class Forecast:
             print "read ", len(forecast_temperatures), "temperatures", "hourly = ", hourly
 
         except urllib2.URLError, e:
-            handleError(e)
+            print e
+            # Use history data
+            result = []
+            for i in range(0,40):
+                result.append(self.get_average_outside_temperature(self.get_date(),i))
+            return result
 
         return forecast_temperatures
 
@@ -52,7 +57,7 @@ class Forecast:
         """get most accurate forecast for given date
         that can be derived from 5 days forecast, 14 days forecast or from history data"""
         history_data = self.get_average_outside_temperature(date)
-        time_passed = (date - time.time()) / (60.0 * 60.0 * 24)  # in days
+        time_passed = (date - self.get_data()) / (60.0 * 60.0 * 24)  # in days
         if time_passed < 0.0 or time_passed > 13.0:
             return history_data
 
@@ -66,7 +71,7 @@ class Forecast:
     def get_forecast_temperature_hourly(self, date):
         self.forecast_temperatures_3hourly = self.get_weather_forecast(
             hourly=True)
-        time_passed = int((date - time.time()) / (60.0 * 60.0))  # in hours
+        time_passed = int((date - self.get_date()) / (60.0 * 60.0))  # in hours
         weight = (time_passed % 3) / 3.0
         t0 = min(int(time_passed / 3), len(
             self.forecast_temperatures_3hourly) - 1)
@@ -78,7 +83,7 @@ class Forecast:
     def get_forecast_temperature_daily(self, date):
         self.forecast_temperatures_daily = self.get_weather_forecast(
             hourly=False)
-        time_passed = int((date - time.time()) / (60.0 * 60.0))  # in days
+        time_passed = int((date - self.get_date()) / (60.0 * 60.0))  # in days
         weight = (time_passed % 24) / 24.0
         t0 = min(int(time_passed / 24), len(
             self.forecast_temperatures_daily) - 1)
@@ -99,4 +104,4 @@ class Forecast:
 
     def get_date(self):
         # return self.env.now
-        return time.time()  # for debugging, use self.env.now otherwise<
+        return time.time()  # for debugging, use self.env.now otherwise
