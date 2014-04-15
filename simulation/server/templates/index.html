@@ -11,6 +11,8 @@
 
     <!-- Bootstrap core CSS -->
     <link href="./static/libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap-Wizard -->
+    <link href="./static/libs/bootstrap-wizard/bootstrap-wizard.css" rel="stylesheet">
      <!-- jQuery UI CSS core CSS -->
     <link rel="stylesheet" href="./static/libs/jquery-ui/css/jquery-ui.min.css">
     <link rel="stylesheet" href="./static/libs/jquery-ui/css/jquery.ui.slider.min.css">
@@ -27,6 +29,29 @@
   </head>
 
   <body>
+    <div class="wizard" id="startup" data-title="Setup Engery Management System">
+      <div class="wizard-card" data-cardname="card1" selected>
+        <h3>General</h3>
+        Some form
+      </div>
+      <div class="wizard-card" data-cardname="card2" selected>
+        <h3>CU</h3>
+        Some form
+      </div>
+      <div class="wizard-card" data-cardname="card3" selected>
+        <h3>Heat Storage</h3>
+        Some form
+      </div>
+      <div class="wizard-card" data-cardname="card4" selected>
+        <h3>PLB</h3>
+        Some form
+      </div>
+      <div class="wizard-card" data-cardname="card5" selected>
+        <h3>Misc</h3>
+        Some form
+      </div>
+    </div>
+
     <!-- Simulation page -->
     <div class="container">
       <h2>Power System Simulation</h2>
@@ -636,6 +661,7 @@
     <script src="./static/libs/jquery-ui/js/jquery.ui.slider.min.js"></script>
     <script src="./static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
     <script src="./static/libs/bootstrap/js/bootstrap.min.js"></script>
+    <script src="./static/libs/bootstrap-wizard/bootstrap-wizard.js"></script>
 
     <script src="./static/libs/highstock/highstock.js"></script>
     <script src="./static/libs/highstock/modules/no-data-to-display.js"></script>

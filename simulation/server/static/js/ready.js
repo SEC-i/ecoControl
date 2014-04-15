@@ -7,6 +7,7 @@ $(function () {
     initialize_svg();
     initialize_hourly_demands();
     initialize_event_handlers();
+    initialize_wizard();
 
     $.getJSON("./api/settings/", function (data) {
         update_setting(data);
@@ -304,4 +305,11 @@ function initialize_diagram() {
             enabled: false
         }
     });
+}
+
+function initialize_wizard() {
+    $.fn.wizard.logging = true;
+    var options = {};
+    var wizard = $("#startup").wizard(options);
+    wizard.show();
 }
