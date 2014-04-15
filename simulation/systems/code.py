@@ -21,7 +21,7 @@ class CodeExecuter():
 
         parent_directory = os.path.dirname(
             os.path.dirname(os.path.abspath(__file__)))
-        self.snippet_folder = parent_directory + "/snippets"
+        self.snippet_folder = parent_directory + "/server/data/snippets"
 
     def create_function(self, code):
         self.code = code

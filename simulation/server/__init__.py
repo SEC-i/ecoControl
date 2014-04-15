@@ -1,14 +1,13 @@
-import sys
 import os
 import time
 import json
 
 from flask import Flask, jsonify, render_template, request
 from werkzeug.serving import run_simple
-from helpers.server import gzipped
+from server.helpers import gzipped
 app = Flask(__name__)
 
-from helpers import SimulationBackgroundRunner,  parse_hourly_demand_values
+from core.helpers import SimulationBackgroundRunner,  parse_hourly_demand_values
 from core import SimulationManager
 
 DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 30
@@ -113,8 +112,6 @@ def set_values(settings_dict, simulation=None):
     if 'password' in settings_dict and settings_dict['password'] == "InfoProfi" and 'code' in settings_dict:
         s.code_executer.create_function(settings_dict['code'])
 
-    
-
     daily_thermal_demand = parse_hourly_demand_values(
         'daily_thermal_demand', settings_dict)
     if len(daily_thermal_demand) == 24:
@@ -129,9 +126,11 @@ def set_values(settings_dict, simulation=None):
         s.plb.gas_costs = float(settings_dict['gas_costs'])
         s.cu.gas_costs = float(settings_dict['gas_costs'])
     if 'electrical_costs' in settings_dict:
-        s.electrical_consumer.electrical_costs = float(settings_dict['electrical_costs'])
+        s.electrical_consumer.electrical_costs = float(
+            settings_dict['electrical_costs'])
     if 'feed_in_reward' in settings_dict:
-        s.electrical_consumer.feed_in_reward = float(settings_dict['feed_in_reward'])
+        s.electrical_consumer.feed_in_reward = float(
+            settings_dict['feed_in_reward'])
 
 
 @app.route('/api/settings/', methods=['GET', 'POST'])
@@ -175,31 +174,8 @@ def export_data(filename):
         for key in data:
             data[key] = data[key][-1]
         data = json.dumps(data, sort_keys=True, indent=4)
-        with open("./exports/" + filename, "w") as export_file:
+        with open(os.path.dirname(os.path.abspath(__file__)) + "/data/exports/" + filename, "w") as export_file:
             for line in data:
                 export_file.write(line)
         return True
     return False
-
-
-if __name__ == '__main__':
-
-    if "profile" in sys.argv:
-        import cProfile
-        env.stop_after_forward = True
-        env.forward = 60 * 60 * 24 * 365
-        cProfile.run("env.run()")
-    elif "simple_profile" in sys.argv:
-        env.stop_after_forward = True
-        env.forward = 60 * 60 * 24 * 365
-        start = time.time()
-        env.run()
-        print time.time() - start
-    else:
-        simulation_manager.forward_main(60 * 60 * 24 * 30, blocking=True)
-        simulation_manager.simulation_start()
-        if "debug" in sys.argv:
-            app.run('0.0.0.0', 8080, debug=True, use_reloader=False)
-        else:
-            app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
-            run_simple('0.0.0.0', 8080, app, threaded=True)
