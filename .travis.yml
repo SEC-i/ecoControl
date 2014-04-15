@@ -1,6 +1,7 @@
 branches:
   only:
     - master
+    - dev
 notifications:
   email:
     - bp2013h1@lists.myhpi.de
