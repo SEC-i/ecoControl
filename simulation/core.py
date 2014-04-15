@@ -19,7 +19,6 @@ from helpers import BulkProcessor, SimulationBackgroundRunner, MeasurementCache,
 
 class Simulation(object):
     # initial_time = Tuesday 1st January 2013 12:00:00
-
     def __init__(self, initial_time=1356998400, copyconstructed=False):
 
         if copyconstructed:

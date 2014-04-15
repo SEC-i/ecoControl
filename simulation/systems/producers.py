@@ -1,4 +1,3 @@
-from data import gas_price_per_kwh
 from helpers import sign
 from basesystem import BaseSystem
 
@@ -19,6 +18,8 @@ class GasPoweredGenerator(BaseSystem):
         self.total_hours_of_operation = 0
         self.power_on_count = 0
 
+        self.gas_costs = 0.0655 # €
+
     def start(self):
         self.running = True
 
@@ -32,7 +33,7 @@ class GasPoweredGenerator(BaseSystem):
             self.env.steps_per_measurement
 
     def get_operating_costs(self):
-        return self.total_gas_consumption * gas_price_per_kwh
+        return self.total_gas_consumption * self.gas_costs
 
 
 class CogenerationUnit(GasPoweredGenerator):

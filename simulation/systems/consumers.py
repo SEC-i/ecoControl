@@ -5,54 +5,61 @@ from basesystem import BaseSystem
 
 class ThermalConsumer(BaseSystem):
 
-    """ physically based heating, using formulas from 
+    """
+    physically based heating, using formulas from 
     http://www.model.in.tum.de/um/research/groups/ai/fki-berichte/postscript/fki-227-98.pdf and
-    http://www.inference.phy.cam.ac.uk/is/papers/DanThermalModellingBuildings.pdf """
+    http://www.inference.phy.cam.ac.uk/is/papers/DanThermalModellingBuildings.pdf 
+    house data from pamiru48 (12 apartments with 22 persons)
 
-    def __init__(self, env, heat_storage):
+    env - simpy simulation environment
+    heat_storage - HeatStorge for energy supply
+    total_heated_floor - area of simulated house in square meter (650)
+    residents - number of residents (22)
+    apartments - number of apartments (12)
+    avg_rooms_per_appartment - average room number (4)
+    average_window_per_room (4)
+    heating_constant - heating demand per square meter in W (rule of thumb for new housing: 100)
+    """
+
+    def __init__(self, env, heat_storage,total_heated_floor=650, residents=22, apartments=12,avg_rooms_per_apartment=4, avg_window_per_room=4, heating_constant=100):
+
         super(ThermalConsumer, self).__init__(env)
 
         self.heat_storage = heat_storage
 
-        self.target_temperature = 20.0
+        self.target_temperature = 20.0 # is overwritten by daily_demand
         self.total_consumption = 0.0
-        self.temperature_room = 12.0
+        # initial temperature
+        self.temperature_room = 12.0 
         self.temperature_warmwater = 40.0
 
         # list of 24 values representing  target_temperature per hour
-
         self.daily_demand = [19, 19, 19, 19, 19, 19, 19, 20, 21,
                              20, 20, 21, 20, 21, 21, 21, 21, 22, 22, 22, 22, 22, 21, 19]
 
-        # data from pamiru48
-        # has 12 apartments with 22 persons
-        self.total_heated_floor = 650.0  # m^2
-        self.residents = 22
+        self.total_heated_floor = total_heated_floor
+        self.residents = residents
         # 2.5m high walls
         self.total_heated_volume = self.total_heated_floor * 2.5
-        appartments = 12
-        avg_rooms_per_appartment = 4
         avg_room_volume = self.total_heated_volume / \
-            (appartments * avg_rooms_per_appartment)
+            (apartments * avg_rooms_per_apartment)
         # avg surface of a cube side, so multiply with 6 to get the whole
         # surface
         avg_wall_size = avg_room_volume ** (2.0 / 3.0)  # m^2
         # lets have each appartment have an average of 1.5 outer walls
-        self.outer_wall_surface = avg_wall_size * appartments * 1.5
-        # assume 100W heating demand per m^2, rule of thumb for new housings
-        self.max_power = self.total_heated_floor * 100.0  # W
+        self.outer_wall_surface = avg_wall_size * apartments * 1.5
+        self.max_power = self.total_heated_floor * float(heating_constant)  # W
 
         self.current_power = 0
-        # m^2, avg per room, avg rooms per appartments, appartments
-        self.window_surface = 4 * 4 * 12
+        # m^2
+        self.window_surface = avg_window_per_room * avg_rooms_per_apartment * apartments
 
         specific_heat_capacity_brick = 1360 * 10 ** 6  # J/(m^3 * K)
         # J / K, approximation for 5 walls including ceiling, 0.36m wall
         # thickness,
         heat_cap_brick_per_room = specific_heat_capacity_brick * \
             (avg_wall_size * 5 * 0.36)
-        # avg rooms per appartent,number of appartments
-        self.heat_cap_brick = heat_cap_brick_per_room * 4 * 12
+        self.heat_cap_brick = heat_cap_brick_per_room * avg_rooms_per_apartment * apartments
 
         #J /( m^3 * K)
         self.specific_heat_capacity_air = 1290.0
@@ -175,11 +182,19 @@ class ThermalConsumer(BaseSystem):
 
 class SimpleElectricalConsumer(BaseSystem):
 
-    def __init__(self, env, power_meter):
+    """
+    Demand based on pamiru's data (22 residents in a 12 apartment house)
+
+    env - simpy simulation environment
+    power_meter - PowerMeter
+    residents - house residents
+    """
+
+    def __init__(self, env, power_meter, residents=22):
         super(SimpleElectricalConsumer, self).__init__(env)
 
         self.power_meter = power_meter
-
+        self.residents = residents
         self.total_consumption = 0.0  # kWh
 
         # list of 24 values representing relative demand per hour
@@ -189,8 +204,7 @@ class SimpleElectricalConsumer(BaseSystem):
     def copyconstruct(cls, env, other_electrical_consumer, power_meter):
         electrical_consumer = SimpleElectricalConsumer(env, power_meter)
         # just a shallow copy, so no dict copy
-        electrical_consumer.__dict__ = other_electrical_consumer.__dict__.copy(
-        )
+        electrical_consumer.__dict__ = other_electrical_consumer.__dict__.copy()
         electrical_consumer.power_meter = power_meter
         electrical_consumer.env = env
         return electrical_consumer
@@ -212,6 +226,8 @@ class SimpleElectricalConsumer(BaseSystem):
             demand = weekly_electrical_demand_summer[quarters * days]
         else:
             demand = weekly_electrical_demand_winter[quarters * days]
+        # data based on 22 residents
+        demand = demand / 22 * self.residents
         # calculate variation using demand and variation
         return demand * self.demand_variation[time_tuple.tm_hour]
 

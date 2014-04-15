@@ -86,6 +86,9 @@ def set_values(settings_dict, simulation=None):
     if 'hs_min_temperature' in settings_dict:
         s.heat_storage.min_temperature = float(
             settings_dict['hs_min_temperature'])
+    if 'hs_critical_temperature' in settings_dict:
+        s.heat_storage.critical_temperature = float(
+            settings_dict['hs_critical_temperature'])
     if 'hs_target_temperature' in settings_dict:
         s.heat_storage.target_temperature = float(
             settings_dict['hs_target_temperature'])
@@ -110,6 +113,8 @@ def set_values(settings_dict, simulation=None):
     if 'password' in settings_dict and settings_dict['password'] == "InfoProfi" and 'code' in settings_dict:
         s.code_executer.create_function(settings_dict['code'])
 
+    
+
     daily_thermal_demand = parse_hourly_demand_values(
         'daily_thermal_demand', settings_dict)
     if len(daily_thermal_demand) == 24:
@@ -119,6 +124,14 @@ def set_values(settings_dict, simulation=None):
         'daily_electrical_variation', settings_dict)
     if len(daily_electrical_variation) == 24:
         s.electrical_consumer.demand_variation = daily_electrical_variation
+
+    if 'gas_costs' in settings_dict:
+        s.plb.gas_costs = float(settings_dict['gas_costs'])
+        s.cu.gas_costs = float(settings_dict['gas_costs'])
+    if 'electrical_costs' in settings_dict:
+        s.electrical_consumer.electrical_costs = float(settings_dict['electrical_costs'])
+    if 'feed_in_reward' in settings_dict:
+        s.electrical_consumer.feed_in_reward = float(settings_dict['feed_in_reward'])
 
 
 @app.route('/api/settings/', methods=['GET', 'POST'])

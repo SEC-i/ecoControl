@@ -1,4 +1,3 @@
-from data import electrical_feed_in_reward_per_kwh, electrical_costs_per_kwh
 from basesystem import BaseSystem
 
 
@@ -7,12 +6,12 @@ class HeatStorage(BaseSystem):
     def __init__(self, env):
         super(HeatStorage, self).__init__(env)
 
-        # data from pamiru48
-        self.capacity = 25000  # liters  (=kilos)
-        self.base_temperature = 20.0  # degree Celsius
-        self.min_temperature = 55.0  # degree Celsius
-        self.target_temperature = 70.0  # degree Celsius
-        self.critical_temperature = 90.0  # degree Celsius
+        # default data from pamiru48
+        self.capacity = 25000 # liters
+        self.base_temperature = 20.0  # assume no lower temperature
+        self.min_temperature = 55.0 # degree Celsius
+        self.target_temperature = 70.0 # degree Celsius
+        self.critical_temperature = 90.0 # degree Celsius
 
         self.specific_heat_capacity = 4.19 * 1 / 3600.0  # kWh/(kg*K)
 
@@ -75,6 +74,9 @@ class PowerMeter(BaseSystem):
         self.energy_consumed = 0.0  # kWh
         self.current_power_consum = 0.0
 
+        self.electrical_costs = 0.283 # costs in Euro to purchase 1 kW/h from external supplier
+        self.feed_in_reward = 0.0917 # reward in Euro for feed in 1 kW/h
+
     def add_energy(self, energy):
         self.energy_produced += energy
 
@@ -82,10 +84,10 @@ class PowerMeter(BaseSystem):
         self.energy_consumed += energy
 
     def get_reward(self):
-        return self.total_fed_in_electricity * electrical_feed_in_reward_per_kwh
+        return self.total_fed_in_electricity * self.feed_in_reward
 
     def get_costs(self):
-        return self.total_purchased * electrical_costs_per_kwh
+        return self.total_purchased * self.electrical_costs
 
     def step(self):
         balance = (self.energy_produced - self.energy_consumed)
