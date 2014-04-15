@@ -6,19 +6,19 @@ from copy import deepcopy
 import simpy
 from simpy.util import start_delayed
 
-from environment import ForwardableRealtimeEnvironment
+from core.environment import ForwardableRealtimeEnvironment
 
 from systems.code import CodeExecuter
 from systems.producers import CogenerationUnit, PeakLoadBoiler
 from systems.storages import HeatStorage, PowerMeter
-from systems.consumers import ThermalConsumer, SimpleElectricalConsumer
-from systems.forecastconsumer import ForecastConsumer
+from systems.consumers import ThermalConsumer, SimpleElectricalConsumer, ForecastConsumer
 
 from helpers import BulkProcessor, SimulationBackgroundRunner, MeasurementCache, parse_hourly_demand_values
 
 
 class Simulation(object):
     # initial_time = Tuesday 1st January 2013 12:00:00
+
     def __init__(self, initial_time=1356998400, copyconstructed=False):
 
         if copyconstructed:

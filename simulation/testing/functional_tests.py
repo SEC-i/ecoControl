@@ -1,7 +1,7 @@
 import unittest
 
 import start
-from forecasting.weatherforecast import Forecast
+from forecasting.weather import WeatherForecast
 
 
 class ForecastTestCase(unittest.TestCase):
@@ -12,7 +12,7 @@ class ForecastTestCase(unittest.TestCase):
                       "the forecast data should contain a value for the inaccuracy of the forecast")
 
     def test_forecast_has_inaccuracy(self):
-        fcast = Forecast()
+        fcast = WeatherForecast()
         try:
             inaccuracy = fcast.get_current_inaccurency()
         except AttributeError:

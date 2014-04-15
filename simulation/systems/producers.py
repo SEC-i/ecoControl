@@ -1,5 +1,5 @@
 from helpers import sign
-from basesystem import BaseSystem
+from systems import BaseSystem
 
 
 class GasPoweredGenerator(BaseSystem):
@@ -18,7 +18,7 @@ class GasPoweredGenerator(BaseSystem):
         self.total_hours_of_operation = 0
         self.power_on_count = 0
 
-        self.gas_costs = 0.0655 # €
+        self.gas_costs = 0.0655  # Euro
 
     def start(self):
         self.running = True

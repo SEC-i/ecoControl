@@ -5,7 +5,7 @@ import json
 
 from flask import Flask, jsonify, render_template, request
 from werkzeug.serving import run_simple
-from flask_helpers import gzipped
+from helpers.server import gzipped
 app = Flask(__name__)
 
 from helpers import SimulationBackgroundRunner,  parse_hourly_demand_values

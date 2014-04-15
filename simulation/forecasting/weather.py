@@ -1,11 +1,11 @@
 import urllib2
 import json
-from systems.data import outside_temperatures_2013,outside_temperatures_2012
+from systems.data import outside_temperatures_2013, outside_temperatures_2012
 import time
 import datetime
 
 
-class Forecast:
+class WeatherForecast:
 
     def __init__(self, env=None):
         self.env = env
@@ -38,7 +38,7 @@ class Forecast:
                 try:
                     forecast_temperatures.append(data_set["main"]["temp"])
                 except:
-                    #last value of data seams always to be gdps
+                    # last value of data seams always to be gdps
                     if "gdps" not in data_set:
                         print "error reading temperatures from: \n", json.dumps(data_set, sort_keys=True, indent=4, separators=(',', ': '))
             print "read ", len(forecast_temperatures), "temperatures", "hourly = ", hourly
@@ -47,8 +47,9 @@ class Forecast:
             print e
             # Use history data
             result = []
-            for i in range(0,40):
-                result.append(self.get_average_outside_temperature(self.get_date(),i))
+            for i in range(0, 40):
+                result.append(
+                    self.get_average_outside_temperature(self.get_date(), i))
             return result
 
         return forecast_temperatures
@@ -57,7 +58,7 @@ class Forecast:
         """get most accurate forecast for given date
         that can be derived from 5 days forecast, 14 days forecast or from history data"""
         history_data = self.get_average_outside_temperature(date)
-        time_passed = (date - self.get_date()) / (60.0 * 60.0 * 24)  # in days
+        time_passed = (date - self.get_data()) / (60.0 * 60.0 * 24)  # in days
         if time_passed < 0.0 or time_passed > 13.0:
             return history_data
 
