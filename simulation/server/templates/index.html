@@ -29,26 +29,152 @@
   </head>
 
   <body>
-    <div class="wizard" id="startup" data-title="Setup Engery Management System">
-      <div class="wizard-card" data-cardname="card1" selected>
+    <!-- Wizard -->
+    <div class="wizard" id="startup" data-title="Setup Energy Management System">
+      <div class="wizard-card" data-cardname="card1">
         <h3>General</h3>
-        Some form
+        <div class="wizard-input-section">
+          <div class="form-group">
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_apartments">Number of Housing Apartments</label>
+              <input type="text" class="form-control input-sm" id="wizard_apartments" name="apartments" value="12">
+
+              <label class="control-label" for="wizard_avg_rooms_per_apartment">Average Rooms per Apartment</label>
+              <input type="text" class="form-control input-sm" id="wizard_avg_rooms_per_apartment" name="avg_rooms_per_apartment" value="4">
+
+              <label class="control-label" for="wizard_apartments">Number of Residents</label>
+              <input type="text" class="form-control input-sm" id="wizard_residents" name="residents" value="22">
+
+              <label class="control-label" for="wizard_apartments">Avg. Thermal Consumption per Year</label>
+              <input type="text" class="form-control input-sm" id="wizard_avg_thermal_consumption" name="avg_thermal_consumption" value="0">
+
+              <label class="control-label" for="wizard_apartments">Type of Housing</label>
+              <select id="wizard_type_of_housing" name="type_of_housing" class="form-control input-sm">
+                <option value="">New Building</option>
+                <option value="">Old Building</option>
+              </select>
+
+              <label class="control-label" for="wizard_location">Location</label>
+              <input type="text" class="form-control input-sm" id="wizard_location"  name="location"value="Berlin">
+
+            </div>
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_avg_windows_per_room">Avg. Windows per Room</label>
+              <input type="text" class="form-control input-sm" id="wizard_avg_windows_per_room"  name="avg_windows_per_room" value="4">
+
+              <label class="control-label" for="wizard_total_heated_floor">Total Heated Living Area</label>
+              <input type="text" class="form-control input-sm" id="wizard_total_heated_floor" name="total_heated_floor" value="650">
+
+              <label class="control-label" for="wizard_type_of_residents">Type of Residents</label>
+              <select id="wizard_type_of_residents" name="type_of_residents" class="form-control input-sm">
+                <option value="">Mixed</option>
+                <option value="">Young</option>
+                <option value="">Old</option>
+              </select>
+
+              <label class="control-label" for="wizard_avg_electrical_consumption">Average Electrical Consumption per Year</label>
+              <input type="text" class="form-control input-sm" id="wizard_avg_electrical_consumption" name="avg_electrical_consumption" value="0">
+
+              <label class="control-label" for="wizard_type_of_windows">Type of Windows</label>
+              <select id="wizard_type_of_windows" name="type_of_windows" class="form-control input-sm">
+                <option value="">Single Glazing</option>
+                <option value="">Double Glazing</option>
+                <option value="">XP</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="wizard-card" data-cardname="card2" selected>
-        <h3>CU</h3>
-        Some form
+
+      <div class="wizard-card" data-cardname="card2">
+        <h3>Pricing</h3>
+        <div class="wizard-input-section">
+          <div class="form-group">
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_gas_costs">Gas Costs per kWh</label>
+              <input type="text" class="form-control" id="wizard_gas_costs" name="gas_costs" value="0.0655">
+
+              <label class="control-label" for="wizard_feed_in_reward">Feed In Reward per kWh</label>
+              <input type="text" class="form-control" id="wizard_feed_in_reward" name="feed_in_reward" value="0.0917">
+            </div>
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_electrical_costs">Electrical Costs per kWh</label>
+              <input type="text" class="form-control" id="wizard_electrical_costs" name="electrical_costs" value="0.283">
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="wizard-card" data-cardname="card3" selected>
+
+      <div class="wizard-card" data-cardname="card3">
+        <h3>Cogeneration Unit</h3>
+        <div class="wizard-input-section">
+          <div class="form-group">
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_cu_max_gas_input">Power</label>
+              <input type="text" class="form-control"id="wizard_electrical_costs" name="electrical_costs"value="19.0">
+
+              <label class="control-label" for="wizard_cu_thermal_efficiency">Thermal Efficiency</label>
+              <input type="text" class="form-control" id="wizard_electrical_costs" name="electrical_costs" value="0.65">
+
+              <label class="control-label" for="wizard_cu_maintenance_interval">Maintenance Interval (Time)</label>
+              <input type="text" class="form-control" id="wizard_cu_maintenance_interval" name="cu_maintenance_interval" value="8000">
+
+              <label class="control-label" for="wizard_cu_purchase_date">Date of Purchase</label>
+              <input type="text" class="form-control" id="wizard_cu_purchase_date" name="cu_purchase_date" value="01.01.2013">
+            </div>
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_cu_minimal_workload">Minimal Workload</label>
+              <input type="text" class="form-control" id="wizard_cu_minimal_workload" name="cu_minimal_workload" value="19.0">
+
+              <label class="control-label" for="wizard_cu_electrical_efficiency">Electrical Efficiency</label>
+              <input type="text" class="form-control" id="wizard_cu_electrical_efficiency" name="cu_electrical_efficiency" value="0.247">
+
+              <label class="control-label" for="wizard_cu_maintenance_interval">Maintenance Interval (Power-Ons)</label>
+              <input type="text" class="form-control" id="wizard_cu_maintenance_interval" name="cu_maintenance_interval" value="2000">
+
+              <label class="control-label" for="wizard_cu_purchase_price">Purchase Price</label>
+              <input type="text" class="form-control" id="wizard_cu_purchase_price" name="cu_purchase_price" value="15 000">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-card" data-cardname="card4">
+        <h3>Peak Load Boiler</h3>
+        <div class="wizard-input-section">
+          <div class="form-group">
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_cu_max_gas_input">Power</label>
+              <input type="text" class="form-control" id="wizard_cu_max_gas_input" name="cu_max_gas_input" value="19.0">
+            </div>
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_cu_thermal_efficiency">Thermal Efficiency</label>
+              <input type="text" class="form-control" id="wizard_cu_thermal_efficiency" name="cu_thermal_efficiency" value="0.65">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-card" data-cardname="card5">
         <h3>Heat Storage</h3>
-        Some form
-      </div>
-      <div class="wizard-card" data-cardname="card4" selected>
-        <h3>PLB</h3>
-        Some form
-      </div>
-      <div class="wizard-card" data-cardname="card5" selected>
-        <h3>Misc</h3>
-        Some form
+        <div class="wizard-input-section">
+          <div class="form-group">
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_hs_capacity">Capacity</label>
+              <input type="text" class="form-control" id="wizard_hs_capacity" name="hs_capacity" value="25 000">
+              
+              <label class="control-label" for="wizard_hs_min_temperature">Minimal Temperature</label>
+              <input type="text" class="form-control" id="wizard_hs_min_temperature" name="hs_min_temperature" value="55.0">
+            </div>
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_hs_target_temperature">Target Temperature</label>
+              <input type="text" class="form-control" id="wizard_hs_target_temperature" name="hs_target_temperature" value="70.0">
+
+              <label class="control-label" for="wizard_hs_critical_temperature">Critical Temperature</label>
+              <input type="text" class="form-control" id="wizard_hs_critical_temperature" name="hs_critical_temperature" value="90.0">
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

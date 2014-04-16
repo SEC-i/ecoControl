@@ -309,7 +309,17 @@ function initialize_diagram() {
 
 function initialize_wizard() {
     $.fn.wizard.logging = true;
-    var options = {};
+    var options = {
+        submitUrl: '/api/start/',
+        contentWidth: 1000,
+        contentHeight: 500,
+        showCancel: true,
+        buttons: {
+            cancelText: "Use Defaults",
+            submitText: 'Configure',
+            submittingText: "Configuring..."
+        }
+    };
     var wizard = $("#startup").wizard(options);
     wizard.show();
 }

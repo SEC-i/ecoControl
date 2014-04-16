@@ -23,7 +23,7 @@ class ThermalConsumer(BaseSystem):
     heating_constant - heating demand per square meter in W (rule of thumb for new housing: 100)
     """
 
-    def __init__(self, env, heat_storage, total_heated_floor=650, residents=22, apartments=12, avg_rooms_per_apartment=4, avg_window_per_room=4, heating_constant=100):
+    def __init__(self, env, heat_storage, total_heated_floor=650, residents=22, apartments=12, avg_rooms_per_apartment=4, avg_windows_per_room=4, heating_constant=100):
 
         super(ThermalConsumer, self).__init__(env)
 
@@ -54,7 +54,7 @@ class ThermalConsumer(BaseSystem):
 
         self.current_power = 0
         # m^2
-        self.window_surface = avg_window_per_room * \
+        self.window_surface = avg_windows_per_room * \
             avg_rooms_per_apartment * apartments
 
         specific_heat_capacity_brick = 1360 * 10 ** 6  # J/(m^3 * K)
