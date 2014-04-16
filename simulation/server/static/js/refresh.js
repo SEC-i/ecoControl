@@ -115,7 +115,6 @@ function update_forecast(data){
 
     for (var i = 0; i < 7; i++) {
         chart.series[14+i].setData(new_data[i], false);
-        chart.series[14+i].setVisible(true, false);
     };
 
     chart.redraw();
