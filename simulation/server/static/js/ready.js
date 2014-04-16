@@ -6,8 +6,6 @@ $(function () {
     initialize_editor();
     initialize_svg();
     initialize_hourly_demands();
-    initialize_event_handlers();
-
     $.getJSON("./api/settings/", function (data) {
         update_setting(data);
     }).done(function () {
@@ -22,6 +20,8 @@ $(function () {
             }, 2000);
         });
     });
+
+    initialize_event_handlers();
 });
 
 // INITIALIZATIONS
@@ -282,9 +282,6 @@ function initialize_diagram() {
                 }
             }]
         },
-        yAxis: {
-            min: -10
-        },
         tooltip: {
             valueDecimals: 2
         },
@@ -304,4 +301,16 @@ function initialize_diagram() {
             enabled: false
         }
     });
+
+    initialize_diagram_filters();
+}
+
+function initialize_diagram_filters(){
+    for (var i = 0; i < 7; i++) {
+        series = series_data[i];
+        $('#diagram_filters').append('<label class="btn btn-default" style="color: ' + series.color + ';"><input class="diagram_filter" type="checkbox" value="' + i + '">' + series.name + '</label>');
+    };
+
+    $('.diagram_filter').change(filter_series);
+
 }

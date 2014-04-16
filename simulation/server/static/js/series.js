@@ -111,7 +111,6 @@ var series_data = [{
         name: 'Cogeneration Unit Workload (not yet applied)',
         data: [],
         color: modified[0],
-        visible: false,
         dashStyle: 'longdash',
         tooltip: {
             valueSuffix: ' %'
@@ -120,7 +119,6 @@ var series_data = [{
         name: 'Peak Load Boiler Workload (not yet applied)',
         data: [],
         color: modified[1],
-        visible: false,
         dashStyle: 'longdash',
         tooltip: {
             valueSuffix: ' %'
@@ -129,7 +127,6 @@ var series_data = [{
         name: 'Heat Storage Temperature (not yet applied)',
         data: [],
         color: modified[2],
-        visible: false,
         dashStyle: 'longdash',
         tooltip: {
             valueSuffix: ' °C'
@@ -138,7 +135,6 @@ var series_data = [{
         name: 'Thermal Consumption (not yet applied)',
         data: [],
         color: modified[3],
-        visible: false,
         dashStyle: 'longdash',
         tooltip: {
             valueSuffix: ' kW'
@@ -147,7 +143,6 @@ var series_data = [{
         name: 'Warmwater Consumption (not yet applied)',
         data: [],
         color: modified[4],
-        visible: false,
         dashStyle: 'longdash',
         tooltip: {
             valueSuffix: ' kW'
@@ -156,7 +151,6 @@ var series_data = [{
         name: 'Outside Temperature (not yet applied)',
         data: [],
         color: modified[5],
-        visible: false,
         dashStyle: 'longdash',
         tooltip: {
             valueSuffix: ' °C'
@@ -165,7 +159,6 @@ var series_data = [{
         name: 'Electrical Consumption (not yet applied)',
         data: [],
         color: modified[6],
-        visible: false,
         dashStyle: 'longdash',
         tooltip: {
             valueSuffix: ' kW'
