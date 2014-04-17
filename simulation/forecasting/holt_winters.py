@@ -2,8 +2,6 @@
 from sys import exit
 from math import sqrt
 from numpy import array
-import matplotlib.pyplot as plt
-import matplotlib.dates as md
 from simulation.systems.data import weekly_electrical_demand_winter
 
 """Holt-Winters algorithms to forecasting
@@ -14,7 +12,8 @@ References:
  Byrd, R. H.; Lu, P.; Nocedal, J. A Limited Memory Algorithm for Bound Constrained Optimization, (1995), SIAM Journal on Scientific and Statistical Computing, 16, 5, pp. 1190-1208."""
  
 from scipy.optimize import fmin_l_bfgs_b
- 
+
+
 def RMSE(params, *args):
  
     Y = args[0]
@@ -171,49 +170,3 @@ def multiplicative(x, m, fc, alpha = None, beta = None, gamma = None):
     return Y[-fc:], alpha, beta, gamma, rmse
 
 
-
-def plot_dataset(timedata, sensordata):
-
-        fig, ax = plt.subplots()
-        for name,sensorvals in sensordata.items():
-            if name != "time":
-                ax.plot(range(len(sensorvals)),sensorvals,label=name)
-        
-        # Now add the legend with some customizations.
-        legend = ax.legend(loc='upper center', shadow=True)
-        
-        # The frame is matplotlib.patches.Rectangle instance surrounding the legend.
-        frame = legend.get_frame()
-        frame.set_facecolor('0.90')
-        
-        # Set the fontsize
-        for label in legend.get_texts():
-            label.set_fontsize('medium')
-        
-        for label in legend.get_lines():
-            label.set_linewidth(1.5)
-
-        plt.subplots_adjust(bottom=0.2)
-        plt.xlabel('Simulated time in seconds')
-        plt.xticks( rotation=90 )
-        plt.grid(True)
-        plt.show(block=False)
-
-
-#optimize algorithm for specific dataset
-def holt_winters_parameters():
-    y = weekly_electrical_demand_winter
-
-    alpha = 0.30 #forecastings are weighted more on past data
-    beta = 0.005 #very little slope changes
-    gamma = 0.8 #estimation of seasonal component based on  recent changes
-    i = "start"
-    m = len(y) * (2 / 3) #value sampling shift.. somehow
-    fc = len(y) # whole data length
-
-    while i != "stop":
-        (forecast_data, alpha, beta, gamma, rmse) = additive(y, m, fc,alpha, beta, gamma)
-        values ={ 'forcasting':forecast_data, 'simulation':y}
-        plot_dataset(len(y),values)
-        i = raw_input("change val")
-        exec(i)

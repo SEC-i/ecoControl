@@ -1,8 +1,10 @@
 # Python wrapper for R forecast stuff
 import numpy as np
-from simulation.systems.data import weekly_electrical_demand_winter
+from simulation.systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
+from datetime import date, datetime, timedelta
+from holt_winters import additive, multiplicative
 
 print 'Start importing R.'
 from rpy2 import robjects 
@@ -17,47 +19,18 @@ ts = robjects.r['ts']
 print 'Finished importing R.'
 
 
-def nparray2rmatrix(x):
-  nr, nc = x.shape
-  xvec = robjects.FloatVector(x.transpose().reshape((x.size)))
-  xr = robjects.r.matrix(xvec, nrow=nr, ncol=nc)
-  return xr
 
-def nparray2rmatrix_alternative(x):
-  nr, nc = x.shape
-  xvec = robjects.FloatVector(x.reshape((x.size)))
-  print nr, nc
-  dimnames = ["xAxis", "yAxis"]
-  xr = robjects.r.matrix(xvec, nrow=nr, ncol=nc, byrow=True)
-  return xr
 
-def do_forecast(series, frequency=None, horizon=30, summary=False, exog=None):
-  if frequency:
-    series = ts(series, frequency=frequency)
-  else:
-    series = ts(series)
-  if exog:
-    exog_train, exog_test = exog
-    r_exog_train = nparray2rmatrix_alternative(exog_train)
-    r_exog_test = nparray2rmatrix_alternative(exog_test)
-    order = robjects.IntVector([1, 0, 2])  # c(1,0,2) # TODO find right model
-    fit = forecast.Arima(series, order=order, xreg=r_exog_train)
-    forecast_result = forecast.forecast(fit, h=horizon, xreg=r_exog_test)
-  else:
-    # fit = forecast.auto_arima(series)
-    # robjects.r.plot(series)
-    fit = stats.HoltWinters(series)
-    forecast_result = forecast.forecast(fit, h=horizon)
-  if summary:
-    modsummary = base.summary(fit)
-    print modsummary
-  forecast_values = np.array(list(forecast_result.rx2('mean')))
-  return forecast_values
+        
+
+
+
 
 def ets(y):
-    fit = forecast.ets(y)
+    print forecast.ets.formals()
+    fit = forecast.ets(y, model="MAM")
     print fit
-    forecast_result = forecast.forecast(fit,h=100)
+    forecast_result = forecast.forecast(fit)
     return forecast_result
   
   
@@ -91,27 +64,61 @@ def plot_dataset(sensordata):
 
 
 # Example
-data = np.array(weekly_electrical_demand_winter)
-
-series = ts(data)
-exog_train = np.ones((100, 2))
-exog_test = np.ones((100, 2))
-horizon = 100
-# res = do_forecast(series, horizon=horizon, exog=(exog_train, exog_test))
-print "-------------------------------"
-forecast_result = ets(series)
-forecast_values = forecast_result.rx2("mean")
-values ={ 'forcasting':forecast_values, 'simulation':data}
-
+#data = np.array(weekly_electrical_demand_winter)
+        
     
-r = robjects.r
-r.X11()
-
-r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
-r.plot(forecast_result)
-g = raw_input("wai")
+data =  np.array(make_whole_year_data())
 
 
+y = make_whole_year_data()
+alpha = 0.30 #forecastings are weighted more on past data
+beta = 0.00 #very little slope changes
+gamma = 0.8 #estimation of seasonal component based on  recent changes
+i = "start"
+m = int(len(y) * 0.2) #value sampling shift.. somehow
+fc = len(y) # whole data length
+
+(forecast_values, alpha, beta, gamma, rmse) = multiplicative(y, m, fc,alpha, beta, gamma)
+values ={ 'forcasting':list(forecast_values), 'simulation':data}
+plot_dataset(values)
 
 
-#plot_dataset(values)
+# series = ts(data,start=2013, deltat=(1/(365* 12.0 * 24.0 * 15 )))
+# 
+# horizon = 100
+# # res = do_forecast(series, horizon=horizon, exog=(exog_train, exog_test))
+# print "-------------------------------"
+# forecast_result = ets(series)
+# 
+# forecast_values = forecast_result.rx2("mean")
+# values ={ 'forcasting':list(forecast_values), 'simulation':data}
+# 
+# plot_dataset(values)
+
+
+
+# r = robjects.r
+# r.X11()
+# #  
+# r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
+# r.plot(forecast_result)  
+# #  
+# plot_dataset(values)
+#    
+# fit = forecast.tbats(series)
+# forecast_result = forecast.forecast(fit, h=200)
+# r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
+# r.plot(forecast_result)
+# #  
+# values ={ 'forcasting':list(forecast_result.rx2("mean")), 'simulation':data}
+# #  
+# plot_dataset(values)
+
+# fit = stats.HoltWinters(series)
+# forecast_result = forecast.forecast(fit, h=2000)
+#  
+# r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
+# r.plot(forecast_result)
+#  
+# values ={ 'forcasting':list(forecast_result.rx2("mean")), 'simulation':data}
+# plot_dataset(values)
