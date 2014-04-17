@@ -100,6 +100,7 @@ def linear(x, fc, alpha = None, beta = None):
         y.append(a[i + 1] + b[i + 1])
  
     rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y[:-fc], y[:-fc - 1])]) / len(Y[:-fc]))
+
  
     return Y[-fc:], alpha, beta, rmse
  
@@ -148,6 +149,8 @@ def multiplicative(x, m, fc, alpha = None, beta = None, gamma = None):
  
         parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True)
         alpha, beta, gamma = parameters[0]
+        
+        print alpha,beta,gamma
  
     a = [sum(Y[0:m]) / float(m)]
     b = [(sum(Y[m:2 * m]) - sum(Y[0:m])) / m ** 2]

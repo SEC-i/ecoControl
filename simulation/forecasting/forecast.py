@@ -1,6 +1,5 @@
 from simulation.systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_workday, warm_water_demand_weekend
 from datetime import date,datetime,timedelta
-from dateutil.relativedelta import relativedelta
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
 from holt_winters import multiplicative, additive
@@ -18,24 +17,24 @@ def linear_interpolation(a,b,x):
 class Forecast:
     
     def __init__(self):
-        self.wholeyear_electrical_demand = self.make_whole_year_data(weekly_electrical_demand_winter, 
+        self.twoyear_electrical_demand = self.make_two_year_data(weekly_electrical_demand_winter, 
                                                                      weekly_electrical_demand_summer, 
                                                                      sampling_interval = 15,
-                                                                     start = datetime(2013,1,1,0,0,0))
+                                                                     start = datetime(2012,1,1,0,0,0))
         # map workdays to 0 and weekends to 1
         map_week_to_index = lambda x: 0 if x < 5 else 1
         input_data = warm_water_demand_workday + warm_water_demand_weekend
-        self.wholeyear_warmwater_demand = self.make_whole_year_data(input_data, 
+        self.wholeyear_warmwater_demand = self.make_two_year_data(input_data, 
                                                                      input_data,
                                                                      sampling_interval = 15,
                                                                      start = datetime(2013,1,1,0,0,0),
                                                                      map_weekday=map_week_to_index)
     def forecast_electrical_demand(self):
-        y = self.wholeyear_electrical_demand
-        alpha = 0.1  #forecastings are weighted more on new data
-        beta = 0.00000 #no slope changes
-        gamma = 0.9 #estimation of seasonal component based on  recent changes
-        m = 10000#int(len(y) * 0.5) #value sampling shift.. somehow
+        y = self.twoyear_electrical_demand
+        alpha = 0.9  #forecastings are weighted more on new data
+        beta = 0 #no slope changes
+        gamma = 1 #estimation of seasonal component based on  recent changes
+        m = int(len(y) * 0.5) #value sampling shift.. somehow
         fc = len(y) * 2 # whole data length
         (forecast_values, alpha, beta, gamma, rmse) = multiplicative(y, m, fc,alpha, beta, gamma)
         values ={ 'forcasting':list(forecast_values), 'simulation':y}
@@ -49,12 +48,12 @@ class Forecast:
     assuming a sub-hour sampled dataset.
     map_weekday is a function which maps each weekday to an array index, so a array with only a workday and a weekend day
     will be map_weekday = lambda x: 0 if x < 5 else 1"""
-    def make_whole_year_data(self,dataset_winter, dataset_summer, sampling_interval, start, map_weekday=lambda x: x):
+    def make_two_year_data(self,dataset_winter, dataset_summer, sampling_interval, start, map_weekday=lambda x: x):
         wholeyear = []
         winter = start
-        summer = start + relativedelta(months=6)
+        summer = start + timedelta(days=365 / 2.0)
         season_delta = (summer - winter).total_seconds()
-        for t in perdelta(start, start+relativedelta(months=12), timedelta(minutes=sampling_interval)):
+        for t in perdelta(start, start+timedelta(days=365), timedelta(minutes=sampling_interval)):
             arr_index = map_weekday(t.weekday()) + t.hour + (t.minute / sampling_interval)
             summer_value = dataset_winter[arr_index]
             winter_value = dataset_summer[arr_index]
@@ -65,7 +64,8 @@ class Forecast:
             result_value = linear_interpolation( summer_value, winter_value, mix_factor)
             
             wholeyear.append(result_value)
-        return wholeyear
+        twoyear = wholeyear + wholeyear
+        return twoyear
     
     
     def plot_dataset(self,sensordata):

@@ -67,10 +67,10 @@ def plot_dataset(sensordata):
 #data = np.array(weekly_electrical_demand_winter)
         
     
-data =  np.array(make_whole_year_data())
+data =  np.array(make_two_year_data())
 
 
-y = make_whole_year_data()
+y = make_two_year_data()
 alpha = 0.30 #forecastings are weighted more on past data
 beta = 0.00 #very little slope changes
 gamma = 0.8 #estimation of seasonal component based on  recent changes
