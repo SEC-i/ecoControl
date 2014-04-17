@@ -1,4 +1,5 @@
 import time
+from math import cos,pi
 
 from forecasting.weather import WeatherForecast
 from systems import BaseSystem
@@ -256,13 +257,12 @@ class SimpleElectricalConsumer(BaseSystem):
         time_tuple = time.gmtime(self.env.now)
         quarter = int(time_tuple.tm_min / 15.0)
         quarters = (time_tuple.tm_hour * 4 + quarter) % (4 * 24)
-        days = time_tuple.tm_wday + 1  # days 0-6 converted to 1-7
-        # Summer: 1 May (120) - 1 October (273)
-        yday = time_tuple.tm_yday
-        if yday > 120 and yday < 273:
-            demand = weekly_electrical_demand_summer[quarters * days]
-        else:
-            demand = weekly_electrical_demand_winter[quarters * days]
+        # week days 0-6 converted to 1-7
+        wday = time_tuple.tm_wday + 1
+        interpolation = interpolate_year(time_tuple.tm_yday)
+        summer_part =  (1-interpolation) *  weekly_electrical_demand_summer[quarters * wday]
+        winter_part = interpolation * weekly_electrical_demand_winter[quarters * wday]
+        demand = summer_part + winter_part
         # data based on 22 residents
         demand = demand / 22 * self.residents
         # calculate variation using demand and variation
@@ -270,3 +270,21 @@ class SimpleElectricalConsumer(BaseSystem):
 
     def get_consumption_energy(self):
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
+
+
+"""
+input: int between 0,365
+output: float between 0,1
+interpolates a year day to 1=winter, 0=summer
+"""
+def interpolate_year(day):
+    # shift summer days at 180-365
+    # 1'April = 90th day
+    day_shift = day + 90
+    day_shift %= 365
+    day_float = float(day) / 365.0
+    interpolation = cos(day_float * pi * 2)
+    # shift to 0-1
+    interpolation /= 2
+    interpolation += 0.5
+    return interpolation

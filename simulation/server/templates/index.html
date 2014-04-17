@@ -46,17 +46,26 @@
               </div>
               <div id="diagram_container" class="panel-collapse collapse in">
                 <div class="panel-body text-center">
-                  <div id="simulation_diagram"></div>
-                  <div class="btn-group btn-group-sm">
-                    <button type="button" class="btn btn-default fast_forward_button" value="12">+ 12 Hours</button>
-                    <button type="button" class="btn btn-default fast_forward_button" value="24">+ 1 Day</button>
-                    <button type="button" class="btn btn-default fast_forward_button" value="168">+ 1 Week</button>
-                    <button type="button" class="btn btn-default fast_forward_button" value="720">+ 1 Month</button>
-                    <button type="button" class="btn btn-default fast_forward_button" value="4320">+ 6 Months</button>
-                    <button type="button" class="btn btn-default fast_forward_button" value="8760">+ 1 Year</button>
+                  <div class="row">
+                    <div class="col-md-12 text-right">
+                      <div class="btn-group btn-group-xs">
+                        <button type="button" class="btn btn-default fast_forward_button" value="12">+ 12 Hours</button>
+                        <button type="button" class="btn btn-default fast_forward_button" value="24">+ 1 Day</button>
+                        <button type="button" class="btn btn-default fast_forward_button" value="168">+ 1 Week</button>
+                        <button type="button" class="btn btn-default fast_forward_button" value="720">+ 1 Month</button>
+                        <button type="button" class="btn btn-default fast_forward_button" value="4320">+ 6 Months</button>
+                        <button type="button" class="btn btn-default fast_forward_button" value="8760">+ 1 Year</button>
+                      </div>
+                      <div class="btn-group btn-group-xs">
+                        <button id="reset_simulation" type="button" class="btn btn-default"><span class="glyphicon glyphicon-repeat"></span> Restart</button>
+                      </div>
+                    </div>
                   </div>
-                  <div class="btn-group btn-group-sm">
-                    <button id="reset_simulation" type="button" class="btn btn-default"><span class="glyphicon glyphicon-repeat"></span> Restart</button>
+                  <div id="simulation_diagram"></div>
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div id="diagram_filters" class="btn-group btn-group-sm" data-toggle="buttons"></div>
+                    </div>
                   </div>
                 </div>
               </div>
