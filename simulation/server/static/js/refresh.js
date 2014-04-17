@@ -2,7 +2,11 @@ var current_time = 0;
 
 function refresh() {
     if (refresh_gui) {
-        $.getJSON("./api/data/" + current_time + "/", function (data) {
+        url = './api/data/';
+        if (current_time != undefined) {
+            url += current_time + '/';
+        }
+        $.getJSON(url, function (data) {
             update_setup(data);
             update_diagram(data);
             current_time = data['past']['time'][data['past']['time'].length - 1];
@@ -50,17 +54,7 @@ function update_item(key, value, suffix) {
 function update_diagram(data) {
     var chart = $('#simulation_diagram').highcharts();
     var past = data['past'];
-    var future = data['future'];
 
-    new_data = [
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        []
-    ];
     for (var i = 0; i < past['time'].length; i++) {
         var timestamp = get_timestamp(past['time'][i]);
         chart.series[0].addPoint([timestamp, past['cu_workload'][i]], false);
@@ -72,25 +66,11 @@ function update_diagram(data) {
         chart.series[6].addPoint([timestamp, past['electrical_consumption'][i]], false);
     };
     chart.xAxis[0].plotLinesAndBands[0].options['value'] = timestamp; // moves vertical line to end of past data set
-    for (var i = 0; i < future['time'].length; i++) {
-        var timestamp = get_timestamp(future['time'][i]);
-        new_data[0].push([timestamp, future['cu_workload'][i]]);
-        new_data[1].push([timestamp, future['plb_workload'][i]]);
-        new_data[2].push([timestamp, future['hs_temperature'][i]]);
-        new_data[3].push([timestamp, future['thermal_consumption'][i]]);
-        new_data[4].push([timestamp, future['warmwater_consumption'][i]]);
-        new_data[5].push([timestamp, future['outside_temperature'][i]]);
-        new_data[6].push([timestamp, future['electrical_consumption'][i]]);
-    };
-
-    for (var i = new_data.length - 1; i >= 0; i--) {
-        chart.series[7 + i].setData(new_data[i], false);
-    };
-
-    chart.redraw();
+    
+    update_forecast(data['future'], false);
 }
 
-function update_forecast(data){
+function update_forecast(data, unsaved){
     var chart = $('#simulation_diagram').highcharts();
 
     new_data = [
@@ -115,7 +95,11 @@ function update_forecast(data){
     };
 
     for (var i = 0; i < 7; i++) {
-        chart.series[14+i].setData(new_data[i], false);
+        if (!unsaved) {
+            chart.series[7+i].setData(new_data[i], false);
+        } else {
+            chart.series[14+i].setData(new_data[i], false);
+        }
     };
 
     chart.redraw();

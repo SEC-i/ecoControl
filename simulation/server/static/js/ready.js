@@ -124,7 +124,7 @@ function initialize_event_handlers() {
         }
         post_data += "&forecast_time=" + 3600.0 * 24 * 30;
         $.post("./api/forecasts/", post_data, function (data) {
-            update_forecast(data);
+            update_forecast(data, true);
         });
     });
 
@@ -150,7 +150,7 @@ function initialize_event_handlers() {
             password: $('#password').val(),
             forecast_time: 3600.0 * 24 * 30
         }, function (data) {
-            update_forecast(data);
+            update_forecast(data, true);
         });
     });
 
