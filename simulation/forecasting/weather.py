@@ -15,6 +15,10 @@ class WeatherForecast:
 
         self.city_id = self.find_city(city)['default']
 
+    """
+    returns a dictionary with city id, names and country based on the given search name
+    the first search result is returnd as 'default' too
+    """
     def find_city(self, name):
         url = "http://api.openweathermap.org/data/2.5/find?q=" + name + "&mode=json"
         cities = {}
