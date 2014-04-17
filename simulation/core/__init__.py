@@ -32,13 +32,12 @@ class Simulation(object):
         # initialize power systems
         self.heat_storage = HeatStorage(self.env)
         self.power_meter = PowerMeter(self.env)
+
         self.cu = CogenerationUnit(
             self.env, self.heat_storage, self.power_meter)
         self.plb = PeakLoadBoiler(self.env, self.heat_storage)
         self.thermal_consumer = ForecastConsumer(self.env, self.heat_storage)
-        #self.thermal_consumer = ThermalConsumer(self.env, self.heat_storage)
-        self.electrical_consumer = SimpleElectricalConsumer(
-            self.env, self.power_meter)
+        self.electrical_consumer = SimpleElectricalConsumer(self.env, self.power_meter)
 
         self.initialize_helpers()
 
@@ -149,11 +148,8 @@ class Simulation(object):
 
 class SimulationManager:
 
-    def __init__(self, initial_time=None):
-        if initial_time != None:
-            self.main_simulation = Simulation(initial_time=initial_time)
-        else:
-            self.main_simulation = Simulation()
+    def __init__(self, initial_time):
+        self.main_simulation = Simulation(initial_time=initial_time)
 
         sim = self.main_simulation
         self.measurements = MeasurementCache(
@@ -163,10 +159,12 @@ class SimulationManager:
         sim.env.register_step_function(self.measurements.take)
 
         self.thread = None
+        self.running = False
 
     def simulation_start(self, blocking=False):
         self.thread = SimulationBackgroundRunner(self.main_simulation.env)
         self.thread.start()
+        self.running = True
         if blocking:
             # wait on forwarding to end
             # cant use thread.join() here, because sim will not stop after

@@ -8,6 +8,7 @@ function refresh() {
             current_time = data['past']['time'][data['past']['time'].length - 1];
         });
     }
+    setTimeout(refresh, 2000);
 }
 
 function update_setup(data) {

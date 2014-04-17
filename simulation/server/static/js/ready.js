@@ -8,16 +8,17 @@ $(function () {
     initialize_hourly_demands();
     $.getJSON("./api/settings/", function (data) {
         update_setting(data);
+
+        if (data['simulation_running'] == '1'){
+            refresh();
+        } else {
+            initialize_wizard();
+        }
     }).done(function () {
         $.getJSON("./api/code/", function (data) {
             editor.setValue(data['editor_code'], 1);
         }).done(function () {
             initialize_diagram();
-            refresh();
-            // set up refresh loop
-            setInterval(function () {
-                refresh();
-            }, 2000);
         });
     });
 
@@ -313,4 +314,41 @@ function initialize_diagram_filters(){
 
     $('.diagram_filter').change(filter_series);
 
+}
+
+function initialize_wizard(show) {
+    $.fn.wizard.logging = true;
+    var options = {
+        submitUrl: '/api/start/',
+        contentWidth: 1000,
+        contentHeight: 500,
+        showCancel: true,
+        buttons: {
+            cancelText: "Use Defaults",
+            submitText: 'Configure',
+            submittingText: "Configuring..."
+        }
+    };
+    var wizard = $("#startup").wizard(options);
+    wizard.show();
+
+    wizard.on('submit', function(wizard) {
+        $.ajax({
+            type: "POST",
+            url: wizard.args.submitUrl,
+            data: wizard.serialize(),
+            dataType: "json"
+        }).done(function(response) {
+            wizard.submitSuccess();
+            wizard.close();
+        }).fail(function() {
+            wizard.submitFailure();
+            wizard.hideButtons();
+        });
+        $.getJSON("./api/settings/", function (data) {
+            update_setting(data);
+        });
+        
+        refresh();
+    });
 }

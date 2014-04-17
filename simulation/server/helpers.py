@@ -36,3 +36,13 @@ def gzipped(f):
         return f(*args, **kwargs)
 
     return view_func
+
+
+def parse_value(s):
+    try:
+        if s.count('.') == 1:
+            return float(s)
+        else:
+            return int(s)
+    except ValueError:
+        return str(s)
