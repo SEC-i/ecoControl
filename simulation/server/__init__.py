@@ -3,7 +3,7 @@ import time
 import json
 
 from flask import Flask, jsonify, render_template, request
-from server.helpers import gzipped
+from server.helpers import gzipped, parse_value
 app = Flask(__name__)
 
 from core.helpers import SimulationBackgroundRunner,  parse_hourly_demand_values
@@ -19,6 +19,34 @@ simulation_manager = SimulationManager(time.time())  # time.time()
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/api/start/', methods=['POST'])
+def start():
+
+    general_config = cu_config = hs_config = plb_config = []
+    for key, value in request.form.items():
+        if key.startswith('cu_'):
+            cu_config.append((key.replace('cu_',''), value))
+        elif key.startswith('hs_'):
+            hs_config.append((key.replace('hs_',''), value))
+        elif key.startswith('plb_'):
+            plb_config.append((key.replace('plb_',''), value))
+        else:
+            key = key.replace('general_','')
+            general_config.append((key, value))
+
+    for (system, config) in [(cu, cu_config), (heat_storage, hs_config), (plb, plb_config), (thermal_consumer, [])]:
+        for (variable, value) in config + general_config:
+            if variable in dir(system):
+                setattr(system, variable, parse_value(value))
+
+    thermal_consumer.calculate() # re-calculate values of thermal_consumer
+
+    simulation_manager.forward_main(60 * 60 * 24 * 30, blocking=True)
+    simulation_manager.simulation_start()
+
+    return "1"
 
 
 @app.route('/api/data/', methods=['GET'])
@@ -151,7 +179,8 @@ def handle_settings():
         'daily_thermal_demand': thermal_consumer.daily_demand,
         'daily_electrical_variation': electrical_consumer.demand_variation,
         'editor_code': code_executer.code,
-        'code_snippets': code_executer.snippets_list()
+        'code_snippets': code_executer.snippets_list(),
+        'simulation_running': 1 if simulation_manager.running else 0
     })
 
 

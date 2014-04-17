@@ -7,20 +7,20 @@ $(function () {
     initialize_svg();
     initialize_hourly_demands();
     initialize_event_handlers();
-    initialize_wizard();
 
     $.getJSON("./api/settings/", function (data) {
         update_setting(data);
+
+        if (data['simulation_running'] == '1'){
+            refresh();
+        } else {
+            initialize_wizard();
+        }
     }).done(function () {
         $.getJSON("./api/code/", function (data) {
             editor.setValue(data['editor_code'], 1);
         }).done(function () {
             initialize_diagram();
-            refresh();
-            // set up refresh loop
-            setInterval(function () {
-                refresh();
-            }, 2000);
         });
     });
 });
@@ -307,7 +307,7 @@ function initialize_diagram() {
     });
 }
 
-function initialize_wizard() {
+function initialize_wizard(show) {
     $.fn.wizard.logging = true;
     var options = {
         submitUrl: '/api/start/',
@@ -322,4 +322,24 @@ function initialize_wizard() {
     };
     var wizard = $("#startup").wizard(options);
     wizard.show();
+
+    wizard.on('submit', function(wizard) {
+        $.ajax({
+            type: "POST",
+            url: wizard.args.submitUrl,
+            data: wizard.serialize(),
+            dataType: "json"
+        }).done(function(response) {
+            wizard.submitSuccess();
+            wizard.close();
+        }).fail(function() {
+            wizard.submitFailure();
+            wizard.hideButtons();
+        });
+        $.getJSON("./api/settings/", function (data) {
+            update_setting(data);
+        });
+        
+        refresh();
+    });
 }

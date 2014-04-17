@@ -23,7 +23,7 @@ class ThermalConsumer(BaseSystem):
     heating_constant - heating demand per square meter in W (rule of thumb for new housing: 100)
     """
 
-    def __init__(self, env, heat_storage, total_heated_floor=650, residents=22, apartments=12, avg_rooms_per_apartment=4, avg_windows_per_room=4, heating_constant=100):
+    def __init__(self, env, heat_storage):
 
         super(ThermalConsumer, self).__init__(env)
 
@@ -39,23 +39,32 @@ class ThermalConsumer(BaseSystem):
         self.daily_demand = [19, 19, 19, 19, 19, 19, 19, 20, 21,
                              20, 20, 21, 20, 21, 21, 21, 21, 22, 22, 22, 22, 22, 21, 19]
 
-        self.total_heated_floor = total_heated_floor
-        self.residents = residents
+        self.total_heated_floor = 650
+        self.residents = 22
+        self.apartments = 12
+        self.avg_rooms_per_apartment = 4
+        self.avg_windows_per_room = 4
+        self.heating_constant=100
+
+        self.calculate()
+
+    def calculate(self):
+
         # 2.5m high walls
         self.total_heated_volume = self.total_heated_floor * 2.5
         avg_room_volume = self.total_heated_volume / \
-            (apartments * avg_rooms_per_apartment)
+            (self.apartments * self.avg_rooms_per_apartment)
         # avg surface of a cube side, so multiply with 6 to get the whole
         # surface
         avg_wall_size = avg_room_volume ** (2.0 / 3.0)  # m^2
         # lets have each appartment have an average of 1.5 outer walls
-        self.outer_wall_surface = avg_wall_size * apartments * 1.5
-        self.max_power = self.total_heated_floor * float(heating_constant)  # W
+        self.outer_wall_surface = avg_wall_size * self.apartments * 1.5
+        self.max_power = self.total_heated_floor * float(self.heating_constant)  # W
 
         self.current_power = 0
         # m^2
-        self.window_surface = avg_windows_per_room * \
-            avg_rooms_per_apartment * apartments
+        self.window_surface = self.avg_windows_per_room * \
+            self.avg_rooms_per_apartment * self.apartments
 
         specific_heat_capacity_brick = 1360 * 10 ** 6  # J/(m^3 * K)
         # J / K, approximation for 5 walls including ceiling, 0.36m wall
@@ -63,7 +72,7 @@ class ThermalConsumer(BaseSystem):
         heat_cap_brick_per_room = specific_heat_capacity_brick * \
             (avg_wall_size * 5 * 0.36)
         self.heat_cap_brick = heat_cap_brick_per_room * \
-            avg_rooms_per_apartment * apartments
+            self.avg_rooms_per_apartment * self.apartments
 
         #J /( m^3 * K)
         self.specific_heat_capacity_air = 1290.0
