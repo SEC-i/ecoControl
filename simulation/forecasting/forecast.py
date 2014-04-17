@@ -17,6 +17,7 @@ def linear_interpolation(a,b,x):
 class Forecast:
     
     def __init__(self):
+        self.electrical_params = (None,None,None)
         self.twoyear_electrical_demand = self.make_two_year_data(weekly_electrical_demand_winter, 
                                                                      weekly_electrical_demand_summer, 
                                                                      sampling_interval = 15,
@@ -31,14 +32,20 @@ class Forecast:
                                                                      map_weekday=map_week_to_index)
     def forecast_electrical_demand(self):
         y = self.twoyear_electrical_demand
-        alpha = 0.9  #forecastings are weighted more on new data
-        beta = 0 #no slope changes
-        gamma = 1 #estimation of seasonal component based on  recent changes
+        #alpha = 0.9  #forecastings are weighted more on new data
+        #beta = 0 #no slope changes
+        #gamma = 1 #estimation of seasonal component based on  recent changes
+       
+        #alpha, beta, gamma. if any is None, holt.winters determines them automatically
+        #cost-expensive, so only do this once..
+        (alpha,beta,gamma) = self.electrical_params
         m = int(len(y) * 0.5) #value sampling shift.. somehow
-        fc = len(y) * 2 # whole data length
-        (forecast_values, alpha, beta, gamma, rmse) = multiplicative(y, m, fc,alpha, beta, gamma)
+        fc = len(y) * 2 # forecasted data length
+        (forecast_values, alpha, beta, gamma, rmse) = multiplicative(y, m, fc,alpha,beta,gamma)
         values ={ 'forcasting':list(forecast_values), 'simulation':y}
-        self.plot_dataset(values)
+        self.electrical_params = (alpha,beta,gamma)
+        
+        return values
     
     def forecast_warmwater_demand(self):
         pass
