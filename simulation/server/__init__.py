@@ -22,14 +22,14 @@ def index():
 def start():
     update_simulation(main, request.form.items())
     main.forward_main(60 * 60 * 24 * 30, blocking=True)
-    main.simulation_start()
+    main.start()
     return "1"
 
 
 @app.route('/api/data/', methods=['GET'])
 @gzipped
 def get_data():
-    future = main.forecast_for(
+    future = main.get_forecasted_copy(
         DEFAULT_FORECAST_INTERVAL, blocking=True)
     return jsonify({
         'past': main.get_measurements(),
@@ -39,7 +39,7 @@ def get_data():
 
 @app.route('/api/data/<int:timestamp>/')
 def get_delta_data(timestamp):
-    future = main.forecast_for(
+    future = main.get_forecasted_copy(
         DEFAULT_FORECAST_INTERVAL, blocking=True)
     return jsonify({
         'past': main.get_measurements(start=timestamp),
@@ -55,10 +55,10 @@ def get_forecast_data():
         def set_sim_values(simulation):
             update_simulation(simulation, request.form)
         forecast_time = int(request.form["forecast_time"])
-        future = main.forecast_for(
+        future = main.get_forecasted_copy(
             forecast_time, blocking=True, pre_start_callback=set_sim_values)
     else:
-        future = main.forecast_for(
+        future = main.get_forecasted_copy(
             DEFAULT_FORECAST_INTERVAL, blocking=True)
 
     return jsonify(future.get_measurements())
@@ -68,12 +68,12 @@ def get_forecast_data():
 def handle_code():
     if request.method == "POST":
         if 'snippet' in request.form:
-            return jsonify({'editor_code': code_executer.get_snippet_code(request.form['snippet'])})
+            return jsonify({'editor_code': main.code_executer.get_snippet_code(request.form['snippet'])})
         if 'save_snippet' in request.form and 'code' in request.form:
             if code_executer.save_snippet(request.form['save_snippet'], request.form['code']):
                 return jsonify({
                     'editor_code': request.form['code'],
-                    'code_snippets': code_executer.snippets_list()
+                    'code_snippets': main.code_executer.snippets_list()
                 })
 
     return jsonify({'editor_code': main.code_executer.code})
@@ -91,8 +91,8 @@ def handle_settings():
         'cu_max_gas_input': main.cu.max_gas_input,
         'cu_mode': 0 if main.cu.thermal_driven else 1,
         'cu_minimal_workload': main.cu.minimal_workload,
-        'cu_thermal_efficiency': main.cu.thermal_efficiency * 100.0,
-        'cu_electrical_efficiency': main.cu.electrical_efficiency * 100.0,
+        'cu_thermal_efficiency': main.cu.thermal_efficiency,
+        'cu_electrical_efficiency': main.cu.electrical_efficiency,
         'cu_electrical_driven_minimal_production': main.cu.electrical_driven_minimal_production,
         'plb_max_gas_input': main.plb.max_gas_input,
         'daily_thermal_demand': main.thermal_consumer.daily_demand,

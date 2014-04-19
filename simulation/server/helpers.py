@@ -43,20 +43,23 @@ def gzipped(f):
 def update_simulation(simulation, settings_dict):
     general_config = cu_config = hs_config = plb_config = []
     for key, value in request.form.items():
-        if key.startswith('cu_'):
+        if key.startswith('general_'):
+            general_config.append((key.replace('general_', ''), value))
+        elif key.startswith('cu_'):
             cu_config.append((key.replace('cu_', ''), value))
         elif key.startswith('hs_'):
             hs_config.append((key.replace('hs_', ''), value))
         elif key.startswith('plb_'):
             plb_config.append((key.replace('plb_', ''), value))
-        else:
-            key = key.replace('general_', '')
-            general_config.append((key, value))
 
+    count = 0
     for (system, config) in [(simulation.cu, cu_config), (simulation.heat_storage, hs_config), (simulation.plb, plb_config), (simulation.thermal_consumer, [])]:
         for (variable, value) in config + general_config:
             if variable in dir(system):
                 setattr(system, variable, parse_value(value))
+                count += 1
+
+    print count, len(cu_config) + len(plb_config) + len(hs_config) + len(general_config)
 
     # re-calculate values of thermal_consumer
     simulation.thermal_consumer.calculate()

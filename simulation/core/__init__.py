@@ -154,7 +154,7 @@ class Simulation(object):
 
         return dict(output)
 
-    def simulation_start(self, blocking=False):
+    def start(self, blocking=False):
         self.thread = SimulationBackgroundRunner(self.env)
         self.thread.start()
         self.running = True
@@ -176,12 +176,12 @@ class Simulation(object):
     setStuff(sim):
         sim.stuff = 123
 
-    forecast_for(1,preStartCallback=setStuff)
+    get_forecasted_copy(1,preStartCallback=setStuff)
     @param copy_sim: a simulation to copy, use the main simulation if this is left out
     
     """
 
-    def forecast_for(self, seconds, blocking=False, pre_start_callback=None, copy_sim=None):
+    def get_forecasted_copy(self, seconds, blocking=False, pre_start_callback=None, copy_sim=None):
 
         if copy_sim is None:
             new_sim = Simulation.copyconstruct(self)
@@ -215,7 +215,4 @@ class Simulation(object):
     def forward_main(self, seconds, blocking=False):
         self.env.forward = seconds
         if self.thread == None or not self.thread.isAlive():
-            self.simulation_start(blocking)
-
-    def get_main_measurements(self, start=None):
-        return self.get_measurements(self.measurements, start)
+            self.start(blocking)
