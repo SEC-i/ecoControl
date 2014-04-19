@@ -3,21 +3,21 @@ import time
 
 from werkzeug.serving import run_simple
 
-from server import app, simulation_manager
+from server import app, main
 
 
 if __name__ == '__main__':
 
     if "profile" in sys.argv:
         import cProfile
-        env.stop_after_forward = True
-        env.forward = 60 * 60 * 24 * 365
-        cProfile.run("env.run()")
+        main.env.stop_after_forward = True
+        main.env.forward = 60 * 60 * 24 * 365
+        cProfile.run("main.env.run()")
     elif "simple_profile" in sys.argv:
-        env.stop_after_forward = True
-        env.forward = 60 * 60 * 24 * 365
+        main.env.stop_after_forward = True
+        main.env.forward = 60 * 60 * 24 * 365
         start = time.time()
-        env.run()
+        main.env.run()
         print time.time() - start
     else:
         if "debug" in sys.argv:
