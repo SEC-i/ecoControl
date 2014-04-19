@@ -21,7 +21,7 @@ def index():
 @app.route('/api/start/', methods=['POST'])
 def start():
     update_simulation(main, request.form.items())
-    main.forward_main(60 * 60 * 24 * 30, blocking=True)
+    main.forward(60 * 60 * 24 * 30, blocking=True)
     main.start()
     return "1"
 
