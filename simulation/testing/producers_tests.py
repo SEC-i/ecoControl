@@ -96,8 +96,8 @@ class CogenerationUnitTest(unittest.TestCase):
     def test_creation(self):
         self.assertGreaterEqual(self.cu.workload, 0)
         self.assertGreater(self.cu.max_gas_input, 0)
-        self.assertTrue(0 <= self.cu.electrical_efficiency <= 1)
-        self.assertTrue(0 <=  self.cu.thermal_efficiency <= 1)
+        self.assertTrue(0 <= self.cu.electrical_efficiency/100.0 <= 1)
+        self.assertTrue(0 <=  self.cu.thermal_efficiency/100.0 <= 1)
         
         self.assertTrue(0 <= self.cu.max_efficiency_loss <= 1)
         self.assertGreater(self.cu.maintenance_interval, 0)
@@ -214,7 +214,7 @@ class CogenerationUnitTest(unittest.TestCase):
         
         self.heat_storage.required_energy = required_energy
         self.cu.max_gas_input = gas_input
-        self.cu.thermal_efficiency = thermal_efficiency
+        self.cu.thermal_efficiency = thermal_efficiency * 100
         
         max_energy = thermal_efficiency*gas_input
         expected_workload = required_energy/max_energy *99.0 
@@ -236,7 +236,7 @@ class CogenerationUnitTest(unittest.TestCase):
         
         self.power_meter.current_power_consum = required_energy
         self.cu.max_gas_input = gas_input
-        self.cu.electrical_efficiency = electrical_efficiency
+        self.cu.electrical_efficiency = electrical_efficiency * 100
         
         max_energy = electrical_efficiency*gas_input
         expected_workload = required_energy/max_energy   
@@ -254,7 +254,7 @@ class CogenerationUnitTest(unittest.TestCase):
         
         self.power_meter.current_power_consum = 5.0
         self.cu.max_gas_input = 20.0 # unit is energy: kWh
-        self.cu.electrical_efficiency = 0.6
+        self.cu.electrical_efficiency = 60
     
         calculated_result = self.cu.get_calculated_workload_electric()
         
@@ -273,9 +273,9 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         self.gas_input = 20.0
         self.cu.max_gas_input = self.gas_input
         self.electrical_efficiency = 0.25
-        self.cu.electrical_efficiency = self.electrical_efficiency
+        self.cu.electrical_efficiency = self.electrical_efficiency * 100
         self.thermal_efficiency = 0.7
-        self.cu.thermal_efficiency = self.thermal_efficiency
+        self.cu.thermal_efficiency = self.thermal_efficiency * 100
         self.total_hours_of_operation = 1
         self.cu.total_hours_of_operation = self.total_hours_of_operation
     
@@ -313,16 +313,10 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
             "current_gas_consumption is wrong. " +
             values_comparison(self.cu.current_gas_consumption, 
                 expected_current_gas_consumption))
-        self.assertEqual(self.cu.current_electrical_production,
-            expected_current_electrical_production,
-            "current_electrical_production is wrong. " +
-            values_comparison( self.cu.current_electrical_production ,
-                expected_current_electrical_production))
-        self.assertEqual(self.cu.current_thermal_production,
-            expected_current_thermal_production,
-            "current_thermal_production is wrong. " +
-            values_comparison( self.cu.current_thermal_production,
-                expected_current_thermal_production))
+        self.assertAlmostEqual(self.cu.current_electrical_production,
+            expected_current_electrical_production)
+        self.assertAlmostEqual(self.cu.current_thermal_production,
+            expected_current_thermal_production)
         self.assertEqual(self.cu.total_hours_of_operation,
             self.total_hours_of_operation,
             "total_hours_of_operation is wrong. " +
@@ -505,9 +499,9 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         self.max_gas_input = 19.0
         self.cu.max_gas_input = self.max_gas_input
         self.electrical_efficiency = 0.25
-        self.cu.electrical_efficiency = self.electrical_efficiency
+        self.cu.electrical_efficiency = self.electrical_efficiency * 100
         self.thermal_efficiency = 0.6
-        self.cu.thermal_efficiency = self.thermal_efficiency
+        self.cu.thermal_efficiency = self.thermal_efficiency * 100
         self.max_efficiency_loss = 0.10
         self.cu.max_efficiency_loss = self.max_efficiency_loss
         self.maintenance_interval = 2000
