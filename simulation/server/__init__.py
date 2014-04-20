@@ -33,7 +33,7 @@ def get_data():
         DEFAULT_FORECAST_INTERVAL, blocking=True)
     return jsonify({
         'past': main.get_measurements(),
-        'future': future.get_measurements(measurements)
+        'future': future.get_measurements()
     })
 
 
