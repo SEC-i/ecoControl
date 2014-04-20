@@ -11,8 +11,8 @@ from systems.consumers import ThermalConsumer, SimpleElectricalConsumer
 
 
 class Simulation(object):
-    # initial_time = Tuesday 1st January 2013 12:00:00
 
+    # initial_time = Tuesday 1st January 2013 12:00:00
     def __init__(self, initial_time=1356998400, copyconstructed=False):
 
         if copyconstructed:
@@ -152,7 +152,7 @@ class Simulation(object):
         else:
             t0 = time.time()
             new_sim.env.run()
-            print "time for forecast: ", time.time() - t0, " seconds. simulated hours: ", seconds / (60.0 * 60.0)
+            print "Time for forecast: ", time.time() - t0, " seconds. Simulated hours: ", seconds / (60.0 * 60.0)
 
         return new_sim
 
