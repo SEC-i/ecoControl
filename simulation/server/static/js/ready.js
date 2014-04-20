@@ -8,17 +8,14 @@ $(function() {
     initialize_hourly_demands();
     $.getJSON("./api/settings/", function(data) {
         update_setting(data);
-
         if (data['simulation_running'] == '1') {
-            refresh();
+            initialize_diagram();
         } else {
             initialize_wizard();
         }
     }).done(function() {
         $.getJSON("./api/code/", function(data) {
             editor.setValue(data['editor_code'], 1);
-        }).done(function() {
-            initialize_diagram();
         });
     });
 
@@ -220,7 +217,10 @@ function initialize_diagram() {
     $('#simulation_diagram').highcharts('StockChart', {
         chart: {
             height: 400,
-            zoomType: 'xy'
+            zoomType: 'xy',
+            events: {
+                load: refresh
+            }
         },
         rangeSelector: {
             buttons: [{
@@ -339,6 +339,7 @@ function initialize_wizard(show) {
             data: wizard.serialize(),
             dataType: "json"
         }).done(function(response) {
+            initialize_diagram();
             wizard.submitSuccess();
             wizard.close();
         }).fail(function() {
@@ -348,7 +349,5 @@ function initialize_wizard(show) {
         $.getJSON("./api/settings/", function(data) {
             update_setting(data);
         });
-
-        refresh();
     });
 }
