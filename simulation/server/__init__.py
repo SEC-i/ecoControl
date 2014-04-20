@@ -1,16 +1,14 @@
-import os
 import time
-import json
 
 from flask import Flask, jsonify, render_template, request
-from server.helpers import gzipped, update_simulation, export_data
-server = Flask(__name__)
 
 from core import Simulation
+from server.helpers import gzipped, update_simulation, export_data
 
 DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 30
 
-main = Simulation(time.time())  # time.time()
+server = Flask(__name__)
+main = Simulation(time.time())
 
 
 @server.route('/')
@@ -20,7 +18,7 @@ def index():
 
 @server.route('/api/start/', methods=['POST'])
 def start():
-    update_simulation(main, request.form.items())
+    update_simulation(main, request.form)
     main.forward(60 * 60 * 24 * 30, blocking=True)
     main.start()
     return "1"

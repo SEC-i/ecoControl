@@ -1,4 +1,3 @@
-from helpers import sign
 from systems import BaseSystem
 
 

@@ -1,14 +1,14 @@
 import unittest
 
+from helpers import values_comparison
+
 from core.environment import ForwardableRealtimeEnvironment
 from systems.producers import CogenerationUnit, GasPoweredGenerator
-from systems.storages import HeatStorage, PowerMeter
+from systems.storages import PowerMeter
 from mocks import HeatStorageMock
 
 gas_price_per_kwh = 0.0655
 
-def values_comparison(actual_value, expected_value):
-    return "expected: {0}. got: {1}".format(expected_value, actual_value)
 
 class GasPoweredGeneratorTests(unittest.TestCase):
 

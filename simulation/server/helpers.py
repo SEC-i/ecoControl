@@ -1,6 +1,6 @@
 import gzip
 import functools
-from cStringIO import StringIO as IO
+from cStringIO import StringIO
 from flask import after_this_request, request
 
 from core.helpers import parse_hourly_demand_values
@@ -22,7 +22,7 @@ def gzipped(f):
                 response.status_code >= 300 or
                 'Content-Encoding' in response.headers):
                 return response
-            gzip_buffer = IO()
+            gzip_buffer = StringIO()
             gzip_file = gzip.GzipFile(mode='wb',
                                       fileobj=gzip_buffer)
             gzip_file.write(response.data)
@@ -42,7 +42,7 @@ def gzipped(f):
 
 def update_simulation(simulation, settings_dict):
     general_config = cu_config = hs_config = plb_config = []
-    for key, value in request.form.items():
+    for key, value in settings_dict.items():
         if key.startswith('general_'):
             general_config.append((key.replace('general_', ''), value))
         elif key.startswith('cu_'):
@@ -58,8 +58,6 @@ def update_simulation(simulation, settings_dict):
             if variable in dir(system):
                 setattr(system, variable, parse_value(value))
                 count += 1
-
-    print count, len(cu_config) + len(plb_config) + len(hs_config) + len(general_config)
 
     # re-calculate values of thermal_consumer
     simulation.thermal_consumer.calculate()

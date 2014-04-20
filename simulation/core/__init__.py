@@ -1,18 +1,13 @@
-import sys
-import os
 import time
 from copy import deepcopy
 
-import simpy
-from simpy.util import start_delayed
-
 from core.environment import ForwardableRealtimeEnvironment
-from core.helpers import BulkProcessor, SimulationBackgroundRunner, MeasurementCache, parse_hourly_demand_values
+from core.helpers import BulkProcessor, SimulationBackgroundRunner, MeasurementCache
 
 from systems.code import CodeExecuter
 from systems.producers import CogenerationUnit, PeakLoadBoiler
 from systems.storages import HeatStorage, PowerMeter
-from systems.consumers import ThermalConsumer, SimpleElectricalConsumer, ForecastConsumer
+from systems.consumers import ThermalConsumer, SimpleElectricalConsumer
 
 
 class Simulation(object):
@@ -36,7 +31,7 @@ class Simulation(object):
         self.cu = CogenerationUnit(
             self.env, self.heat_storage, self.power_meter)
         self.plb = PeakLoadBoiler(self.env, self.heat_storage)
-        self.thermal_consumer = ForecastConsumer(self.env, self.heat_storage)
+        self.thermal_consumer = ThermalConsumer(self.env, self.heat_storage)
         self.electrical_consumer = SimpleElectricalConsumer(
             self.env, self.power_meter)
 
@@ -65,10 +60,8 @@ class Simulation(object):
 
         new_sim.power_meter = PowerMeter.copyconstruct(
             env, old_sim.power_meter)
-        new_sim.thermal_consumer = ForecastConsumer.copyconstruct(
+        new_sim.thermal_consumer = ThermalConsumer.copyconstruct(
             new_sim.env, old_sim.thermal_consumer, new_sim.heat_storage)
-        # new_sim.thermal_consumer = ThermalConsumer.copyconstruct(env,
-        #          old_sim.thermal_consumer, new_sim.heat_storage)
 
         new_sim.electrical_consumer = SimpleElectricalConsumer.copyconstruct(
             env, old_sim.electrical_consumer, new_sim.power_meter)
