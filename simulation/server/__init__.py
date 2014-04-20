@@ -4,7 +4,7 @@ import json
 
 from flask import Flask, jsonify, render_template, request
 from server.helpers import gzipped, update_simulation, export_data
-app = Flask(__name__)
+server = Flask(__name__)
 
 from core import Simulation
 
@@ -13,12 +13,12 @@ DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 30
 main = Simulation(time.time())  # time.time()
 
 
-@app.route('/')
+@server.route('/')
 def index():
     return render_template('index.html')
 
 
-@app.route('/api/start/', methods=['POST'])
+@server.route('/api/start/', methods=['POST'])
 def start():
     update_simulation(main, request.form.items())
     main.forward(60 * 60 * 24 * 30, blocking=True)
@@ -26,7 +26,7 @@ def start():
     return "1"
 
 
-@app.route('/api/data/', methods=['GET'])
+@server.route('/api/data/', methods=['GET'])
 @gzipped
 def get_data():
     future = main.get_forecasted_copy(
@@ -37,7 +37,7 @@ def get_data():
     })
 
 
-@app.route('/api/data/<int:timestamp>/')
+@server.route('/api/data/<int:timestamp>/')
 def get_delta_data(timestamp):
     future = main.get_forecasted_copy(
         DEFAULT_FORECAST_INTERVAL, blocking=True)
@@ -47,7 +47,7 @@ def get_delta_data(timestamp):
     })
 
 
-@app.route('/api/forecasts/', methods=['GET', 'POST'])
+@server.route('/api/forecasts/', methods=['GET', 'POST'])
 @gzipped
 def get_forecast_data():
     if request.method == "POST" and 'forecast_time' in request.form:
@@ -64,7 +64,7 @@ def get_forecast_data():
     return jsonify(future.get_measurements())
 
 
-@app.route('/api/code/', methods=['GET', 'POST'])
+@server.route('/api/code/', methods=['GET', 'POST'])
 def handle_code():
     if request.method == "POST":
         if 'snippet' in request.form:
@@ -79,7 +79,7 @@ def handle_code():
     return jsonify({'editor_code': main.code_executer.code})
 
 
-@app.route('/api/settings/', methods=['GET', 'POST'])
+@server.route('/api/settings/', methods=['GET', 'POST'])
 def handle_settings():
     if request.method == "POST":
         update_simulation(main, request.form)
@@ -103,7 +103,7 @@ def handle_settings():
     })
 
 
-@app.route('/api/simulation/', methods=['POST'])
+@server.route('/api/simulation/', methods=['POST'])
 def handle_simulation():
     if 'forward' in request.form and request.form['forward'] != "":
         main.env.forward = float(request.form['forward']) * 60 * 60

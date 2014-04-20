@@ -3,7 +3,7 @@ import time
 
 from werkzeug.serving import run_simple
 
-from server import app, main
+from server import server, main
 
 
 if __name__ == '__main__':
@@ -21,7 +21,7 @@ if __name__ == '__main__':
         print time.time() - start
     else:
         if "debug" in sys.argv:
-            app.run('0.0.0.0', 8080, debug=True, use_reloader=False)
+            server.run('0.0.0.0', 8080, debug=True, use_reloader=False)
         else:
-            app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
-            run_simple('0.0.0.0', 8080, app, threaded=True)
+            server.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
+            run_simple('0.0.0.0', 8080, server, threaded=True)
