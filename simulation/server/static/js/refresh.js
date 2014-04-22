@@ -75,6 +75,20 @@ function update_diagram(data) {
     update_forecast(data['future'], false);
 }
 
+function immediate_feedback() {
+    var post_data = $("#settings").serialize();
+    for (var i = 0; i < 24; i++) {
+        post_data += "&daily_thermal_demand_" + i + "=" + ($("#daily_thermal_demand_" + i).slider("value") / 100);
+    }
+    for (var i = 0; i < 24; i++) {
+        post_data += "&daily_electrical_variation_" + i + "=" + ($("#daily_electrical_variation_" + i).slider("value") / 10000);
+    }
+    post_data += "&forecast_time=" + 3600.0 * 24 * 30;
+    $.post("./api/forecasts/", post_data, function(data) {
+        update_forecast(data, true);
+    });
+}
+
 function update_forecast(data, unsaved) {
     var chart = $('#simulation_diagram').highcharts();
 

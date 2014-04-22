@@ -56,7 +56,7 @@ var series_data = [{
         name: 'Cogeneration Unit Workload (predicted)',
         data: [],
         color: future[0],
-        dashStyle: 'shortdash',
+        dashStyle: 'shortdot',
         tooltip: {
             valueSuffix: ' %'
         }
@@ -64,7 +64,7 @@ var series_data = [{
         name: 'Peak Load Boiler Workload (predicted)',
         data: [],
         color: future[1],
-        dashStyle: 'shortdash',
+        dashStyle: 'shortdot',
         tooltip: {
             valueSuffix: ' %'
         }
@@ -72,7 +72,7 @@ var series_data = [{
         name: 'Heat Storage Temperature (predicted)',
         data: [],
         color: future[2],
-        dashStyle: 'shortdash',
+        dashStyle: 'shortdot',
         tooltip: {
             valueSuffix: ' °C'
         }
@@ -80,7 +80,7 @@ var series_data = [{
         name: 'Thermal Consumption (predicted)',
         data: [],
         color: future[3],
-        dashStyle: 'shortdash',
+        dashStyle: 'shortdot',
         tooltip: {
             valueSuffix: ' kW'
         }
@@ -95,7 +95,7 @@ var series_data = [{
         name: 'Outside Temperature (predicted)',
         data: [],
         color: future[5],
-        dashStyle: 'shortdash',
+        dashStyle: 'shortdot',
         tooltip: {
             valueSuffix: ' °C'
         }
@@ -103,7 +103,7 @@ var series_data = [{
         name: 'Electrical Consumption (predicted)',
         data: [],
         color: future[6],
-        dashStyle: 'shortdash',
+        dashStyle: 'shortdot',
         tooltip: {
             valueSuffix: ' kW'
         }
@@ -111,7 +111,7 @@ var series_data = [{
         name: 'Cogeneration Unit Workload (not yet applied)',
         data: [],
         color: modified[0],
-        dashStyle: 'longdash',
+        dashStyle: 'dash',
         tooltip: {
             valueSuffix: ' %'
         }
@@ -119,7 +119,7 @@ var series_data = [{
         name: 'Peak Load Boiler Workload (not yet applied)',
         data: [],
         color: modified[1],
-        dashStyle: 'longdash',
+        dashStyle: 'dash',
         tooltip: {
             valueSuffix: ' %'
         }
@@ -127,7 +127,7 @@ var series_data = [{
         name: 'Heat Storage Temperature (not yet applied)',
         data: [],
         color: modified[2],
-        dashStyle: 'longdash',
+        dashStyle: 'dash',
         tooltip: {
             valueSuffix: ' °C'
         }
@@ -135,7 +135,7 @@ var series_data = [{
         name: 'Thermal Consumption (not yet applied)',
         data: [],
         color: modified[3],
-        dashStyle: 'longdash',
+        dashStyle: 'dash',
         tooltip: {
             valueSuffix: ' kW'
         }
@@ -143,7 +143,7 @@ var series_data = [{
         name: 'Warmwater Consumption (not yet applied)',
         data: [],
         color: modified[4],
-        dashStyle: 'longdash',
+        dashStyle: 'dash',
         tooltip: {
             valueSuffix: ' kW'
         }
@@ -151,7 +151,7 @@ var series_data = [{
         name: 'Outside Temperature (not yet applied)',
         data: [],
         color: modified[5],
-        dashStyle: 'longdash',
+        dashStyle: 'dash',
         tooltip: {
             valueSuffix: ' °C'
         }
@@ -159,7 +159,7 @@ var series_data = [{
         name: 'Electrical Consumption (not yet applied)',
         data: [],
         color: modified[6],
-        dashStyle: 'longdash',
+        dashStyle: 'dash',
         tooltip: {
             valueSuffix: ' kW'
         }

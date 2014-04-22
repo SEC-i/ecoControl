@@ -112,18 +112,15 @@ function initialize_event_handlers() {
     });
 
     $("#settings").change(function() {
-        var post_data = $("#settings").serialize();
-        for (var i = 0; i < 24; i++) {
-            post_data += "&daily_thermal_demand_" + i + "=" + ($("#daily_thermal_demand_" + i).slider("value") / 100);
-        }
-        for (var i = 0; i < 24; i++) {
-            post_data += "&daily_electrical_variation_" + i + "=" + ($("#daily_electrical_variation_" + i).slider("value") / 10000);
-        }
-        post_data += "&forecast_time=" + 3600.0 * 24 * 30;
-        $.post("./api/forecasts/", post_data, function(data) {
-            update_forecast(data, true);
-        });
+        immediate_feedback();
     });
+
+    $("#settings_simulate_button").click(function( event ) {
+        event.preventDefault();
+        immediate_feedback();
+    });
+
+    
 
     $(".fast_forward_button").click(function(event) {
         $.post("./api/simulation/", {
@@ -141,7 +138,8 @@ function initialize_event_handlers() {
         });
     });
 
-    $("#editor_simulate_button").click(function() {
+    $("#editor_simulate_button").click(function( event ) {
+        event.preventDefault();
         $.post("./api/forecasts/", {
             code: editor.getValue(),
             password: $('#password').val(),
@@ -322,9 +320,9 @@ function initialize_wizard(show) {
         submitUrl: '/api/start/',
         contentWidth: 1000,
         contentHeight: 500,
-        showCancel: true,
+        showCancel: false,
+        showClose: false,
         buttons: {
-            cancelText: "Use Defaults",
             submitText: 'Configure',
             submittingText: "Configuring..."
         }
