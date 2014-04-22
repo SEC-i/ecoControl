@@ -5,20 +5,20 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="author" content="BP2013H1">
 
     <title>Energy Management System</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="./static/libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/libs/bootstrap/css/bootstrap.min.css">
     <!-- Bootstrap-Wizard -->
-    <link href="./static/libs/bootstrap-wizard/bootstrap-wizard.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/libs/bootstrap-wizard/bootstrap-wizard.css">
      <!-- jQuery UI CSS core CSS -->
-    <link rel="stylesheet" href="./static/libs/jquery-ui/css/jquery-ui.min.css">
-    <link rel="stylesheet" href="./static/libs/jquery-ui/css/jquery.ui.slider.min.css">
+    <link rel="stylesheet" href="static/libs/jquery-ui/css/jquery-ui.min.css">
+    <link rel="stylesheet" href="static/libs/jquery-ui/css/jquery.ui.slider.min.css">
 
     <!-- Custom styles -->
-    <link href="./static/css/basic.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/basic.css">
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -51,7 +51,6 @@
                 <span class="input-group-addon">kWh</span>
               </div>          
 
-
               <label class="control-label" for="wizard_apartments">Type of Housing</label>
               <select id="wizard_type_of_housing" name="type_of_housing" class="form-control input-sm">
                 <option value="">New Building</option>
@@ -71,7 +70,6 @@
                 <input type="text" class="form-control input-sm" id="wizard_total_heated_floor" name="total_heated_floor" value="650">
                 <span class="input-group-addon">m²</span>
               </div>          
-
 
               <label class="control-label" for="wizard_type_of_residents">Type of Residents</label>
               <select id="wizard_type_of_residents" name="type_of_residents" class="form-control input-sm">
@@ -139,7 +137,7 @@
               </div>
 
               <label class="control-label" for="wizard_cu_thermal_efficiency">Thermal Efficiency</label>
-              <input type="text" class="form-control" id="wizard_cu_thermal_efficiency" name="cu_thermal_efficiency" value="0.65">
+              <input type="text" class="form-control" id="wizard_cu_thermal_efficiency" name="cu_thermal_efficiency" value="65.0">
 
               <label class="control-label" for="wizard_cu_maintenance_interval">Maintenance Interval (Time)</label>
               <div class="input-group">
@@ -158,7 +156,7 @@
               </div>
 
               <label class="control-label" for="wizard_cu_electrical_efficiency">Electrical Efficiency</label>
-              <input type="text" class="form-control" id="wizard_cu_electrical_efficiency" name="cu_electrical_efficiency" value="0.247">
+              <input type="text" class="form-control" id="wizard_cu_electrical_efficiency" name="cu_electrical_efficiency" value="24.7">
 
 
               <label class="control-label" for="wizard_cu_maintenance_interval">Maintenance Interval (Power-Ons)</label>
@@ -617,13 +615,13 @@
                                 <div class="col-lg-6">
                                   <div class="radio">
                                     <label>
-                                      <input type="radio" name="cu_mode" id="cu_mode_thermal_driven" value="thermal_driven">
+                                      <input type="radio" name="cu_mode" id="cu_mode_thermal_driven" value="True">
                                       Thermal-Led
                                     </label>
                                   </div>
                                   <div class="radio">
                                     <label>
-                                      <input type="radio" name="cu_mode" id="cu_mode_electrical_driven" value="electrical_driven">
+                                      <input type="radio" name="cu_mode" id="cu_mode_electrical_driven" value="False">
                                       Electric-Led
                                     </label>
                                   </div>
@@ -839,27 +837,27 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="./static/libs/jquery/jquery.min.js"></script>
-    <script src="./static/libs/jquery-ui/js/jquery.ui.core.min.js"></script>
-    <script src="./static/libs/jquery-ui/js/jquery.ui.widget.min.js"></script>
-    <script src="./static/libs/jquery-ui/js/jquery.ui.mouse.min.js"></script>
-    <script src="./static/libs/jquery-ui/js/jquery.ui.slider.min.js"></script>
-    <script src="./static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
-    <script src="./static/libs/bootstrap/js/bootstrap.min.js"></script>
-    <script src="./static/libs/bootstrap-wizard/bootstrap-wizard.js"></script>
+    <script src="static/libs/jquery/jquery.min.js"></script>
+    <script src="static/libs/jquery-ui/js/jquery.ui.core.min.js"></script>
+    <script src="static/libs/jquery-ui/js/jquery.ui.widget.min.js"></script>
+    <script src="static/libs/jquery-ui/js/jquery.ui.mouse.min.js"></script>
+    <script src="static/libs/jquery-ui/js/jquery.ui.slider.min.js"></script>
+    <script src="static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
+    <script src="static/libs/bootstrap/js/bootstrap.min.js"></script>
+    <script src="static/libs/bootstrap-wizard/bootstrap-wizard.js"></script>
 
-    <script src="./static/libs/highstock/highstock.js"></script>
-    <script src="./static/libs/highstock/modules/no-data-to-display.js"></script>
-    <script src="./static/libs/highstock/modules/exporting.js"></script>
+    <script src="static/libs/highstock/highstock.js"></script>
+    <script src="static/libs/highstock/modules/no-data-to-display.js"></script>
+    <script src="static/libs/highstock/modules/exporting.js"></script>
 
-    <script src="./static/libs/ace/ace.js"></script>
-    <script src="./static/libs/ace/ext-language_tools.js"></script>
+    <script src="static/libs/ace/ace.js"></script>
+    <script src="static/libs/ace/ext-language_tools.js"></script>
 
-    <script src="./static/js/helpers.js"></script>
-    <script src="./static/js/systems_units.js"></script>
-    <script src="./static/js/snippets.js"></script>
-    <script src="./static/js/series.js"></script>
-    <script src="./static/js/refresh.js"></script>
-    <script src="./static/js/ready.js"></script>
+    <script src="static/js/helpers.js"></script>
+    <script src="static/js/systems_units.js"></script>
+    <script src="static/js/snippets.js"></script>
+    <script src="static/js/series.js"></script>
+    <script src="static/js/refresh.js"></script>
+    <script src="static/js/ready.js"></script>
   </body>
 </html>

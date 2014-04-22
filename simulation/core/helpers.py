@@ -2,10 +2,6 @@ from threading import Thread
 from collections import deque
 import itertools
 
-from flask import make_response, request
-from functools import update_wrapper
-
-
 class BulkProcessor(object):
 
     def __init__(self, env, processes):
@@ -108,5 +104,5 @@ def parse_hourly_demand_values(namespace, data):
     for i in range(24):
         key = namespace + '_' + str(i)
         if key in data:
-            output.append(float(request.form[key]))
+            output.append(float(data[key]))
     return output

@@ -1,9 +1,9 @@
 import time
-from math import cos,pi
 
-from forecasting.weather import WeatherForecast
 from systems import BaseSystem
-from data import outside_temperatures_2013, weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_workday, warm_water_demand_weekend
+from systems.helpers import interpolate_year
+from systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_workday, warm_water_demand_weekend
+from forecasting.weather import WeatherForecast
 
 
 class ThermalConsumer(BaseSystem):
@@ -45,7 +45,10 @@ class ThermalConsumer(BaseSystem):
         self.apartments = 12
         self.avg_rooms_per_apartment = 4
         self.avg_windows_per_room = 4
-        self.heating_constant=100
+        self.heating_constant = 100
+
+        self.consumed = 0
+        self.weather_forecast = WeatherForecast(self.env)
 
         self.calculate()
 
@@ -60,7 +63,8 @@ class ThermalConsumer(BaseSystem):
         avg_wall_size = avg_room_volume ** (2.0 / 3.0)  # m^2
         # lets have each appartment have an average of 1.5 outer walls
         self.outer_wall_surface = avg_wall_size * self.apartments * 1.5
-        self.max_power = self.total_heated_floor * float(self.heating_constant)  # W
+        self.max_power = self.total_heated_floor * \
+            float(self.heating_constant)  # W
 
         self.current_power = 0
         # m^2
@@ -100,8 +104,9 @@ class ThermalConsumer(BaseSystem):
 
     def step(self):
         self.simulate_consumption()
-        consumption = self.get_consumption_energy()
-        + self.get_warmwater_consumption_energy()
+        consumption = self.get_consumption_energy(
+        ) + self.get_warmwater_consumption_energy()
+        self.consumed += consumption
         self.total_consumption += consumption
         self.heat_storage.consume_energy(consumption)
 
@@ -186,44 +191,10 @@ class ThermalConsumer(BaseSystem):
         return heat_loss
 
     def get_outside_temperature(self, offset_days=0):
-        day = (time.gmtime(self.env.now).tm_yday + offset_days) % 365
-        hour = time.gmtime(self.env.now).tm_hour
-        return outside_temperatures_2013[day * 24 + hour]
+        return self.weather_forecast.get_temperature_estimate(self.env.now)
 
     def linear_interpolation(self, a, b, x):
         return a * (1 - x) + b * x
-
-
-class ForecastConsumer(ThermalConsumer):
-
-    def __init__(self, env, heatstorage):
-        ThermalConsumer.__init__(self, env, heatstorage)
-        self.env = env
-        self.heat_storage = heatstorage
-        # consumption since last meausrement
-        self.consumed = 0
-
-        self.weather_forecast = WeatherForecast(self.env)
-
-    @classmethod
-    def copyconstruct(cls, env, other_forecast_consumer, heat_storage):
-        forecast_consumer = ForecastConsumer(env, heat_storage)
-        # just a shallow copy, so no dict copy
-        forecast_consumer.__dict__ = other_forecast_consumer.__dict__.copy()
-        forecast_consumer.heat_storage = heat_storage
-        forecast_consumer.env = env
-        return forecast_consumer
-
-    def step(self):
-        self.simulate_consumption()
-        consumption = self.get_consumption_energy(
-        ) + self.get_warmwater_consumption_energy()
-        self.consumed += consumption
-        self.total_consumption += consumption
-        self.heat_storage.consume_energy(consumption)
-
-    def get_outside_temperature(self):
-        return self.weather_forecast.get_temperature_estimate(self.env.now)
 
 
 class SimpleElectricalConsumer(BaseSystem):
@@ -269,8 +240,10 @@ class SimpleElectricalConsumer(BaseSystem):
         # week days 0-6 converted to 1-7
         wday = time_tuple.tm_wday + 1
         interpolation = interpolate_year(time_tuple.tm_yday)
-        summer_part =  (1-interpolation) *  weekly_electrical_demand_summer[quarters * wday]
-        winter_part = interpolation * weekly_electrical_demand_winter[quarters * wday]
+        summer_part =  (1 - interpolation) * \
+            weekly_electrical_demand_summer[quarters * wday]
+        winter_part = interpolation * \
+            weekly_electrical_demand_winter[quarters * wday]
         demand = summer_part + winter_part
         # data based on 22 residents
         demand = demand / 22 * self.residents
@@ -279,21 +252,3 @@ class SimpleElectricalConsumer(BaseSystem):
 
     def get_consumption_energy(self):
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
-
-
-"""
-input: int between 0,365
-output: float between 0,1
-interpolates a year day to 1=winter, 0=summer
-"""
-def interpolate_year(day):
-    # shift summer days at 180-365
-    # 1'April = 90th day
-    day_shift = day + 90
-    day_shift %= 365
-    day_float = float(day) / 365.0
-    interpolation = cos(day_float * pi * 2)
-    # shift to 0-1
-    interpolation /= 2
-    interpolation += 0.5
-    return interpolation

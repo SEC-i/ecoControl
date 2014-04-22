@@ -1,8 +1,7 @@
 import unittest
-import time
 
-from systems.consumers import ThermalConsumer
 from core.environment import ForwardableRealtimeEnvironment
+from systems.consumers import ThermalConsumer
 from systems.storages import HeatStorage
 
 
