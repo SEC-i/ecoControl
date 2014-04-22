@@ -5,7 +5,7 @@ function get_timestamp(string) {
 function hide_forecasts() {
     var chart = $('#simulation_diagram').highcharts();
     for (var i = 0; i < 7; i++) {
-        chart.series[14 + i].setVisible(false, false);
+        chart.series[14 + i].setData([], false);
     };
     chart.redraw();
 }
