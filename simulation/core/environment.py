@@ -1,5 +1,4 @@
 import time
-import traceback
 
 from simpy.core import Environment, EmptySchedule
 from simpy.rt import RealtimeEnvironment
