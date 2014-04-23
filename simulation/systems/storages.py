@@ -3,15 +3,15 @@ from systems import BaseSystem
 
 class HeatStorage(BaseSystem):
 
-    def __init__(self, env):
+    def __init__(self, env, capacity=25000, min_temperature=55.0, target_temperature=70.0, critical_temperature=90.0):
         super(HeatStorage, self).__init__(env)
 
         # default data from pamiru48
-        self.capacity = 25000  # liters
+        self.capacity = capacity  # liters
         self.base_temperature = 20.0  # assume no lower temperature
-        self.min_temperature = 55.0  # degree Celsius
-        self.target_temperature = 70.0  # degree Celsius
-        self.critical_temperature = 90.0  # degree Celsius
+        self.min_temperature = min_temperature  # degree Celsius
+        self.target_temperature = target_temperature  # degree Celsius
+        self.critical_temperature = critical_temperature  # degree Celsius
 
         self.specific_heat_capacity = 4.19 * 1 / 3600.0  # kWh/(kg*K)
 
@@ -64,7 +64,7 @@ class HeatStorage(BaseSystem):
 
 class PowerMeter(BaseSystem):
 
-    def __init__(self, env):
+    def __init__(self, env, electrical_costs=0.283, feed_in_reward=0.0917):
         super(PowerMeter, self).__init__(env)
 
         self.total_fed_in_electricity = 0.0  # kWh
@@ -75,8 +75,8 @@ class PowerMeter(BaseSystem):
         self.current_power_consum = 0.0
 
         # costs in Euro to purchase 1 kW/h from external supplier
-        self.electrical_costs = 0.283
-        self.feed_in_reward = 0.0917  # reward in Euro for feed in 1 kW/h
+        self.electrical_costs = electrical_costs
+        self.feed_in_reward = feed_in_reward  # reward in Euro for feed in 1 kW/h
 
     def add_energy(self, energy):
         self.energy_produced += energy

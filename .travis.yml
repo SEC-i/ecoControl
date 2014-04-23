@@ -1,6 +1,7 @@
 branches:
   only:
     - master
+    - dev
 notifications:
   email:
     - bp2013h1@lists.myhpi.de
@@ -15,4 +16,4 @@ script:
   - cd server
   - python manage.py test
   - cd ..
-  - nosetests simulation
+  - nosetests simulation --with-coverage --cover-package=systems

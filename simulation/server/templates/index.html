@@ -5,18 +5,20 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="author" content="BP2013H1">
 
-    <title>Power System Simulation</title>
+    <title>Energy Management System</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="./static/libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/libs/bootstrap/css/bootstrap.min.css">
+    <!-- Bootstrap-Wizard -->
+    <link rel="stylesheet" href="static/libs/bootstrap-wizard/bootstrap-wizard.css">
      <!-- jQuery UI CSS core CSS -->
-    <link rel="stylesheet" href="./static/libs/jquery-ui/css/jquery-ui.min.css">
-    <link rel="stylesheet" href="./static/libs/jquery-ui/css/jquery.ui.slider.min.css">
+    <link rel="stylesheet" href="static/libs/jquery-ui/css/jquery-ui.min.css">
+    <link rel="stylesheet" href="static/libs/jquery-ui/css/jquery.ui.slider.min.css">
 
     <!-- Custom styles -->
-    <link href="./static/css/basic.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/basic.css">
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -27,9 +29,206 @@
   </head>
 
   <body>
+    <!-- Wizard -->
+    <div class="wizard" id="startup" data-title="Setup Energy Management System">
+      <div class="wizard-card" data-cardname="card1">
+        <h3>General</h3>
+        <div class="wizard-input-section">
+          <div class="form-group">
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_apartments">Number of Housing Apartments</label>
+              <input type="text" class="form-control input-sm" id="wizard_apartments" name="apartments" value="12">
+
+              <label class="control-label" for="wizard_avg_rooms_per_apartment">Average Rooms per Apartment</label>
+              <input type="text" class="form-control input-sm" id="wizard_avg_rooms_per_apartment" name="avg_rooms_per_apartment" value="4">
+
+              <label class="control-label" for="wizard_apartments">Number of Residents</label>
+              <input type="text" class="form-control input-sm" id="wizard_residents" name="residents" value="22">
+
+              <label class="control-label" for="wizard_apartments">Avg. Thermal Consumption per Year</label>
+              <div class="input-group">
+                <input type="text" class="form-control input-sm" id="wizard_avg_thermal_consumption" name="avg_thermal_consumption" value="0">
+                <span class="input-group-addon">kWh</span>
+              </div>          
+
+              <label class="control-label" for="wizard_apartments">Type of Housing</label>
+              <select id="wizard_type_of_housing" name="type_of_housing" class="form-control input-sm">
+                <option value="">New Building</option>
+                <option value="">Old Building</option>
+              </select>
+
+              <label class="control-label" for="wizard_location">Location</label>
+              <input type="text" class="form-control input-sm" id="wizard_location"  name="location"value="Berlin">
+
+            </div>
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_avg_windows_per_room">Avg. Windows per Room</label>
+              <input type="text" class="form-control input-sm" id="wizard_avg_windows_per_room"  name="avg_windows_per_room" value="4">
+
+              <label class="control-label" for="wizard_total_heated_floor">Total Heated Living Area</label>
+              <div class="input-group">
+                <input type="text" class="form-control input-sm" id="wizard_total_heated_floor" name="total_heated_floor" value="650">
+                <span class="input-group-addon">m²</span>
+              </div>          
+
+              <label class="control-label" for="wizard_type_of_residents">Type of Residents</label>
+              <select id="wizard_type_of_residents" name="type_of_residents" class="form-control input-sm">
+                <option value="">Mixed</option>
+                <option value="">Young</option>
+                <option value="">Old</option>
+              </select>
+
+              <label class="control-label" for="wizard_avg_electrical_consumption">Average Electrical Consumption per Year</label>
+              <div class="input-group">
+                <input type="text" class="form-control input-sm" id="wizard_avg_electrical_consumption" name="avg_electrical_consumption" value="0">
+                <span class="input-group-addon">kWh</span>
+              </div>
+
+              <label class="control-label" for="wizard_type_of_windows">Type of Windows</label>
+              <select id="wizard_type_of_windows" name="type_of_windows" class="form-control input-sm">
+                <option value="">Single Glazing</option>
+                <option value="">Double Glazing</option>
+                <option value="">XP</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-card" data-cardname="card2">
+        <h3>Pricing</h3>
+        <div class="wizard-input-section">
+          <div class="form-group">
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_gas_costs">Gas Costs per kWh</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="wizard_gas_costs" name="gas_costs" value="0.0655">
+                <span class="input-group-addon">€</span>
+              </div>
+
+              <label class="control-label" for="wizard_feed_in_reward">Feed In Reward per kWh</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="wizard_feed_in_reward" name="feed_in_reward" value="0.0917">
+                <span class="input-group-addon">€</span>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_electrical_costs">Electrical Costs per kWh</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="wizard_electrical_costs" name="electrical_costs" value="0.283">
+                <span class="input-group-addon">€</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-card" data-cardname="card3">
+        <h3>Cogeneration Unit</h3>
+        <div class="wizard-input-section">
+          <div class="form-group">
+            <div class="col-sm-6">
+
+              <label class="control-label" for="wizard_cu_max_gas_input">Power</label>
+              <div class="input-group">
+                <input type="text" class="form-control"id="wizard_cu_max_gas_input" name="cu_max_gas_input" value="19.0">
+                <span class="input-group-addon">€</span>
+              </div>
+
+              <label class="control-label" for="wizard_cu_thermal_efficiency">Thermal Efficiency</label>
+              <input type="text" class="form-control" id="wizard_cu_thermal_efficiency" name="cu_thermal_efficiency" value="65.0">
+
+              <label class="control-label" for="wizard_cu_maintenance_interval">Maintenance Interval (Time)</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="wizard_cu_maintenance_interval" name="cu_maintenance_interval" value="8000">
+                <span class="input-group-addon">h</span>
+              </div>
+              
+              <label class="control-label" for="wizard_cu_purchase_date">Date of Purchase</label>
+              <input type="text" class="form-control" id="wizard_cu_purchase_date" name="cu_purchase_date" value="01.01.2013">
+            </div>
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_cu_minimal_workload">Minimal Workload</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="wizard_cu_minimal_workload" name="cu_minimal_workload" value="19.0">
+                <span class="input-group-addon">%</span>
+              </div>
+
+              <label class="control-label" for="wizard_cu_electrical_efficiency">Electrical Efficiency</label>
+              <input type="text" class="form-control" id="wizard_cu_electrical_efficiency" name="cu_electrical_efficiency" value="24.7">
+
+
+              <label class="control-label" for="wizard_cu_maintenance_interval">Maintenance Interval (Power-Ons)</label>
+              <input type="text" class="form-control" id="wizard_cu_maintenance_interval" name="cu_maintenance_interval" value="2000">
+
+              <label class="control-label" for="wizard_cu_purchase_price">Purchase Price</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="wizard_cu_purchase_price" name="cu_purchase_price" value="15000">
+                <span class="input-group-addon">€</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-card" data-cardname="card4">
+        <h3>Peak Load Boiler</h3>
+        <div class="wizard-input-section">
+          <div class="form-group">
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_plb_max_gas_input">Power</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="wizard_plb_max_gas_input" name="plb_max_gas_input" value="19.0">
+                <span class="input-group-addon">m³</span>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_plb_thermal_efficiency">Thermal Efficiency</label>
+              <input type="text" class="form-control" id="wizard_plb_thermal_efficiency" name="plb_thermal_efficiency" value="0.65">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-card" data-cardname="card5">
+        <h3>Heat Storage</h3>
+        <div class="wizard-input-section">
+          <div class="form-group">
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_hs_capacity">Capacity</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="wizard_hs_capacity" name="hs_capacity" value="25000">
+                <span class="input-group-addon">m³</span>
+              </div>
+              
+              <label class="control-label" for="wizard_hs_min_temperature">Minimal Temperature</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="wizard_hs_min_temperature" name="hs_min_temperature" value="55.0">
+                <span class="input-group-addon">°C</span>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <label class="control-label" for="wizard_hs_target_temperature">Target Temperature</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="wizard_hs_target_temperature" name="hs_target_temperature" value="70.0">
+                <span class="input-group-addon">°C</span>
+              </div>
+
+              <label class="control-label" for="wizard_hs_critical_temperature">Critical Temperature</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="wizard_hs_critical_temperature" name="hs_critical_temperature" value="90.0">
+                <span class="input-group-addon">°C</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Simulation page -->
     <div class="container">
-      <h2>Power System Simulation</h2>
+      <h2>Energy Management System</h2>
       <div class="row">
         <div class="col-sm-12">
           <div class="panel-group" id="accordion">
@@ -46,17 +245,26 @@
               </div>
               <div id="diagram_container" class="panel-collapse collapse in">
                 <div class="panel-body text-center">
-                  <div id="simulation_diagram"></div>
-                  <div class="btn-group btn-group-sm">
-                    <button type="button" class="btn btn-default fast_forward_button" value="12">+ 12 Hours</button>
-                    <button type="button" class="btn btn-default fast_forward_button" value="24">+ 1 Day</button>
-                    <button type="button" class="btn btn-default fast_forward_button" value="168">+ 1 Week</button>
-                    <button type="button" class="btn btn-default fast_forward_button" value="720">+ 1 Month</button>
-                    <button type="button" class="btn btn-default fast_forward_button" value="4320">+ 6 Months</button>
-                    <button type="button" class="btn btn-default fast_forward_button" value="8760">+ 1 Year</button>
+                  <div class="row">
+                    <div class="col-md-12 text-right">
+                      <div class="btn-group btn-group-xs">
+                        <button type="button" class="btn btn-default fast_forward_button" value="12">+ 12 Hours</button>
+                        <button type="button" class="btn btn-default fast_forward_button" value="24">+ 1 Day</button>
+                        <button type="button" class="btn btn-default fast_forward_button" value="168">+ 1 Week</button>
+                        <button type="button" class="btn btn-default fast_forward_button" value="720">+ 1 Month</button>
+                        <button type="button" class="btn btn-default fast_forward_button" value="4320">+ 6 Months</button>
+                        <button type="button" class="btn btn-default fast_forward_button" value="8760">+ 1 Year</button>
+                      </div>
+                      <div class="btn-group btn-group-xs">
+                        <button id="reset_simulation" type="button" class="btn btn-default"><span class="glyphicon glyphicon-repeat"></span> Restart</button>
+                      </div>
+                    </div>
                   </div>
-                  <div class="btn-group btn-group-sm">
-                    <button id="reset_simulation" type="button" class="btn btn-default"><span class="glyphicon glyphicon-repeat"></span> Restart</button>
+                  <div id="simulation_diagram"></div>
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div id="diagram_filters" class="btn-group btn-group-sm" data-toggle="buttons"></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -407,13 +615,13 @@
                                 <div class="col-lg-6">
                                   <div class="radio">
                                     <label>
-                                      <input type="radio" name="cu_mode" id="cu_mode_thermal_driven" value="thermal_driven">
+                                      <input type="radio" name="cu_mode" id="cu_mode_thermal_driven" value="True">
                                       Thermal-Led
                                     </label>
                                   </div>
                                   <div class="radio">
                                     <label>
-                                      <input type="radio" name="cu_mode" id="cu_mode_electrical_driven" value="electrical_driven">
+                                      <input type="radio" name="cu_mode" id="cu_mode_electrical_driven" value="False">
                                       Electric-Led
                                     </label>
                                   </div>
@@ -490,7 +698,7 @@
                             </div>
                             <div class="col-lg-4">
                               <div class="form-group">
-                                <label class="control-label col-lg-6 small">HS Max Temperature</label>
+                                <label class="control-label col-lg-6 small">HS Target Temperature</label>
                                 <div class="col-lg-6">
                                   <div class="input-group">
                                     <input type="number" step="0.1" id="form_hs_target_temperature" name="hs_target_temperature" class="form-control input-sm">
@@ -542,8 +750,11 @@
                     </div>
 
                     <div class="row">
-                      <div class="col-lg-12">
-                        <button type="submit" id="settings_button" class="btn btn-primary btn-block">Submit</button>
+                      <div class="col-lg-6">
+                        <button type="submit" id="settings_button" class="btn btn-primary btn-block">Apply</button>
+                      </div>
+                      <div class="col-lg-6">
+                        <button type="submit" id="settings_simulate_button" class="btn btn-warning btn-block">Simulate</button>
                       </div>
                     </div>
                   </form>
@@ -629,26 +840,27 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="./static/libs/jquery/jquery.min.js"></script>
-    <script src="./static/libs/jquery-ui/js/jquery.ui.core.min.js"></script>
-    <script src="./static/libs/jquery-ui/js/jquery.ui.widget.min.js"></script>
-    <script src="./static/libs/jquery-ui/js/jquery.ui.mouse.min.js"></script>
-    <script src="./static/libs/jquery-ui/js/jquery.ui.slider.min.js"></script>
-    <script src="./static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
-    <script src="./static/libs/bootstrap/js/bootstrap.min.js"></script>
+    <script src="static/libs/jquery/jquery.min.js"></script>
+    <script src="static/libs/jquery-ui/js/jquery.ui.core.min.js"></script>
+    <script src="static/libs/jquery-ui/js/jquery.ui.widget.min.js"></script>
+    <script src="static/libs/jquery-ui/js/jquery.ui.mouse.min.js"></script>
+    <script src="static/libs/jquery-ui/js/jquery.ui.slider.min.js"></script>
+    <script src="static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
+    <script src="static/libs/bootstrap/js/bootstrap.min.js"></script>
+    <script src="static/libs/bootstrap-wizard/bootstrap-wizard.js"></script>
 
-    <script src="./static/libs/highstock/highstock.js"></script>
-    <script src="./static/libs/highstock/modules/no-data-to-display.js"></script>
-    <script src="./static/libs/highstock/modules/exporting.js"></script>
+    <script src="static/libs/highstock/highstock.js"></script>
+    <script src="static/libs/highstock/modules/no-data-to-display.js"></script>
+    <script src="static/libs/highstock/modules/exporting.js"></script>
 
-    <script src="./static/libs/ace/ace.js"></script>
-    <script src="./static/libs/ace/ext-language_tools.js"></script>
+    <script src="static/libs/ace/ace.js"></script>
+    <script src="static/libs/ace/ext-language_tools.js"></script>
 
-    <script src="./static/js/helpers.js"></script>
-    <script src="./static/js/systems_units.js"></script>
-    <script src="./static/js/snippets.js"></script>
-    <script src="./static/js/series.js"></script>
-    <script src="./static/js/refresh.js"></script>
-    <script src="./static/js/ready.js"></script>
+    <script src="static/js/helpers.js"></script>
+    <script src="static/js/systems_units.js"></script>
+    <script src="static/js/snippets.js"></script>
+    <script src="static/js/series.js"></script>
+    <script src="static/js/refresh.js"></script>
+    <script src="static/js/ready.js"></script>
   </body>
 </html>
