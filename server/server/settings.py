@@ -10,7 +10,6 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
-import sys
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -18,12 +17,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '%+fpp_s!v)#lc$vtnxu^r!7rzq)k+lzb*jt-m%)6pkclmpn7t2'
+SECRET_KEY = 'x(&6o4xg-v*x9orh+$z1(fm@!p*l0rcqx)@wri+%jv#l9cf_*z'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-TEMPLATE_DEBUG = False
+TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -37,9 +36,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'south',
-    'server',
-    'server.webapi',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -60,26 +56,16 @@ WSGI_APPLICATION = 'server.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 
-if 'test' in sys.argv:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(os.path.dirname(__file__), 'test.db'),
-            'TEST_NAME': os.path.join(os.path.dirname(__file__), 'test.db'),
-        }
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'bp2013h1_forecasting',
             'USER': 'bp2013h1',
             'PASSWORD': 'hirsch',
             'HOST': 'localhost',
             'PORT': '5432',
-        }
     }
-
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
@@ -99,15 +85,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = ''
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "../website/static"),
-)
 
-# Template files
-TEMPLATE_DIRS = (
-    os.path.join(BASE_DIR, "../website"),
-)
 
 # Logging
 
@@ -128,23 +106,7 @@ LOGGING = {
             'level': 'WARNING',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(os.path.dirname(__file__), '../logs/django.log'),
-            'maxBytes': 1024 * 1024 * 4,  # 4 MB
-            'backupCount': 5,
-            'formatter': 'verbose'
-        },
-        'webapi': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(os.path.dirname(__file__), '../logs/webapi.log'),
-            'maxBytes': 1024 * 1024 * 4,  # 4 MB
-            'backupCount': 5,
-            'formatter': 'verbose'
-        },
-        'planner': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(os.path.dirname(__file__), '../logs/planner.log'),
-            'maxBytes': 1024 * 1024 * 4,  # 4 MB
+            'maxBytes': 1024 * 1024 * 4,
             'backupCount': 5,
             'formatter': 'verbose'
         },
@@ -155,15 +117,6 @@ LOGGING = {
             'propagate': True,
             'level': 'WARNING',
         },
-        'webapi': {
-            'handlers': ['webapi'],
-            'level': 'DEBUG',
-        },
-        'planner': {
-            'handlers': ['planner'],
-            'level': 'DEBUG',
-        },
-
     }
 }
 
