@@ -1,9 +1,3 @@
-[submodule "arduino/sketch/lib/LED_Bar"]
-	path = arduino/sketch/lib/LED_Bar
-	url = git@github.com:Seeed-Studio/Grove_LED_Bar.git
 [submodule "simulation/server/static/libs"]
 	path = simulation/server/static/libs
-	url = git@github.com:BP2013H1/BP2013H1-libs.git
-[submodule "website/static/libs"]
-	path = website/static/libs
 	url = git@github.com:BP2013H1/BP2013H1-libs.git
