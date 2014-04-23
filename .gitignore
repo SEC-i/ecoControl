@@ -1,5 +1,3 @@
-/simulation/server/data/exports/*
-!/simulation/server/data/exports/example.json
 
 *.py[cod]
 *.py~
@@ -42,6 +40,5 @@ nosetests.xml
 
 *.sublime-workspace
 *.sublime-project
-*.log
 
 sftp-config-alt2.json
