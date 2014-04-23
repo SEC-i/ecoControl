@@ -13,7 +13,4 @@ env:
 install: 
   - pip install -r requirements.txt --use-mirrors
 script:
-  - cd server
   - python manage.py test
-  - cd ..
-  - nosetests simulation --with-coverage --cover-package=systems
