@@ -13,7 +13,7 @@ from systems.consumers import ThermalConsumer, SimpleElectricalConsumer
 class Simulation(object):
 
     # initial_time = Tuesday 1st January 2013 12:00:00
-    def __init__(self, initial_time=1356998400, copyconstructed=False):
+    def __init__(self, config, initial_time=1356998400, copyconstructed=False):
 
         if copyconstructed:
             return
@@ -25,73 +25,83 @@ class Simulation(object):
         self.env = ForwardableRealtimeEnvironment(initial_time=initial_time)
 
         # initialize power systems
-        self.heat_storage = HeatStorage(self.env)
-        self.power_meter = PowerMeter(self.env)
+        self.hs = HeatStorage(self.env)
+        self.pm = PowerMeter(self.env)
 
         self.cu = CogenerationUnit(
-            self.env, self.heat_storage, self.power_meter)
-        self.plb = PeakLoadBoiler(self.env, self.heat_storage)
-        self.thermal_consumer = ThermalConsumer(self.env, self.heat_storage)
-        self.electrical_consumer = SimpleElectricalConsumer(
-            self.env, self.power_meter)
+            self.env, self.hs, self.pm)
+        self.plb = PeakLoadBoiler(self.env, self.hs)
+        self.tc = ThermalConsumer(self.env, self.hs)
+        self.ec = SimpleElectricalConsumer(self.env, self.pm)
 
         self.measurements = MeasurementCache(
-            self.env, self.cu, self.plb, self.heat_storage,
-            self.thermal_consumer, self.electrical_consumer)
+            self.env, self.cu, self.plb, self.hs,
+            self.tc, self.ec)
         self.env.register_step_function(self.measurements.take)
 
         self.thread = None
         self.running = False
+
+        self.configure(config)
 
         self.initialize_helpers()
 
     """returns a copy of the simulation, starting at the timepoint of the old simulation"""
     @classmethod
     def copyconstruct(cls, old_sim):
-        new_sim = Simulation(copyconstructed=True)
+        copy = Simulation(copyconstructed=True)
         # start new simulation at timepoint of old simulation
         env = ForwardableRealtimeEnvironment(
             old_sim.env.now, old_sim.env.measurement_interval)
 
-        new_sim.env = env
-        new_sim.env.env_start = old_sim.env.env_start
-        new_sim.heat_storage = HeatStorage.copyconstruct(
-            env, old_sim.heat_storage)
+        copy.env = env
+        copy.env.env_start = old_sim.env.env_start
+        copy.hs = HeatStorage.copyconstruct(
+            env, old_sim.hs)
 
-        new_sim.power_meter = PowerMeter.copyconstruct(
-            env, old_sim.power_meter)
-        new_sim.thermal_consumer = ThermalConsumer.copyconstruct(
-            new_sim.env, old_sim.thermal_consumer, new_sim.heat_storage)
+        copy.pm = PowerMeter.copyconstruct(
+            env, old_sim.pm)
+        copy.tc = ThermalConsumer.copyconstruct(
+            copy.env, old_sim.tc, copy.hs)
 
-        new_sim.electrical_consumer = SimpleElectricalConsumer.copyconstruct(
-            env, old_sim.electrical_consumer, new_sim.power_meter)
+        copy.ec = SimpleElectricalConsumer.copyconstruct(
+            env, old_sim.ec, copy.pm)
 
-        new_sim.plb = PeakLoadBoiler.copyconstruct(
-            env, old_sim.plb, new_sim.heat_storage)
-        new_sim.cu = CogenerationUnit.copyconstruct(
-            env, old_sim.cu, new_sim.heat_storage, new_sim.power_meter)
+        copy.plb = PeakLoadBoiler.copyconstruct(
+            env, old_sim.plb, copy.hs)
+        copy.cu = CogenerationUnit.copyconstruct(
+            env, old_sim.cu, copy.hs, copy.pm)
 
-        new_sim.initialize_helpers()
+        copy.initialize_helpers()
 
-        return new_sim
+        return copy
 
     def initialize_helpers(self):
         # initilize code executer
-        self.code_executer = CodeExecuter(self.env, {
+        self.ce = CodeExecuter(self.env, {
             'env': self.env,
-            'heat_storage': self.heat_storage,
-            'power_meter': self.power_meter,
+            'hs': self.hs,
+            'pm': self.pm,
             'cu': self.cu,
             'plb': self.plb,
-            'thermal_consumer': self.thermal_consumer,
-            'electrical_consumer': self.electrical_consumer,
+            'tc': self.tc,
+            'ec': self.ec,
             'time': time,
         })
 
         # initialize BulkProcessor and add it to env
         self.bulk_processor = BulkProcessor(
-            self.env, [self.code_executer, self.cu, self.plb, self.heat_storage, self.thermal_consumer, self.electrical_consumer])
+            self.env, [self.ce, self.cu, self.plb, self.hs, self.tc, self.ec])
         self.env.process(self.bulk_processor.loop())
+
+    def configure(device_configurations):
+        for (namespace, variable, value) in device_configurations:
+            system = getattr(self, namespace, None)
+            if system is not None and variable in dir(system):
+                setattr(system, variable, value)
+
+        # re-calculate values of tc
+        self.tc.calculate()
 
     def start(self, blocking=False):
         self.thread = SimulationBackgroundRunner(self.env)
@@ -139,8 +149,8 @@ class Simulation(object):
             pre_start_callback(new_sim)
 
         new_sim.measurements = MeasurementCache(
-            new_sim.env, new_sim.cu, new_sim.plb, new_sim.heat_storage,
-            new_sim.thermal_consumer, new_sim.electrical_consumer)
+            new_sim.env, new_sim.cu, new_sim.plb, new_sim.hs,
+            new_sim.tc, new_sim.ec)
         new_sim.env.register_step_function(new_sim.measurements.take)
 
         new_sim.env.forward = seconds
@@ -158,7 +168,7 @@ class Simulation(object):
 
     def get_total_bilance(self):
         return self.cu.get_operating_costs() + self.plb.get_operating_costs() - \
-            self.power_meter.get_reward() + self.power_meter.get_costs()
+            self.pm.get_reward() + self.pm.get_costs()
 
     def get_measurements(self, start=None):
         output = [
@@ -185,18 +195,18 @@ class Simulation(object):
             ('plb_power_ons', [self.plb.power_on_count]),
             ('plb_total_hours_of_operation',
              [round(self.plb.total_hours_of_operation, 2)]),
-            ('hs_total_input', [round(self.heat_storage.input_energy, 2)]),
-            ('hs_total_output', [round(self.heat_storage.output_energy, 2)]),
-            ('hs_empty_count', [round(self.heat_storage.empty_count, 2)]),
+            ('hs_total_input', [round(self.hs.input_energy, 2)]),
+            ('hs_total_output', [round(self.hs.output_energy, 2)]),
+            ('hs_empty_count', [round(self.hs.empty_count, 2)]),
             ('total_thermal_consumption',
-             [round(self.thermal_consumer.total_consumption, 2)]),
+             [round(self.tc.total_consumption, 2)]),
             ('total_electrical_consumption',
-             [round(self.electrical_consumer.total_consumption, 2)]),
-            ('infeed_reward', [round(self.power_meter.get_reward(), 2)]),
-            ('infeed_costs', [round(self.power_meter.get_costs(), 2)]),
+             [round(self.ec.total_consumption, 2)]),
+            ('infeed_reward', [round(self.pm.get_reward(), 2)]),
+            ('infeed_costs', [round(self.pm.get_costs(), 2)]),
             ('total_bilance', [round(self.get_total_bilance(), 2)]),
             ('code_execution_status',
-             [1 if self.code_executer.execution_successful else 0])]
+             [1 if self.ce.execution_successful else 0])]
 
         output += self.measurements.get(start)
 
