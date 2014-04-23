@@ -146,19 +146,8 @@ class ThermalConsumer(BaseSystem):
 
     def get_warmwater_consumption_power(self):
         specific_heat_capacity_water = 0.001163708  # kWh/(kg*K)
-        time_tuple = time.gmtime(self.env.now)
-
-        hour = time_tuple.tm_hour
-        wday = time_tuple.tm_wday
-        weight = time_tuple.tm_min / 60.0
-        if wday in [5, 6]:  # weekend
-            demand_liters_per_hour = self.linear_interpolation(
-                warm_water_demand_weekend[hour],
-                warm_water_demand_weekend[(hour + 1) % 24], weight)
-        else:
-            demand_liters_per_hour = self.linear_interpolation(
-                warm_water_demand_workday[hour],
-                warm_water_demand_workday[(hour + 1) % 24], weight)
+        
+        demand_liters_per_hour = self.warmwater_forecast.forecast_at(self.env.now)
 
         power_demand = demand_liters_per_hour * \
             (self.temperature_warmwater - self.heat_storage.base_temperature) * \

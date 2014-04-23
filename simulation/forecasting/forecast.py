@@ -68,10 +68,12 @@ class Forecast:
         
         
                 
-    def forecast_at(self,date):
+    def forecast_at(self,timestamp):
+        date = datetime.fromtimestamp(timestamp)
         delta = (date - self.start_date).total_seconds() 
         arr_index = (delta / 60) / self.sampling_interval
-        return self.forecasted_values[arr_index]
+        print arr_index
+        return self.forecasted_values[int(arr_index)]
         
 
         
