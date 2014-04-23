@@ -10,7 +10,7 @@ from helpers import make_two_year_data
 class Forecast:
     """a Forecast with two seasons. The seasons will be extended (copied) into a 2 year array, then holtwinters will forecast from this timepoint on
     @param: season1, season2 datasets, which contain weekly data"""
-    def __init__(self, week_season1, week_season2=None,  sample_type="daily", sampling_interval = 15, start=datetime(2012,1,1,0,0,0), hw_parameters=(None,None,None)):
+    def __init__(self, env, week_season1, week_season2=None,  sample_type="daily", sampling_interval = 15, start=datetime(2012,1,1,0,0,0), hw_parameters=(None,None,None)):
         self.hw_parameters = hw_parameters
         
         if sample_type == "daily":
@@ -29,6 +29,11 @@ class Forecast:
                                                              map_weekday=map_week_to_index)
         
         self.forecasted_values = self.forecast_demand()
+        self.start_date = start
+        self.sampling_interval = sampling_interval
+        # wait at least one day before making a new forecast
+        self.forecast_interval = 24 * 60 * 60
+        self.env = env
         
         
         
@@ -48,5 +53,29 @@ class Forecast:
         
         return list(forecast_values)
     
-    def get_value_at(self):
-        pass
+    def append_values(self,data):
+        if type(data) == list:
+            self.twoyear_demand += data
+        else:
+            for val in data:
+                self.twoyear_demand.append(val)
+                
+        delta = (self.env.now - self.start_date).total_seconds()
+        if delta > self.forecast_interval:
+            self.forecasted_values = self.forecast_demand()
+            self.start_date = self.env.now
+
+        
+        
+                
+    def forecast_at(self,date):
+        delta = (date - self.start_date).total_seconds() 
+        arr_index = (delta / 60) / self.sampling_interval
+        return self.forecasted_values[arr_index]
+        
+
+        
+        
+        
+        
+            
