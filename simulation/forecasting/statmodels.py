@@ -1,4 +1,8 @@
 # Python wrapper for R forecast stuff
+
+
+"""max: some examples of using R in python"""
+"""
 import numpy as np
 from simulation.systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer
 import matplotlib.pyplot as plt
@@ -83,42 +87,43 @@ values ={ 'forcasting':list(forecast_values), 'simulation':data}
 plot_dataset(values)
 
 
-# series = ts(data,start=2013, deltat=(1/(365* 12.0 * 24.0 * 15 )))
-# 
-# horizon = 100
-# # res = do_forecast(series, horizon=horizon, exog=(exog_train, exog_test))
-# print "-------------------------------"
-# forecast_result = ets(series)
-# 
-# forecast_values = forecast_result.rx2("mean")
-# values ={ 'forcasting':list(forecast_values), 'simulation':data}
-# 
-# plot_dataset(values)
+series = ts(data,start=2013, deltat=(1/(365* 12.0 * 24.0 * 15 )))
+ 
+horizon = 100
+# res = do_forecast(series, horizon=horizon, exog=(exog_train, exog_test))
+print "-------------------------------"
+forecast_result = ets(series)
+ 
+forecast_values = forecast_result.rx2("mean")
+values ={ 'forcasting':list(forecast_values), 'simulation':data}
+ 
+plot_dataset(values)
 
 
 
-# r = robjects.r
-# r.X11()
-# #  
-# r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
-# r.plot(forecast_result)  
-# #  
-# plot_dataset(values)
-#    
-# fit = forecast.tbats(series)
-# forecast_result = forecast.forecast(fit, h=200)
-# r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
-# r.plot(forecast_result)
-# #  
-# values ={ 'forcasting':list(forecast_result.rx2("mean")), 'simulation':data}
-# #  
-# plot_dataset(values)
-
-# fit = stats.HoltWinters(series)
-# forecast_result = forecast.forecast(fit, h=2000)
+r = robjects.r
+r.X11()
 #  
-# r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
-# r.plot(forecast_result)
+r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
+r.plot(forecast_result)  
 #  
-# values ={ 'forcasting':list(forecast_result.rx2("mean")), 'simulation':data}
-# plot_dataset(values)
+plot_dataset(values)
+    
+fit = forecast.tbats(series)
+forecast_result = forecast.forecast(fit, h=200)
+r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
+r.plot(forecast_result)
+#  
+values ={ 'forcasting':list(forecast_result.rx2("mean")), 'simulation':data}
+#  
+plot_dataset(values)
+
+fit = stats.HoltWinters(series)
+forecast_result = forecast.forecast(fit, h=2000)
+  
+r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
+r.plot(forecast_result)
+  
+values ={ 'forcasting':list(forecast_result.rx2("mean")), 'simulation':data}
+plot_dataset(values)
+"""

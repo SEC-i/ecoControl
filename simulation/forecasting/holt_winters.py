@@ -69,6 +69,7 @@ def RMSE(params, *args):
             exit('Type must be either linear, additive or multiplicative')
         
     rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y, y[:-1])]) / len(Y))
+    
  
     return rmse
  
@@ -156,6 +157,7 @@ def multiplicative(x, m, fc, alpha = None, beta = None, gamma = None):
     b = [(sum(Y[m:2 * m]) - sum(Y[0:m])) / m ** 2]
     s = [Y[i] / a[0] for i in range(m)]
     y = [(a[0] + b[0]) * s[0]]
+    
     rmse = 0
  
     for i in range(len(Y) + fc):

@@ -4,6 +4,8 @@ from systems import BaseSystem
 from systems.helpers import interpolate_year
 from systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_workday, warm_water_demand_weekend
 from forecasting.weather import WeatherForecast
+from simulation.forecasting.forecast import Forecast
+
 
 
 class ThermalConsumer(BaseSystem):
@@ -49,6 +51,19 @@ class ThermalConsumer(BaseSystem):
 
         self.consumed = 0
         self.weather_forecast = WeatherForecast(self.env)
+
+
+
+        input_data = warm_water_demand_workday + warm_water_demand_weekend
+        self.warmwater_forecast = Forecast(input_data, input_data, 
+                                            sample_type = "workday_weekend",
+                                           sampling_interval=60)
+        
+        self.electrical_forecast = Forecast(weekly_electrical_demand_winter,
+                                            weekly_electrical_demand_summer,
+                                            sample_type = "daily",
+                                            sampling_interval=15 )
+        
 
         self.calculate()
 
@@ -148,6 +163,8 @@ class ThermalConsumer(BaseSystem):
         power_demand = demand_liters_per_hour * \
             (self.temperature_warmwater - self.heat_storage.base_temperature) * \
             specific_heat_capacity_water
+            
+        
         return power_demand * self.residents
 
     def get_warmwater_consumption_energy(self):
