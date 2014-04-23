@@ -1,4 +1,4 @@
-from systems import BaseSystem
+from helpers import BaseSystem
 
 
 class GasPoweredGenerator(BaseSystem):

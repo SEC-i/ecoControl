@@ -1,7 +1,7 @@
 import unittest
 
-from systems.storages import HeatStorage, PowerMeter
-from core.environment import ForwardableRealtimeEnvironment
+from server.forecasting.environment import ForwardableRealtimeEnvironment
+from server.forecasting.systems.storages import HeatStorage, PowerMeter
 
 electrical_feed_in_reward_per_kwh = 0.0917
 electrical_costs_per_kwh = 0.283

@@ -1,9 +1,8 @@
 import time
 
-from systems import BaseSystem
-from systems.helpers import interpolate_year
-from systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_workday, warm_water_demand_weekend
-from forecasting.weather import WeatherForecast
+from helpers import BaseSystem, interpolate_year
+from data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_workday, warm_water_demand_weekend
+from server.forecasting.forecasting.weather import WeatherForecast
 
 
 class ThermalConsumer(BaseSystem):

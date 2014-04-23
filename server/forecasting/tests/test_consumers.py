@@ -1,8 +1,8 @@
 import unittest
 
-from core.environment import ForwardableRealtimeEnvironment
-from systems.consumers import ThermalConsumer
-from systems.storages import HeatStorage
+from server.forecasting.environment import ForwardableRealtimeEnvironment
+from server.forecasting.systems.consumers import ThermalConsumer
+from server.forecasting.systems.storages import HeatStorage
 
 
 class ThermalConsumerTests(unittest.TestCase):

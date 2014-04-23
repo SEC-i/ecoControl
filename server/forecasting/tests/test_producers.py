@@ -1,10 +1,10 @@
 import unittest
 
-from helpers import values_comparison
+from server.forecasting.environment import ForwardableRealtimeEnvironment
+from server.forecasting.systems.producers import CogenerationUnit, GasPoweredGenerator
+from server.forecasting.systems.storages import PowerMeter
 
-from core.environment import ForwardableRealtimeEnvironment
-from systems.producers import CogenerationUnit, GasPoweredGenerator
-from systems.storages import PowerMeter
+from helpers import values_comparison
 from mocks import HeatStorageMock
 
 gas_price_per_kwh = 0.0655

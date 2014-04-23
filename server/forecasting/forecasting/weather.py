@@ -1,6 +1,6 @@
 import urllib2
 import json
-from systems.data import outside_temperatures_2013, outside_temperatures_2012
+from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
 import time
 
 
