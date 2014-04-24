@@ -13,38 +13,33 @@ from systems.consumers import ThermalConsumer, SimpleElectricalConsumer
 class Simulation(object):
 
     # initial_time = Tuesday 1st January 2013 12:00:00
-    def __init__(self, devices, config, initial_time=1356998400, copyconstructed=False):
+    def __init__(self, devices, config, initial_time=1356998400):
 
-        if copyconstructed:
-            return
-        # initialize real-time environment
         if initial_time % 3600 != 0.0:
             # ensure that initial_time always at full hour, to avoid
             # measurement bug
             initial_time = (int(initial_time) / 3600) * 3600.0
+        # initialize real-time environment
         self.env = ForwardableRealtimeEnvironment(initial_time=initial_time)
 
         self.devices = self.get_systems_list()
+        self.configure(config)
 
-        self.measurements = MeasurementStorage(
-            self.env, self.devices)
+        self.measurements = MeasurementStorage(self.env, self.devices)
         self.env.register_step_function(self.measurements.take)
 
         self.thread = None
         self.running = False
 
-        self.configure(config)
-
         # initialize BulkProcessor and add it to env
-        self.bulk_processor = BulkProcessor(
-            self.env, [self.ce, self.cu, self.plb, self.hs, self.tc, self.ec])
+        self.bulk_processor = BulkProcessor(self.env, self.devices)
         self.env.process(self.bulk_processor.loop())
 
     def get_systems_list(self):
         system_list = []
         for device in devices:
-            for device_type, class_name Device.DEVICE_TYPES:
-                if device.device_type = device_type:
+            for device_type, class_name in Device.DEVICE_TYPES:
+                if device.device_type == device_type:
                     system_class = getattr(self, class_name)
                     self.devices.append(system_class(self.env))
 
@@ -62,7 +57,7 @@ class Simulation(object):
                         device.heat_storage = connected_device
             elif isinstance(device, ElectricalConsumer):
                 for connected_device in self.devices:
-                    elif isinstance(device, PowerMeter):
+                    if isinstance(device, PowerMeter):
                         device.power_meter = connected_device
             elif isinstance(device, CodeExecuter):
                 device.register_local_variables(self.devices)
@@ -74,12 +69,21 @@ class Simulation(object):
 
     def configure(device_configurations):
         for (device_type, variable, value) in device_configurations:
-            system = getattr(self, device_type, None)
-            if system is not None and variable in dir(system):
-                setattr(system, variable, value)
+            for system in get_systems(device_type):
+                if system is not None and variable in dir(system):
+                    setattr(system, variable, value)
 
-        # re-calculate values of tc
-        self.tc.calculate()
+        # re-calculate values of ThermalConsumers
+        for device in self.devices:
+            if isinstance(device, ThermalConsumer):
+                device.calculate()
+
+    def get_systems(device_type):
+        output = []
+        for device in self.devices:
+            if device.device_type == device_type:
+                output.append(device)
+        return output
 
     def start(self, blocking=False):
         self.thread = SimulationBackgroundRunner(self.env)
