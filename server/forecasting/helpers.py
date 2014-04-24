@@ -2,6 +2,8 @@ from threading import Thread
 from collections import deque
 import itertools
 
+from server.models import Sensor, SensorValue
+
 class BulkProcessor(object):
 
     def __init__(self, env, processes):
@@ -27,18 +29,15 @@ class SimulationBackgroundRunner(Thread):
         self.env.run()
 
 
-class MeasurementCache():
+class MeasurementStorage():
 
-    def __init__(self, env, cu, plb, heat_storage, thermal_consumer, electrical_consumer, cache_limit=24 * 365):
+    def __init__(self, env, devices, cache_limit=24 * 365, in_memory=True):
         self.values = ['time', 'cu_workload', 'plb_workload', 'hs_temperature',
                        'thermal_consumption', 'warmwater_consumption', 'outside_temperature', 'electrical_consumption']
 
         self.env = env
-        self.cu = cu
-        self.plb = plb
-        self.heat_storage = heat_storage
-        self.thermal_consumer = thermal_consumer
-        self.electrical_consumer = electrical_consumer
+        self.devices = devices
+        self.in_memory = in_memory
 
         # initialize empty deques
         self.data = []
@@ -46,10 +45,13 @@ class MeasurementCache():
             self.data.append(deque(maxlen=cache_limit))
 
     def take(self):
-        # take measurements each hour
         if self.env.now % self.env.measurement_interval == 0:
-            for index, value in enumerate(self.values):
-                self.data[index].append(round(self.get_mapped_value(value), 2))
+            if self.in_memory:
+                for index, value in enumerate(self.values):
+                    self.data[index].append(round(self.get_mapped_value(value), 2))
+            else:
+                # TODO: save sensor values to database
+                pass
 
     def get(self, start=None):
         if start is not None:
@@ -69,7 +71,6 @@ class MeasurementCache():
     def get_last(self, value):
         index = self.values.index(value)
         if len(self.data[index]) > 0:
-            print len(self.data[index])
             return self.data[index][-1]  # return newest item
         else:
             return None

@@ -15,6 +15,9 @@ class BaseSystem(object):
         system.env = env
         return system
 
+    def connected(self):
+        raise NotImplemented
+
 
 def interpolate_year(day):
     """

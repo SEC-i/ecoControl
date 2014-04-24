@@ -23,11 +23,11 @@ class ThermalConsumer(BaseSystem):
     heating_constant - heating demand per square meter in W (rule of thumb for new housing: 100)
     """
 
-    def __init__(self, env, heat_storage):
+    def __init__(self, env):
 
         super(ThermalConsumer, self).__init__(env)
 
-        self.heat_storage = heat_storage
+        self.heat_storage = None
 
         self.target_temperature = 20.0  # is overwritten by daily_demand
         self.total_consumption = 0.0
@@ -50,6 +50,9 @@ class ThermalConsumer(BaseSystem):
         self.weather_forecast = WeatherForecast(self.env)
 
         self.calculate()
+
+    def connected(self):
+        return self.heat_storage is not None
 
     def calculate(self):
 
@@ -206,7 +209,7 @@ class SimpleElectricalConsumer(BaseSystem):
     residents - house residents
     """
 
-    def __init__(self, env, power_meter, residents=22):
+    def __init__(self, env, residents=22):
         super(SimpleElectricalConsumer, self).__init__(env)
 
         self.power_meter = power_meter
@@ -215,6 +218,9 @@ class SimpleElectricalConsumer(BaseSystem):
 
         # list of 24 values representing relative demand per hour
         self.demand_variation = [1 for i in range(24)]
+
+    def connected(self):
+        return self.power_meter is not None
 
     @classmethod
     def copyconstruct(cls, env, other_electrical_consumer, power_meter):

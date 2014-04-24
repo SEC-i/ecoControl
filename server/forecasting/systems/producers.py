@@ -37,10 +37,11 @@ class GasPoweredGenerator(BaseSystem):
 
 class CogenerationUnit(GasPoweredGenerator):
 
-    def __init__(self, env, heat_storage, power_meter, max_gas_input=19.0, electrical_efficiency=24.7, thermal_efficiency=65, maintenance_interval=4000, minimal_workload=40.0):
+    def __init__(self, env, max_gas_input=19.0, electrical_efficiency=24.7, thermal_efficiency=65, maintenance_interval=4000, minimal_workload=40.0):
 
         GasPoweredGenerator.__init__(self, env)
-        self.heat_storage = heat_storage
+        self.heat_storage = None
+        self.power_meter = None
 
         # vaillant ecopower 4.7
         self.max_gas_input = max_gas_input  # kW
@@ -50,7 +51,6 @@ class CogenerationUnit(GasPoweredGenerator):
         self.max_efficiency_loss = 0.15  # %
         self.maintenance_interval = maintenance_interval  # hours
 
-        self.power_meter = power_meter
 
         self.minimal_workload = minimal_workload  # %
 
@@ -74,6 +74,9 @@ class CogenerationUnit(GasPoweredGenerator):
         cu.power_meter = power_meter
         cu.env = env
         return cu
+
+    def connected(self):
+        return not (self.power_meter is None and self.heat_storage is None)
 
     def step(self):
         if self.running:
@@ -170,15 +173,18 @@ class CogenerationUnit(GasPoweredGenerator):
 
 class PeakLoadBoiler(GasPoweredGenerator):
 
-    def __init__(self, env, heat_storage, max_gas_input=50.0, thermal_efficiency=80.0):
+    def __init__(self, env, max_gas_input=50.0, thermal_efficiency=80.0):
         GasPoweredGenerator.__init__(self, env)
-        self.heat_storage = heat_storage
+        self.heat_storage = None
 
         self.max_gas_input = max_gas_input  # kW
         self.thermal_efficiency = thermal_efficiency  # %
         self.off_time = self.env.now
 
         self.overwrite_workload = None
+
+    def connected(self):
+        return self.heat_storage is not None
 
     @classmethod
     def copyconstruct(cls, env, other_plb, heat_storage):

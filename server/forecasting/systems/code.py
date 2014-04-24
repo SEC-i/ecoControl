@@ -4,11 +4,10 @@ import os
 
 class CodeExecuter():
 
-    def __init__(self, env, local_variables):
+    def __init__(self, env):
         self.env = env
-        # split keys and values for performance reasons
-        self.local_names = local_variables.keys()
-        self.local_references = local_variables.values()
+        self.local_names = None
+        self.local_references = None
 
         # initialize code with names of local variables
         self.code = "#"
@@ -22,6 +21,13 @@ class CodeExecuter():
         parent_directory = os.path.dirname(
             os.path.dirname(os.path.abspath(__file__)))
         self.snippet_folder = parent_directory + "/server/data/snippets"
+
+    def register_local_variables(self, local_variables):
+        self.local_names = local_variables
+        self.local_references = local_variables
+
+    def connected(self):
+        return not (self.local_names is None and self.local_references is None)
 
     def create_function(self, code):
         self.code = code

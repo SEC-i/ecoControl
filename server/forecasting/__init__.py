@@ -2,7 +2,7 @@ import time
 from copy import deepcopy
 
 from environment import ForwardableRealtimeEnvironment
-from helpers import BulkProcessor, SimulationBackgroundRunner, MeasurementCache
+from helpers import BulkProcessor, SimulationBackgroundRunner, MeasurementStorage
 
 from systems.code import CodeExecuter
 from systems.producers import CogenerationUnit, PeakLoadBoiler
@@ -13,7 +13,7 @@ from systems.consumers import ThermalConsumer, SimpleElectricalConsumer
 class Simulation(object):
 
     # initial_time = Tuesday 1st January 2013 12:00:00
-    def __init__(self, config, initial_time=1356998400, copyconstructed=False):
+    def __init__(self, devices, config, initial_time=1356998400, copyconstructed=False):
 
         if copyconstructed:
             return
@@ -24,19 +24,10 @@ class Simulation(object):
             initial_time = (int(initial_time) / 3600) * 3600.0
         self.env = ForwardableRealtimeEnvironment(initial_time=initial_time)
 
-        # initialize power systems
-        self.hs = HeatStorage(self.env)
-        self.pm = PowerMeter(self.env)
+        self.devices = self.get_systems_list()
 
-        self.cu = CogenerationUnit(
-            self.env, self.hs, self.pm)
-        self.plb = PeakLoadBoiler(self.env, self.hs)
-        self.tc = ThermalConsumer(self.env, self.hs)
-        self.ec = SimpleElectricalConsumer(self.env, self.pm)
-
-        self.measurements = MeasurementCache(
-            self.env, self.cu, self.plb, self.hs,
-            self.tc, self.ec)
+        self.measurements = MeasurementStorage(
+            self.env, self.devices)
         self.env.register_step_function(self.measurements.take)
 
         self.thread = None
@@ -44,25 +35,42 @@ class Simulation(object):
 
         self.configure(config)
 
-        self.initialize_helpers()
-
-    def initialize_helpers(self):
-        # initilize code executer
-        self.ce = CodeExecuter(self.env, {
-            'env': self.env,
-            'hs': self.hs,
-            'pm': self.pm,
-            'cu': self.cu,
-            'plb': self.plb,
-            'tc': self.tc,
-            'ec': self.ec,
-            'time': time,
-        })
-
         # initialize BulkProcessor and add it to env
         self.bulk_processor = BulkProcessor(
             self.env, [self.ce, self.cu, self.plb, self.hs, self.tc, self.ec])
         self.env.process(self.bulk_processor.loop())
+
+    def get_systems_list(self):
+        system_list = []
+        for device in devices:
+            for device_type, class_name Device.DEVICE_TYPES:
+                if device.device_type = device_type:
+                    system_class = getattr(self, class_name)
+                    self.devices.append(system_class(self.env))
+
+        # connect power systems
+        for device in self.devices:
+            if isinstance(device, CogenerationUnit):
+                for connected_device in self.devices:
+                    if isinstance(device, HeatStorage):
+                        device.heat_storage = connected_device
+                    elif isinstance(device, PowerMeter):
+                        device.power_meter = connected_device
+            elif isinstance(device, PeakLoadBoiler) or isinstance(device, ThermalConsumer):
+                for connected_device in self.devices:
+                    if isinstance(device, HeatStorage):
+                        device.heat_storage = connected_device
+            elif isinstance(device, ElectricalConsumer):
+                for connected_device in self.devices:
+                    elif isinstance(device, PowerMeter):
+                        device.power_meter = connected_device
+            elif isinstance(device, CodeExecuter):
+                device.register_local_variables(self.devices)
+
+            if not device.connected():
+                raise RuntimeError
+
+        return system_list
 
     def configure(device_configurations):
         for (device_type, variable, value) in device_configurations:
