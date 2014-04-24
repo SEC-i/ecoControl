@@ -9,8 +9,9 @@ class ThermalConsumerTests(unittest.TestCase):
 
     def setUp(self):
         env = ForwardableRealtimeEnvironment()
-        heat_storage = HeatStorage(env)
-        self.consumer = ThermalConsumer(env, heat_storage)
+        self.consumer = ThermalConsumer(env)
+        self.consumer.heat_storage = HeatStorage(env)
+
 
     '''def test_step(self):
        # pass
@@ -181,7 +182,8 @@ class ThermalConsumerTests(unittest.TestCase):
 
         env = ForwardableRealtimeEnvironment()
         heat_storage = HeatStorage(env)
-        consumer = ThermalConsumer(env, heat_storage)
+        consumer = ThermalConsumer(env)
+        consumer.heat_storage = heat_storage
         consumer.daily_demand = daily_demand
 
         for current_time in range(24):

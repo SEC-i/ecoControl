@@ -88,9 +88,10 @@ class CogenerationUnitTest(unittest.TestCase):
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
         self.heat_storage = HeatStorageMock()
-        self.power_meter = PowerMeter(env=self.env)
-        self.cu = CogenerationUnit(env=self.env, \
-            heat_storage=self.heat_storage, power_meter=self.power_meter )
+        self.power_meter = PowerMeter(self.env)
+        self.cu = CogenerationUnit(self.env)
+        self.cu.heat_storage = self.heat_storage
+        self.cu.power_meter = self.power_meter
         
         
     def test_creation(self):
@@ -264,9 +265,10 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
         self.heat_storage = HeatStorageMock()
-        self.power_meter = PowerMeter(env=self.env)
-        self.cu = CogenerationUnit(env=self.env, \
-            heat_storage=self.heat_storage, power_meter=self.power_meter)
+        self.power_meter = PowerMeter(self.env)
+        self.cu = CogenerationUnit(self.env)
+        self.cu.heat_storage = self.heat_storage
+        self.cu.power_meter = self.power_meter
 
         self.cu.minimal_workload = 20
         self.cu.off_time = self.env.now - 1
@@ -492,9 +494,10 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
         self.heat_storage = HeatStorageMock()
-        self.power_meter = PowerMeter(env=self.env)
-        self.cu = CogenerationUnit(env=self.env, \
-            heat_storage=self.heat_storage, power_meter=self.power_meter)
+        self.power_meter = PowerMeter(self.env)
+        self.cu = CogenerationUnit(self.env)
+        self.cu.heat_storage = self.heat_storage
+        self.cu.power_meter = self.power_meter
         
         self.max_gas_input = 19.0
         self.cu.max_gas_input = self.max_gas_input
