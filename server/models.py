@@ -19,7 +19,7 @@ class Device(models.Model):
     )
 
     name = models.CharField(max_length = 100)
-    type = models.PositiveSmallIntegerField(choices = DEVICE_TYPES)
+    device_type = models.PositiveSmallIntegerField(choices = DEVICE_TYPES)
 
     def __unicode__(self):
         return self.name + " (#" + str(self.pk) + ")"

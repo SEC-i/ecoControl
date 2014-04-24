@@ -70,16 +70,13 @@ def configure(request, persistent=True):
             for (device_name, key, value, value_type) in config_data:
                 try:
                     device = Device.objects.get(name=device_name)
+                    configurations.append(
+                        DeviceConfiguration(device=device, key=key, value=value, value_type=value_type))
                 except ObjectDoesNotExist:
                     logger.error("Unknown device " + str(device_name))
-                    continue
-                configurations.append(
-                    DeviceConfiguration(device=device, key=key, value=value, value_type=value_type))
 
     if persistent:
         DeviceConfiguration.objects.bulk_create(configurations)
-
-    if persistent:
         return create_json_response(request, {"status": "success"})
     else:
         return configurations
@@ -92,10 +89,10 @@ def forecast(request):
 
     simulation_config = []
     for configuration in configurations:
-        # configuration tripel (device, variable, value)
         value = parse_value(configuration.value, configuration.value_type)
+        # configuration tripel (device, variable, value)
         simulation_config.append(
-            (str(configuration.device.type), configuration.key, value))
+            (str(configuration.device.device_type), configuration.key, value))
 
     simulation = Simulation(simulation_config, time())
     simulation.forward(seconds=DEFAULT_FORECAST_INTERVAL, blocking=True)

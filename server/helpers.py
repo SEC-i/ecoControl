@@ -48,10 +48,12 @@ def parse_value(value, value_type):
     try:
         if value_type == DeviceConfiguration.STR:
             return str(value)
-        if value_type == DeviceConfiguration.INT:
+        elif value_type == DeviceConfiguration.INT:
             return int(value)
-        if value_type == DeviceConfiguration.FLOAT:
+        elif value_type == DeviceConfiguration.FLOAT:
             return float(value)
+        else:
+            logger.warning("Couldn't determine type of %s (%s)" % (value, value_type))
     except ValueError:
-        logger.warning("Couldn't parse configuration value %s to %s" % (value, value_type))
-        return str(value)
+        logger.warning("ValueError parsing %s to %s" % (value, value_type))
+    return str(value)
