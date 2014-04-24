@@ -51,7 +51,10 @@ class Forecast:
         (alpha,beta,gamma) = self.hw_parameters
         m = int(len(y) * 0.5) #value sampling shift.. somehow
         fc = len(y) * 2 # f
+        if None in self.hw_parameters:
+            print "finding right parameters for holt winters.." 
         (forecast_values, alpha, beta, gamma, rmse) = multiplicative(y, m, fc,alpha,beta,gamma)
+        print "holt winters: alpha: ", alpha, "beta: ", beta, "gamma: ", gamma, "rmse: ", rmse
         self.hw_parameters = (alpha,beta,gamma)
         
         return list(forecast_values)
@@ -68,9 +71,7 @@ class Forecast:
             self.forecasted_values = self.forecast_demand()
             self.time_series_end = self.env.now
 
-        
-        
-                
+
     def forecast_at(self,timestamp):
         date = datetime.fromtimestamp(timestamp)
         delta = (date - self.time_series_end).total_seconds() 

@@ -26,7 +26,7 @@ class ThermalConsumer(BaseSystem):
     heating_constant - heating demand per square meter in W (rule of thumb for new housing: 100)
     """
 
-    def __init__(self, env, heat_storage):
+    def __init__(self, env, heat_storage, copyconstructed=False):
 
         super(ThermalConsumer, self).__init__(env)
 
@@ -55,16 +55,14 @@ class ThermalConsumer(BaseSystem):
 
 
         input_data = warm_water_demand_workday + warm_water_demand_weekend
-        self.warmwater_forecast = Forecast(self.env,
-                                            input_data, input_data, 
-                                            sample_type = "workday_weekend",
-                                           sampling_interval=60)
-        
-        self.electrical_forecast = Forecast(self.env,
-                                            weekly_electrical_demand_winter,
-                                            weekly_electrical_demand_summer,
-                                            sample_type = "daily",
-                                            sampling_interval=15 )
+        #only build once, to save lots of time
+        if not copyconstructed:
+            self.warmwater_forecast = Forecast(self.env,
+                                                input_data, input_data, 
+                                                sample_type = "workday_weekend",
+                                               sampling_interval=60)
+            
+
         
 
         self.calculate()
@@ -113,7 +111,7 @@ class ThermalConsumer(BaseSystem):
 
     @classmethod
     def copyconstruct(cls, env, other_thermal_consumer, heat_storage):
-        thermal_consumer = ThermalConsumer(env, heat_storage)
+        thermal_consumer = ThermalConsumer(env, heat_storage, copyconstructed=True)
         thermal_consumer.__dict__ = other_thermal_consumer.__dict__.copy()
         thermal_consumer.heat_storage = heat_storage
         thermal_consumer.env = env
@@ -215,12 +213,18 @@ class SimpleElectricalConsumer(BaseSystem):
     residents - house residents
     """
 
-    def __init__(self, env, power_meter, residents=22):
+    def __init__(self, env, power_meter, residents=22, copyconstructed=False):
         super(SimpleElectricalConsumer, self).__init__(env)
 
         self.power_meter = power_meter
         self.residents = residents
         self.total_consumption = 0.0  # kWh
+        if not copyconstructed:
+            self.electrical_forecast = Forecast(self.env,
+                                        weekly_electrical_demand_winter,
+                                        weekly_electrical_demand_summer,
+                                        sample_type = "daily",
+                                        sampling_interval=15 )
 
         # list of 24 values representing relative demand per hour
         self.demand_variation = [1 for i in range(24)]
