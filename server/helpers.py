@@ -4,6 +4,8 @@ import pytz
 
 from django.http import HttpResponse
 
+from models import DeviceConfiguration
+
 logger = logging.getLogger('django')
 
 
@@ -41,3 +43,15 @@ def create_json_response(request, data):
 
 def create_json_response_from_QuerySet(request, data):
     return create_json_response(request, list(data.values()))
+
+def parse_value(value, value_type):
+    try:
+        if value_type == DeviceConfiguration.STR:
+            return str(value)
+        if value_type == DeviceConfiguration.INT:
+            return int(value)
+        if value_type == DeviceConfiguration.FLOAT:
+            return float(value)
+    except ValueError:
+        logger.warning("Couldn't parse configuration value %s to %s" % (value, value_type))
+        return str(value)

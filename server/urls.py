@@ -6,6 +6,7 @@ admin.autodiscover()
 import views
 
 urlpatterns = patterns('',
+    (r'^config/devices/$', views.install_devices),
     (r'^config/$', views.configure),
     (r'^forecast/$', views.forecast),
     (r'^login/$', views.login),

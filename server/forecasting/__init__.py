@@ -95,8 +95,8 @@ class Simulation(object):
         self.env.process(self.bulk_processor.loop())
 
     def configure(device_configurations):
-        for (namespace, variable, value) in device_configurations:
-            system = getattr(self, namespace, None)
+        for (device_type, variable, value) in device_configurations:
+            system = getattr(self, device_type, None)
             if system is not None and variable in dir(system):
                 setattr(system, variable, value)
 
