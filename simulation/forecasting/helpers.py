@@ -17,17 +17,20 @@ map_weekday is a function which maps each weekday to an array index, so a array 
 will be map_weekday = lambda x: 0 if x < 5 else 1"""
 def make_two_year_data(dataset_winter, dataset_summer, sampling_interval, start, map_weekday=lambda x: x):
     wholeyear = []
-    winter = start
-    summer = start + timedelta(days=365 / 2.0)
+    winter = datetime(year=start.year, month=1,day=1)
+    summer = winter + timedelta(days=365 / 2.0)
     season_delta = (summer - winter).total_seconds()
+    
+    
     for t in perdelta(start, start+timedelta(days=365), timedelta(minutes=sampling_interval)):
         arr_index = map_weekday(t.weekday()) + t.hour + (t.minute / sampling_interval)
         summer_value = dataset_winter[arr_index]
         winter_value = dataset_summer[arr_index]
-        delta = (summer - t).total_seconds() #returns timedelta
         
+        delta = (summer - t).total_seconds()
         mix_factor = abs(delta/season_delta)
         mix_factor = min(max(mix_factor,0.0),1.0)
+        
         result_value = linear_interpolation( summer_value, winter_value, mix_factor)
         
         wholeyear.append(result_value)

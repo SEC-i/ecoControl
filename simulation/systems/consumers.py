@@ -55,11 +55,13 @@ class ThermalConsumer(BaseSystem):
 
 
         input_data = warm_water_demand_workday + warm_water_demand_weekend
-        self.warmwater_forecast = Forecast(input_data, input_data, 
+        self.warmwater_forecast = Forecast(self.env,
+                                            input_data, input_data, 
                                             sample_type = "workday_weekend",
                                            sampling_interval=60)
         
-        self.electrical_forecast = Forecast(weekly_electrical_demand_winter,
+        self.electrical_forecast = Forecast(self.env,
+                                            weekly_electrical_demand_winter,
                                             weekly_electrical_demand_summer,
                                             sample_type = "daily",
                                             sampling_interval=15 )

@@ -10,8 +10,10 @@ from helpers import make_two_year_data
 class Forecast:
     """a Forecast with two seasons. The seasons will be extended (copied) into a 2 year array, then holtwinters will forecast from this timepoint on
     @param: season1, season2 datasets, which contain weekly data"""
-    def __init__(self, env, week_season1, week_season2=None,  sample_type="daily", sampling_interval = 15, start=datetime(2012,1,1,0,0,0), hw_parameters=(None,None,None)):
+    def __init__(self, env, week_season1, week_season2=None,  sample_type="daily", sampling_interval = 15, start=None, hw_parameters=(None,None,None)):
         self.hw_parameters = hw_parameters
+        if start == None:
+            start = datetime.fromtimestamp(env.now) - timedelta(days = 2 * 365) #2years before now
         
         if sample_type == "daily":
             map_week_to_index = lambda x : x
@@ -29,7 +31,8 @@ class Forecast:
                                                              map_weekday=map_week_to_index)
         
         self.forecasted_values = self.forecast_demand()
-        self.start_date = start
+        #ending time of input data
+        self.time_series_end = start + timedelta(days=365*2)
         self.sampling_interval = sampling_interval
         # wait at least one day before making a new forecast
         self.forecast_interval = 24 * 60 * 60
@@ -63,21 +66,18 @@ class Forecast:
         delta = (self.env.now - self.start_date).total_seconds()
         if delta > self.forecast_interval:
             self.forecasted_values = self.forecast_demand()
-            self.start_date = self.env.now
+            self.time_series_end = self.env.now
 
         
         
                 
     def forecast_at(self,timestamp):
         date = datetime.fromtimestamp(timestamp)
-        delta = (date - self.start_date).total_seconds() 
+        delta = (date - self.time_series_end).total_seconds() 
         arr_index = (delta / 60) / self.sampling_interval
-        print arr_index
+        if int(arr_index) % 1000 == 0.0:
+            print arr_index, date
         return self.forecasted_values[int(arr_index)]
-        
 
-        
-        
-        
         
             
