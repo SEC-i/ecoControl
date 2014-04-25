@@ -1,5 +1,6 @@
 import logging
 from time import time
+import json
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
@@ -51,8 +52,8 @@ def status(request):
 
 
 @require_POST
-def configure(request, persistent=True):
-    configurations = parse_configurations(request.POST)
+def configure(request):
+    configurations = parse_configurations(json.loads(request.body))
     DeviceConfiguration.objects.bulk_create(configurations)
     return create_json_response(request, {"status": "success"})
 
