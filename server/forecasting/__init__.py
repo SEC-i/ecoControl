@@ -68,22 +68,21 @@ class Simulation(object):
         return system_list
 
     def configure(device_configurations):
-        for (device_type, variable, value) in device_configurations:
-            for system in get_systems(device_type):
-                if system is not None and variable in dir(system):
-                    setattr(system, variable, value)
+        for (device_id, variable, value) in device_configurations:
+            system = get_system(device_id)
+            if system is not None and variable in dir(system):
+                setattr(system, variable, value)
 
         # re-calculate values of ThermalConsumers
         for device in self.devices:
             if isinstance(device, ThermalConsumer):
                 device.calculate()
 
-    def get_systems(device_type):
-        output = []
+    def get_system(device_id):
         for device in self.devices:
-            if device.device_type == device_type:
-                output.append(device)
-        return output
+            if device.device_id == device_id:
+                return device
+        return None
 
     def start(self, blocking=False):
         self.thread = SimulationBackgroundRunner(self.env)

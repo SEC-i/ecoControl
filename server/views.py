@@ -14,11 +14,12 @@ from forecasting import Simulation
 
 logger = logging.getLogger('django')
 
-DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 30 # one month
+DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 30  # one month
 
 
 def index(request):
     return create_json_response(request, {'version': 0.2})
+
 
 @require_POST
 def login_user(request):
@@ -36,9 +37,11 @@ def login_user(request):
     else:
         return create_json_response(request, {"login": "failed"})
 
+
 def logout_user(request):
     logout(request)
     return create_json_response(request, {"logout": "successful"})
+
 
 def status(request):
     if request.user.is_authenticated():
@@ -46,24 +49,13 @@ def status(request):
     else:
         return create_json_response(request, {"login": "inactive"})
 
-def install_devices(request):
-    devices = []
-    devices.append(Device(name='Heat Storage', type=Device.HS))
-    devices.append(Device(name='Power Meter', type=Device.PM))
-    devices.append(Device(name='Cogeneration Unit', type=Device.CU))
-    devices.append(Device(name='Peak Load Boiler', type=Device.PLB))
-    devices.append(Device(name='Thermal Consumer', type=Device.TC))
-    devices.append(Device(name='Electrical Consumer', type=Device.EC))
-    devices.append(Device(name='Code Executer', type=Device.CE))
-    
-    Device.objects.bulk_create(devices)
-    return create_json_response(request, {"status": "default setup created"})
 
 @require_POST
 def configure(request, persistent=True):
     configurations = parse_configurations(request.POST)
     DeviceConfiguration.objects.bulk_create(configurations)
     return create_json_response(request, {"status": "success"})
+
 
 def forecast(request):
     if request.method == 'POST':
@@ -75,8 +67,7 @@ def forecast(request):
     for configuration in configurations:
         value = parse_value(configuration.value, configuration.value_type)
         # configuration tripel (device, variable, value)
-        simulation_config.append(
-            (str(configuration.device.device_type), configuration.key, value))
+        simulation_config.append(configuration.device_id, configuration.key, value)
 
     simulation = Simulation(simulation_config, time())
     simulation.forward(seconds=DEFAULT_FORECAST_INTERVAL, blocking=True)

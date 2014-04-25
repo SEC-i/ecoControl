@@ -7,7 +7,6 @@ import views
 
 urlpatterns = patterns('',
     (r'^$', views.index),
-    (r'^config/devices/$', views.install_devices),
     (r'^config/$', views.configure),
     (r'^forecast/$', views.forecast),
     (r'^login/$', views.login_user),
