@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.http import require_POST
 from django.utils.timezone import utc
 
+from functions import parse_configurations
 from models import Device, DeviceConfiguration, Sensor, SensorValue
 from helpers import create_json_response, create_json_response_from_QuerySet, parse_value
 from forecasting import Simulation
@@ -60,30 +61,13 @@ def install_devices(request):
 
 @require_POST
 def configure(request, persistent=True):
-    """
-    In persistent mode the configuration is stored in the database.
-    Otherwise no changes will be saved and it returns the configuration
-    """
-    configurations = []
-    if 'config' in request.POST:
-        for config_data in request.POST['config']:
-            for (device_name, key, value, value_type) in config_data:
-                try:
-                    device = Device.objects.get(name=device_name)
-                    configurations.append(
-                        DeviceConfiguration(device=device, key=key, value=value, value_type=value_type))
-                except ObjectDoesNotExist:
-                    logger.error("Unknown device " + str(device_name))
-
-    if persistent:
-        DeviceConfiguration.objects.bulk_create(configurations)
-        return create_json_response(request, {"status": "success"})
-    else:
-        return configurations
+    configurations = parse_configurations(request.POST)
+    DeviceConfiguration.objects.bulk_create(configurations)
+    return create_json_response(request, {"status": "success"})
 
 def forecast(request):
     if request.method == 'POST':
-        configurations = configure(request, False)
+        configurations = parse_configurations(request.POST)
     else:
         configurations = DeviceConfiguration.objects.all()
 
