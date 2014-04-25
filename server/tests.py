@@ -3,6 +3,8 @@ import json
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 
+from models import DeviceConfiguration
+
 
 class APITestCase(TestCase):
 
@@ -50,3 +52,13 @@ class APITestCase(TestCase):
 
         # Check that the response equals {"login": "inactive"}
         self.assertEqual(json.loads(response.content), {"login": "inactive"})
+
+    def test_system_configurations(self):
+        data = {'config': [('1', 'capacity', '2500', '1'), ('3', 'max_gas_input', '25', '2')]}
+        response = self.client.post('/configure/', json.dumps(data), content_type='application/json')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content), {"status": "success"})
+
+        self.assertEqual(len(DeviceConfiguration.objects.all()), 2)
+
