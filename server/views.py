@@ -20,7 +20,7 @@ def index(request):
     return create_json_response(request, {'version': 0.2})
 
 @require_POST
-def login(request):
+def login_user(request):
     if 'username' in request.POST and 'password' in request.POST:
         user = authenticate(username=request.POST[
                             'username'], password=request.POST['password'])
@@ -35,7 +35,7 @@ def login(request):
     else:
         return create_json_response(request, {"login": "failed"})
 
-def logout(request):
+def logout_user(request):
     logout(request)
     return create_json_response(request, {"logout": "successful"})
 
