@@ -54,11 +54,17 @@ class APITestCase(TestCase):
         self.assertEqual(json.loads(response.content), {"login": "inactive"})
 
     def test_system_configurations(self):
-        data = {'config': [('1', 'capacity', '2500', '1'), ('3', 'max_gas_input', '25', '2')]}
-        response = self.client.post('/configure/', json.dumps(data), content_type='application/json')
+        data = {
+            'config': [('1', 'capacity', '2500', '1'), ('3', 'max_gas_input', '25', '2')]}
+        response = self.client.post(
+            '/configure/', json.dumps(data), content_type='application/json')
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content), {"status": "success"})
 
         self.assertEqual(len(DeviceConfiguration.objects.all()), 2)
+
+    def test_forecast(self):
+        response = self.client.get('/forecast/')
+        self.assertEqual(response.status_code, 200)
 

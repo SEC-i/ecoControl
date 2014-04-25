@@ -69,7 +69,8 @@ def forecast(request):
         value = parse_value(configuration.value, configuration.value_type)
         # configuration tripel (device, variable, value)
         simulation_config.append(configuration.device_id, configuration.key, value)
+    devices = list(Device.objects.all())
 
-    simulation = Simulation(simulation_config, time())
+    simulation = Simulation(devices, simulation_config, time())
     simulation.forward(seconds=DEFAULT_FORECAST_INTERVAL, blocking=True)
     return create_json_response(request, simulation.get_measurements())

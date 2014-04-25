@@ -6,7 +6,7 @@ class Device(models.Model):
     CU = 2 # CogenerationUnit(self.env, self.hs, self.pm)
     PLB = 3 # PeakLoadBoiler(self.env, self.hs)
     TC = 4 # ThermalConsumer(self.env, self.hs)
-    EC = 5 # SimpleElectricalConsumer(self.env, self.pm)
+    EC = 5 # ElectricalConsumer(self.env, self.pm)
     CE = 6 # CodeExecuter(self.env, {'env': self.env, 'hs': self.hs, ... })
     DEVICE_TYPES = (
         (HS, 'HeatStorage'),

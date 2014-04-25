@@ -199,7 +199,7 @@ class ThermalConsumer(BaseSystem):
         return a * (1 - x) + b * x
 
 
-class SimpleElectricalConsumer(BaseSystem):
+class ElectricalConsumer(BaseSystem):
 
     """
     Demand based on pamiru's data (22 residents in a 12 apartment house)
@@ -210,9 +210,9 @@ class SimpleElectricalConsumer(BaseSystem):
     """
 
     def __init__(self, env, residents=22):
-        super(SimpleElectricalConsumer, self).__init__(env)
+        super(ElectricalConsumer, self).__init__(env)
 
-        self.power_meter = power_meter
+        self.power_meter = None
         self.residents = residents
         self.total_consumption = 0.0  # kWh
 
@@ -224,7 +224,7 @@ class SimpleElectricalConsumer(BaseSystem):
 
     @classmethod
     def copyconstruct(cls, env, other_electrical_consumer, power_meter):
-        electrical_consumer = SimpleElectricalConsumer(env, power_meter)
+        electrical_consumer = ElectricalConsumer(env, power_meter)
         # just a shallow copy, so no dict copy
         electrical_consumer.__dict__ = other_electrical_consumer.__dict__.copy(
         )

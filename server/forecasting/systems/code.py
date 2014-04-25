@@ -9,13 +9,6 @@ class CodeExecuter():
         self.local_names = None
         self.local_references = None
 
-        # initialize code with names of local variables
-        self.code = "#"
-        for name in self.local_names:
-            self.code += " " + name
-        self.code += "\n"
-
-        self.create_function(self.code)
         self.execution_successful = True
 
         parent_directory = os.path.dirname(
@@ -23,8 +16,16 @@ class CodeExecuter():
         self.snippet_folder = parent_directory + "/server/data/snippets"
 
     def register_local_variables(self, local_variables):
-        self.local_names = local_variables
+        self.local_names = ['device_%s' % i for i in range(len(local_variables))]
         self.local_references = local_variables
+
+        # initialize code with names of local variables
+        self.code = "#"
+        for name in self.local_names:
+            self.code += " " + name
+        self.code += "\n"
+
+        self.create_function(self.code)
 
     def connected(self):
         return not (self.local_names is None and self.local_references is None)

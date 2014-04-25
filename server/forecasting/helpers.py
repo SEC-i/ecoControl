@@ -80,6 +80,7 @@ class MeasurementStorage():
             self.data[i].clear()
 
     def get_mapped_value(self, value):
+        return 223.0
         if value == 'time':
             return self.env.now
         if value == 'cu_workload':

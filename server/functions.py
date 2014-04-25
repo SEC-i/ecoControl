@@ -8,7 +8,7 @@ from forecasting.environment import ForwardableRealtimeEnvironment
 from forecasting.systems.code import CodeExecuter
 from forecasting.systems.producers import CogenerationUnit, PeakLoadBoiler
 from forecasting.systems.storages import HeatStorage, PowerMeter
-from forecasting.systems.consumers import ThermalConsumer, SimpleElectricalConsumer
+from forecasting.systems.consumers import ThermalConsumer, ElectricalConsumer
 
 logger = logging.getLogger('django')
 

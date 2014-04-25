@@ -61,6 +61,9 @@ class HeatStorage(BaseSystem):
             self.temperature_loss  # per hour
         self.output_energy += energy_loss * (self.env.step_size / 3600.0)
 
+    def connected(self):
+        return True
+
 
 class PowerMeter(BaseSystem):
 
@@ -76,7 +79,8 @@ class PowerMeter(BaseSystem):
 
         # costs in Euro to purchase 1 kW/h from external supplier
         self.electrical_costs = electrical_costs
-        self.feed_in_reward = feed_in_reward  # reward in Euro for feed in 1 kW/h
+        # reward in Euro for feed in 1 kW/h
+        self.feed_in_reward = feed_in_reward
 
     def add_energy(self, energy):
         self.energy_produced += energy
@@ -99,3 +103,6 @@ class PowerMeter(BaseSystem):
             self.total_fed_in_electricity += balance
         self.energy_produced = 0
         self.energy_consumed = 0
+
+    def connected(self):
+        return True
