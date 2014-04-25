@@ -32,8 +32,7 @@ class SimulationBackgroundRunner(Thread):
 class MeasurementStorage():
 
     def __init__(self, env, devices, cache_limit=24 * 365, in_memory=True):
-        self.values = ['time', 'cu_workload', 'plb_workload', 'hs_temperature',
-                       'thermal_consumption', 'warmwater_consumption', 'outside_temperature', 'electrical_consumption']
+        self.values = Sensor.objects.filter(device_id__in=[x.id for x in devices])
 
         self.env = env
         self.devices = devices

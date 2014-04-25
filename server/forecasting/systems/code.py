@@ -1,11 +1,14 @@
 import traceback
 import os
 
+from helpers import BaseSystem
 
-class CodeExecuter():
+class CodeExecuter(BaseSystem):
 
-    def __init__(self, env):
-        self.env = env
+    def __init__(self, system_id, env):
+        
+        super(CodeExecuter, self).__init__(system_id, env)
+
         self.local_names = None
         self.local_references = None
 

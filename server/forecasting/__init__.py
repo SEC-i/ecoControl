@@ -43,7 +43,7 @@ class Simulation(object):
             for device_type, class_name in Device.DEVICE_TYPES:
                 if device.device_type == device_type:
                     system_class = globals()[class_name]
-                    system_list.append(system_class(self.env))
+                    system_list.append(system_class(device.id, self.env))
 
         # connect power systems
         for device in system_list:

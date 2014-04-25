@@ -23,9 +23,9 @@ class ThermalConsumer(BaseSystem):
     heating_constant - heating demand per square meter in W (rule of thumb for new housing: 100)
     """
 
-    def __init__(self, env):
+    def __init__(self, system_id, env):
 
-        super(ThermalConsumer, self).__init__(env)
+        super(ThermalConsumer, self).__init__(system_id, env)
 
         self.heat_storage = None
 
@@ -95,14 +95,6 @@ class ThermalConsumer(BaseSystem):
         self.heat_capacity = self.heat_capacity_air + heat_capacity_stuff
 
         self.room_power = self.heat_capacity_air * self.temperature_room
-
-    @classmethod
-    def copyconstruct(cls, env, other_thermal_consumer, heat_storage):
-        thermal_consumer = ThermalConsumer(env, heat_storage)
-        thermal_consumer.__dict__ = other_thermal_consumer.__dict__.copy()
-        thermal_consumer.heat_storage = heat_storage
-        thermal_consumer.env = env
-        return thermal_consumer
 
     def step(self):
         self.simulate_consumption()
@@ -209,8 +201,8 @@ class ElectricalConsumer(BaseSystem):
     residents - house residents
     """
 
-    def __init__(self, env, residents=22):
-        super(ElectricalConsumer, self).__init__(env)
+    def __init__(self, system_id, env, residents=22):
+        super(ElectricalConsumer, self).__init__(system_id, env)
 
         self.power_meter = None
         self.residents = residents
@@ -221,16 +213,6 @@ class ElectricalConsumer(BaseSystem):
 
     def connected(self):
         return self.power_meter is not None
-
-    @classmethod
-    def copyconstruct(cls, env, other_electrical_consumer, power_meter):
-        electrical_consumer = ElectricalConsumer(env, power_meter)
-        # just a shallow copy, so no dict copy
-        electrical_consumer.__dict__ = other_electrical_consumer.__dict__.copy(
-        )
-        electrical_consumer.power_meter = power_meter
-        electrical_consumer.env = env
-        return electrical_consumer
 
     def step(self):
         consumption = self.get_consumption_energy()

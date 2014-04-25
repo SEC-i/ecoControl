@@ -23,7 +23,7 @@ def parse_configurations(data):
                     if device.device_type == device_type:
                         system_class = globals()[class_name]
                 # Make sure that key is present in corresponding system class
-                if getattr(system_class(ForwardableRealtimeEnvironment()), key, None) is not None:
+                if getattr(system_class(0, ForwardableRealtimeEnvironment()), key, None) is not None:
                     configurations.append(
                         DeviceConfiguration(device=device, key=key, value=value, value_type=int(value_type)))
             except ObjectDoesNotExist:

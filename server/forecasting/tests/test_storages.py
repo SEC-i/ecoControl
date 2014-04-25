@@ -11,7 +11,7 @@ class HeatStorageTests(unittest.TestCase):
 
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
-        self.hs = HeatStorage(env=self.env)
+        self.hs = HeatStorage(0, env=self.env)
 
     def test_heat_storage_creation(self):
         self.assertGreater(self.hs.capacity, 0)
@@ -151,7 +151,7 @@ class PowerMeterTests(unittest.TestCase):
 
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
-        self.power_meter = PowerMeter(env=self.env)
+        self.power_meter = PowerMeter(0, env=self.env)
 
     def test_power_meter_creation(self):
         self.assertEqual(self.power_meter.total_fed_in_electricity, 0)

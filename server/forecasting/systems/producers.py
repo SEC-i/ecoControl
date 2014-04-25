@@ -3,8 +3,8 @@ from helpers import BaseSystem
 
 class GasPoweredGenerator(BaseSystem):
 
-    def __init__(self, env):
-        super(GasPoweredGenerator, self).__init__(env)
+    def __init__(self, system_id, env):
+        super(GasPoweredGenerator, self).__init__(system_id, env)
 
         self.running = True
 
@@ -37,9 +37,9 @@ class GasPoweredGenerator(BaseSystem):
 
 class CogenerationUnit(GasPoweredGenerator):
 
-    def __init__(self, env, max_gas_input=19.0, electrical_efficiency=24.7, thermal_efficiency=65, maintenance_interval=4000, minimal_workload=40.0):
+    def __init__(self, system_id, env, max_gas_input=19.0, electrical_efficiency=24.7, thermal_efficiency=65, maintenance_interval=4000, minimal_workload=40.0):
 
-        GasPoweredGenerator.__init__(self, env)
+        GasPoweredGenerator.__init__(self, system_id, env)
         self.heat_storage = None
         self.power_meter = None
 
@@ -50,7 +50,6 @@ class CogenerationUnit(GasPoweredGenerator):
         self.thermal_efficiency = thermal_efficiency  # % (max 12.5 kW)
         self.max_efficiency_loss = 0.15  # %
         self.maintenance_interval = maintenance_interval  # hours
-
 
         self.minimal_workload = minimal_workload  # %
 
@@ -63,17 +62,6 @@ class CogenerationUnit(GasPoweredGenerator):
         self.electrical_driven_minimal_production = 1.0  # kWh (electrical)
 
         self.overwrite_workload = None
-
-    @classmethod
-    def copyconstruct(cls, env, other_cu, heat_storage, power_meter):
-        cu = CogenerationUnit(env, heat_storage, power_meter)
-        cu.__dict__ = other_cu.__dict__.copy()
-        # copy will also copy references for heatstorage and powermeter, so we
-        # have to change refences manually
-        cu.heat_storage = heat_storage
-        cu.power_meter = power_meter
-        cu.env = env
-        return cu
 
     def connected(self):
         return not (self.power_meter is None and self.heat_storage is None)
@@ -173,8 +161,8 @@ class CogenerationUnit(GasPoweredGenerator):
 
 class PeakLoadBoiler(GasPoweredGenerator):
 
-    def __init__(self, env, max_gas_input=50.0, thermal_efficiency=80.0):
-        GasPoweredGenerator.__init__(self, env)
+    def __init__(self, system_id, env, max_gas_input=50.0, thermal_efficiency=80.0):
+        GasPoweredGenerator.__init__(self, system_id, env)
         self.heat_storage = None
 
         self.max_gas_input = max_gas_input  # kW
