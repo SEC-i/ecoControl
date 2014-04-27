@@ -148,6 +148,6 @@ class Simulation(object):
         #     ('code_execution_status',
         #      [1 if self.ce.execution_successful else 0])]
 
-        # output += self.measurements.get(start)
+        output += self.measurements.get(start)
 
         return dict(output)
