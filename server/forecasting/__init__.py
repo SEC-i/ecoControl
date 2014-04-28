@@ -1,10 +1,10 @@
 import time
 from copy import deepcopy
 
-from server.models import Device
+from server.models import Device, DeviceConfiguration
 
 from environment import ForwardableRealtimeEnvironment
-from helpers import BulkProcessor, SimulationBackgroundRunner, MeasurementStorage
+from helpers import BulkProcessor, SimulationBackgroundRunner, MeasurementStorage, parse_value
 
 from systems.code import CodeExecuter
 from systems.producers import CogenerationUnit, PeakLoadBoiler
@@ -15,7 +15,7 @@ from systems.consumers import ThermalConsumer, ElectricalConsumer
 class Simulation(object):
 
     # initial_time = Tuesday 1st January 2013 12:00:00
-    def __init__(self, devices, config, initial_time=1356998400):
+    def __init__(self, configurations=DeviceConfiguration.objects.all(), demo=False, initial_time=1356998400):
 
         if initial_time % 3600 != 0.0:
             # ensure that initial_time always at full hour, to avoid
@@ -24,8 +24,8 @@ class Simulation(object):
         # initialize real-time environment
         self.env = ForwardableRealtimeEnvironment(initial_time=initial_time)
 
-        self.devices = self.get_systems_list(devices)
-        self.configure(config)
+        self.devices = self.get_initialized_scenario()
+        self.configure(configurations)
 
         self.measurements = MeasurementStorage(self.env, self.devices)
         self.env.register_step_function(self.measurements.take)
@@ -37,7 +37,8 @@ class Simulation(object):
         self.bulk_processor = BulkProcessor(self.env, self.devices)
         self.env.process(self.bulk_processor.loop())
 
-    def get_systems_list(self, devices):
+    def get_initialized_scenario(self):
+        devices = list(Device.objects.all())
         system_list = []
         for device in devices:
             for device_type, class_name in Device.DEVICE_TYPES:
@@ -69,11 +70,13 @@ class Simulation(object):
 
         return system_list
 
-    def configure(self, device_configurations):
-        for (device_id, variable, value) in device_configurations:
-            system = get_system(device_id)
-            if system is not None and variable in dir(system):
-                setattr(system, variable, value)
+    def configure(self, configurations):
+        simulation_config = []
+        for configuration in configurations:
+            value = parse_value(configuration.value, configuration.value_type)
+            system = self.get_system(configuration.device_id)
+            if system is not None and configuration.key in dir(system):
+                setattr(system, configuration.key, value)
 
         # re-calculate values of ThermalConsumers
         for device in self.devices:

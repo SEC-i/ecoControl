@@ -2,7 +2,8 @@ from threading import Thread
 from collections import deque
 import itertools
 
-from server.models import Sensor, SensorValue
+from server.models import Sensor, SensorValue, DeviceConfiguration
+
 
 class BulkProcessor(object):
 
@@ -34,7 +35,8 @@ class MeasurementStorage():
     def __init__(self, env, devices, cache_limit=24 * 365, in_memory=True):
         self.env = env
         self.devices = devices
-        self.sensors = Sensor.objects.filter(device_id__in=[x.id for x in devices])
+        self.sensors = Sensor.objects.filter(
+            device_id__in=[x.id for x in devices])
         self.in_memory = in_memory
 
         # initialize empty deques
@@ -63,7 +65,8 @@ class MeasurementStorage():
         output = []
         for index, sensor in enumerate(self.sensors):
             if start is not None:
-                output.append((sensor.id, list(itertools.islice(self.data[index], i, None))))
+                output.append(
+                    (sensor.id, list(itertools.islice(self.data[index], i, None))))
             else:
                 output.append((sensor.id, list(self.data[index])))
         return output
@@ -79,6 +82,7 @@ class MeasurementStorage():
         for i in self.data:
             self.data[i].clear()
 
+
 def parse_hourly_demand_values(namespace, data):
     output = []
     for i in range(24):
@@ -86,3 +90,19 @@ def parse_hourly_demand_values(namespace, data):
         if key in data:
             output.append(float(data[key]))
     return output
+
+
+def parse_value(value, value_type):
+    try:
+        if value_type == DeviceConfiguration.STR:
+            return str(value)
+        elif value_type == DeviceConfiguration.INT:
+            return int(value)
+        elif value_type == DeviceConfiguration.FLOAT:
+            return float(value)
+        else:
+            logger.warning(
+                "Couldn't determine type of %s (%s)" % (value, value_type))
+    except ValueError:
+        logger.warning("ValueError parsing %s to %s" % (value, value_type))
+    return str(value)

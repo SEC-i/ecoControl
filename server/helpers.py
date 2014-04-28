@@ -43,17 +43,3 @@ def create_json_response(request, data):
 
 def create_json_response_from_QuerySet(request, data):
     return create_json_response(request, list(data.values()))
-
-def parse_value(value, value_type):
-    try:
-        if value_type == DeviceConfiguration.STR:
-            return str(value)
-        elif value_type == DeviceConfiguration.INT:
-            return int(value)
-        elif value_type == DeviceConfiguration.FLOAT:
-            return float(value)
-        else:
-            logger.warning("Couldn't determine type of %s (%s)" % (value, value_type))
-    except ValueError:
-        logger.warning("ValueError parsing %s to %s" % (value, value_type))
-    return str(value)

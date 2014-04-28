@@ -9,7 +9,7 @@ from django.utils.timezone import utc
 
 from functions import perform_configuration
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue
-from helpers import create_json_response, create_json_response_from_QuerySet, parse_value
+from helpers import create_json_response, create_json_response_from_QuerySet
 from forecasting import Simulation
 
 
@@ -56,6 +56,14 @@ def status(request):
 @require_POST
 def configure(request):
     perform_configuration(json.loads(request.body))
+    system_status = Configuration.objects.get(key='system_status')
+    system_status.value = 'running'
+    system_status.save()
+
+    simulation = Simulation(demo=True, initial_time=time())
+    simulation.forward(60 * 60 * 24 * 30, blocking=True)
+    simulation.start()
+
     return create_json_response(request, {"status": "success"})
 
 
@@ -66,17 +74,9 @@ def settings(request):
 def forecast(request):
     if request.method == 'POST':
         configurations = parse_configurations(request.POST)
+        simulation = Simulation(configurations, initial_time=time())
     else:
-        configurations = DeviceConfiguration.objects.all()
+        simulation = Simulation(initial_time=time())
 
-    simulation_config = []
-    for configuration in configurations:
-        value = parse_value(configuration.value, configuration.value_type)
-        # configuration tripel (device, variable, value)
-        simulation_config.append(
-            configuration.device_id, configuration.key, value)
-    devices = list(Device.objects.all())
-
-    simulation = Simulation(devices, simulation_config, time())
     simulation.forward(seconds=DEFAULT_FORECAST_INTERVAL, blocking=True)
     return create_json_response(request, simulation.get_measurements())
