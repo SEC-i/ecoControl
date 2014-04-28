@@ -6,7 +6,7 @@ $(function() {
     initialize_editor();
     initialize_svg();
     initialize_hourly_demands();
-    $.getJSON("./api/settings/", function(data) {
+    $.getJSON("/api/settings/", function(data) {
         update_setting(data);
         if (data['simulation_running'] == '1') {
             initialize_diagram();
@@ -14,7 +14,7 @@ $(function() {
             initialize_wizard();
         }
     }).done(function() {
-        $.getJSON("./api/code/", function(data) {
+        $.getJSON("/api/code/", function(data) {
             editor.setValue(data['editor_code'], 1);
         });
     });
@@ -44,7 +44,7 @@ function initialize_editor() {
 }
 
 function initialize_svg() {
-    $.get("./static/img/simulation.svg", function(data) {
+    $.get("/static/img/simulation.svg", function(data) {
         var svg_item = document.importNode(data.documentElement, true);
         $("#simulation_setup").append(svg_item);
     }, "xml");
@@ -98,7 +98,7 @@ function initialize_event_handlers() {
         for (var i = 0; i < 24; i++) {
             post_data += "&daily_electrical_variation_" + i + "=" + ($("#daily_electrical_variation_" + i).slider("value") / 10000);
         }
-        $.post("./api/settings/", post_data, function(data) {
+        $.post("/api/settings/", post_data, function(data) {
             $("#settings_button").removeClass("btn-primary");
             $("#settings_button").addClass("btn-success");
             update_setting(data);
@@ -123,13 +123,13 @@ function initialize_event_handlers() {
     
 
     $(".fast_forward_button").click(function(event) {
-        $.post("./api/simulation/", {
+        $.post("/api/simulation/", {
             forward: $(this).val()
         });
     });
 
     $("#editor_button").click(function() {
-        $.post("./api/settings/", {
+        $.post("/api/settings/", {
             code: editor.getValue(),
             password: $('#password').val()
         }, function(data) {
@@ -140,7 +140,7 @@ function initialize_event_handlers() {
 
     $("#editor_simulate_button").click(function( event ) {
         event.preventDefault();
-        $.post("./api/forecasts/", {
+        $.post("/api/forecasts/", {
             code: editor.getValue(),
             password: $('#password').val(),
             forecast_time: 3600.0 * 24 * 30
@@ -163,14 +163,14 @@ function initialize_event_handlers() {
     });
 
     $("#reset_simulation").click(function(event) {
-        $.post("./api/simulation/", {
+        $.post("/api/simulation/", {
             reset: 1
         });
         // location.reload(true);
     });
 
     $("#save_snippet").submit(function(event) {
-        $.post("./api/code/", {
+        $.post("/api/code/", {
             save_snippet: $("#snippet_name").val(),
             code: editor.getValue()
         }, function(data) {
@@ -188,7 +188,7 @@ function initialize_event_handlers() {
     });
 
     $("#load_snippet").submit(function(event) {
-        $.post("./api/code/", {
+        $.post("/api/code/", {
             snippet: $("#snippets").val()
         }, function(data) {
             editor.setValue(data['editor_code'], 1);
@@ -197,7 +197,7 @@ function initialize_event_handlers() {
     });
 
     $("#export_data").submit(function(event) {
-        $.post("./api/simulation/", {
+        $.post("/api/simulation/", {
             export: $("#export_name").val()
         });
         event.preventDefault();
@@ -344,7 +344,7 @@ function initialize_wizard(show) {
             wizard.submitFailure();
             wizard.hideButtons();
         });
-        $.getJSON("./api/settings/", function(data) {
+        $.getJSON("/api/settings/", function(data) {
             update_setting(data);
         });
     });

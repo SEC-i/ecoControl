@@ -11,7 +11,7 @@ var fields = [
 
 function refresh() {
     if (refresh_gui) {
-        url = './api/data/';
+        url = '/api/data/';
         if (current_time != undefined) {
             url += current_time + '/';
         }
@@ -84,7 +84,7 @@ function immediate_feedback() {
         post_data += "&daily_electrical_variation_" + i + "=" + ($("#daily_electrical_variation_" + i).slider("value") / 10000);
     }
     post_data += "&forecast_time=" + 3600.0 * 24 * 30;
-    $.post("./api/forecasts/", post_data, function(data) {
+    $.post("/api/forecasts/", post_data, function(data) {
         update_forecast(data, true);
     });
 }
