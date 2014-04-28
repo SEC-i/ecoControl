@@ -61,7 +61,7 @@ def configure(request):
     system_status.save()
 
     simulation = Simulation(demo=True, initial_time=time())
-    simulation.forward(60 * 60 * 24 * 30, blocking=True)
+    simulation.forward(60 * 60 * 24 * 30, blocking=False)
     simulation.start()
 
     return create_json_response(request, {"status": "success"})
