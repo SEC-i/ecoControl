@@ -165,12 +165,12 @@ class CogenerationUnit(GasPoweredGenerator):
     def consume_gas(self):
         GasPoweredGenerator.consume_gas(self)
         self.total_electrical_production += self.current_electrical_production * \
-            (self.env.step_size / 3600.0)
+            (self.env.step_size / self.env.measurement_interval)
 
 
 class PeakLoadBoiler(GasPoweredGenerator):
 
-    def __init__(self, env, heat_storage, max_gas_input=50.0, thermal_efficiency=80.0):
+    def __init__(self, env, heat_storage, max_gas_input=45.0, thermal_efficiency=80.0):
         GasPoweredGenerator.__init__(self, env)
         self.heat_storage = heat_storage
 

@@ -3,7 +3,7 @@ from systems import BaseSystem
 
 class HeatStorage(BaseSystem):
 
-    def __init__(self, env, capacity=25000, min_temperature=55.0, target_temperature=70.0, critical_temperature=90.0):
+    def __init__(self, env, capacity=2500, min_temperature=55.0, target_temperature=70.0, critical_temperature=90.0):
         super(HeatStorage, self).__init__(env)
 
         # default data from pamiru48
@@ -13,7 +13,7 @@ class HeatStorage(BaseSystem):
         self.target_temperature = target_temperature  # degree Celsius
         self.critical_temperature = critical_temperature  # degree Celsius
 
-        self.specific_heat_capacity = 4.19 * 1 / 3600.0  # kWh/(kg*K)
+        self.specific_heat_capacity = 4.19 / 3600.0  # kWh/(kg*K)
 
         self.input_energy = 0.0  # kWh
         self.output_energy = 0.0  # kWh
@@ -57,9 +57,9 @@ class HeatStorage(BaseSystem):
         self.running = False
 
     def step(self):
-        energy_loss = (self.capacity * self.specific_heat_capacity) * \
-            self.temperature_loss  # per hour
-        self.output_energy += energy_loss * (self.env.step_size / 3600.0)
+        hourly_energy_loss = (self.capacity * self.specific_heat_capacity) * \
+            self.temperature_loss
+        self.output_energy += hourly_energy_loss * (self.env.step_size / self.env.measurement_interval)
 
 
 class PowerMeter(BaseSystem):

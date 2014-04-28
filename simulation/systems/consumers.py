@@ -127,7 +127,7 @@ class ThermalConsumer(BaseSystem):
 
     def get_consumption_energy(self):
         # convert to kWh
-        return self.get_consumption_power() * (self.env.step_size / 3600.0)
+        return self.get_consumption_power() * (self.env.step_size / self.env.measurement_interval)
 
     def get_warmwater_consumption_power(self):
         specific_heat_capacity_water = 0.001163708  # kWh/(kg*K)
@@ -151,7 +151,7 @@ class ThermalConsumer(BaseSystem):
         return power_demand * self.residents
 
     def get_warmwater_consumption_energy(self):
-        return self.get_warmwater_consumption_power() * (self.env.step_size / 3600.0)
+        return self.get_warmwater_consumption_power() * (self.env.step_size / self.env.measurement_interval)
 
     def simulate_consumption(self):
         # calculate variation using daily demand
@@ -251,4 +251,4 @@ class SimpleElectricalConsumer(BaseSystem):
         return demand * self.demand_variation[time_tuple.tm_hour]
 
     def get_consumption_energy(self):
-        return self.get_consumption_power() * (self.env.step_size / 3600.0)
+        return self.get_consumption_power() * (self.env.step_size / self.env.measurement_interval)
