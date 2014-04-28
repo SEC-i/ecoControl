@@ -44,6 +44,7 @@ def make_two_year_data(dataset_winter, dataset_summer, sampling_interval, start,
     return twoyear
 
 
+
 def plot_dataset(sensordata):
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
@@ -72,13 +73,18 @@ def plot_dataset(sensordata):
     plt.show(block=True)
 
 def test_dataset():
-    from simulation.systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_workday, warm_water_demand_weekend
+    from simulation.systems.data import electrical_demand_su_mo,electrical_demand_wi_mo,warm_water_demand_weekend,warm_water_demand_workday
     from holt_winters import multiplicative
-    y = make_two_year_data(weekly_electrical_demand_winter,weekly_electrical_demand_summer, 15, datetime(year=2012,month=4,day=24))
+    #dataset with on day
+    y = make_two_year_data(electrical_demand_wi_mo,electrical_demand_su_mo, 15, datetime(year=2012,month=1,day=1), lambda x :0)
     
-    m = int(len(y) * 0.5) #value sampling shift.. somehow
+
+    m = int(len(y) / 2 + 1) #value sampling shift.. somehow
     fc = len(y) * 2 # whole data length
     
-    (forecast_values, alpha, beta, gamma, rmse) = multiplicative(y, m, fc,None, None, None)
+    
+    (forecast_values, alpha, beta, gamma, rmse) = multiplicative(y, m, fc,None, 0.0, 0.0)
     values ={ 'forcasting':list(forecast_values), 'simulation':y}
     plot_dataset(values)
+    
+test_dataset()

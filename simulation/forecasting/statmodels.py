@@ -2,9 +2,9 @@
 
 
 """max: some examples of using R in python"""
-"""
+
 import numpy as np
-from simulation.systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer
+from simulation.systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_weekend, warm_water_demand_workday
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
 from datetime import date, datetime, timedelta
@@ -26,8 +26,42 @@ print 'Finished importing R.'
 
 
         
+def perdelta(start, end, delta):
+    curr = start
+    while curr < end:
+        yield curr
+        curr += delta
+        
+def linear_interpolation(a,b,x):
+    return a * x + b * (1.0 - x)
 
-
+def make_two_year_data(dataset_winter, dataset_summer, sampling_interval, start, map_weekday=lambda x: x):
+    wholeyear_data = []
+    one_year = timedelta(days=365)
+    winter = datetime(year=start.year, month=1,day=1)
+    summer = winter + timedelta(days=365/2)
+    season_delta = (summer - winter).total_seconds()
+    
+    
+    
+    
+    for t in perdelta(start, start+one_year, timedelta(minutes=sampling_interval)):
+        arr_index = map_weekday(t.weekday()) + t.hour + (t.minute / sampling_interval)
+        summer_value = dataset_winter[arr_index]
+        winter_value = dataset_summer[arr_index]
+        
+        if t > summer + one_year / 2:
+            summer = summer + one_year #always take summer of current year
+        
+        delta = (summer - t).total_seconds()
+        mix_factor = abs(delta/season_delta)
+        mix_factor = min(max(mix_factor,0.0),1.0)
+        
+        result_value = linear_interpolation( summer_value, winter_value, mix_factor)
+        
+        wholeyear_data.append(result_value)
+    twoyear = wholeyear_data + wholeyear_data
+    return wholeyear_data
 
 
 def ets(y):
@@ -70,60 +104,33 @@ def plot_dataset(sensordata):
 # Example
 #data = np.array(weekly_electrical_demand_winter)
         
-    
-data =  np.array(make_two_year_data())
+input_data = warm_water_demand_workday + warm_water_demand_weekend
+data =  np.array(make_two_year_data(weekly_electrical_demand_winter,weekly_electrical_demand_summer, 15, datetime(year=2012,month=4,day=24)))
 
-
-y = make_two_year_data()
-alpha = 0.30 #forecastings are weighted more on past data
-beta = 0.00 #very little slope changes
-gamma = 0.8 #estimation of seasonal component based on  recent changes
-i = "start"
-m = int(len(y) * 0.2) #value sampling shift.. somehow
-fc = len(y) # whole data length
-
-(forecast_values, alpha, beta, gamma, rmse) = multiplicative(y, m, fc,alpha, beta, gamma)
-values ={ 'forcasting':list(forecast_values), 'simulation':data}
-plot_dataset(values)
-
-
-series = ts(data,start=2013, deltat=(1/(365* 12.0 * 24.0 * 15 )))
+#series = ts(data,start=2013, deltat=(1/(365* 12.0 * 24.0 * 60 )))
+#
+series = data
  
-horizon = 100
-# res = do_forecast(series, horizon=horizon, exog=(exog_train, exog_test))
-print "-------------------------------"
-forecast_result = ets(series)
- 
-forecast_values = forecast_result.rx2("mean")
-values ={ 'forcasting':list(forecast_values), 'simulation':data}
- 
-plot_dataset(values)
-
-
-
+# horizon = 100
+# # res = do_forecast(series, horizon=horizon, exog=(exog_train, exog_test))
+# print "-------------------------------"
+# forecast_result = ets(series)
+#  
+# forecast_values = forecast_result.rx2("mean")
+# values ={ 'forcasting':list(forecast_values), 'simulation':data}
+#  
+# plot_dataset(values)
 r = robjects.r
 r.X11()
-#  
-r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
-r.plot(forecast_result)  
-#  
-plot_dataset(values)
-    
-fit = forecast.tbats(series)
+
+fit = forecast.dshw(series,period1=24*4, period2=24*7*4)
 forecast_result = forecast.forecast(fit, h=200)
 r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
 r.plot(forecast_result)
 #  
-values ={ 'forcasting':list(forecast_result.rx2("mean")), 'simulation':data}
-#  
-plot_dataset(values)
+values ={ 'forcasting':list(forecast_result.rx2("mean")), 'simulation':series}
 
-fit = stats.HoltWinters(series)
-forecast_result = forecast.forecast(fit, h=2000)
-  
-r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
-r.plot(forecast_result)
-  
-values ={ 'forcasting':list(forecast_result.rx2("mean")), 'simulation':data}
 plot_dataset(values)
-"""
+    
+
+#  

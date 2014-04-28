@@ -39,6 +39,8 @@ class Forecast:
         self.env = env
         
         
+        self.hw_parameters = (0.7,1.0,0.0)
+        
         
     def forecast_demand(self):
         y = self.twoyear_demand
@@ -76,6 +78,4 @@ class Forecast:
         date = datetime.fromtimestamp(timestamp)
         delta = (date - self.time_series_end).total_seconds() 
         arr_index = (delta / 60) / self.sampling_interval
-        if int(arr_index) % 100 == 0.0:
-            print arr_index, date
         return self.forecasted_values[int(arr_index)]

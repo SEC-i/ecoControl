@@ -73,7 +73,7 @@ def RMSE(params, *args):
  
     return rmse
  
-def linear(x, fc, alpha = None, beta = None):
+def linear(x, forecast, alpha = None, beta = None):
  
     Y = x[:]
  
@@ -91,7 +91,7 @@ def linear(x, fc, alpha = None, beta = None):
     y = [a[0] + b[0]]
     rmse = 0
  
-    for i in range(len(Y) + fc):
+    for i in range(len(Y) + forecast):
  
         if i == len(Y):
             Y.append(a[-1] + b[-1])
@@ -100,12 +100,12 @@ def linear(x, fc, alpha = None, beta = None):
         b.append(beta * (a[i + 1] - a[i]) + (1 - beta) * b[i])
         y.append(a[i + 1] + b[i + 1])
  
-    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y[:-fc], y[:-fc - 1])]) / len(Y[:-fc]))
+    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y[:-forecast], y[:-forecast - 1])]) / len(Y[:-forecast]))
 
  
-    return Y[-fc:], alpha, beta, rmse
+    return Y[-forecast:], alpha, beta, rmse
  
-def additive(x, m, fc, alpha = None, beta = None, gamma = None):
+def additive(x, m, forecast, alpha = None, beta = None, gamma = None):
  
     Y = x[:]
  
@@ -124,7 +124,7 @@ def additive(x, m, fc, alpha = None, beta = None, gamma = None):
     y = [a[0] + b[0] + s[0]]
     rmse = 0
  
-    for i in range(len(Y) + fc):
+    for i in range(len(Y) + forecast):
  
         if i == len(Y):
             Y.append(a[-1] + b[-1] + s[-m])
@@ -134,11 +134,11 @@ def additive(x, m, fc, alpha = None, beta = None, gamma = None):
         s.append(gamma * (Y[i] - a[i] - b[i]) + (1 - gamma) * s[i])
         y.append(a[i + 1] + b[i + 1] + s[i + 1])
  
-    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y[:-fc], y[:-fc - 1])]) / len(Y[:-fc]))
+    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y[:-forecast], y[:-forecast - 1])]) / len(Y[:-forecast]))
  
-    return Y[-fc:], alpha, beta, gamma, rmse
+    return Y[-forecast:], alpha, beta, gamma, rmse
  
-def multiplicative(x, m, fc, alpha = None, beta = None, gamma = None):
+def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None):
  
     Y = x[:]
  
@@ -158,7 +158,7 @@ def multiplicative(x, m, fc, alpha = None, beta = None, gamma = None):
     
     rmse = 0
  
-    for i in range(len(Y) + fc):
+    for i in range(len(Y) + forecast):
  
         if i == len(Y):
             Y.append((a[-1] + b[-1]) * s[-m])
@@ -168,8 +168,8 @@ def multiplicative(x, m, fc, alpha = None, beta = None, gamma = None):
         s.append(gamma * (Y[i] / (a[i] + b[i])) + (1 - gamma) * s[i])
         y.append((a[i + 1] + b[i + 1]) * s[i + 1])
  
-    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y[:-fc], y[:-fc - 1])]) / len(Y[:-fc]))
+    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y[:-forecast], y[:-forecast - 1])]) / len(Y[:-forecast]))
  
-    return Y[-fc:], alpha, beta, gamma, rmse
+    return Y[-forecast:], alpha, beta, gamma, rmse
 
 
