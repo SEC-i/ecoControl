@@ -23,11 +23,12 @@ class Simulation(object):
             initial_time = (int(initial_time) / 3600) * 3600.0
         # initialize real-time environment
         self.env = ForwardableRealtimeEnvironment(initial_time=initial_time)
+        self.demo = demo
 
         self.devices = self.get_initialized_scenario()
         self.configure(configurations)
 
-        self.measurements = MeasurementStorage(self.env, self.devices)
+        self.measurements = MeasurementStorage(self.env, self.devices, demo=self.demo)
         self.env.register_step_function(self.measurements.take)
 
         self.thread = None

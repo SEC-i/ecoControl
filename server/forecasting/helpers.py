@@ -1,6 +1,9 @@
 from threading import Thread
 from collections import deque
 import itertools
+from datetime import datetime
+
+import pytz
 
 from server.models import Sensor, SensorValue, DeviceConfiguration
 
@@ -32,12 +35,12 @@ class SimulationBackgroundRunner(Thread):
 
 class MeasurementStorage():
 
-    def __init__(self, env, devices, cache_limit=24 * 365, in_memory=True):
+    def __init__(self, env, devices, cache_limit=24 * 365, demo=True):
         self.env = env
         self.devices = devices
         self.sensors = Sensor.objects.filter(
             device_id__in=[x.id for x in devices])
-        self.in_memory = in_memory
+        self.demo = demo
 
         # initialize empty deques
         self.data = []
@@ -46,6 +49,7 @@ class MeasurementStorage():
 
     def take(self):
         if self.env.now % self.env.measurement_interval == 0:
+            sensor_values = []
             for device in self.devices:
                 for sensor in Sensor.objects.filter(device_id=device.id):
                     value = getattr(device, sensor.key, None)
@@ -54,7 +58,16 @@ class MeasurementStorage():
                         if hasattr(value, '__call__'):
                             value = value()
 
-                        self.data[sensor.id - 1].append(value)
+                        if self.demo:
+                            timestamp = datetime.utcfromtimestamp(
+                                self.env.now).replace(tzinfo=pytz.utc)
+                            sensor_values.append(
+                                SensorValue(sensor=sensor, value=str(value), timestamp=timestamp))
+                        else:
+                            self.data[sensor.id - 1].append(value)
+
+            if len(sensor_values) > 0:
+                SensorValue.objects.bulk_create(sensor_values)
 
     def get(self, start=None):
         if start is not None:
