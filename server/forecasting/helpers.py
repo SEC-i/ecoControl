@@ -47,11 +47,12 @@ class MeasurementStorage():
             for device in self.devices:
                 for sensor in Sensor.objects.filter(device_id=device.id):
                     value = getattr(device, sensor.key, None)
-                    # in case value is a function, call that function
-                    if hasattr(value, '__call__'):
-                        value = value()
+                    if value is not None:
+                        # in case value is a function, call that function
+                        if hasattr(value, '__call__'):
+                            value = value()
 
-                    self.data[sensor.id - 1].append(value)
+                        self.data[sensor.id - 1].append(value)
 
     def get(self, start=None):
         if start is not None:

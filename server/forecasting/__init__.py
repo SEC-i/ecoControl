@@ -80,9 +80,9 @@ class Simulation(object):
             if isinstance(device, ThermalConsumer):
                 device.calculate()
 
-    def get_system(device_id):
+    def get_system(self, device_id):
         for device in self.devices:
-            if device.device_id == device_id:
+            if device.id == device_id:
                 return device
         return None
 

@@ -7,11 +7,11 @@ import views
 
 urlpatterns = patterns('',
     (r'^$', views.index),
-    (r'^configure/$', views.configure),
-    (r'^forecast/$', views.forecast),
-    (r'^login/$', views.login_user),
-    (r'^logout/$', views.logout_user),
-    (r'^status/$', views.status),
+    (r'^api/configure/$', views.configure),
+    (r'^api/forecast/$', views.forecast),
+    (r'^api/login/$', views.login_user),
+    (r'^api/logout/$', views.logout_user),
+    (r'^api/status/$', views.status),
 
     url(r'^admin/', include(admin.site.urls)),
 )
