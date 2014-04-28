@@ -12,6 +12,7 @@ urlpatterns = patterns('',
     (r'^api/login/$', views.login_user),
     (r'^api/logout/$', views.logout_user),
     (r'^api/status/$', views.status),
+    (r'^api/settings/$', views.settings),
 
     url(r'^admin/', include(admin.site.urls)),
 )

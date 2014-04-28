@@ -36,7 +36,7 @@ class APITestCase(TestCase):
 
         # Check that the response equals {"login": "inactive"}
         self.assertEqual(json.loads(response.content), {
-                         "login": "active", "user": "test_fn test_ln"})
+                         "login": "active", "user": "test_fn test_ln", "system": "init"})
 
         # Issue a request to logout
         response = self.client.get('/api/logout/')
@@ -47,11 +47,14 @@ class APITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Check that the response equals {"login": "inactive"}
-        self.assertEqual(json.loads(response.content), {"login": "inactive"})
+        self.assertEqual(json.loads(response.content), {
+                         "login": "inactive", "system": "init"})
 
     def test_system_configurations(self):
-        data = {
-            'config': [('1', 'capacity', '2500', '1'), ('3', 'max_gas_input', '25', '2')]}
+        data = [
+            {'device_id': '1', 'key': 'capacity',
+                'value': '2500', 'value_type': '1'},
+            {'device_id': '3', 'key': 'max_gas_input', 'value': '25', 'value_type': '2'}]
         response = self.client.post(
             '/api/configure/', json.dumps(data), content_type='application/json')
 
@@ -63,4 +66,3 @@ class APITestCase(TestCase):
     def test_forecast(self):
         response = self.client.get('/api/forecast/')
         self.assertEqual(response.status_code, 200)
-

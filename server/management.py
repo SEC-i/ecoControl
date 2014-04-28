@@ -1,5 +1,5 @@
 from django.db.models.signals import post_syncdb
-from server.models import Device, Sensor
+from server.models import Device, Sensor, Configuration
 
 
 def install_devices(**kwargs):
@@ -37,5 +37,8 @@ def install_devices(**kwargs):
 
         Sensor.objects.bulk_create(sensors)
         print "Default power systems initialized"
+
+        system_status = Configuration(key='system_status', value='init', value_type=Configuration.STR)
+        system_status.save()
 
 post_syncdb.connect(install_devices)

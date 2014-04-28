@@ -6,17 +6,16 @@ $(function() {
     initialize_editor();
     initialize_svg();
     initialize_hourly_demands();
-    $.getJSON("/api/settings/", function(data) {
-        update_setting(data);
-        if (data['simulation_running'] == '1') {
-            initialize_diagram();
-        } else {
+    $.getJSON("/api/status/", function(data) {
+        if (data['system'] == 'init') {
             initialize_wizard();
+        } else {
+            initialize_diagram();
         }
     }).done(function() {
-        $.getJSON("/api/code/", function(data) {
-            editor.setValue(data['editor_code'], 1);
-        });
+        // $.getJSON("/api/code/", function(data) {
+        //     editor.setValue(data['editor_code'], 1);
+        // });
     });
 
     initialize_event_handlers();
@@ -315,9 +314,9 @@ function initialize_diagram_filters() {
 }
 
 function initialize_wizard(show) {
-    $.fn.wizard.logging = true;
+    // $.fn.wizard.logging = true;
     var options = {
-        submitUrl: '/api/start/',
+        submitUrl: '/api/configure/',
         contentWidth: 1000,
         contentHeight: 500,
         showCancel: false,
@@ -331,10 +330,20 @@ function initialize_wizard(show) {
     wizard.show();
 
     wizard.on('submit', function(wizard) {
+        var post_data = wizard.serializeArray();
+        for (var i = 0; i < post_data.length; i++) {
+            var input = $('[name="' + post_data[i].name + '"]');
+            console.log(input);
+            post_data[i]['device_id'] = input.attr('data-device');
+            post_data[i]['key'] = input.attr('data-key');
+            post_data[i]['value_type'] = input.attr('data-type');
+        };
+
         $.ajax({
             type: "POST",
+            contentType: 'application/json',
             url: wizard.args.submitUrl,
-            data: wizard.serialize(),
+            data: JSON.stringify(post_data),
             dataType: "json"
         }).done(function(response) {
             initialize_diagram();

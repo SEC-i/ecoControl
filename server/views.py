@@ -7,8 +7,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.http import require_POST
 from django.utils.timezone import utc
 
-from functions import parse_configurations
-from models import Device, DeviceConfiguration, Sensor, SensorValue
+from functions import perform_configuration
+from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue
 from helpers import create_json_response, create_json_response_from_QuerySet, parse_value
 from forecasting import Simulation
 
@@ -45,16 +45,21 @@ def logout_user(request):
 
 
 def status(request):
+    system_status = Configuration.objects.get(key='system_status')
+
     if request.user.is_authenticated():
-        return create_json_response(request, {"login": "active", "user": request.user.get_full_name()})
+        return create_json_response(request, {"system": system_status.value, "login": "active", "user": request.user.get_full_name()})
     else:
-        return create_json_response(request, {"login": "inactive"})
+        return create_json_response(request, {"system": system_status.value, "login": "inactive"})
 
 
 @require_POST
 def configure(request):
-    configurations = parse_configurations(json.loads(request.body))
-    DeviceConfiguration.objects.bulk_create(configurations)
+    perform_configuration(json.loads(request.body))
+    return create_json_response(request, {"status": "success"})
+
+
+def settings(request):
     return create_json_response(request, {"status": "success"})
 
 
@@ -68,7 +73,8 @@ def forecast(request):
     for configuration in configurations:
         value = parse_value(configuration.value, configuration.value_type)
         # configuration tripel (device, variable, value)
-        simulation_config.append(configuration.device_id, configuration.key, value)
+        simulation_config.append(
+            configuration.device_id, configuration.key, value)
     devices = list(Device.objects.all())
 
     simulation = Simulation(devices, simulation_config, time())
