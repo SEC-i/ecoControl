@@ -231,7 +231,7 @@ class SimpleElectricalConsumer(BaseSystem):
 
     @classmethod
     def copyconstruct(cls, env, other_electrical_consumer, power_meter):
-        electrical_consumer = SimpleElectricalConsumer(env, power_meter)
+        electrical_consumer = SimpleElectricalConsumer(env, power_meter, copyconstructed=True)
         # just a shallow copy, so no dict copy
         electrical_consumer.__dict__ = other_electrical_consumer.__dict__.copy(
         )
