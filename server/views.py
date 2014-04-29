@@ -61,7 +61,8 @@ def configure(request):
     system_status.value = 'running'
     system_status.save()
 
-    simulation = Simulation(demo=True, initial_time=time())
+    simulation = Simulation(
+        demo=True, initial_time=time() - DEFAULT_FORECAST_INTERVAL)
     simulation.forward(60 * 60 * 24 * 30, blocking=False)
     simulation.start()
 
@@ -88,23 +89,26 @@ def list_values(request, start):
 
     start_time = end_time = 0
     if start:
-        start_time = datetime.fromtimestamp(int(start)/1000.0).replace(tzinfo=utc)
+        start_time = datetime.fromtimestamp(
+            int(start) / 1000.0).replace(tzinfo=utc)
 
     output = []
     for sensor in sensors:
-        values = SensorValue.objects.filter(sensor__id = sensor.id).order_by('timestamp')
+        values = SensorValue.objects.filter(
+            sensor__id=sensor.id).order_by('timestamp')
         if start:
-            values = values.filter(timestamp__gte = start_time)
+            values = values.filter(timestamp__gte=start_time)
         output.append({
-                'id': sensor.id,
-                'device_id': sensor.device_id,
-                'name': sensor.name,
-                'unit': sensor.unit,
-                'key': sensor.key,
-                'data': list(values.values_list('timestamp', 'value'))
-            })
+            'id': sensor.id,
+            'device_id': sensor.device_id,
+            'name': sensor.name,
+            'unit': sensor.unit,
+            'key': sensor.key,
+            'data': list(values.values_list('timestamp', 'value'))
+        })
 
     return create_json_response(request, output)
+
 
 def list_sensors(request):
     sensors = Sensor.objects.all()
