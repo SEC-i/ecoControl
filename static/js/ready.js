@@ -221,6 +221,15 @@ function initialize_diagram() {
                     valueSuffix: ' ' + value.unit
                 }
             });
+            series_data.push({
+                name: value.name + ' (Device #' + value.device_id + ' predicted)',
+                data: [],
+                color: colors_future[index],
+                dashStyle: 'shortdot',
+                tooltip: {
+                    valueSuffix: ' ' + value.unit
+                }
+            });
         });
 
         // Create the chart

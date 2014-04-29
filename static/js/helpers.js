@@ -19,7 +19,6 @@ function filter_series() {
         visible = $(this).is(":checked");
         chart.series[i].setVisible(visible, false);
         chart.series[i + 7].setVisible(visible, false);
-        chart.series[i + 14].setVisible(visible, false);
         if ($(this).is(":checked")) {
             all_unchecked = false;
         }

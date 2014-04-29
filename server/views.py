@@ -2,6 +2,7 @@ import logging
 from time import time
 import json
 from datetime import datetime
+import calendar
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
@@ -74,14 +75,30 @@ def settings(request):
 
 
 def forecast(request):
+    try:
+        latest_value = SensorValue.objects.latest('timestamp')
+        initial_time = calendar.timegm(latest_value.timestamp.utctimetuple())
+    except SensorValue.DoesNotExist:
+        initial_time = time()
     if request.method == 'POST':
         configurations = parse_configurations(request.POST)
-        simulation = Simulation(configurations, initial_time=time())
+        simulation = Simulation(configurations, initial_time=initial_time)
     else:
-        simulation = Simulation(initial_time=time())
+        simulation = Simulation(initial_time=initial_time)
 
     simulation.forward(seconds=DEFAULT_FORECAST_INTERVAL, blocking=True)
-    return create_json_response(request, simulation.get_measurements())
+    output = []
+    for sensor in simulation.measurements.sensors:
+        output.append({
+            'id': sensor.id,
+            'device_id': sensor.device_id,
+            'name': sensor.name,
+            'unit': sensor.unit,
+            'key': sensor.key,
+            'data': list(simulation.measurements.data[sensor.id - 1])
+        })
+
+    return create_json_response(request, output)
 
 
 def list_values(request, start):

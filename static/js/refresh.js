@@ -10,20 +10,25 @@ var fields = [
 ];
 
 function refresh() {
-    if (refresh_gui) {
-        url = '/api/data/';
-        if (current_time != undefined) {
-            url += current_time + '/';
-        }
-        $.getJSON(url, function(data) {
-            update_setup(data);
-            update_diagram(data);
-            if (data[0]['data'].length > 0) {
-                current_time = data[0]['data'][data[0]['data'].length - 1][0];
-            }
-        });
+    url = '/api/data/';
+    if (current_time != undefined) {
+        url += current_time + '/';
     }
-    setTimeout(refresh, 2000);
+    $.getJSON(url, function(data) {
+        update_setup(data);
+        update_diagram(data);
+        if (data[0]['data'].length > 0) {
+            current_time = data[0]['data'][data[0]['data'].length - 1][0];
+        }
+    }).done(function(){
+        $.getJSON('/api/forecast/', function(data) {
+            update_diagram(data, true);
+        });
+    }).done(function() {
+        if (refresh_gui) {
+            setTimeout(refresh, 2000);
+        }
+    });
 }
 
 function update_setup(data) {
@@ -59,26 +64,30 @@ function update_item(key, value, suffix) {
     }
 }
 
-function update_diagram(data) {
+function update_diagram(data, forecast) {
+    forecast = typeof forecast !== 'undefined' ? forecast : false;
+
     var chart = $('#simulation_diagram').highcharts();
 
     $.each(data, function(index, sensor_value) {
-        $.each(sensor_value.data, function(index2, sensor_data) {
-            chart.series[index].addPoint([parseInt(sensor_data[0]), parseFloat(sensor_data[1])], false);
-        });
+        if (forecast) {
+            var data_set = [];
+            $.each(sensor_value.data, function(index2, sensor_data) {
+                data_set.push([sensor_data[0], parseFloat(sensor_data[1])]);
+            });
+            chart.series[index * 2 + 1].setData(data_set, false);
+        } else {
+            $.each(sensor_value.data, function(index2, sensor_data) {
+                chart.series[index * 2].addPoint([sensor_data[0], parseFloat(sensor_data[1])], false);
+            });
+        }
     });
 
+    if (forecast && current_time != undefined) {
+        chart.xAxis[0].plotLinesAndBands[0].options['value'] = current_time; // moves vertical line to end of past data set
+    }
+
     chart.redraw();
-
-    // for (var i = 0; i < past['time'].length; i++) {
-    //     var timestamp = get_timestamp(past['time'][i]);
-    //     $.each(fields, function(index, value) {
-    //         chart.series[index].addPoint([timestamp, past[value][i]], false);
-    //     });
-    // };
-    // chart.xAxis[0].plotLinesAndBands[0].options['value'] = timestamp; // moves vertical line to end of past data set
-
-    // update_forecast(data['future'], false);
 }
 
 function immediate_feedback() {
@@ -93,37 +102,6 @@ function immediate_feedback() {
     $.post("/api/forecasts/", post_data, function(data) {
         update_forecast(data, true);
     });
-}
-
-function update_forecast(data, unsaved) {
-    var chart = $('#simulation_diagram').highcharts();
-
-    new_data = [
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        []
-    ];
-
-    for (var i = 0; i < data['time'].length; i++) {
-        var timestamp = get_timestamp(data['time'][i]);
-        $.each(fields, function(index, value) {
-            new_data[index].push([timestamp, data[value][i]]);
-        });
-    };
-
-    for (var i = 0; i < 7; i++) {
-        if (!unsaved) {
-            chart.series[7 + i].setData(new_data[i], false);
-        } else {
-            chart.series[14 + i].setData(new_data[i], false);
-        }
-    };
-
-    chart.redraw();
 }
 
 function update_setting(data) {

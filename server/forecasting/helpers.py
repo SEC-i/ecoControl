@@ -64,7 +64,7 @@ class MeasurementStorage():
                             sensor_values.append(
                                 SensorValue(sensor=sensor, value=str(value), timestamp=timestamp))
                         else:
-                            self.data[sensor.id - 1].append(value)
+                            self.data[sensor.id - 1].append([int(self.env.now * 1000), str(value)])
 
             if len(sensor_values) > 0:
                 SensorValue.objects.bulk_create(sensor_values)
