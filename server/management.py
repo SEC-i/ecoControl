@@ -23,9 +23,9 @@ def install_devices(**kwargs):
         sensors.append(
             Sensor(device=hs, name='Temperature', key='get_temperature', setter='set_temperature', unit='C', value_type=Sensor.FLOAT))
         sensors.append(
-            Sensor(device=cu, name='Workload', key='workload', unit='%', value_type=Sensor.FLOAT))
+            Sensor(device=cu, name='Workload', key='workload', setter='workload', unit='%', value_type=Sensor.FLOAT))
         sensors.append(
-            Sensor(device=plb, name='Workload', key='workload', unit='%', value_type=Sensor.FLOAT))
+            Sensor(device=plb, name='Workload', key='workload', setter='workload', unit='%', value_type=Sensor.FLOAT))
         sensors.append(Sensor(device=tc, name='Thermal Consumption',
                        key='get_consumption_power', unit='%', value_type=Sensor.FLOAT))
         sensors.append(Sensor(device=tc, name='Warm Warter Consumption',

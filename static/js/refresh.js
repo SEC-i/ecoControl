@@ -10,25 +10,25 @@ var fields = [
 ];
 
 function refresh() {
-    url = '/api/data/';
-    if (current_time != undefined) {
-        url += current_time + '/';
-    }
-    $.getJSON(url, function(data) {
-        update_setup(data);
-        update_diagram(data);
-        if (data[0]['data'].length > 0) {
-            current_time = data[0]['data'][data[0]['data'].length - 1][0];
+    if (refresh_gui) {
+        url = '/api/data/';
+        if (current_time != undefined) {
+            url += current_time + '/';
         }
-    }).done(function(){
-        $.getJSON('/api/forecast/', function(data) {
-            update_diagram(data, true);
+        $.getJSON(url, function(data) {
+            update_setup(data);
+            update_diagram(data);
+            if (data[0]['data'].length > 0) {
+                current_time = data[0]['data'][data[0]['data'].length - 1][0];
+            }
+        }).done(function(){
+            $.getJSON('/api/forecast/', function(data) {
+                update_diagram(data, true);
+            });
         });
-    }).done(function() {
-        if (refresh_gui) {
-            setTimeout(refresh, 2000);
-        }
-    });
+                
+    }
+    setTimeout(refresh, 2000);
 }
 
 function update_setup(data) {

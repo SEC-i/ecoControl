@@ -1,5 +1,4 @@
 from threading import Thread
-from collections import deque
 import itertools
 from datetime import datetime
 
@@ -35,7 +34,7 @@ class SimulationBackgroundRunner(Thread):
 
 class MeasurementStorage():
 
-    def __init__(self, env, devices, cache_limit=24 * 365, demo=False):
+    def __init__(self, env, devices, demo=False):
         self.env = env
         self.devices = devices
         self.sensors = Sensor.objects.filter(
@@ -45,7 +44,7 @@ class MeasurementStorage():
         # initialize empty deques
         self.data = []
         for i in self.sensors:
-            self.data.append(deque(maxlen=cache_limit))
+            self.data.append([])
 
     def take(self):
         if self.env.now % self.env.measurement_interval == 0:

@@ -88,14 +88,14 @@ class Simulation(object):
                     try:
                         latest_sensor_value = SensorValue.objects.filter(sensor=sensor).latest('timestamp')
                         value = parse_value(latest_sensor_value.value, sensor.value_type)
-                        if sensor.setter != '' and sensor.setter in dir(device):
+                        if sensor.setter != '':
                             callback = getattr(device, sensor.setter, None)
                             if callback is not None:
-                                callback(value)
-                        elif sensor.key in dir(device):
-                            # make sure that key is not a function
-                            if not hasattr(getattr(device, sensor.key), '__call__'):
-                                setattr(device, sensor.key, value)
+                                if hasattr(value, '__call__'):
+                                    callback(value)
+                                else:
+                                    setattr(device, sensor.setter, value)
+
                     except SensorValue.DoesNotExist:
                         logger.warning('Could not find any sensor values to configure simulation')
 
