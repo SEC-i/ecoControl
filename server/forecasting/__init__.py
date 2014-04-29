@@ -1,7 +1,7 @@
 import time
-from copy import deepcopy
+import logging
 
-from server.models import Device, DeviceConfiguration
+from server.models import Device, DeviceConfiguration, Sensor, SensorValue
 
 from environment import ForwardableRealtimeEnvironment
 from helpers import BulkProcessor, SimulationBackgroundRunner, MeasurementStorage, parse_value
@@ -11,6 +11,8 @@ from systems.producers import CogenerationUnit, PeakLoadBoiler
 from systems.storages import HeatStorage, PowerMeter
 from systems.consumers import ThermalConsumer, ElectricalConsumer
 
+
+logger = logging.getLogger('django')
 
 class Simulation(object):
 
@@ -79,8 +81,25 @@ class Simulation(object):
             if system is not None and configuration.key in dir(system):
                 setattr(system, configuration.key, value)
 
-        # re-calculate values of ThermalConsumers
         for device in self.devices:
+            # load latest sensor values
+            if not self.demo:
+                for sensor in Sensor.objects.filter(device_id=device.id):
+                    try:
+                        latest_sensor_value = SensorValue.objects.filter(sensor=sensor).latest('timestamp')
+                        value = parse_value(latest_sensor_value.value, sensor.value_type)
+                        if sensor.setter != '' and sensor.setter in dir(device):
+                            callback = getattr(device, sensor.setter, None)
+                            if callback is not None:
+                                callback(value)
+                        elif sensor.key in dir(device):
+                            # make sure that key is not a function
+                            if not hasattr(getattr(device, sensor.key), '__call__'):
+                                setattr(device, sensor.key, value)
+                    except SensorValue.DoesNotExist:
+                        logger.warning('Could not find any sensor values to configure simulation')
+
+            # re-calculate values of ThermalConsumers
             if isinstance(device, ThermalConsumer):
                 device.calculate()
 

@@ -42,6 +42,10 @@ class HeatStorage(BaseSystem):
     def get_temperature(self):
         return self.base_temperature + self.energy_stored() / (self.capacity * self.specific_heat_capacity)
 
+    def set_temperature(self, value):
+        self.output_energy = 0
+        self.input_energy = value * (self.capacity * self.specific_heat_capacity) / self.base_temperature
+
     def get_energy_capacity(self):
         return self.capacity * \
             (self.critical_temperature - self.base_temperature) * \

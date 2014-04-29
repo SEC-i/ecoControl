@@ -21,7 +21,7 @@ def install_devices(**kwargs):
 
         sensors = []
         sensors.append(
-            Sensor(device=hs, name='Temperature', key='get_temperature', unit='C', value_type=Sensor.FLOAT))
+            Sensor(device=hs, name='Temperature', key='get_temperature', setter='set_temperature', unit='C', value_type=Sensor.FLOAT))
         sensors.append(
             Sensor(device=cu, name='Workload', key='workload', unit='%', value_type=Sensor.FLOAT))
         sensors.append(

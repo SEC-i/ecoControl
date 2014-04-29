@@ -76,6 +76,7 @@ class Sensor(models.Model):
     device = models.ForeignKey('Device')
     name = models.CharField(max_length=100)
     key = models.CharField(max_length=100)
+    setter = models.CharField(max_length=100)
     unit = models.CharField(max_length=50)
     value_type = models.PositiveSmallIntegerField(
         choices=TYPES, default=STR)
