@@ -30,22 +30,27 @@ class ThermalConsumer(BaseSystem):
 
         self.heat_storage = heat_storage
 
-        self.target_temperature = 20.0  # is overwritten by daily_demand
         self.total_consumption = 0.0
         # initial temperature
         self.temperature_room = 12.0
         self.temperature_warmwater = 40.0
 
-        # list of 24 values representing  target_temperature per hour
+        # list of 24 values representing target_temperature per hour
         self.daily_demand = [19, 19, 19, 19, 19, 19, 19, 20, 21,
                              20, 20, 21, 20, 21, 21, 21, 21, 22, 22, 22, 22, 22, 21, 19]
+        self.target_temperature = self.daily_demand[0]
 
         self.total_heated_floor = 650
+        self.room_height = 2.5 # constant
         self.residents = 22
         self.apartments = 12
         self.avg_rooms_per_apartment = 4
         self.avg_windows_per_room = 4
         self.heating_constant = 100
+        # heat transfer coefficient normal glas window in W/(m^2 * K)
+        # normal glas 5.9, isolated 1.1
+        self.heat_transfer_window = 2.0
+        self.heat_transfer_wall = 1.0
 
         self.consumed = 0
         self.weather_forecast = WeatherForecast(self.env)
@@ -54,45 +59,28 @@ class ThermalConsumer(BaseSystem):
 
     def calculate(self):
 
-        # 2.5m high walls
-        self.total_heated_volume = self.total_heated_floor * 2.5
+        self.total_heated_volume = self.total_heated_floor * self.room_height
         avg_room_volume = self.total_heated_volume / \
             (self.apartments * self.avg_rooms_per_apartment)
-        # avg surface of a cube side, so multiply with 6 to get the whole
-        # surface
-        avg_wall_size = avg_room_volume ** (2.0 / 3.0)  # m^2
-        # lets have each appartment have an average of 1.5 outer walls
-        self.outer_wall_surface = avg_wall_size * self.apartments * 1.5
+        # Assume 3 walls per room to not count multiple
+        avg_wall_size = avg_room_volume / self.room_height * 3
+        # Assume each appartment have an average of 0.5 outer walls per apartment
+        self.outer_wall_surface = avg_wall_size * self.apartments * 0.5
         self.max_power = self.total_heated_floor * \
-            float(self.heating_constant)  # W
+            float(self.heating_constant)
 
         self.current_power = 0
-        # m^2
+
         self.window_surface = self.avg_windows_per_room * \
             self.avg_rooms_per_apartment * self.apartments
 
-        specific_heat_capacity_brick = 1360 * 10 ** 6  # J/(m^3 * K)
-        # J / K, approximation for 5 walls including ceiling, 0.36m wall
-        # thickness,
-        heat_cap_brick_per_room = specific_heat_capacity_brick * \
-            (avg_wall_size * 5 * 0.36)
-        self.heat_cap_brick = heat_cap_brick_per_room * \
-            self.avg_rooms_per_apartment * self.apartments
+        # Convert from J/(m^3 * K) to kWh/(m^3 * K)
+        specific_heat_capacity_air = 1290.0 / 3600.0
+        heat_capacity_air = specific_heat_capacity_air * self.total_heated_volume
+        # Initially about 56 mio
+        self.heat_capacity = heat_capacity_air * 50000
 
-        #J /( m^3 * K)
-        self.specific_heat_capacity_air = 1290.0
-        self.heat_capacity_air = self.specific_heat_capacity_air * \
-            self.total_heated_volume
-
-        # object factor--> we have some objects, which slow down heating and cooling
-        #--> used to make heating and cooling look realistic ;)
-        stuff_weight = self.total_heated_volume * \
-            50.0  # assume 50.0 kilo per m^3 of heatable objects (wood)
-        heat_capacity_stuff = stuff_weight * 600.0  # 600 = spec heat cap wood
-
-        self.heat_capacity = self.heat_capacity_air + heat_capacity_stuff
-
-        self.room_power = self.heat_capacity_air * self.temperature_room
+        self.room_energy = avg_room_volume * self.temperature_room
 
     @classmethod
     def copyconstruct(cls, env, other_thermal_consumer, heat_storage):
@@ -118,7 +106,7 @@ class ThermalConsumer(BaseSystem):
         nominator = gas_constant * temperature_kelvin
         denominator = normal_pressure * self.heat_capacity
         temp_delta = nominator / denominator * \
-            self.room_power * self.env.step_size
+            self.room_energy * self.env.step_size
         self.temperature_room += temp_delta
 
     def get_consumption_power(self):
@@ -158,7 +146,7 @@ class ThermalConsumer(BaseSystem):
         self.target_temperature = self.daily_demand[
             time.gmtime(self.env.now).tm_hour]
 
-        self.room_power = self.current_power - self.heat_loss()
+        self.room_energy = self.current_power - self.heat_loss()
         self.calculate_room_temperature()
 
         # the heating powers to full capacity in 10 min
@@ -172,23 +160,12 @@ class ThermalConsumer(BaseSystem):
         self.current_power = max(min(self.current_power, self.max_power), 0.0)
 
     def heat_loss(self):
-        heat_loss = 0
-        d = self.temperature_room - self.get_outside_temperature()
-        # heat transfer coefficient normal glas window, W/(m^2 * K)
-        k_window = 5.9
-        # in Watt
-        heat_flow_window = self.window_surface * k_window * d
-        heat_loss += heat_flow_window
-
-        # semi good isolated wall
-        k_wall = 0.5
-        layers = 10
-        layer_depth = 0.1
-        capacity = (layer_depth / k_wall) * layers
-        heat_flow_wall = self.outer_wall_surface / capacity * d
-        heat_loss += heat_flow_wall
-
-        return heat_loss
+        temp_delta = self.temperature_room - self.get_outside_temperature()
+        heat_flow_window = self.window_surface * \
+            self.heat_transfer_window * temp_delta
+        heat_flow_wall = self.outer_wall_surface * \
+            self.heat_transfer_wall * temp_delta
+        return heat_flow_wall + heat_flow_window
 
     def get_outside_temperature(self, offset_days=0):
         return self.weather_forecast.get_temperature_estimate(self.env.now)
