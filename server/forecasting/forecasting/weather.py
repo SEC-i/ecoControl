@@ -1,7 +1,9 @@
 import urllib2
 import json
-from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
 import time
+
+from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
+from server.forecasting.forecasting.helpers import cached_data
 
 
 class WeatherForecast:
@@ -12,8 +14,10 @@ class WeatherForecast:
         self.forecast_query_date = None
         self.forecast_temperatures_3hourly = []
         self.forecast_temperatures_daily = []
+        self.hourly = True
 
     def get_weather_forecast(self, hourly=True):
+        self.hourly = hourly
         # only permit forecast queries every 30min, to save some api requests
         if self.forecast_query_date is not None and self.forecast_query_date - self.get_date() < 60 * 30:
             if hourly and self.forecast_temperatures_3hourly != []:
@@ -21,27 +25,35 @@ class WeatherForecast:
             elif not hourly and self.forecast_temperatures_daily != []:
                 return self.forecast_temperatures_daily
 
-        if hourly:
+        
+        forecast_temperatures = []
+        self.forecast_query_date = self.get_date()
+
+        jsondata = cached_data('openweathermap', data_function=self.get_openweathermapdata, max_age=3600)
+        data = json.loads(jsondata)
+
+        for data_set in data["list"]:
+            try:
+                forecast_temperatures.append(data_set["main"]["temp"])
+            except:
+                # last value of data seams always to be gdps
+                if "gdps" not in data_set:
+                    print "error reading temperatures from: \n", json.dumps(data_set, sort_keys=True, indent=4, separators=(',', ': '))
+        print "read ", len(forecast_temperatures), "temperatures", "hourly = ", hourly
+
+        
+
+        return forecast_temperatures
+
+    def get_openweathermapdata(self):
+        if self.hourly:
             # 3-hourly forecast for 5 days for Berlin
             url = "http://openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5&mode=json"
         else:
             url = "http://openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"
-        forecast_temperatures = []
-        self.forecast_query_date = self.get_date()
         try:
             result = urllib2.urlopen(url)
-            jsondata = result.read()
-            data = json.loads(jsondata)
-
-            for data_set in data["list"]:
-                try:
-                    forecast_temperatures.append(data_set["main"]["temp"])
-                except:
-                    # last value of data seams always to be gdps
-                    if "gdps" not in data_set:
-                        print "error reading temperatures from: \n", json.dumps(data_set, sort_keys=True, indent=4, separators=(',', ': '))
-            print "read ", len(forecast_temperatures), "temperatures", "hourly = ", hourly
-
+            return result.read()
         except urllib2.URLError, e:
             print e
             # Use history data
@@ -50,8 +62,6 @@ class WeatherForecast:
                 result.append(
                     self.get_average_outside_temperature(self.get_date(), i))
             return result
-
-        return forecast_temperatures
 
     def get_temperature_estimate(self, date):
         """get most accurate forecast for given date
