@@ -1,5 +1,6 @@
 var refresh_gui = true;
 var editor = null;
+var series_data = []
 
 // READY
 $(function() {
@@ -210,97 +211,110 @@ function initialize_diagram() {
         }
     });
 
-    // Create the chart
-    $('#simulation_diagram').highcharts('StockChart', {
-        chart: {
-            height: 400,
-            zoomType: 'xy',
-            events: {
-                load: refresh
-            }
-        },
-        rangeSelector: {
-            buttons: [{
-                count: 6,
-                type: 'hour',
-                text: '6H'
-            }, {
-                count: 12,
-                type: 'hour',
-                text: '12H'
-            }, {
-                count: 1,
-                type: 'day',
-                text: '1D'
-            }, {
-                count: 1,
-                type: 'week',
-                text: '1W'
-            }, {
-                count: 2,
-                type: 'week',
-                text: '2W'
-            }, {
-                count: 1,
-                type: 'month',
-                text: '1M'
-            }, {
-                count: 2,
-                type: 'month',
-                text: '2M'
-            }, {
-                count: 3,
-                type: 'month',
-                text: '3M'
-            }, {
-                count: 6,
-                type: 'month',
-                text: '6M'
-            }, {
-                count: 9,
-                type: 'month',
-                text: '9M'
-            }, {
-                type: 'all',
-                text: 'All'
-            }],
-            selected: 6,
-            inputEnabled: false
-        },
-        xAxis: {
-            plotLines: [{
-                value: 0,
-                width: 2,
-                color: 'red',
-                label: {
-                    text: 'Now',
-                    align: 'right',
-                    y: 32,
-                    x: 6
+    $.getJSON('/api/sensors/', function(data) {
+        $.each(data, function(index, value) {
+            series_data.push({
+                name: value.name + ' (Device #' + value.device_id + ')',
+                data: [],
+                color: colors_past[index],
+                tooltip: {
+                    valueSuffix: ' ' + value.unit
                 }
-            }]
-        },
-        tooltip: {
-            valueDecimals: 2
-        },
-        lang: {
-            noData: "Loading data..."
-        },
-        plotOptions: {
-            series: {
-                marker: {
-                    enabled: false
-                },
-                lineWidth: 1.5,
+            });
+        });
+
+        // Create the chart
+        $('#simulation_diagram').highcharts('StockChart', {
+            chart: {
+                height: 400,
+                zoomType: 'xy',
+                events: {
+                    load: refresh
+                }
+            },
+            rangeSelector: {
+                buttons: [{
+                    count: 6,
+                    type: 'hour',
+                    text: '6H'
+                }, {
+                    count: 12,
+                    type: 'hour',
+                    text: '12H'
+                }, {
+                    count: 1,
+                    type: 'day',
+                    text: '1D'
+                }, {
+                    count: 1,
+                    type: 'week',
+                    text: '1W'
+                }, {
+                    count: 2,
+                    type: 'week',
+                    text: '2W'
+                }, {
+                    count: 1,
+                    type: 'month',
+                    text: '1M'
+                }, {
+                    count: 2,
+                    type: 'month',
+                    text: '2M'
+                }, {
+                    count: 3,
+                    type: 'month',
+                    text: '3M'
+                }, {
+                    count: 6,
+                    type: 'month',
+                    text: '6M'
+                }, {
+                    count: 9,
+                    type: 'month',
+                    text: '9M'
+                }, {
+                    type: 'all',
+                    text: 'All'
+                }],
+                selected: 6,
+                inputEnabled: false
+            },
+            xAxis: {
+                plotLines: [{
+                    value: 0,
+                    width: 2,
+                    color: 'red',
+                    label: {
+                        text: 'Now',
+                        align: 'right',
+                        y: 32,
+                        x: 6
+                    }
+                }]
+            },
+            tooltip: {
+                valueDecimals: 2
+            },
+            lang: {
+                noData: "Loading data..."
+            },
+            plotOptions: {
+                series: {
+                    marker: {
+                        enabled: false
+                    },
+                    lineWidth: 1.5,
+                }
+            },
+            series: series_data,
+            credits: {
+                enabled: false
             }
-        },
-        series: series_data,
-        credits: {
-            enabled: false
-        }
+        });
+        initialize_diagram_filters();
     });
 
-    initialize_diagram_filters();
 }
 
 function initialize_diagram_filters() {
@@ -333,7 +347,6 @@ function initialize_wizard(show) {
         var post_data = wizard.serializeArray();
         for (var i = 0; i < post_data.length; i++) {
             var input = $('[name="' + post_data[i].name + '"]');
-            console.log(input);
             post_data[i]['device_id'] = input.attr('data-device');
             post_data[i]['key'] = input.attr('data-key');
             post_data[i]['value_type'] = input.attr('data-type');

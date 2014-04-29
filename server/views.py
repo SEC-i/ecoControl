@@ -1,6 +1,7 @@
 import logging
 from time import time
 import json
+from datetime import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
@@ -80,3 +81,32 @@ def forecast(request):
 
     simulation.forward(seconds=DEFAULT_FORECAST_INTERVAL, blocking=True)
     return create_json_response(request, simulation.get_measurements())
+
+
+def list_values(request, start):
+    sensors = Sensor.objects.all()
+
+    start_time = end_time = 0
+    if start:
+        start_time = datetime.fromtimestamp(int(start)/1000.0).replace(tzinfo=utc)
+
+    output = []
+    for sensor in sensors:
+        values = SensorValue.objects.filter(sensor__id = sensor.id).order_by('timestamp')
+        if start:
+            values = values.filter(timestamp__gte = start_time)
+        output.append({
+                'id': sensor.id,
+                'device_id': sensor.device_id,
+                'name': sensor.name,
+                'unit': sensor.unit,
+                'key': sensor.key,
+                'data': list(values.values_list('timestamp', 'value'))
+            })
+
+    return create_json_response(request, output)
+
+def list_sensors(request):
+    sensors = Sensor.objects.all()
+
+    return create_json_response_from_QuerySet(request, sensors)

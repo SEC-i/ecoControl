@@ -35,7 +35,7 @@ class SimulationBackgroundRunner(Thread):
 
 class MeasurementStorage():
 
-    def __init__(self, env, devices, cache_limit=24 * 365, demo=True):
+    def __init__(self, env, devices, cache_limit=24 * 365, demo=False):
         self.env = env
         self.devices = devices
         self.sensors = Sensor.objects.filter(

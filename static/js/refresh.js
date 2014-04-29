@@ -18,19 +18,18 @@ function refresh() {
         $.getJSON(url, function(data) {
             update_setup(data);
             update_diagram(data);
-            current_time = data['past']['time'][data['past']['time'].length - 1];
+            if (data[0]['data'].length > 0) {
+                current_time = data[0]['data'][data[0]['data'].length - 1][0];
+            }
         });
     }
     setTimeout(refresh, 2000);
 }
 
 function update_setup(data) {
-    $.each(data['past'], function(key, value) {
-        update_item(key, value[value.length - 1], '');
-    });
-    $.each(data['future'], function(key, value) {
-        update_item(key, value[value.length - 1], '_predicted');
-    });
+    // $.each(data, function(index, value) {
+    //     update_item(value.key, value[value.length - 1], '');
+    // });
 }
 
 function update_item(key, value, suffix) {
@@ -62,17 +61,24 @@ function update_item(key, value, suffix) {
 
 function update_diagram(data) {
     var chart = $('#simulation_diagram').highcharts();
-    var past = data['past'];
 
-    for (var i = 0; i < past['time'].length; i++) {
-        var timestamp = get_timestamp(past['time'][i]);
-        $.each(fields, function(index, value) {
-            chart.series[index].addPoint([timestamp, past[value][i]], false);
+    $.each(data, function(index, sensor_value) {
+        $.each(sensor_value.data, function(index2, sensor_data) {
+            chart.series[index].addPoint([parseInt(sensor_data[0]), parseFloat(sensor_data[1])], false);
         });
-    };
-    chart.xAxis[0].plotLinesAndBands[0].options['value'] = timestamp; // moves vertical line to end of past data set
+    });
 
-    update_forecast(data['future'], false);
+    chart.redraw();
+
+    // for (var i = 0; i < past['time'].length; i++) {
+    //     var timestamp = get_timestamp(past['time'][i]);
+    //     $.each(fields, function(index, value) {
+    //         chart.series[index].addPoint([timestamp, past[value][i]], false);
+    //     });
+    // };
+    // chart.xAxis[0].plotLinesAndBands[0].options['value'] = timestamp; // moves vertical line to end of past data set
+
+    // update_forecast(data['future'], false);
 }
 
 function immediate_feedback() {
