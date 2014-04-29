@@ -1,7 +1,7 @@
 #import unittest
 from server.forecasting.forecasting.weather import WeatherForecast
 from django.test import TestCase
-from server.models import Sensor, Device, SensorValue
+from server.models import Sensor, Device, SensorValue, WeatherSource
 
 ''''class ForecastingTest(unittest.TestCase):
     def test_test(self):
@@ -28,8 +28,6 @@ class ForecastingDBTest(TestCase):
         # ask fpor the crawled data
         #SensorValue.objects.filter()
         '''
-
-
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,5 +1,5 @@
 from django.db.models.signals import post_syncdb
-from server.models import Device, Sensor
+from server.models import Device, Sensor, WeatherSource
 
 
 def install_devices(**kwargs):
@@ -34,8 +34,13 @@ def install_devices(**kwargs):
                        key='get_outside_temperature', unit='%', value_type=Sensor.FLOAT))
         sensors.append(Sensor(device=ec, name='Electrical Consumption',
                        key='get_consumption_power', unit='%', value_type=Sensor.FLOAT))
-
         Sensor.objects.bulk_create(sensors)
         print "Default power systems initialized"
+        
+def save_weather_source(**kwargs):
+    if len(WeatherSource.objects.all()) == 0:
+        w = WeatherSource()
+        w.save()
 
 post_syncdb.connect(install_devices)
+post_syncdb.connect(save_weather_source)
