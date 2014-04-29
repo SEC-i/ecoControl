@@ -67,5 +67,8 @@ class SensorValue(models.Model):
         return str(self.pk) + " (" + self.sensor.name + ")"
         
 class WeatherSource(models.Model):
-    fill = models.CharField(max_length = 50)
+    location = models.CharField(max_length = 200)
+
+class WeatherValue(models.Model):
+    temperature = models.CharField(max_length = 20)
     

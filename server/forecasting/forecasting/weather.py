@@ -1,7 +1,8 @@
 import urllib2
 import json
-from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
 import time
+from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
+from server.models import WeatherSource, WeatherValue
 
 
 class WeatherForecast:
@@ -23,7 +24,7 @@ class WeatherForecast:
 
         if hourly:
             # 3-hourly forecast for 5 days for Berlin
-            url = "http://openweathermap.org/data/2.3/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5&mode=json"
+            url = "http://openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5&mode=json"
         else:
             url = "http://openweathermap.org/data/2.3/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"
         forecast_temperatures = []
@@ -32,10 +33,11 @@ class WeatherForecast:
             result = urllib2.urlopen(url)
             jsondata = result.read()
             data = json.loads(jsondata)
-
             for data_set in data["list"]:
                 try:
-                    forecast_temperatures.append(data_set["main"]["temp"])
+                    temperature = data_set["main"]["temp"]
+                    forecast_temperatures.append(temperature)
+                    WeatherValue(temperature=temperature).save()
                 except:
                     # last value of data seams always to be gdps
                     if "gdps" not in data_set:

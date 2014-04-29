@@ -39,7 +39,7 @@ def install_devices(**kwargs):
         
 def save_weather_source(**kwargs):
     if len(WeatherSource.objects.all()) == 0:
-        w = WeatherSource()
+        w = WeatherSource(location='http://openweathermap.org')
         w.save()
 
 post_syncdb.connect(install_devices)
