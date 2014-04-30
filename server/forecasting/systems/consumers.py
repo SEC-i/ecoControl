@@ -51,6 +51,10 @@ class ThermalConsumer(BaseSystem):
 
         self.calculate()
 
+    def find_dependent_devices_in(self, system_list):
+        for system in system_list:
+            system.attach_to_thermal_consumer(self)
+
     def connected(self):
         return self.heat_storage is not None
 
@@ -210,6 +214,10 @@ class ElectricalConsumer(BaseSystem):
 
         # list of 24 values representing relative demand per hour
         self.demand_variation = [1 for i in range(24)]
+
+    def find_dependent_devices_in(self, system_list):
+        for system in system_list:
+            system.attach_to_electrical_consumer(self)
 
     def connected(self):
         return self.power_meter is not None

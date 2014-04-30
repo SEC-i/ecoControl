@@ -3,7 +3,7 @@ from helpers import BaseSystem
 
 class HeatStorage(BaseSystem):
 
-    def __init__(self, system_id, env, capacity=25000, min_temperature=55.0, target_temperature=70.0, critical_temperature=90.0):
+    def __init__(self, system_id, env, capacity=2500, min_temperature=55.0, target_temperature=70.0, critical_temperature=90.0):
         super(HeatStorage, self).__init__(system_id, env)
 
         # default data from pamiru48
@@ -66,8 +66,14 @@ class HeatStorage(BaseSystem):
             self.temperature_loss  # per hour
         self.output_energy += energy_loss * (self.env.step_size / 3600.0)
 
-    def connected(self):
-        return True
+    def attach_to_cogeneration_unit(self, system):
+        system.heat_storage = self
+
+    def attach_to_peak_load_boiler(self, system):
+        system.heat_storage = self
+
+    def attach_to_thermal_consumer(self, system):
+        system.heat_storage = self
 
 
 class PowerMeter(BaseSystem):
@@ -109,5 +115,8 @@ class PowerMeter(BaseSystem):
         self.energy_produced = 0
         self.energy_consumed = 0
 
-    def connected(self):
-        return True
+    def attach_to_cogeneration_unit(self, system):
+        system.power_meter = self
+
+    def attach_to_electrical_consumer(self, system):
+        system.power_meter = self

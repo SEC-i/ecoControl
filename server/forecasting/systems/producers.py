@@ -6,6 +6,7 @@ class GasPoweredGenerator(BaseSystem):
     def __init__(self, system_id, env):
         super(GasPoweredGenerator, self).__init__(system_id, env)
 
+        self.heat_storage = None
         self.running = True
 
         self.workload = 0
@@ -26,8 +27,10 @@ class GasPoweredGenerator(BaseSystem):
         self.running = False
 
     def consume_gas(self):
-        self.total_gas_consumption += self.current_gas_consumption * (self.env.step_size / 3600.0)
-        self.total_thermal_production += self.current_thermal_production * (self.env.step_size / 3600.0)
+        self.total_gas_consumption += self.current_gas_consumption * \
+            (self.env.step_size / 3600.0)
+        self.total_thermal_production += self.current_thermal_production * \
+            (self.env.step_size / 3600.0)
 
     def get_operating_costs(self):
         return self.total_gas_consumption * self.gas_costs
@@ -38,7 +41,6 @@ class CogenerationUnit(GasPoweredGenerator):
     def __init__(self, system_id, env, max_gas_input=19.0, electrical_efficiency=24.7, thermal_efficiency=65, maintenance_interval=4000, minimal_workload=40.0):
 
         GasPoweredGenerator.__init__(self, system_id, env)
-        self.heat_storage = None
         self.power_meter = None
 
         # vaillant ecopower 4.7
@@ -61,8 +63,12 @@ class CogenerationUnit(GasPoweredGenerator):
 
         self.overwrite_workload = None
 
+    def find_dependent_devices_in(self, system_list):
+        for system in system_list:
+            system.attach_to_cogeneration_unit(self)
+
     def connected(self):
-        return not (self.power_meter is None and self.heat_storage is None)
+        return self.power_meter is not None and self.heat_storage is not None
 
     def step(self):
         if self.running:
@@ -160,24 +166,19 @@ class PeakLoadBoiler(GasPoweredGenerator):
 
     def __init__(self, system_id, env, max_gas_input=50.0, thermal_efficiency=80.0):
         GasPoweredGenerator.__init__(self, system_id, env)
-        self.heat_storage = None
-
+        
         self.max_gas_input = max_gas_input  # kW
         self.thermal_efficiency = thermal_efficiency  # %
         self.off_time = self.env.now
 
         self.overwrite_workload = None
 
+    def find_dependent_devices_in(self, system_list):
+        for system in system_list:
+            system.attach_to_peak_load_boiler(self)
+
     def connected(self):
         return self.heat_storage is not None
-
-    @classmethod
-    def copyconstruct(cls, env, other_plb, heat_storage):
-        plb = PeakLoadBoiler(env, heat_storage)
-        plb.__dict__ = other_plb.__dict__.copy()
-        plb.heat_storage = heat_storage
-        plb.env = env
-        return plb
 
     def step(self):
         if self.running:

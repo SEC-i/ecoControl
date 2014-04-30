@@ -30,6 +30,9 @@ class CodeExecuter(BaseSystem):
 
         self.create_function(self.code)
 
+    def find_dependent_devices_in(self, system_list):
+        self.register_local_variables(system_list)
+
     def connected(self):
         return not (self.local_names is None and self.local_references is None)
 

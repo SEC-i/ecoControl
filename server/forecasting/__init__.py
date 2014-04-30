@@ -14,6 +14,7 @@ from systems.consumers import ThermalConsumer, ElectricalConsumer
 
 logger = logging.getLogger('django')
 
+
 class Simulation(object):
 
     # initial_time = Tuesday 1st January 2013 12:00:00
@@ -27,10 +28,10 @@ class Simulation(object):
         self.env = ForwardableRealtimeEnvironment(initial_time=initial_time)
         self.demo = demo
 
-        self.devices = self.get_initialized_scenario()
-        self.configure(configurations)
+        self.devices = self.get_initialized_scenario(configurations)
 
-        self.measurements = MeasurementStorage(self.env, self.devices, demo=self.demo)
+        self.measurements = MeasurementStorage(
+            self.env, self.devices, demo=self.demo)
         self.env.register_step_function(self.measurements.take)
 
         self.thread = None
@@ -40,7 +41,7 @@ class Simulation(object):
         self.bulk_processor = BulkProcessor(self.env, self.devices)
         self.env.process(self.bulk_processor.loop())
 
-    def get_initialized_scenario(self):
+    def get_initialized_scenario(self, configurations):
         devices = list(Device.objects.all())
         system_list = []
         for device in devices:
@@ -49,44 +50,26 @@ class Simulation(object):
                     system_class = globals()[class_name]
                     system_list.append(system_class(device.id, self.env))
 
-        # connect power systems
         for device in system_list:
-            if isinstance(device, CogenerationUnit):
-                for connected_device in system_list:
-                    if isinstance(connected_device, HeatStorage):
-                        device.heat_storage = connected_device
-                    elif isinstance(connected_device, PowerMeter):
-                        device.power_meter = connected_device
-            elif isinstance(device, PeakLoadBoiler) or isinstance(device, ThermalConsumer):
-                for connected_device in system_list:
-                    if isinstance(connected_device, HeatStorage):
-                        device.heat_storage = connected_device
-            elif isinstance(device, ElectricalConsumer):
-                for connected_device in system_list:
-                    if isinstance(connected_device, PowerMeter):
-                        device.power_meter = connected_device
-            elif isinstance(device, CodeExecuter):
-                device.register_local_variables(system_list)
-
+            # connect power systems
+            device.find_dependent_devices_in(system_list)
             if not device.connected():
                 raise RuntimeError
 
-        return system_list
+            # configure systems
+            for configuration in configurations:
+                if configuration.device_id == device.id:
+                    value = parse_value(
+                        configuration.value, configuration.value_type)
+                    if configuration.key in dir(device):
+                        setattr(device, configuration.key, value)
 
-    def configure(self, configurations):
-        simulation_config = []
-        for configuration in configurations:
-            value = parse_value(configuration.value, configuration.value_type)
-            system = self.get_system(configuration.device_id)
-            if system is not None and configuration.key in dir(system):
-                setattr(system, configuration.key, value)
-
-        for device in self.devices:
             # load latest sensor values
             if not self.demo:
                 for sensor in Sensor.objects.filter(device_id=device.id):
                     try:
-                        value = SensorValue.objects.filter(sensor=sensor).latest('timestamp').value
+                        value = SensorValue.objects.filter(
+                            sensor=sensor).latest('timestamp').value
                         if sensor.setter != '':
                             callback = getattr(device, sensor.setter, None)
                             if callback is not None:
@@ -96,17 +79,13 @@ class Simulation(object):
                                     setattr(device, sensor.setter, value)
 
                     except SensorValue.DoesNotExist:
-                        logger.warning('Could not find any sensor values to configure simulation')
+                        logger.warning(
+                            'Could not find any sensor values to configure simulation')
 
-            # re-calculate values of ThermalConsumers
-            if isinstance(device, ThermalConsumer):
-                device.calculate()
+            # re-calculate values
+            device.calculate()
 
-    def get_system(self, device_id):
-        for device in self.devices:
-            if device.id == device_id:
-                return device
-        return None
+        return system_list
 
     def start(self, blocking=False):
         self.thread = SimulationBackgroundRunner(self.env)
