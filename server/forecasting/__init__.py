@@ -91,7 +91,7 @@ class Simulation(object):
                         if sensor.setter != '':
                             callback = getattr(device, sensor.setter, None)
                             if callback is not None:
-                                if hasattr(value, '__call__'):
+                                if hasattr(callback, '__call__'):
                                     callback(value)
                                 else:
                                     setattr(device, sensor.setter, value)

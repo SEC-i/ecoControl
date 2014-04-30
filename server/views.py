@@ -20,7 +20,7 @@ from forecasting import Simulation
 
 logger = logging.getLogger('django')
 
-DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 30  # one month
+DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 7  # one month
 
 
 def index(request):
@@ -70,7 +70,7 @@ def configure(request):
     if 'test' in sys.argv:
         simulation.forward(60 * 60, blocking=False)
     else:
-        simulation.forward(60 * 60 * 24 * 7, blocking=True)
+        simulation.forward(DEFAULT_FORECAST_INTERVAL, blocking=False)
     simulation.start()
 
     return create_json_response(request, {"status": "success"})
