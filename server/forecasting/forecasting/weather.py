@@ -63,9 +63,9 @@ class WeatherForecast:
     def get_temperature_estimate(self, date):
         """get most accurate forecast for given date
         that can be derived from 5 days forecast, 14 days forecast or from history data"""
-        history_data = self.get_average_outside_temperature(date)
         time_passed = (date - self.get_date()) / (60.0 * 60.0 * 24)  # in days
         if time_passed < 0.0 or time_passed > 13.0:
+            history_data = self.get_average_outside_temperature(date)
             return history_data
 
         forecast_data_hourly = self.get_forecast_temperature_hourly(date)

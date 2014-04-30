@@ -158,7 +158,7 @@ class CogenerationUnit(GasPoweredGenerator):
 
 class PeakLoadBoiler(GasPoweredGenerator):
 
-    def __init__(self, system_id, env, max_gas_input=50.0, thermal_efficiency=80.0):
+    def __init__(self, system_id, env, max_gas_input=45.0, thermal_efficiency=80.0):
         GasPoweredGenerator.__init__(self, system_id, env)
         self.heat_storage = None
 

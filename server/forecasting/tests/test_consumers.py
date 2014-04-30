@@ -114,10 +114,10 @@ class ThermalConsumerTests(unittest.TestCase):
 
         self.assertLess(self.consumer.current_power, last_current_power)
 
-    def test_simulate_consumption_room_power(self):
-        ''' self.room_power is the power, depending on the desired power
+    def test_simulate_consumption_current_power(self):
+        ''' self.current_power is the power, depending on the desired power
         and _the cooling of the room.
-        room_power is the last ideal power reduced by the energyloss of a room 
+        current_power is the last ideal power reduced by the energyloss of a room 
         it determines the actual temperature in the room.
         '''
         last_current_power = 20
@@ -125,53 +125,56 @@ class ThermalConsumerTests(unittest.TestCase):
 
         self.consumer.simulate_consumption()
 
-        self.assertLessEqual(self.consumer.room_power, last_current_power)
+        self.assertNotEqual(self.consumer.current_power, last_current_power)
+        self.assertLessEqual(self.consumer.current_power, self.consumer.max_power)
+        self.assertGreaterEqual(self.consumer.current_power, 0)
 
-    def test_calculate_room_temperature_considers_room_power(self):
+    def test_heat_room_considers_current_power(self):
         ''' The room_temperature depends on
-        the room_power,
+        the current_power,
         the passed time between the steps and the
         room_temperature. If one of the parameter is changed, 
         the temperature will change.'''
 
-        first_result = self.calculate_room_temperature_with_parameters(
-            room_power=20, step_size=20, temperature=20)
-        second_result = self.calculate_room_temperature_with_parameters(
-            room_power=30, step_size=20, temperature=20)
+        first_result = self.heat_room_with_parameters(
+            current_power=2000, step_size=20 * 3600, temperature=20)
+        second_result = self.heat_room_with_parameters(
+            current_power=200000, step_size=20 * 3600, temperature=20)
         self.assertNotEqual(first_result, second_result)
 
-    def test_calculate_room_temperature_considers_step_size(self):
+    def test_heat_room_considers_step_size(self):
         ''' The room_temperature depends on
-        the room_power,
+        the current_power,
         the passed time between the steps and the
         room_temperature. If one of the parameter is changed, 
         the temperature will change.'''
 
-        first_result = self.calculate_room_temperature_with_parameters(
-            room_power=20, step_size=20, temperature=20)
-        second_result = self.calculate_room_temperature_with_parameters(
-            room_power=20, step_size=30, temperature=20)
+        first_result = self.heat_room_with_parameters(
+            current_power=2000, step_size=20 * 3600, temperature=20)
+        second_result = self.heat_room_with_parameters(
+            current_power=2000, step_size=30 * 3600, temperature=20)
         self.assertNotEqual(first_result, second_result)
 
-    def test_calculate_room_temperature_considers_room_temperature(self):
+    def test_heat_room_considers_room_temperature(self):
         ''' The room_temperature depends on
-        the room_power,
+        the current_power,
         the passed time between the steps and the
         room_temperature. If one of the parameter is changed, 
         the temperature will change.'''
 
-        first_result = self.calculate_room_temperature_with_parameters(
-            room_power=20, step_size=20, temperature=20)
-        second_result = self.calculate_room_temperature_with_parameters(
-            room_power=20, step_size=20, temperature=30)
+        first_result = self.heat_room_with_parameters(
+            current_power=2000, step_size=20 * 3600, temperature=20)
+        second_result = self.heat_room_with_parameters(
+            current_power=2000, step_size=20 * 3600, temperature=30)
         self.assertNotEqual(first_result, second_result)
 
-    def calculate_room_temperature_with_parameters(self, room_power=0,
-                                                   step_size=10, temperature=20):
-        self.consumer.room_power = room_power
+    def heat_room_with_parameters(self, current_power, step_size, temperature):
+        self.consumer.current_power = current_power
         self.consumer.env.step_size = step_size
         self.consumer.temperature_room = temperature
-        self.consumer.calculate_room_temperature()
+        for i in range(1,100):
+            #self.consumer.heat_room()
+            self.consumer.simulate_consumption()
         return self.consumer.temperature_room
 
     def test_target_temperature_simulate_consumption(self):
@@ -200,7 +203,7 @@ class ThermalConsumerTests(unittest.TestCase):
                                  current_time, consumer.target_temperature,
                                  expected_temperature))
 
-        '''def test_calculate_room_temperature(self):
+        '''def test_heat_room(self):
         # sets the room_temperature with respect to
         # the current temperature,
         # the heat_capacity       
