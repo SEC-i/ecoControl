@@ -123,7 +123,7 @@ def list_values(request, start):
             end_date = start_date + timedelta(hours=1) - timedelta(seconds=1)
             # print SensorValue.objects.filter(sensor=sensor, timestamp__gte=date['hour'], timestamp__lte=end_date).query
             cursor = connection.cursor()
-            cursor.execute('SELECT AVG(CAST(value AS decimal)) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\'  AND "server_sensorvalue"."timestamp" <= \'%s\' ) GROUP BY  "server_sensorvalue"."sensor_id"' % (sensor.id, start_date, end_date))
+            cursor.execute('SELECT AVG(value) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\'  AND "server_sensorvalue"."timestamp" <= \'%s\' ) GROUP BY  "server_sensorvalue"."sensor_id"' % (sensor.id, start_date, end_date))
             values.append([calendar.timegm(start_date.utctimetuple()) * 1000, float(cursor.fetchone()[0])])
 
         output.append({
