@@ -2,6 +2,7 @@ branches:
   only:
     - master
     - dev
+    - dev-postgres
 notifications:
   email:
     - bp2013h1@lists.myhpi.de

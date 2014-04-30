@@ -1,13 +1,16 @@
+import sys
 import logging
 from time import time
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import calendar
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.http import require_POST
 from django.utils.timezone import utc
+from django.db.models import Count, Min, Sum, Avg
+from django.db import connection
 
 from functions import perform_configuration
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue
@@ -17,7 +20,8 @@ from forecasting import Simulation
 
 logger = logging.getLogger('django')
 
-DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 30  # one month
+# DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 30  # one month
+DEFAULT_FORECAST_INTERVAL = 3600.0  # one month
 
 
 def index(request):
@@ -64,7 +68,10 @@ def configure(request):
 
     simulation = Simulation(
         demo=True, initial_time=time() - DEFAULT_FORECAST_INTERVAL)
-    simulation.forward(60 * 60 * 24 * 1, blocking=False)
+    if 'test' in sys.argv:
+        simulation.forward(60 * 60, blocking=False)
+    else:
+        simulation.forward(60 * 60 * 24 * 7, blocking=True)
     simulation.start()
 
     return create_json_response(request, {"status": "success"})
@@ -111,17 +118,22 @@ def list_values(request, start):
 
     output = []
     for sensor in sensors:
-        values = SensorValue.objects.filter(
-            sensor__id=sensor.id).order_by('timestamp')
-        if start:
-            values = values.filter(timestamp__gte=start_time)
+        values = []
+        for date in SensorValue.objects.extra({'hour':"date_trunc('hour', timestamp)"}).values('hour').annotate(count=Count('id')):
+            start_date = date['hour']
+            end_date = start_date + timedelta(1) - timedelta(seconds=1)
+            # print SensorValue.objects.filter(sensor=sensor, timestamp__gte=date['hour'], timestamp__lte=end_date).query
+            cursor = connection.cursor()
+            cursor.execute('SELECT AVG(CAST(value AS decimal)) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\'  AND "server_sensorvalue"."timestamp" <= \'%s\' ) GROUP BY  "server_sensorvalue"."sensor_id"' % (sensor.id, start_date, end_date))
+            values.append([calendar.timegm(start_date.utctimetuple()) * 1000, float(cursor.fetchone()[0])])
+
         output.append({
             'id': sensor.id,
             'device_id': sensor.device_id,
             'name': sensor.name,
             'unit': sensor.unit,
             'key': sensor.key,
-            'data': list(values.values_list('timestamp', 'value'))
+            'data': values
         })
 
     return create_json_response(request, output)
