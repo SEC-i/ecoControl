@@ -14,13 +14,11 @@ class ThermalConsumer(BaseSystem):
     http://www.inference.phy.cam.ac.uk/is/papers/DanThermalModellingBuildings.pdf 
     house data from pamiru48 (12 apartments with 22 persons)
 
-    env - simpy simulation environment
-    heat_storage - HeatStorge for energy supply
     total_heated_floor - area of simulated house in square meter (650)
     residents - number of residents (22)
     apartments - number of apartments (12)
     avg_rooms_per_appartment - average room number (4)
-    average_window_per_room (4)
+    average_window_per_room, each window 2 m^2(3)
     heating_constant - heating demand per square meter in W (rule of thumb for new housing: 100)
     """
 
@@ -45,7 +43,7 @@ class ThermalConsumer(BaseSystem):
         self.residents = 22
         self.apartments = 12
         self.avg_rooms_per_apartment = 4
-        self.avg_windows_per_room = 4
+        self.avg_windows_per_room = 3
         self.heating_constant = 100
         # heat transfer coefficient normal glas window in W/(m^2 * K)
         # normal glas 5.9, isolated 1.1
