@@ -120,7 +120,7 @@ def list_values(request, start):
         values = []
         for date in SensorValue.objects.filter(timestamp__gte=start_time).extra({'hour':"date_trunc('hour', timestamp)"}).values('hour').annotate(count=Count('id')):
             start_date = date['hour']
-            end_date = start_date + timedelta(1) - timedelta(seconds=1)
+            end_date = start_date + timedelta(hours=1) - timedelta(seconds=1)
             # print SensorValue.objects.filter(sensor=sensor, timestamp__gte=date['hour'], timestamp__lte=end_date).query
             cursor = connection.cursor()
             cursor.execute('SELECT AVG(CAST(value AS decimal)) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\'  AND "server_sensorvalue"."timestamp" <= \'%s\' ) GROUP BY  "server_sensorvalue"."sensor_id"' % (sensor.id, start_date, end_date))

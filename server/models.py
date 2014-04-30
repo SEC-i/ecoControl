@@ -64,22 +64,11 @@ class DeviceConfiguration(models.Model):
 
 
 class Sensor(models.Model):
-    STR = 0
-    INT = 1
-    FLOAT = 2
-    TYPES = (
-        (STR, 'str'),
-        (INT, 'int'),
-        (FLOAT, 'float'),
-    )
-
     device = models.ForeignKey('Device')
     name = models.CharField(max_length=100)
     key = models.CharField(max_length=100)
     setter = models.CharField(max_length=100)
     unit = models.CharField(max_length=50)
-    value_type = models.PositiveSmallIntegerField(
-        choices=TYPES, default=STR)
 
     def __unicode__(self):
         return self.name + " (#" + str(self.pk) + ")"
@@ -87,7 +76,7 @@ class Sensor(models.Model):
 
 class SensorValue(models.Model):
     sensor = models.ForeignKey('Sensor')
-    value = models.CharField(max_length=200)
+    value = models.FloatField()
     timestamp = models.DateTimeField(auto_now=False)
 
     def __unicode__(self):

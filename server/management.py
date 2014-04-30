@@ -21,19 +21,19 @@ def install_devices(**kwargs):
 
         sensors = []
         sensors.append(
-            Sensor(device=hs, name='Temperature', key='get_temperature', setter='set_temperature', unit='Celsius', value_type=Sensor.FLOAT))
+            Sensor(device=hs, name='Temperature', key='get_temperature', setter='set_temperature', unit='Celsius'))
         sensors.append(
-            Sensor(device=cu, name='Workload', key='workload', setter='workload', unit='%', value_type=Sensor.FLOAT))
+            Sensor(device=cu, name='Workload', key='workload', setter='workload', unit='%'))
         sensors.append(
-            Sensor(device=plb, name='Workload', key='workload', setter='workload', unit='%', value_type=Sensor.FLOAT))
+            Sensor(device=plb, name='Workload', key='workload', setter='workload', unit='%'))
         sensors.append(Sensor(device=tc, name='Thermal Consumption',
-                       key='get_consumption_power', unit='kWh', value_type=Sensor.FLOAT))
+                       key='get_consumption_power', unit='kWh'))
         sensors.append(Sensor(device=tc, name='Warm Warter Consumption',
-                       key='get_warmwater_consumption_power', unit='kWh', value_type=Sensor.FLOAT))
+                       key='get_warmwater_consumption_power', unit='kWh'))
         sensors.append(Sensor(device=tc, name='Outside Temperature',
-                       key='get_outside_temperature', unit='Celsius', value_type=Sensor.FLOAT))
+                       key='get_outside_temperature', unit='Celsius'))
         sensors.append(Sensor(device=ec, name='Electrical Consumption',
-                       key='get_consumption_power', unit='kWh', value_type=Sensor.FLOAT))
+                       key='get_consumption_power', unit='kWh'))
 
         Sensor.objects.bulk_create(sensors)
         print "Default power systems initialized"

@@ -86,8 +86,7 @@ class Simulation(object):
             if not self.demo:
                 for sensor in Sensor.objects.filter(device_id=device.id):
                     try:
-                        latest_sensor_value = SensorValue.objects.filter(sensor=sensor).latest('timestamp')
-                        value = parse_value(latest_sensor_value.value, sensor.value_type)
+                        value = SensorValue.objects.filter(sensor=sensor).latest('timestamp').value
                         if sensor.setter != '':
                             callback = getattr(device, sensor.setter, None)
                             if callback is not None:

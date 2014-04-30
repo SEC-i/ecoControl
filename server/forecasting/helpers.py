@@ -62,7 +62,7 @@ class MeasurementStorage():
                         timestamp = datetime.utcfromtimestamp(
                             self.env.now).replace(tzinfo=pytz.utc)
                         sensor_values.append(
-                            SensorValue(sensor=sensor, value=str(value), timestamp=timestamp))
+                            SensorValue(sensor=sensor, value=value, timestamp=timestamp))
                     else:
                         self.data[sensor.id - 1].append(
                             [int(self.env.now * 1000), str(value)])
