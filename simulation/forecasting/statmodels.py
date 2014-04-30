@@ -4,7 +4,7 @@
 """max: some examples of using R in python"""
 
 import numpy as np
-from simulation.systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_weekend, warm_water_demand_workday
+from simulation.systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_weekend, warm_water_demand_workday, electrical_demand_su_fr, electrical_demand_wi_fr
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
 from datetime import date, datetime, timedelta
@@ -64,6 +64,23 @@ def make_two_year_data(dataset_winter, dataset_summer, sampling_interval, start,
     return wholeyear_data
 
 
+
+def make_day_data(days, data0, data1):
+    weekday_data = []
+    current = 0
+    while current < days:
+        for i in range(len(data0)):
+            result = linear_interpolation(data0[i], data1[i], current/float(days) )
+            weekday_data.append(result)
+        current += 1
+    return weekday_data
+            
+        
+    
+    
+    
+
+
 def ets(y):
     print forecast.ets.formals()
     fit = forecast.ets(y, model="MAM")
@@ -104,8 +121,9 @@ def plot_dataset(sensordata):
 # Example
 #data = np.array(weekly_electrical_demand_winter)
         
-input_data = warm_water_demand_workday + warm_water_demand_weekend
-data =  np.array(make_two_year_data(weekly_electrical_demand_winter,weekly_electrical_demand_summer, 15, datetime(year=2012,month=4,day=24)))
+
+#data =  np.array(make_two_year_data(weekly_electrical_demand_winter,weekly_electrical_demand_summer, 15, datetime(year=2012,month=4,day=24)))
+data = np.array(make_day_data(7, electrical_demand_wi_fr, electrical_demand_su_fr))
 
 #series = ts(data,start=2013, deltat=(1/(365* 12.0 * 24.0 * 60 )))
 #
@@ -114,17 +132,18 @@ series = data
 # horizon = 100
 # # res = do_forecast(series, horizon=horizon, exog=(exog_train, exog_test))
 # print "-------------------------------"
-# forecast_result = ets(series)
+#forecast_result = ets(series)
 #  
-# forecast_values = forecast_result.rx2("mean")
-# values ={ 'forcasting':list(forecast_values), 'simulation':data}
+#forecast_values = forecast_result.rx2("mean")
+#values ={ 'forcasting':list(forecast_values), 'simulation':data}
 #  
-# plot_dataset(values)
+#plot_dataset(values)
+
 r = robjects.r
 r.X11()
 
-fit = forecast.dshw(series,period1=24*4, period2=24*7*4)
-forecast_result = forecast.forecast(fit, h=200)
+fit = forecast.tbats(series, periods=24*4)
+forecast_result = forecast.forecast(fit)
 r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
 r.plot(forecast_result)
 #  
