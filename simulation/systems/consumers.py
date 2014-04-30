@@ -47,8 +47,8 @@ class ThermalConsumer(BaseSystem):
         self.heating_constant = 100
         # heat transfer coefficient normal glas window in W/(m^2 * K)
         # normal glas 5.9, isolated 1.1
-        self.heat_transfer_window = 2.0
-        self.heat_transfer_wall = 0.8
+        self.heat_transfer_window = 2.2
+        self.heat_transfer_wall = 0.5
 
         self.consumed = 0
         self.weather_forecast = WeatherForecast(self.env)
@@ -90,10 +90,10 @@ class ThermalConsumer(BaseSystem):
 
     def heat_room(self):
         # Convert from J/(m^3 * K) to kWh/(m^3 * K)
-        specific_heat_capacity = 360.0 / 3600.0
+        specific_heat_capacity_air = 1000.0 / 3600.0
         room_power = self.get_consumption_power() - self.heat_loss_power()
         room_energy = room_power * (self.env.step_size / self.env.measurement_interval)
-        temp_delta = room_energy / (self.avg_room_volume *  specific_heat_capacity)
+        temp_delta = room_energy / (self.avg_room_volume *  specific_heat_capacity_air)
         self.temperature_room += temp_delta
 
     def get_consumption_power(self):
@@ -129,20 +129,20 @@ class ThermalConsumer(BaseSystem):
         return self.get_warmwater_consumption_power() * (self.env.step_size / self.env.measurement_interval)
 
     def simulate_consumption(self):
-        # calculate variation using daily demand
+        # Calculate variation using daily demand
         self.target_temperature = self.daily_demand[
             time.gmtime(self.env.now).tm_hour]
 
         self.heat_room()
 
-        # the heating powers to full capacity in 20 min
-        slope = self.max_power * (self.env.step_size / (60 * 20.0))
+        # The heating powers to full capacity in 60 min
+        slope = self.max_power * (self.env.step_size / (60 * 60.0))
         if self.temperature_room > self.target_temperature:
             self.current_power -= slope
         else:
             self.current_power += slope
 
-        # clamp to maximum power
+        # Clamp to maximum power
         self.current_power = max(min(self.current_power, self.max_power), 0.0)
 
     def heat_loss_power(self):
