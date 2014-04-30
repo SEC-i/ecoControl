@@ -48,7 +48,7 @@ class ThermalConsumer(BaseSystem):
         # heat transfer coefficient normal glas window in W/(m^2 * K)
         # normal glas 5.9, isolated 1.1
         self.heat_transfer_window = 2.0
-        self.heat_transfer_wall = 1.0
+        self.heat_transfer_wall = 0.8
 
         self.consumed = 0
         self.weather_forecast = WeatherForecast(self.env)
@@ -58,27 +58,19 @@ class ThermalConsumer(BaseSystem):
     def calculate(self):
 
         self.total_heated_volume = self.total_heated_floor * self.room_height
-        avg_room_volume = self.total_heated_volume / \
+        self.avg_room_volume = self.total_heated_volume / \
             (self.apartments * self.avg_rooms_per_apartment)
         # Assume 3 walls per room to not count multiple
-        avg_wall_size = avg_room_volume / self.room_height * 3
-        # Assume each appartment have an average of 0.5 outer walls per apartment
-        self.outer_wall_surface = avg_wall_size * self.apartments * 0.5
+        avg_wall_size = self.avg_room_volume / self.room_height * 3
+        # Assume each appartment have an average of 0.8 outer walls per apartment
+        self.outer_wall_surface = avg_wall_size * self.apartments * 0.8
         self.max_power = self.total_heated_floor * \
             float(self.heating_constant)
 
         self.current_power = 0
-
-        self.window_surface = self.avg_windows_per_room * \
+        # Assume a window size of 2 square meters
+        self.window_surface = 2 * self.avg_windows_per_room * \
             self.avg_rooms_per_apartment * self.apartments
-
-        # Convert from J/(m^3 * K) to kWh/(m^3 * K)
-        specific_heat_capacity_air = 1290.0 / 3600.0
-        heat_capacity_air = specific_heat_capacity_air * self.total_heated_volume
-        # Initially about 56 mio
-        self.heat_capacity = heat_capacity_air * 50000
-
-        self.room_energy = avg_room_volume * self.temperature_room
 
     @classmethod
     def copyconstruct(cls, env, other_thermal_consumer, heat_storage):
@@ -96,15 +88,12 @@ class ThermalConsumer(BaseSystem):
         self.total_consumption += consumption
         self.heat_storage.consume_energy(consumption)
 
-    def calculate_room_temperature(self):
-        gas_constant = 287.0  # J/(kg*K)
-        temperature_kelvin = self.temperature_room + 273
-        normal_pressure = 101325.0  # pascal
-
-        nominator = gas_constant * temperature_kelvin
-        denominator = normal_pressure * self.heat_capacity
-        temp_delta = nominator / denominator * \
-            self.room_energy * self.env.step_size
+    def heat_room(self):
+        # Convert from J/(m^3 * K) to kWh/(m^3 * K)
+        specific_heat_capacity = 360.0 / 3600.0
+        room_power = self.get_consumption_power() - self.heat_loss_power()
+        room_energy = room_power * (self.env.step_size / self.env.measurement_interval)
+        temp_delta = room_energy / (self.avg_room_volume *  specific_heat_capacity)
         self.temperature_room += temp_delta
 
     def get_consumption_power(self):
@@ -144,11 +133,10 @@ class ThermalConsumer(BaseSystem):
         self.target_temperature = self.daily_demand[
             time.gmtime(self.env.now).tm_hour]
 
-        self.room_energy = self.current_power - self.heat_loss()
-        self.calculate_room_temperature()
+        self.heat_room()
 
-        # the heating powers to full capacity in 10 min
-        slope = self.max_power * (self.env.step_size / (60 * 10.0))
+        # the heating powers to full capacity in 20 min
+        slope = self.max_power * (self.env.step_size / (60 * 20.0))
         if self.temperature_room > self.target_temperature:
             self.current_power -= slope
         else:
@@ -157,13 +145,13 @@ class ThermalConsumer(BaseSystem):
         # clamp to maximum power
         self.current_power = max(min(self.current_power, self.max_power), 0.0)
 
-    def heat_loss(self):
+    def heat_loss_power(self):
         temp_delta = self.temperature_room - self.get_outside_temperature()
         heat_flow_window = self.window_surface * \
             self.heat_transfer_window * temp_delta
         heat_flow_wall = self.outer_wall_surface * \
             self.heat_transfer_wall * temp_delta
-        return heat_flow_wall + heat_flow_window
+        return (heat_flow_wall + heat_flow_window) / 1000.0 # kW
 
     def get_outside_temperature(self, offset_days=0):
         return self.weather_forecast.get_temperature_estimate(self.env.now)
