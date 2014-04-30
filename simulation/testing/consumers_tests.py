@@ -136,9 +136,9 @@ class ThermalConsumerTests(unittest.TestCase):
         the temperature will change.'''
 
         first_result = self.heat_room_with_parameters(
-            current_power=2000, step_size=36000, temperature=20)
+            current_power=2000, step_size=20 * 3600, temperature=20)
         second_result = self.heat_room_with_parameters(
-            current_power=200000, step_size=36000, temperature=20)
+            current_power=200000, step_size=20 * 3600, temperature=20)
         self.assertNotEqual(first_result, second_result)
 
     def test_heat_room_considers_step_size(self):
@@ -149,9 +149,9 @@ class ThermalConsumerTests(unittest.TestCase):
         the temperature will change.'''
 
         first_result = self.heat_room_with_parameters(
-            current_power=2000, step_size=36000, temperature=20)
+            current_power=2000, step_size=20 * 3600, temperature=20)
         second_result = self.heat_room_with_parameters(
-            current_power=2000, step_size=2 * 36000, temperature=20)
+            current_power=2000, step_size=30 * 3600, temperature=20)
         self.assertNotEqual(first_result, second_result)
 
     def test_heat_room_considers_room_temperature(self):
@@ -162,9 +162,9 @@ class ThermalConsumerTests(unittest.TestCase):
         the temperature will change.'''
 
         first_result = self.heat_room_with_parameters(
-            current_power=2000, step_size=36000, temperature=20)
+            current_power=2000, step_size=20 * 3600, temperature=20)
         second_result = self.heat_room_with_parameters(
-            current_power=2000, step_size=36000, temperature=30)
+            current_power=2000, step_size=20 * 3600, temperature=30)
         self.assertNotEqual(first_result, second_result)
 
     def heat_room_with_parameters(self, current_power, step_size, temperature):
