@@ -23,7 +23,7 @@ class Plotting(object):
             initial_time=1396915200)  # 8.4.2014
         self.plot_new_simulation(SIMULATED_TIME_FORECAST, 60, "Forecast1")
 
-    def plot_new_simulation(self, simulated_time, measurement_interval, title,  datasheet=None):
+    def plot_new_simulation(self, simulated_time, title,  datasheet=None):
         data = {}
         for name in self.measure_values:
             data[name] = []

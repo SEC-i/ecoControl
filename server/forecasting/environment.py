@@ -6,19 +6,14 @@ from simpy.rt import RealtimeEnvironment
 
 class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
-    def __init__(self, initial_time=1356998400, measurement_interval=3600, strict=False):
+    def __init__(self, initial_time=1356998400, interval=120, strict=False):
         RealtimeEnvironment.__init__(
-            self, initial_time, 1.0 / measurement_interval, strict)
+            self, initial_time, 1.0 / 3600, strict)
 
         # time to forward
         self.forward = 0
         self.initial_time = initial_time
-
-        # timings
-        self.measurement_interval = measurement_interval
-        self.steps_per_measurement = 30.0  # every 2min
-        self.step_size = self.measurement_interval / \
-            self.steps_per_measurement  # in seconds
+        self.step_size = interval
 
         # function which gets called every step
         self.step_function = None

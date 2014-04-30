@@ -23,12 +23,6 @@ var custom_snippets = [{
     name: 'env.get_day_of_year()',
     content: 'env.get_day_of_year()'
 }, {
-    name: 'env.measurement_interval',
-    content: 'env.measurement_interval'
-}, {
-    name: 'env.steps_per_measurement',
-    content: 'env.steps_per_measurement'
-}, {
     name: 'env.step_size',
     content: 'env.step_size'
 }, {

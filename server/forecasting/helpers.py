@@ -47,26 +47,25 @@ class MeasurementStorage():
             self.data.append([])
 
     def take(self):
-        if self.env.now % self.env.measurement_interval == 0:
-            sensor_values = []
-            for device in self.devices:
-                for sensor in Sensor.objects.filter(device_id=device.id):
-                    value = getattr(device, sensor.key, None)
-                    if value is not None:
-                        # in case value is a function, call that function
-                        if hasattr(value, '__call__'):
-                            value = value()
+        sensor_values = []
+        for device in self.devices:
+            for sensor in Sensor.objects.filter(device_id=device.id):
+                value = getattr(device, sensor.key, None)
+                if value is not None:
+                    # in case value is a function, call that function
+                    if hasattr(value, '__call__'):
+                        value = value()
 
-                        if self.demo:
-                            timestamp = datetime.utcfromtimestamp(
-                                self.env.now).replace(tzinfo=pytz.utc)
-                            sensor_values.append(
-                                SensorValue(sensor=sensor, value=str(value), timestamp=timestamp))
-                        else:
-                            self.data[sensor.id - 1].append([int(self.env.now * 1000), str(value)])
+                    if self.demo:
+                        timestamp = datetime.utcfromtimestamp(
+                            self.env.now).replace(tzinfo=pytz.utc)
+                        sensor_values.append(
+                            SensorValue(sensor=sensor, value=str(value), timestamp=timestamp))
+                    else:
+                        self.data[sensor.id - 1].append([int(self.env.now * 1000), str(value)])
 
-            if len(sensor_values) > 0:
-                SensorValue.objects.bulk_create(sensor_values)
+        if len(sensor_values) > 0:
+            SensorValue.objects.bulk_create(sensor_values)
 
     def get(self, start=None):
         if start is not None:

@@ -55,8 +55,7 @@ class CodeExecuter(BaseSystem):
             self._user_function(*self.local_references)
             self.execution_successful = True
         except:
-            if self.env.now % self.env.measurement_interval == 0:
-                traceback.print_exc()
+            traceback.print_exc()
             self.execution_successful = False
 
     def snippets_list(self):

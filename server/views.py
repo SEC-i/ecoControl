@@ -64,7 +64,7 @@ def configure(request):
 
     simulation = Simulation(
         demo=True, initial_time=time() - DEFAULT_FORECAST_INTERVAL)
-    simulation.forward(60 * 60 * 24 * 30, blocking=False)
+    simulation.forward(60 * 60 * 24 * 1, blocking=False)
     simulation.start()
 
     return create_json_response(request, {"status": "success"})

@@ -26,10 +26,8 @@ class GasPoweredGenerator(BaseSystem):
         self.running = False
 
     def consume_gas(self):
-        self.total_gas_consumption += self.current_gas_consumption / \
-            self.env.steps_per_measurement
-        self.total_thermal_production += self.current_thermal_production / \
-            self.env.steps_per_measurement
+        self.total_gas_consumption += self.current_gas_consumption * (self.env.step_size / 3600.0)
+        self.total_thermal_production += self.current_thermal_production * (self.env.step_size / 3600.0)
 
     def get_operating_costs(self):
         return self.total_gas_consumption * self.gas_costs
@@ -89,10 +87,10 @@ class CogenerationUnit(GasPoweredGenerator):
         return calculated_workload
 
     def get_electrical_energy_production(self):
-        return self.current_electrical_production / self.env.steps_per_measurement
+        return self.current_electrical_production * (self.env.step_size / 3600.0)
 
     def get_thermal_energy_production(self):
-        return self.current_thermal_production / self.env.steps_per_measurement
+        return self.current_thermal_production * (self.env.step_size / 3600.0)
 
     def get_operating_costs(self):
         gas_costs = GasPoweredGenerator.get_operating_costs(self)
@@ -135,8 +133,7 @@ class CogenerationUnit(GasPoweredGenerator):
             if old_workload == 0:
                 self.power_on_count += 1
 
-            self.total_hours_of_operation += self.env.step_size / \
-                self.env.measurement_interval
+            self.total_hours_of_operation += self.env.step_size / 3600.0
             self.workload = min(calculated_workload, 99.0)
         else:
             self.workload = 0.0
@@ -191,7 +188,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
             self.workload = 0.0
 
     def get_thermal_energy_production(self):
-        return self.current_thermal_production / self.env.steps_per_measurement
+        return self.current_thermal_production * (self.env.step_size / 3600.0)
 
     def calculate_state(self):
         if self.overwrite_workload is not None:
@@ -202,8 +199,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
                 if self.workload == 0.0:
                     self.power_on_count += 1
 
-                self.total_hours_of_operation += self.env.step_size / \
-                    self.env.measurement_interval
+                self.total_hours_of_operation += self.env.step_size / 3600.0
                 self.workload = 99.0
             # turn off if heat storage's target energy is almost reached
             elif self.current_thermal_production >= \
