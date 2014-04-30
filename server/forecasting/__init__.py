@@ -12,7 +12,7 @@ from systems.storages import HeatStorage, PowerMeter
 from systems.consumers import ThermalConsumer, ElectricalConsumer
 
 
-logger = logging.getLogger('django')
+logger = logging.getLogger('simulation')
 
 class Simulation(object):
 
@@ -22,6 +22,7 @@ class Simulation(object):
         if initial_time % 3600 != 0.0:
             # ensure that initial_time always at full hour, to avoid
             # measurement bug
+            logger.info("Simulation: Change initial time to full hour")
             initial_time = (int(initial_time) / 3600) * 3600.0
         # initialize real-time environment
         self.env = ForwardableRealtimeEnvironment(initial_time=initial_time)
@@ -69,6 +70,7 @@ class Simulation(object):
                 device.register_local_variables(system_list)
 
             if not device.connected():
+                logger.error("Simulation: Device %s is not connected" % device.name)
                 raise RuntimeError
 
         return system_list
@@ -97,7 +99,9 @@ class Simulation(object):
                                     setattr(device, sensor.setter, value)
 
                     except SensorValue.DoesNotExist:
-                        logger.warning('Could not find any sensor values to configure simulation')
+                        logger.warning("Simulation: No sensor values \
+                            found for sensor '%s' at device '%s'" \
+                            % (sensor.name, sensor.device.name))
 
             # re-calculate values of ThermalConsumers
             if isinstance(device, ThermalConsumer):
@@ -107,6 +111,7 @@ class Simulation(object):
         for device in self.devices:
             if device.id == device_id:
                 return device
+        logger.warning("Simulation: Couldn't find device with id " + str(device_id))
         return None
 
     def start(self, blocking=False):

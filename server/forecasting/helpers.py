@@ -1,11 +1,12 @@
 from threading import Thread
 import itertools
 from datetime import datetime
-
 import pytz
+import logging
 
 from server.models import Sensor, SensorValue, DeviceConfiguration
 
+logger = logging.getLogger('simulation')
 
 class BulkProcessor(object):
 

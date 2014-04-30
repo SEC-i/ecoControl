@@ -1,7 +1,9 @@
-import traceback
 import os
+import logging
 
 from helpers import BaseSystem
+
+logger = logging.getLogger('simulation')
 
 class CodeExecuter(BaseSystem):
 
@@ -55,7 +57,7 @@ class CodeExecuter(BaseSystem):
             self._user_function(*self.local_references)
             self.execution_successful = True
         except:
-            traceback.print_exc()
+            logger.error("CodeExecuter: Could not execute user code")
             self.execution_successful = False
 
     def snippets_list(self):
@@ -69,6 +71,7 @@ class CodeExecuter(BaseSystem):
         if snippet in self.snippets_list():
             with open(self.snippet_folder + "/" + snippet, "r") as snippet_file:
                 return snippet_file.read()
+            logger.error("CodeExecuter: Could not read snippet '" + snippet + "'")
         return ""
 
     def save_snippet(self, snippet, code):

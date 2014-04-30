@@ -1,8 +1,10 @@
 import time
+import logging
 
 from simpy.core import Environment, EmptySchedule
 from simpy.rt import RealtimeEnvironment
 
+logger = logging.getLogger('simulation')
 
 class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
@@ -25,6 +27,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
     def step(self):
         if self.stop_simulation:
+            logger.info("Environment: Stop stepping")
             raise EmptySchedule()
 
         if self.forward > 0:
@@ -38,6 +41,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
             self.env_start += self.forward
             self.forward = 0
             if self.stop_after_forward:
+                logger.info("Environment: Stop stepping")
                 raise EmptySchedule()
         else:
             self.handle_step_function()
@@ -60,6 +64,6 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
     def register_step_function(self, function, kwargs={}):
         if self.step_function != None:
-            print "overwriting existing step_function ", self.step_function, " !"
+            logger.warning("Environment: Overwriting existing step_function " + self.step_function)
         self.step_function = function
         self.step_function_kwarguments = kwargs

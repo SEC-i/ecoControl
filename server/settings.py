@@ -125,10 +125,23 @@ LOGGING = {
             'backupCount': 5,
             'formatter': 'verbose'
         },
+        'simulation': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(os.path.dirname(__file__), '../logs/simulation.log'),
+            'maxBytes': 1024 * 1024 * 4,
+            'backupCount': 5,
+            'formatter': 'verbose'
+        },
     },
     'loggers': {
         'django': {
             'handlers': ['django'],
+            'propagate': True,
+            'level': 'WARNING',
+        },
+        'simulation': {
+            'handlers': ['simulation'],
             'propagate': True,
             'level': 'WARNING',
         },

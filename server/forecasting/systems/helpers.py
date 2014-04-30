@@ -1,4 +1,4 @@
-import math
+from math import cos, pi
 
 
 class BaseSystem(object):
@@ -22,8 +22,6 @@ def interpolate_year(day):
     day_shift = day + 90
     day_shift %= 365
     day_float = float(day) / 365.0
-    interpolation = math.cos(day_float * math.pi * 2)
+    interpolation = cos(day_float * pi * 2)
     # shift to 0-1
-    interpolation /= 2
-    interpolation += 0.5
-    return interpolation
+    return (interpolation / 2) + 0.5

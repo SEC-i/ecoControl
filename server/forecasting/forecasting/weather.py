@@ -1,10 +1,12 @@
 import urllib2
 import json
 import time
+import logging
 
 from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
 from server.forecasting.forecasting.helpers import cached_data
 
+logger = logging.getLogger('simulation')
 
 class WeatherForecast:
 
@@ -25,7 +27,6 @@ class WeatherForecast:
             elif not hourly and self.forecast_temperatures_daily != []:
                 return self.forecast_temperatures_daily
 
-        
         forecast_temperatures = []
         self.forecast_query_date = self.get_date()
 
@@ -36,13 +37,10 @@ class WeatherForecast:
             try:
                 forecast_temperatures.append(data_set["main"]["temp"])
             except:
-                # last value of data seams always to be gdps
+                logger.warning("WeatherForecast: Problems while json parsing")
                 if "gdps" not in data_set:
-                    print "error reading temperatures from: \n", json.dumps(data_set, sort_keys=True, indent=4, separators=(',', ': '))
-        print "read ", len(forecast_temperatures), "temperatures", "hourly = ", hourly
-
-        
-
+                    logger.error("WeatherForecast: Couldn't read temperature values from openweathermap")
+        logger.info("WeatherForecast: Fetched %d tempterature values" % len(forecast_temperatures))
         return forecast_temperatures
 
     def get_openweathermapdata(self):
@@ -52,10 +50,9 @@ class WeatherForecast:
         else:
             url = "http://openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"
         try:
-            result = urllib2.urlopen(url)
-            return result.read()
+            return urllib2.urlopen(url).read()
         except urllib2.URLError, e:
-            print e
+            logger.error("WeatherForecast: URLError during API call")
             # Use history data
             result = []
             for i in range(0, 40):
@@ -113,5 +110,4 @@ class WeatherForecast:
         return a * (1 - x) + b * x
 
     def get_date(self):
-        # return self.env.now
-        return time.time()  # for debugging, use self.env.now otherwise
+        return time.time()  # for debugging, use self.env.now

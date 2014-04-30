@@ -171,14 +171,6 @@ class PeakLoadBoiler(GasPoweredGenerator):
     def connected(self):
         return self.heat_storage is not None
 
-    @classmethod
-    def copyconstruct(cls, env, other_plb, heat_storage):
-        plb = PeakLoadBoiler(env, heat_storage)
-        plb.__dict__ = other_plb.__dict__.copy()
-        plb.heat_storage = heat_storage
-        plb.env = env
-        return plb
-
     def step(self):
         if self.running:
             self.calculate_state()
