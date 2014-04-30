@@ -20,8 +20,7 @@ from forecasting import Simulation
 
 logger = logging.getLogger('django')
 
-# DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 30  # one month
-DEFAULT_FORECAST_INTERVAL = 3600.0  # one month
+DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 30  # one month
 
 
 def index(request):
@@ -119,7 +118,7 @@ def list_values(request, start):
     output = []
     for sensor in sensors:
         values = []
-        for date in SensorValue.objects.extra({'hour':"date_trunc('hour', timestamp)"}).values('hour').annotate(count=Count('id')):
+        for date in SensorValue.objects.filter(timestamp__gte=start_time).extra({'hour':"date_trunc('hour', timestamp)"}).values('hour').annotate(count=Count('id')):
             start_date = date['hour']
             end_date = start_date + timedelta(1) - timedelta(seconds=1)
             # print SensorValue.objects.filter(sensor=sensor, timestamp__gte=date['hour'], timestamp__lte=end_date).query

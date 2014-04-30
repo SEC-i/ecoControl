@@ -47,6 +47,8 @@ class MeasurementStorage():
             self.data.append([])
 
     def take(self):
+        if not self.demo and self.env.now % 3600 != 0:
+            return
         sensor_values = []
         for device in self.devices:
             for sensor in Sensor.objects.filter(device_id=device.id):
