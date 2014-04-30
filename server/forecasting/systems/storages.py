@@ -68,7 +68,6 @@ class HeatStorage(BaseSystem):
     def connected(self):
         return True
 
-
 class PowerMeter(BaseSystem):
 
     def __init__(self, system_id, env, electrical_costs=0.283, feed_in_reward=0.0917):
