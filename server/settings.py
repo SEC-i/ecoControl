@@ -64,6 +64,9 @@ DATABASES = {
         'NAME': 'bp2013h1',
         'HOST': 'localhost',
         'PORT': '5432',
+        'OPTIONS': {
+            'timeout': 120,
+        }
     }
 }
 
