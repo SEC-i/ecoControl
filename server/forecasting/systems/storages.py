@@ -44,7 +44,8 @@ class HeatStorage(BaseSystem):
 
     def set_temperature(self, value):
         self.output_energy = 0
-        self.input_energy = value * (self.capacity * self.specific_heat_capacity) / self.base_temperature
+        self.input_energy = (value - self.base_temperature) * \
+            (self.capacity * self.specific_heat_capacity)
 
     def get_energy_capacity(self):
         return self.capacity * \
@@ -65,8 +66,14 @@ class HeatStorage(BaseSystem):
             self.temperature_loss
         self.output_energy += hourly_energy_loss * (self.env.step_size / 3600.0)
 
-    def connected(self):
-        return True
+    def attach_to_cogeneration_unit(self, system):
+        system.heat_storage = self
+
+    def attach_to_peak_load_boiler(self, system):
+        system.heat_storage = self
+
+    def attach_to_thermal_consumer(self, system):
+        system.heat_storage = self
 
 class PowerMeter(BaseSystem):
 
@@ -107,5 +114,8 @@ class PowerMeter(BaseSystem):
         self.energy_produced = 0
         self.energy_consumed = 0
 
-    def connected(self):
-        return True
+    def attach_to_cogeneration_unit(self, system):
+        system.power_meter = self
+
+    def attach_to_electrical_consumer(self, system):
+        system.power_meter = self

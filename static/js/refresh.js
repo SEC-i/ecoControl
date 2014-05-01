@@ -17,13 +17,12 @@ function refresh() {
         }
         $.getJSON(url, function(data) {
             update_setup(data);
-            update_diagram(data);
             if (data[0]['data'].length > 0) {
                 current_time = data[0]['data'][data[0]['data'].length - 1][0];
             }
-        }).done(function(){
-            $.getJSON('/api/forecast/', function(data) {
-                update_diagram(data, true);
+            $.getJSON('/api/forecast/', function(forecast) {
+                update_diagram(data);
+                update_diagram(forecast, true);
             });
         });
                 

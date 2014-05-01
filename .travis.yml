@@ -12,6 +12,8 @@ env:
   - DJANGO_VERSION=1.6
 install: 
   - pip install -r requirements.txt --use-mirrors
+# before_script:
+#   - psql -U postgres -c 'create database bp2013h1;' -U postgres
 script:
   - coverage run --source='.' manage.py test
   - coverage report

@@ -48,6 +48,8 @@ class MeasurementStorage():
             self.data.append([])
 
     def take(self):
+        if not self.demo and self.env.now % 3600 != 0:
+            return
         sensor_values = []
         for device in self.devices:
             for sensor in Sensor.objects.filter(device_id=device.id):
@@ -61,9 +63,10 @@ class MeasurementStorage():
                         timestamp = datetime.utcfromtimestamp(
                             self.env.now).replace(tzinfo=pytz.utc)
                         sensor_values.append(
-                            SensorValue(sensor=sensor, value=str(value), timestamp=timestamp))
+                            SensorValue(sensor=sensor, value=value, timestamp=timestamp))
                     else:
-                        self.data[sensor.id - 1].append([int(self.env.now * 1000), str(value)])
+                        self.data[sensor.id - 1].append(
+                            [int(self.env.now * 1000), str(value)])
 
         if len(sensor_values) > 0:
             SensorValue.objects.bulk_create(sensor_values)
