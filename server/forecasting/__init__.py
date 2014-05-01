@@ -61,8 +61,7 @@ class Simulation(object):
             # configure systems
             for configuration in configurations:
                 if configuration.device_id == device.id:
-                    value = parse_value(
-                        configuration.value, configuration.value_type)
+                    value = parse_value(configuration)
                     if configuration.key in dir(device):
                         setattr(device, configuration.key, value)
 

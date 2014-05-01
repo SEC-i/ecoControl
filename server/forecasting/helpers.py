@@ -107,17 +107,17 @@ def parse_hourly_demand_values(namespace, data):
     return output
 
 
-def parse_value(value, value_type):
+def parse_value(config):
     try:
-        if value_type == DeviceConfiguration.STR:
-            return str(value)
-        elif value_type == DeviceConfiguration.INT:
-            return int(value)
-        elif value_type == DeviceConfiguration.FLOAT:
-            return float(value)
+        if config.value_type == DeviceConfiguration.STR:
+            return str(config.value)
+        elif config.value_type == DeviceConfiguration.INT:
+            return int(config.value)
+        elif config.value_type == DeviceConfiguration.FLOAT:
+            return float(config.value)
         else:
             logger.warning(
-                "Couldn't determine type of %s (%s)" % (value, value_type))
+                "Couldn't determine type of %s (%s)" % (config.value, config.value_type))
     except ValueError:
-        logger.warning("ValueError parsing %s to %s" % (value, value_type))
-    return str(value)
+        logger.warning("ValueError parsing %s to %s" % (config.value, config.value_type))
+    return str(config.value)

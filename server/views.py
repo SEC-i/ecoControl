@@ -12,7 +12,7 @@ from django.utils.timezone import utc
 from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
 
-from functions import perform_configuration
+from functions import perform_configuration, get_operating_costs, get_consumption
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue
 from helpers import create_json_response, create_json_response_from_QuerySet
 from forecasting import Simulation
@@ -106,6 +106,15 @@ def forecast(request):
 
     return create_json_response(request, output)
 
+
+def get_statistics(request):
+    output = {'operating_costs': [], 'consumptions': []}
+    for system in Device.objects.all():
+        if system.device_type == Device.CU or system.device_type == Device.PLB:
+            output['operating_costs'].append(get_operating_costs(system))
+        elif system.device_type == Device.TC or system.device_type == Device.EC:
+            output['consumptions'].append(get_consumption(system))
+    return create_json_response(request, output)
 
 def list_values(request, start):
     sensors = Sensor.objects.all()
