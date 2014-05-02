@@ -33,7 +33,7 @@ class ForecastingDBTest(TestCase):
         self.assertTrue(source.location)
                          
     def test_crawled_data_in_db(self):
-        expected_timestamp = date.fromtimestamp(0)
+        expected_timestamp = datetime.datetime.fromtimestamp(0).replace(tzinfo=utc)
         time_mock = MagicMock(return_value = 0)
         self.forecast.get_date = MagicMock(return_value=0)
 

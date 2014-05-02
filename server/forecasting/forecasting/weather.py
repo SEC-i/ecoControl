@@ -43,8 +43,9 @@ class WeatherForecast:
                 try:
                     temperature = data_set["main"]["temp"]
                     forecast_temperatures.append(temperature)
+                    timestamp = datetime.datetime.fromtimestamp(self.get_date()).replace(tzinfo=timezone.utc)
                     new_record = WeatherValue(temperature=temperature, 
-                        timestamp=date.fromtimestamp(self.get_date()))
+                        timestamp=timestamp)
                     results.append(new_record)
                 except KeyError:
                     # last value of data seams always to be gdps
