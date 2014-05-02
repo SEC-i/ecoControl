@@ -1,6 +1,8 @@
 import urllib2
 import json
 import time
+from datetime import date
+
 from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
 from server.models import WeatherSource, WeatherValue
 
@@ -37,11 +39,14 @@ class WeatherForecast:
                 try:
                     temperature = data_set["main"]["temp"]
                     forecast_temperatures.append(temperature)
-                    WeatherValue(temperature=temperature).save()
-                except:
+                    new_record = WeatherValue(temperature=temperature, 
+                        timestamp=date.fromtimestamp(self.get_date()))
+                    new_record.save()
+                except KeyError:
                     # last value of data seams always to be gdps
                     if "gdps" not in data_set:
                         print "error reading temperatures from: \n", json.dumps(data_set, sort_keys=True, indent=4, separators=(',', ': '))
+                
             print "read ", len(forecast_temperatures), "temperatures", "hourly = ", hourly
 
         except urllib2.URLError, e:
