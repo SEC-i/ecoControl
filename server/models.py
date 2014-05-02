@@ -72,4 +72,4 @@ class WeatherSource(models.Model):
 class WeatherValue(models.Model):
     temperature = models.CharField(max_length = 20)
     timestamp = models.DateTimeField(auto_now = False) # time when the value was taken
-    
+    target_time = models.DateTimeField(auto_now = False) # time the temperature should be effective

@@ -2,6 +2,8 @@ import urllib2
 import json
 import time
 from datetime import date
+import datetime
+from django.utils import timezone
 
 from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
 from server.models import WeatherSource, WeatherValue
@@ -30,7 +32,9 @@ class WeatherForecast:
         else:
             url = "http://openweathermap.org/data/2.3/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"
         forecast_temperatures = []
+        results = []
         self.forecast_query_date = self.get_date()
+       
         try:
             result = urllib2.urlopen(url)
             jsondata = result.read()
@@ -41,7 +45,7 @@ class WeatherForecast:
                     forecast_temperatures.append(temperature)
                     new_record = WeatherValue(temperature=temperature, 
                         timestamp=date.fromtimestamp(self.get_date()))
-                    new_record.save()
+                    results.append(new_record)
                 except KeyError:
                     # last value of data seams always to be gdps
                     if "gdps" not in data_set:
@@ -57,7 +61,14 @@ class WeatherForecast:
                 result.append(
                     self.get_average_outside_temperature(self.get_date(), i))
             return result
-
+        i = 0
+        for record in results:
+            '''record.target_time = date.fromtimestamp(
+                self.get_date()+i*10800)''' # every 3-hours: 3*60*60 
+            record.target_time = datetime.datetime.fromtimestamp(
+                self.get_date()+i*10800).replace(tzinfo=timezone.utc) # every 3-hours: 3*60*60 
+            record.save()
+            i = i+1
         return forecast_temperatures
 
     def get_temperature_estimate(self, date):
