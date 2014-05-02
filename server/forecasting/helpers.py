@@ -51,6 +51,7 @@ class MeasurementStorage():
         if not self.demo and self.env.now % 3600 != 0:
             return
         sensor_values = []
+        timestamp = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=pytz.utc)
         for device in self.devices:
             for sensor in Sensor.objects.filter(device_id=device.id):
                 value = getattr(device, sensor.key, None)
@@ -60,8 +61,6 @@ class MeasurementStorage():
                         value = value()
 
                     if self.demo:
-                        timestamp = datetime.utcfromtimestamp(
-                            self.env.now).replace(tzinfo=pytz.utc)
                         sensor_values.append(
                             SensorValue(sensor=sensor, value=value, timestamp=timestamp))
                     else:

@@ -76,12 +76,14 @@ def get_operating_costs(system):
 
     total_gas_consumption = 0
     for value in SensorValue.objects.filter(sensor=sensor, timestamp__gte=last_month):
-        total_gas_consumption += max_gas_input_value * (value.value / 100.0)
+        total_gas_consumption += max_gas_input_value * \
+            (value.value / 100.0) * (120 / 3600.0)
 
     gas_costs = Configuration.objects.get(key='gas_costs')
     gas_costs_value = parse_value(gas_costs)
 
-    return ('device_%s' % system.id, total_gas_consumption * gas_costs_value)
+    return ('device_%s' % system.id, round(total_gas_consumption * gas_costs_value, 2))
+
 
 def get_consumption(system):
     last_month = get_last_month()
@@ -89,29 +91,30 @@ def get_consumption(system):
     if system.device_type == Device.TC:
         total_thermal_consumption = total_warmwater_consumption = 0
 
-        sensor1 = Sensor.objects.get(device=system, key='get_consumption_power')
+        sensor1 = Sensor.objects.get(
+            device=system, key='get_consumption_power')
         for value in SensorValue.objects.filter(sensor=sensor1, timestamp__gte=last_month):
-            total_thermal_consumption += value.value
+            total_thermal_consumption += value.value * (120 / 3600.0)
 
-        sensor2 = Sensor.objects.get(device=system, key='get_warmwater_consumption_power')
+        sensor2 = Sensor.objects.get(
+            device=system, key='get_warmwater_consumption_power')
         for value in SensorValue.objects.filter(sensor=sensor2, timestamp__gte=last_month):
-            total_warmwater_consumption += value.value
+            total_warmwater_consumption += value.value * (120 / 3600.0)
 
-        return ('device_%s' % system.id, total_thermal_consumption, total_warmwater_consumption)
+        return ('device_%s' % system.id, round(total_thermal_consumption, 2), round(total_warmwater_consumption, 2))
     elif system.device_type == Device.EC:
         sensor = Sensor.objects.get(device=system, key='get_consumption_power')
 
         total_electrical_consumption = 0
         for value in SensorValue.objects.filter(sensor=sensor, timestamp__gte=last_month):
-            total_electrical_consumption += value.value
+            total_electrical_consumption += value.value * (120 / 3600.0)
 
-        return ('device_%s' % system.id, total_electrical_consumption)
-        
+        return ('device_%s' % system.id, round(total_electrical_consumption, 2))
+
     return None
+
 
 def get_last_month():
     latest_value = SensorValue.objects.latest('timestamp')
     return latest_value.timestamp + \
         dateutil.relativedelta.relativedelta(months=-1)
-
-    
