@@ -109,12 +109,14 @@ def forecast(request):
 
 def get_statistics(request):
     start = functions.get_last_month()
-    output = functions.get_statistics_for_cogeneration_unit(start)
-    output = dict(output.items() + functions.get_statistics_for_peak_load_boiler(start).items())
-    output = dict(output.items() + functions.get_statistics_for_thermal_consumer(start).items())
-    output = dict(output.items() + functions.get_statistics_for_electrical_consumer(start).items())
-    output = dict(output.items() + functions.get_statistics_for_power_meter(start).items())
-    return create_json_response(request, output)
+    output = []
+    output.append(functions.get_statistics_for_cogeneration_unit(start))
+    output.append(functions.get_statistics_for_peak_load_boiler(start))
+    output.append(functions.get_statistics_for_thermal_consumer(start))
+    output.append(functions.get_statistics_for_electrical_consumer(start))
+    output.append(functions.get_statistics_for_power_meter(start))
+
+    return create_json_response(request, dict(output))
 
 def list_values(request, start):
     sensors = Sensor.objects.filter(in_diagram=True)
@@ -130,10 +132,14 @@ def list_values(request, start):
         for date in SensorValue.objects.filter(timestamp__gte=start_time).extra({'hour':"date_trunc('hour', timestamp)"}).values('hour').annotate(count=Count('id')):
             start_date = date['hour']
             end_date = start_date + timedelta(hours=1) - timedelta(seconds=1)
-            # print SensorValue.objects.filter(sensor=sensor, timestamp__gte=date['hour'], timestamp__lte=end_date).query
+            # print SensorValue.objects.filter(sensor=sensor,
+            # timestamp__gte=date['hour'], timestamp__lte=end_date).query
             cursor = connection.cursor()
-            cursor.execute('SELECT AVG(value) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\'  AND "server_sensorvalue"."timestamp" <= \'%s\' ) GROUP BY  "server_sensorvalue"."sensor_id"' % (sensor.id, start_date, end_date))
-            values.append([calendar.timegm(start_date.utctimetuple()) * 1000, float(cursor.fetchone()[0])])
+            cursor.execute(
+                'SELECT AVG(value) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\'  AND "server_sensorvalue"."timestamp" <= \'%s\' ) GROUP BY  "server_sensorvalue"."sensor_id"' %
+                           (sensor.id, start_date, end_date))
+            values.append(
+                [calendar.timegm(start_date.utctimetuple()) * 1000, float(cursor.fetchone()[0])])
 
         output.append({
             'id': sensor.id,
