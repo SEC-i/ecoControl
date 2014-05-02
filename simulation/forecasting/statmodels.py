@@ -15,7 +15,7 @@ from rpy2 import robjects
 from rpy2.robjects.packages import importr
 from rpy2.robjects.numpy2ri import numpy2ri
 robjects.conversion.py2ri = numpy2ri
-
+ 
 base = importr('base')
 forecast = importr('forecast')
 stats = importr('stats')
@@ -123,11 +123,12 @@ def plot_dataset(sensordata):
         
 
 #data =  np.array(make_two_year_data(weekly_electrical_demand_winter,weekly_electrical_demand_summer, 15, datetime(year=2012,month=4,day=24)))
-data = np.array(make_day_data(7, electrical_demand_wi_fr, electrical_demand_su_fr))
+input = make_day_data(4,  electrical_demand_wi_fr,electrical_demand_su_fr)
+data = np.array(input)
 
-#series = ts(data,start=2013, deltat=(1/(365* 12.0 * 24.0 * 60 )))
+#series = ts(data,start=2013, frequency=(1/))
 #
-series = data
+#series = data
  
 # horizon = 100
 # # res = do_forecast(series, horizon=horizon, exog=(exog_train, exog_test))
@@ -139,17 +140,34 @@ series = data
 #  
 #plot_dataset(values)
 
-r = robjects.r
-r.X11()
-
-fit = forecast.tbats(series, periods=24*4)
-forecast_result = forecast.forecast(fit)
-r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
-r.plot(forecast_result)
-#  
-values ={ 'forcasting':list(forecast_result.rx2("mean")), 'simulation':series}
+#season length
+m = 24*4
+#forecast length
+fc = int(len(input) * 2)
+alpha = 0.0000001
+beta = 0.0
+gamma = 1.0
+(forecast_values, alpha, beta, gamma, rmse) = multiplicative(input, m,fc, alpha, beta, gamma)
+if rmse > 0.5:
+    #find values automatically
+    (forecast_values, alpha, beta, gamma, rmse) = multiplicative(input, m,fc)
+print alpha, beta, gamma, rmse
+values ={ 'forcasting':forecast_values, 'simulation':input}
 
 plot_dataset(values)
-    
+
+# r = robjects.r
+# r.X11()
+  
+#fit = forecast.tbats(series, periods=24*4)
+#forecast_result = forecast.forecast(fit, horizon=400)
+# forecast_result = ets(series)
+# r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
+# r.plot(forecast_result)
+# #  
+# values ={ 'forcasting':list(forecast_result.rx2("mean")), 'simulation':series}
+#   
+# plot_dataset(values)
+#      
 
 #  

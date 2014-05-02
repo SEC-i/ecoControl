@@ -8,29 +8,20 @@ from helpers import make_two_year_data
 
 
 class Forecast:
-    """a Forecast with two seasons. The seasons will be extended (copied) into a 2 year array, then holtwinters will forecast from this timepoint on
-    @param: season1, season2 datasets, which contain weekly data"""
-    def __init__(self, env, week_season1, week_season2=None,  sample_type="daily", sampling_interval = 15, start=None, hw_parameters=(None,None,None)):
+    
+    def __init__(self, env, input_data, sampling_interval = 15, start=None, hw_parameters=(None,None,None)):
         self.hw_parameters = hw_parameters
+        data_length = timedelta(minutes=len(input_data) * sampling_interval)
         if start == None:
-            start = datetime.fromtimestamp(env.now) - timedelta(days = 2 * 365) #2years before now
+            start = datetime.fromtimestamp(env.now) - data_length
         
-        if sample_type == "daily":
-            map_week_to_index = lambda x : x
-        elif sample_type =="workday_weekend":
-            # map workdays to 0 and weekends to 1
-            map_week_to_index = lambda x: 0 if x < 5 else 1
-        else:
-            raise NotImplementedError
         
-        w2 = week_season2 if week_season2 != None else week_season1
-            
-        self.twoyear_demand = make_two_year_data(week_season1,w2,
-                                                             sampling_interval = sampling_interval,
-                                                             start = start,
-                                                             map_weekday=map_week_to_index)
         
-        self.forecasted_values = self.forecast_demand()
+        
+        #demands split into weekdays
+        self.demands = self.split_weekdata(input_data)
+        
+        self.forecasted_values = self.forecast_demands()
         #ending time of input data
         self.time_series_end = start + timedelta(days=365*2)
         self.sampling_interval = sampling_interval
@@ -39,38 +30,53 @@ class Forecast:
         self.env = env
         
         
-        self.hw_parameters = (0.7,1.0,0.0)
+        self.hw_parameters = (0.0000001,0.0,1.0)
         
         
-    def forecast_demand(self):
-        y = self.twoyear_demand
+    def forecast_demands(self):
         #alpha = 0.9  #forecastings are weighted more on new data
         #beta = 0 #no slope changes
         #gamma = 1 #estimation of seasonal component based on  recent changes
-       
-        #alpha, beta, gamma. if any is None, holt.winters determines them automatically
-        #cost-expensive, so only do this once..
-        (alpha,beta,gamma) = self.hw_parameters
-        m = int(len(y) * 0.5) #value sampling shift.. somehow
-        fc = len(y) * 2 # f
-        if None in self.hw_parameters:
-            print "finding right parameters for holt winters.." 
-        (forecast_values, alpha, beta, gamma, rmse) = multiplicative(y, m, fc,alpha,beta,gamma)
-        print "holt winters: alpha: ", alpha, "beta: ", beta, "gamma: ", gamma, "rmse: ", rmse
-        self.hw_parameters = (alpha,beta,gamma)
+        forecasted_demands  = []
         
-        return list(forecast_values)
+        for demand in self.demands:
+            
+            #alpha, beta, gamma. if any is None, holt.winters determines them automatically
+            #cost-expensive, so only do this once..
+            m = self.sampling_interval
+            fc = len(demand)
+            (alpha,beta,gamma) = self.hw_parameters
+            (forecast_values, alpha, beta, gamma, rmse) = multiplicative(demand, m,fc, alpha, beta, gamma)
+            if rmse > 0.5:
+                #find values automatically
+                (forecast_values, alpha, beta, gamma, rmse) = multiplicative(demand, m,fc)
+                self.hw_parameters = (alpha,beta,gamma)
+            print "holt winters: alpha: ", alpha, "beta: ", beta, "gamma: ", gamma, "rmse: ", rmse
+            forecasted_demands.append(list(forecast_values))
+        
+        return forecasted_demands
     
-    def append_values(self,data):
-        if type(data) == list:
-            self.twoyear_demand += data
-        else:
-            for val in data:
-                self.twoyear_demand.append(val)
-                
+    def split_weekdata(self, data):
+        weekday = 0
+        split_array = [[] for i in range(7)]
+        #samples per hour
+        samples_hour = int(round(60.0/self.sampling_interval))
+        for index, element in enumerate(data):
+            if index % (24  * samples_hour) == 0:
+                weekday = (weekday + 1) % 7
+            split_array[index].append(element)
+        return split_array
+            
+    
+    
+    def append_values(self,data): 
+        new_demands = self.split_weekdata(data)
+        for index, demand in enumerate(new_demands):
+            self.demands[index] += demand
+                   
         delta = (self.env.now - self.start_date).total_seconds()
         if delta > self.forecast_interval:
-            self.forecasted_values = self.forecast_demand()
+            self.forecasted_values = self.forecast_demands()
             self.time_series_end = self.env.now
 
 
