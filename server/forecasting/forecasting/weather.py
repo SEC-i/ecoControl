@@ -47,11 +47,10 @@ class WeatherForecast:
                     new_record = WeatherValue(temperature=temperature, 
                         timestamp=timestamp)
                     results.append(new_record)
-                except KeyError:
+                except KeyError as k:
                     # last value of data seams always to be gdps
                     if "gdps" not in data_set:
-                        print "error reading temperatures from: \n", json.dumps(data_set, sort_keys=True, indent=4, separators=(',', ': '))
-                
+                        raise k
             print "read ", len(forecast_temperatures), "temperatures", "hourly = ", hourly
 
         except urllib2.URLError, e:
