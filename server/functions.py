@@ -66,35 +66,16 @@ def perform_configuration(data):
     DeviceConfiguration.objects.bulk_create(device_configurations)
 
 
-def get_operating_costs(system):
-    last_month = get_last_month()
-
-    sensor = Sensor.objects.get(device=system, key='workload')
-    max_gas_input = DeviceConfiguration.objects.get(
-        device=system, key='max_gas_input')
-    max_gas_input_value = parse_value(max_gas_input)
-
-    total_gas_consumption = 0
-    for value in SensorValue.objects.filter(sensor=sensor, timestamp__gte=last_month):
-        total_gas_consumption += max_gas_input_value * \
-            (value.value / 100.0) * (120 / 3600.0)
-
-    gas_costs = Configuration.objects.get(key='gas_costs')
-    gas_costs_value = parse_value(gas_costs)
-
-    return ('device_%s' % system.id, round(total_gas_consumption * gas_costs_value, 2))
-
-
 def get_statistics_for_cogeneration_unit(start):
     output = []
     for system in Device.objects.filter(device_type=Device.CU):
-
-        output.append(('type', system.device_type))
+        system_output = []
+        system_output.append(('type', system.device_type))
 
         sensor = Sensor.objects.get(device=system, key='workload')
 
         hours_of_operation = SensorValue.objects.filter(sensor=sensor, timestamp__gte=start, value__gt=0).count() * (120 / 3600.0)
-        output.append(('hours_of_operation', hours_of_operation))
+        system_output.append(('hours_of_operation', hours_of_operation))
 
         thermal_efficiency = DeviceConfiguration.objects.get(
             device=system, key='thermal_efficiency')
@@ -113,7 +94,7 @@ def get_statistics_for_cogeneration_unit(start):
 
         values = list(SensorValue.objects.filter(
             sensor=sensor, timestamp__gte=start))
-        output.append(('values_count', len(values)))
+        system_output.append(('values_count', len(values)))
 
         last_time_on = None
         for value in values:
@@ -131,28 +112,30 @@ def get_statistics_for_cogeneration_unit(start):
                 power_ons += 1
                 last_time_on = not last_time_on
 
-        output.append(('total_thermal_production', total_thermal_production))
-        output.append(('total_electrical_production', total_electrical_production))
-        output.append(('total_gas_consumption', total_gas_consumption))
-        output.append(('power_ons', power_ons))
+        system_output.append(('total_thermal_production', total_thermal_production))
+        system_output.append(('total_electrical_production', total_electrical_production))
+        system_output.append(('total_gas_consumption', total_gas_consumption))
+        system_output.append(('power_ons', power_ons))
 
         gas_costs = Configuration.objects.get(key='gas_costs')
         gas_costs_value = parse_value(gas_costs)
         operating_costs = total_gas_consumption * gas_costs_value
-        output.append(('operating_costs', operating_costs))
+        system_output.append(('operating_costs', operating_costs))
 
-    return ('device_%s' % system.id, dict(output))
+        output.append(('device_%s' % system.id, dict(system_output)))
+
+    return output
 
 
 def get_statistics_for_peak_load_boiler(start):
     output = []
     for system in Device.objects.filter(device_type=Device.PLB):
-
-        output.append(('type', system.device_type))
+        system_output = []
+        system_output.append(('type', system.device_type))
 
         sensor = Sensor.objects.get(device=system, key='workload')
         hours_of_operation = SensorValue.objects.filter(sensor=sensor, timestamp__gte=start, value__gt=0).count() * (120 / 3600.0)
-        output.append(('hours_of_operation', hours_of_operation))
+        system_output.append(('hours_of_operation', hours_of_operation))
 
         thermal_efficiency = DeviceConfiguration.objects.get(
             device=system, key='thermal_efficiency')
@@ -167,7 +150,7 @@ def get_statistics_for_peak_load_boiler(start):
 
         values = list(SensorValue.objects.filter(
             sensor=sensor, timestamp__gte=start))
-        output.append(('values_count', len(values)))
+        system_output.append(('values_count', len(values)))
 
         last_time_on = None
         for value in values:
@@ -183,23 +166,25 @@ def get_statistics_for_peak_load_boiler(start):
                 power_ons += 1
                 last_time_on = not last_time_on
 
-        output.append(('total_thermal_production', total_thermal_production))
-        output.append(('total_gas_consumption', total_gas_consumption))
-        output.append(('power_ons', power_ons))
+        system_output.append(('total_thermal_production', total_thermal_production))
+        system_output.append(('total_gas_consumption', total_gas_consumption))
+        system_output.append(('power_ons', power_ons))
 
         gas_costs = Configuration.objects.get(key='gas_costs')
         gas_costs_value = parse_value(gas_costs)
         operating_costs = total_gas_consumption * gas_costs_value
-        output.append(('operating_costs', operating_costs))
+        system_output.append(('operating_costs', operating_costs))
 
-    return ('device_%s' % system.id, dict(output))
+        output.append(('device_%s' % system.id, dict(system_output)))
+
+    return output
 
 
 def get_statistics_for_thermal_consumer(start):
     output = []
     for system in Device.objects.filter(device_type=Device.TC):
-
-        output.append(('type', system.device_type))
+        system_output = []
+        system_output.append(('type', system.device_type))
 
         thermal_consumption = 0
         warmwater_consumption = 0
@@ -214,17 +199,19 @@ def get_statistics_for_thermal_consumer(start):
         for value in SensorValue.objects.filter(sensor=sensor2, timestamp__gte=start):
             warmwater_consumption += value.value * (120 / 3600.0)
 
-        output.append(('thermal_consumption', thermal_consumption))
-        output.append(('warmwater_consumption', warmwater_consumption))
+        system_output.append(('thermal_consumption', thermal_consumption))
+        system_output.append(('warmwater_consumption', warmwater_consumption))
 
-    return ('device_%s' % system.id, dict(output))
+        output.append(('device_%s' % system.id, dict(system_output)))
+
+    return output
 
 
 def get_statistics_for_electrical_consumer(start):
     output = []
     for system in Device.objects.filter(device_type=Device.EC):
-
-        output.append(('type', system.device_type))
+        system_output = []
+        system_output.append(('type', system.device_type))
 
         electrical_consumption = 0
 
@@ -233,16 +220,18 @@ def get_statistics_for_electrical_consumer(start):
         for value in SensorValue.objects.filter(sensor=sensor1, timestamp__gte=start):
             electrical_consumption += value.value * (120 / 3600.0)
 
-        output.append(('electrical_consumption', electrical_consumption))
+        system_output.append(('electrical_consumption', electrical_consumption))
 
-    return ('device_%s' % system.id, dict(output))
+        output.append(('device_%s' % system.id, dict(system_output)))
+
+    return output
 
 
 def get_statistics_for_power_meter(start):
     output = []
     for system in Device.objects.filter(device_type=Device.PM):
-
-        output.append(('type', system.device_type))
+        system_output = []
+        system_output.append(('type', system.device_type))
 
         total_purchased = 0
         total_fed_in_electricity = 0
@@ -257,10 +246,12 @@ def get_statistics_for_power_meter(start):
         for value in SensorValue.objects.filter(sensor=sensor2, timestamp__gte=start):
             total_fed_in_electricity += value.value
 
-        output.append(('total_purchased', total_purchased))
-        output.append(('total_fed_in_electricity', total_fed_in_electricity))
+        system_output.append(('total_purchased', total_purchased))
+        system_output.append(('total_fed_in_electricity', total_fed_in_electricity))
+        
+        output.append(('device_%s' % system.id, dict(system_output)))
 
-    return ('device_%s' % system.id, dict(output))
+    return output
 
 
 def get_last_month():

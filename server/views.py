@@ -110,11 +110,11 @@ def forecast(request):
 def get_statistics(request):
     start = functions.get_last_month()
     output = []
-    output.append(functions.get_statistics_for_cogeneration_unit(start))
-    output.append(functions.get_statistics_for_peak_load_boiler(start))
-    output.append(functions.get_statistics_for_thermal_consumer(start))
-    output.append(functions.get_statistics_for_electrical_consumer(start))
-    output.append(functions.get_statistics_for_power_meter(start))
+    output += functions.get_statistics_for_cogeneration_unit(start)
+    output += functions.get_statistics_for_peak_load_boiler(start)
+    output += functions.get_statistics_for_thermal_consumer(start)
+    output += functions.get_statistics_for_electrical_consumer(start)
+    output += functions.get_statistics_for_power_meter(start)
 
     return create_json_response(request, dict(output))
 
