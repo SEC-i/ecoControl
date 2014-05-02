@@ -12,6 +12,7 @@ from server.forecasting.forecasting.weather import WeatherForecast
 from server.models import Sensor, Device, SensorValue, WeatherSource, WeatherValue
 
 
+
 ''''class ForecastingTest(unittest.TestCase):
     def test_test(self):
         cast = WeatherForecast()
@@ -26,7 +27,7 @@ class ForecastingDBTest(TestCase):
         extern_information = resp  
         self.api_answer_mock = MagicMock(return_value = extern_information)
         WeatherValue.objects.all().delete()
-    
+            
     def test_if_weather_sources_in_db(self):
         '''In the database should at least exist one weather source.'''
         source = WeatherSource.objects.all()[0]
@@ -68,7 +69,6 @@ class ForecastingDBTest(TestCase):
                 self.forecast.get_weather_forecast() 
                 
         results = WeatherValue.objects.order_by('target_time')
-        # order by target time.
 
         i = 0
         for entry in results:
@@ -76,6 +76,7 @@ class ForecastingDBTest(TestCase):
             i = i+10800 # seconds of three hour 3*60*60
     
     def test_wrong_list(self):
+        ''' if a data set is not readable, save an invalid record an notify the system of the problem '''
         data = '{"list" : [{"main": {"temp": 30}}, {"broken": 0}]}'
         resp = urllib2.addinfourl(StringIO(data), 'fill', '')
         resp.code = 200
@@ -84,7 +85,9 @@ class ForecastingDBTest(TestCase):
         api_answer_mock = MagicMock(return_value = extern_information)
         
         with patch('urllib2.urlopen', api_answer_mock):
-            self.forecast.get_weather_forecast()                  
+            self.forecast.get_weather_forecast()
+        
+        results = WeatherValue.objects.filter(temperature = -274) # not valid, beneath the absolute zero point                
                 
 if __name__ == '__main__':
     unittest.main()
