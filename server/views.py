@@ -20,7 +20,7 @@ from forecasting import Simulation
 
 logger = logging.getLogger('django')
 
-DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 7  # one month
+DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 7
 
 
 def index(request):

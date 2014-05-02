@@ -4,6 +4,8 @@ from datetime import datetime
 import pytz
 import logging
 
+from django.db import connection
+
 from server.models import Sensor, SensorValue, DeviceConfiguration
 
 logger = logging.getLogger('simulation')
@@ -61,14 +63,14 @@ class MeasurementStorage():
                         value = value()
 
                     if self.demo:
-                        sensor_values.append(
-                            SensorValue(sensor=sensor, value=value, timestamp=timestamp))
+                        sensor_values.append((sensor.id, value, timestamp))
                     else:
                         self.data[sensor.id - 1].append(
                             [int(self.env.now * 1000), str(value)])
 
         if len(sensor_values) > 0:
-            SensorValue.objects.bulk_create(sensor_values)
+            cursor = connection.cursor()
+            cursor.executemany("""INSERT INTO "server_sensorvalue" ("sensor_id", "value", "timestamp") VALUES (%s, %s, %s)""", sensor_values)
 
     def get(self, start=None):
         if start is not None:
