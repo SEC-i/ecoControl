@@ -80,6 +80,8 @@ class PowerMeter(BaseSystem):
     def __init__(self, system_id, env, electrical_costs=0.283, feed_in_reward=0.0917):
         super(PowerMeter, self).__init__(system_id, env)
 
+        self.fed_in_electricity = 0.0  # kWh
+        self.purchased = 0  # kWh
         self.total_fed_in_electricity = 0.0  # kWh
         self.total_purchased = 0  # kWh
 
@@ -108,8 +110,10 @@ class PowerMeter(BaseSystem):
         balance = (self.energy_produced - self.energy_consumed)
         # purchase electrical energy if more energy needed than produced
         if balance < 0:
+            self.purchased = -balance
             self.total_purchased -= balance
         else:
+            self.fed_in_electricity = balance
             self.total_fed_in_electricity += balance
         self.energy_produced = 0
         self.energy_consumed = 0

@@ -21,24 +21,29 @@ def install_devices(**kwargs):
 
         sensors = []
         sensors.append(
-            Sensor(device=hs, name='Temperature', key='get_temperature', setter='set_temperature', unit='Celsius'))
+            Sensor(device=hs, name='Temperature', key='get_temperature', setter='set_temperature', unit='Celsius', in_diagram=True))
         sensors.append(
-            Sensor(device=cu, name='Workload', key='workload', setter='workload', unit='%'))
+            Sensor(device=pm, name='Purchased', key='purchased', unit='kWh'))
         sensors.append(
-            Sensor(device=plb, name='Workload', key='workload', setter='workload', unit='%'))
+            Sensor(device=pm, name='Fed in Electricity', key='fed_in_electricity', unit='kWh'))
+        sensors.append(
+            Sensor(device=cu, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True))
+        sensors.append(
+            Sensor(device=plb, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True))
         sensors.append(Sensor(device=tc, name='Thermal Consumption',
-                       key='get_consumption_power', unit='kWh'))
+                       key='get_consumption_power', unit='kWh', in_diagram=True))
         sensors.append(Sensor(device=tc, name='Warm Warter Consumption',
-                       key='get_warmwater_consumption_power', unit='kWh'))
+                       key='get_warmwater_consumption_power', unit='kWh', in_diagram=True))
         sensors.append(Sensor(device=tc, name='Outside Temperature',
-                       key='get_outside_temperature', unit='Celsius'))
+                       key='get_outside_temperature', unit='Celsius', in_diagram=True))
         sensors.append(Sensor(device=ec, name='Electrical Consumption',
-                       key='get_consumption_power', unit='kWh'))
+                       key='get_consumption_power', unit='kWh', in_diagram=True))
 
         Sensor.objects.bulk_create(sensors)
         print "Default power systems initialized"
 
-        system_status = Configuration(key='system_status', value='init', value_type=Configuration.STR)
+        system_status = Configuration(
+            key='system_status', value='init', value_type=Configuration.STR)
         system_status.save()
 
 post_syncdb.connect(install_devices)

@@ -12,7 +12,7 @@ from django.utils.timezone import utc
 from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
 
-from functions import perform_configuration, get_operating_costs, get_consumption
+import functions
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue
 from helpers import create_json_response, create_json_response_from_QuerySet
 from forecasting import Simulation
@@ -60,7 +60,7 @@ def status(request):
 
 @require_POST
 def configure(request):
-    perform_configuration(json.loads(request.body))
+    functions.perform_configuration(json.loads(request.body))
     system_status = Configuration.objects.get(key='system_status')
     system_status.value = 'running'
     system_status.save()
@@ -108,16 +108,16 @@ def forecast(request):
 
 
 def get_statistics(request):
-    output = {'operating_costs': [], 'consumptions': []}
-    for system in Device.objects.all():
-        if system.device_type == Device.CU or system.device_type == Device.PLB:
-            output['operating_costs'].append(get_operating_costs(system))
-        elif system.device_type == Device.TC or system.device_type == Device.EC:
-            output['consumptions'].append(get_consumption(system))
+    start = functions.get_last_month()
+    output = functions.get_statistics_for_cogeneration_unit(start)
+    output = dict(output.items() + functions.get_statistics_for_peak_load_boiler(start).items())
+    output = dict(output.items() + functions.get_statistics_for_thermal_consumer(start).items())
+    output = dict(output.items() + functions.get_statistics_for_electrical_consumer(start).items())
+    output = dict(output.items() + functions.get_statistics_for_power_meter(start).items())
     return create_json_response(request, output)
 
 def list_values(request, start):
-    sensors = Sensor.objects.all()
+    sensors = Sensor.objects.filter(in_diagram=True)
 
     start_time = end_time = 0
     if start:
@@ -148,6 +148,6 @@ def list_values(request, start):
 
 
 def list_sensors(request):
-    sensors = Sensor.objects.all()
+    sensors = Sensor.objects.filter(in_diagram=True)
 
     return create_json_response_from_QuerySet(request, sensors)
