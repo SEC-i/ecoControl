@@ -43,3 +43,7 @@
 .badge-danger {
     background-color: #d9534f;
 }
+
+.current_date{
+    color: #009900;
+}
