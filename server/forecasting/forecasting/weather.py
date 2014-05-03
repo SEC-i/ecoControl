@@ -12,20 +12,10 @@ from server.models import WeatherSource, WeatherValue
 class WeatherForecast:
 
     def __init__(self, env=None):
-        self.env = env
-
-        self.forecast_query_date = None
         self.forecast_temperatures_3hourly = []
         self.forecast_temperatures_daily = []
 
     def get_weather_forecast(self, hourly=True):
-        # only permit forecast queries every 30min, to save some api requests
-        if self.forecast_query_date is not None and self.forecast_query_date - self.get_date() < 60 * 30:
-            if hourly and self.forecast_temperatures_3hourly != []:
-                return self.forecast_temperatures_3hourly
-            elif not hourly and self.forecast_temperatures_daily != []:
-                return self.forecast_temperatures_daily
-
         if hourly:
             # 3-hourly forecast for 5 days for Berlin
             url = "http://openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5&mode=json"
@@ -116,10 +106,13 @@ class WeatherForecast:
         d0 = outside_temperatures_2013[day * 24 + hour]
         d1 = outside_temperatures_2012[day * 24 + hour]
         return (d0 + d1) / 2.0
-
+        
+    def test_update_weather_estimates(self):
+    # only permit forecast queries every 30min, to save some api requests
+        pass
+        
     def mix(self, a, b, x):
         return a * (1 - x) + b * x
 
     def get_date(self):
-        # return self.env.now
-        return time.time()  # for debugging, use self.env.now otherwise
+        return time.time()
