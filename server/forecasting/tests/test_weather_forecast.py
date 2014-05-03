@@ -45,13 +45,6 @@ class ForecastingDBTest(TestCase):
         results = WeatherValue.objects.filter(temperature=30, timestamp = expected_timestamp)
         
         self.assertTrue(results)
-        
-        # requests to the api shouldn't be done twice in a small time intervall
-        # But: we need to seperate saving asking anyway.       
-        # choose the right source for weather
-        #  and request time and other fields of Weather value
-        # there are more function hourly etc. use them
-        # add a get weather as much as possible funvction
     
     def test_time_of_forecast(self): 
         # consider requested time. a request is always made at the current date
@@ -87,7 +80,36 @@ class ForecastingDBTest(TestCase):
         with patch('urllib2.urlopen', api_answer_mock):
             self.forecast.get_weather_forecast()
         
-        results = WeatherValue.objects.filter(temperature = -274) # not valid, beneath the absolute zero point                
+        results = WeatherValue.objects.filter(temperature = -274) # not valid, beneath the absolute zero point  
+    
+    #def test_save_temperature_estimates(self):
+        '''Saves from the current date on as much as possible information'''
+        #pass
+
+    def test_update_weather_estimates(self):
+        '''the update function should save new forecasts 
+        if enough time passed since the last saving.
+        it should make the query for as much entries as possible. 
+        for open weather map that means 3-hourly and daily
+        '''
+        #last_timestamp = datetime.datetime.fromtimestamp(0).replace(tzinfo=timezone.utc)
+        # WeatherValue(timestamp = last_timestamp, temperature=20, target_time=)
+        #time_mock = MagicMock(return_value = last_timestamp+31 Minute) #
+        #with patch('time.time', time_mock):
+                #self.forecast.update_weather_estimate()
+        
+        #results = WeatherValue.objects.filter(timestamp.hours and minutes = aktuelle  hour und minutes)
+        #self.assertTrue(results)
+        pass
+    
+    def test_calculate_weather_diff(self):
+        '''calculate weather diff should return the difference between
+        the last two temperatures saved for a time. You have to check if
+        the temperatures are valid'''
+        pass
+
+        
+        
                 
 if __name__ == '__main__':
     unittest.main()
