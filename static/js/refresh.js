@@ -16,7 +16,6 @@ function refresh() {
             url += current_time + '/';
         }
         $.getJSON(url, function(data) {
-            update_setup(data);
             if (data[0]['data'].length > 0) {
                 current_time = data[0]['data'][data[0]['data'].length - 1][0];
             }

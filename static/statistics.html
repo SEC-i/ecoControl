@@ -7,7 +7,7 @@
     <meta name="description" content="">
     <meta name="author" content="BP2013H1">
 
-    <title>Live Setup - Energy Management System</title>
+    <title>Settings - Energy Management System</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="/static/libs/bootstrap/css/bootstrap.min.css">
@@ -44,8 +44,8 @@
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li><a href="index.html">Overview</a></li>
-            <li><a href="statistics.html">Statistics</a></li>
-            <li class="active"><a href="live_setup.html">Live Setup</a></li>
+            <li class="active"><a href="statistics.html">Statistics</a></li>
+            <li><a href="live_setup.html">Live Setup</a></li>
             <li><a href="settings.html">Settings</a></li>
           </ul>
         </div><!--/.nav-collapse -->
@@ -56,7 +56,18 @@
     <div class="container">
       <div class="row">
         <div class="col-sm-12">
-          <div id="schema_container"></div>
+          <div class="panel panel-default">
+            <div class="panel-heading">CU Workload and Power Ons</div>
+            <div class="panel-body">
+              <div id="cu_statistics"></div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading">PLB Workload and Power Ons</div>
+            <div class="panel-body">
+              <div id="plb_statistics"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div> <!-- /container -->
@@ -72,6 +83,10 @@
     <script src="/static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
     <script src="/static/libs/bootstrap/js/bootstrap.min.js"></script>
 
-    <script src="/static/js/live_setup.js"></script>
+    <script src="/static/libs/highcharts/highcharts.js"></script>
+    <script src="/static/libs/highcharts/modules/exporting.js"></script>
+
+    <script src="/static/js/statistics.js"></script>
+
   </body>
 </html>
