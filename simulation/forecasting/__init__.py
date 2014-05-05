@@ -1,9 +1,5 @@
-from simulation.systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_workday, warm_water_demand_weekend
 from datetime import date,datetime,timedelta
-#import matplotlib.pyplot as plt
-#import matplotlib.dates as md
 from holt_winters import multiplicative, additive
-from helpers import make_two_year_data
 
 
 
@@ -20,7 +16,7 @@ class Forecast:
         
         self.forecasted_values = self.forecast_demands()
         #ending time of input data
-        self.time_series_end = start + timedelta(days=365*2)
+        self.time_series_end = start + timedelta(days=365)
         self.sampling_interval = sampling_interval
         # wait at least one day before making a new forecast
         self.forecast_interval = 24 * 60 * 60
@@ -31,9 +27,6 @@ class Forecast:
         
         
     def forecast_demands(self):
-        #alpha = 0.9  #forecastings are weighted more on new data
-        #beta = 0 #no slope changes
-        #gamma = 1 #estimation of seasonal component based on  recent changes
         forecasted_demands  = []
         
         for demand in self.demands:
@@ -43,14 +36,21 @@ class Forecast:
             m = self.sampling_interval
             fc = len(demand)
             (alpha,beta,gamma) = self.hw_parameters
-            (forecast_values, alpha, beta, gamma, rmse) = multiplicative(demand, m,fc, alpha, beta, gamma)
-            if rmse > 0.5:
+            (forecast_values_manual, alpha, beta, gamma, rmse_manual) = multiplicative(demand, m,fc, alpha, beta, gamma)
+            if rmse_manual > 1.0:
                 #find values automatically
-                (forecast_values, alpha, beta, gamma, rmse) = multiplicative(demand, m,fc)
-                self.hw_parameters = (alpha,beta,gamma)
-            print "holt winters: alpha: ", alpha, "beta: ", beta, "gamma: ", gamma, "rmse: ", rmse
+                (forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(input, m,fc)
+                print "HW parameters - found automatically: alpha: ", alpha," beta: ", beta," gamma: ",  gamma," RMSE: ",  rmse_auto
+            
+            if rmse_manual > rmse_auto:
+                forecast_values = forecast_values_auto
+                print "use auto HW"
+            else:
+                forecast_values = forecast_values_manual 
+                print "use manual HW"
+            
             forecasted_demands.append(list(forecast_values))
-        
+            
         return forecasted_demands
     
     def split_weekdata(self, data):
@@ -63,6 +63,12 @@ class Forecast:
                 weekday = (weekday + 1) % 7
             split_array[index].append(element)
         return split_array
+    
+    @classmethod
+    def make_hourly(cls, data, samples_per_hour):
+        avg = lambda i: sum(data[i:i+samples_per_hour])/float(samples_per_hour)
+        hours = len(data) / samples_per_hour
+        return [avg(i) for i in range(hours)]
             
     
     
@@ -82,3 +88,4 @@ class Forecast:
         delta = (date - self.time_series_end).total_seconds() 
         arr_index = (delta / 60) / self.sampling_interval
         return self.forecasted_values[int(arr_index)]
+    

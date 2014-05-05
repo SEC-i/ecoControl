@@ -1,13 +1,13 @@
 import time
 from copy import deepcopy
 
-from core.environment import ForwardableRealtimeEnvironment
-from core.helpers import BulkProcessor, SimulationBackgroundRunner, MeasurementCache
+from simulation.core.environment import ForwardableRealtimeEnvironment
+from simulation.core.helpers import BulkProcessor, SimulationBackgroundRunner, MeasurementCache
 
-from systems.code import CodeExecuter
-from systems.producers import CogenerationUnit, PeakLoadBoiler
-from systems.storages import HeatStorage, PowerMeter
-from systems.consumers import ThermalConsumer, SimpleElectricalConsumer
+from simulation.systems.code import CodeExecuter
+from simulation.systems.producers import CogenerationUnit, PeakLoadBoiler
+from simulation.systems.storages import HeatStorage, PowerMeter
+from simulation.systems.consumers import ThermalConsumer, SimpleElectricalConsumer
 
 
 class Simulation(object):

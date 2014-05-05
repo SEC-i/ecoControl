@@ -2,7 +2,6 @@
 from sys import exit
 from math import sqrt
 from numpy import array
-from simulation.systems.data import weekly_electrical_demand_winter
 
 """Holt-Winters algorithms to forecasting
 Coded in Python 2 by: Andre Queiroz

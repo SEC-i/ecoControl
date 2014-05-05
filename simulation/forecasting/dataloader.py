@@ -31,7 +31,3 @@ class DataLoader(object):
                     cls.cached_csv[filepath] = columns
         
         return cls.cached_csv[filepath][column_name]
-
-#print len(DataLoader.load_from_file("../tools/result.csv", "Datum", "\t"))
-#print len(DataLoader.load_from_file("Strom_2013.csv", "Strom - Allgemeinstrom (Aktuell)", "\t"))
-                        

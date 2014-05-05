@@ -1,4 +1,4 @@
-from systems import BaseSystem
+from simulation.systems import BaseSystem
 
 
 class HeatStorage(BaseSystem):
