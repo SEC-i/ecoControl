@@ -5,7 +5,6 @@ var series_data = []
 // READY
 $(function() {
     initialize_editor();
-    initialize_svg();
     initialize_hourly_demands();
     $.getJSON("/api/status/", function(data) {
         if (data['system'] == 'init') {
@@ -41,13 +40,6 @@ function initialize_editor() {
             }
         });
     });
-}
-
-function initialize_svg() {
-    $.get("/static/img/simulation.svg", function(data) {
-        var svg_item = document.importNode(data.documentElement, true);
-        $("#simulation_setup").append(svg_item);
-    }, "xml");
 }
 
 function initialize_hourly_demands() {

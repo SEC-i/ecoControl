@@ -30,12 +30,6 @@ function refresh() {
     setTimeout(refresh, 2000);
 }
 
-function update_setup(data) {
-    // $.each(data, function(index, value) {
-    //     update_item(value.key, value[value.length - 1], '');
-    // });
-}
-
 function update_item(key, value, suffix) {
     var item = $('.' + key + suffix);
     if (item.length) { // check if item exists
