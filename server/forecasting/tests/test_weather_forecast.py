@@ -40,7 +40,7 @@ class ForecastingDBTest(TestCase):
         time_mock = MagicMock(return_value = 0)
         with patch('urllib2.urlopen', self.api_answer_mock):
             with patch('time.time', time_mock):
-                self.forecast.get_weather_forecast_three_hourly() 
+                self.forecast.save_weather_forecast_three_hourly() 
                 
         results = WeatherValue.objects.order_by('target_time')
 

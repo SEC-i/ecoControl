@@ -51,7 +51,7 @@ class WeatherForecast:
                     raise k 
         return results
     
-    def get_weather_forecast_three_hourly(self):
+    def save_weather_forecast_three_hourly(self):
         results = self.get_weather_forecast(self.three_hourly_url)
         i = 0
         for record in results:
@@ -117,7 +117,7 @@ class WeatherForecast:
             seconds_passed = (current_time - last_time).total_seconds()
             if seconds_passed < 1800: # 30 minutes 
                 return
-        self.get_weather_forecast_three_hourly()
+        self.save_weather_forecast_three_hourly()
         
     def get_latest_valid_time(self, values):
         for value in values:
