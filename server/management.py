@@ -1,6 +1,9 @@
+import logging
+
 from django.db.models.signals import post_syncdb
 from server.models import Device, Sensor, Configuration
 
+logger = logging.getLogger('django')
 
 def install_devices(**kwargs):
     if len(Device.objects.all()) == 0:
@@ -40,7 +43,7 @@ def install_devices(**kwargs):
                        key='get_consumption_power', unit='kWh', in_diagram=True))
 
         Sensor.objects.bulk_create(sensors)
-        print "Default power systems initialized"
+        logger.info("Default power systems initialized")
 
         system_status = Configuration(
             key='system_status', value='init', value_type=Configuration.STR)
