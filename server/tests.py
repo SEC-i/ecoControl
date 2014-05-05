@@ -53,8 +53,8 @@ class APITestCase(TestCase):
     def test_system_configurations(self):
         data = [
             {'device_id': '1', 'key': 'capacity',
-                'value': '2500', 'value_type': '1'},
-            {'device_id': '3', 'key': 'max_gas_input', 'value': '25', 'value_type': '2'}]
+                'value': '2500', 'type': '1', 'unit': 'l'},
+            {'device_id': '3', 'key': 'max_gas_input', 'value': '25', 'type': '2', 'unit': 'kWh'}]
         response = self.client.post(
             '/api/configure/', json.dumps(data), content_type='application/json')
 
