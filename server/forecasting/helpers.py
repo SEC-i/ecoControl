@@ -49,11 +49,13 @@ class MeasurementStorage():
         for i in self.sensors:
             self.data.append([])
 
+
     def take(self):
         if not self.demo and self.env.now % 3600 != 0:
             return
         sensor_values = []
         timestamp = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=pytz.utc)
+        i = 0
         for device in self.devices:
             for sensor in Sensor.objects.filter(device_id=device.id):
                 value = getattr(device, sensor.key, None)
@@ -65,8 +67,10 @@ class MeasurementStorage():
                     if self.demo:
                         sensor_values.append((sensor.id, value, timestamp))
                     else:
-                        self.data[sensor.id - 1].append(
-                            [int(self.env.now * 1000), str(value)])
+                        if sensor.in_diagram:
+                            self.data[i].append(
+                                [int(self.env.now * 1000), str(value)])
+                i += 1
 
         if len(sensor_values) > 0:
             cursor = connection.cursor()
@@ -85,6 +89,20 @@ class MeasurementStorage():
                     (sensor.id, list(itertools.islice(self.data[index], i, None))))
             else:
                 output.append((sensor.id, list(self.data[index])))
+        return output
+
+    def get_new(self):
+        output = []
+        for index, sensor in enumerate(self.sensors):
+            if sensor.in_diagram:
+                output.append({
+                    'id': sensor.id,
+                    'device_id': sensor.device_id,
+                    'name': sensor.name,
+                    'unit': sensor.unit,
+                    'key': sensor.key,
+                    'data': list(self.data[index])
+                })
         return output
 
     def get_last(self, value):
