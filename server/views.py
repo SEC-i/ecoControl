@@ -8,6 +8,7 @@ import calendar
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.http import require_POST
+from django.views.decorators.debug import sensitive_post_parameters
 from django.utils.timezone import utc
 from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
@@ -28,6 +29,7 @@ def index(request):
 
 
 @require_POST
+@sensitive_post_parameters('password')
 def login_user(request):
     if 'username' in request.POST and 'password' in request.POST:
         user = authenticate(username=request.POST[

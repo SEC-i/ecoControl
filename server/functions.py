@@ -81,7 +81,8 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
             if end is not None:
                 sensor_values = sensor_values.filter(timestamp__lte=end)
 
-            hours_of_operation = sensor_values.filter(value__gt=0).count() * (120 / 3600.0)
+            hours_of_operation = sensor_values.filter(
+                value__gt=0).count() * (120 / 3600.0)
             system_output.append(('hours_of_operation', hours_of_operation))
 
             thermal_efficiency = DeviceConfiguration.objects.get(
@@ -118,9 +119,12 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
                     power_ons += 1
                     last_time_on = not last_time_on
 
-            system_output.append(('total_thermal_production', total_thermal_production))
-            system_output.append(('total_electrical_production', total_electrical_production))
-            system_output.append(('total_gas_consumption', total_gas_consumption))
+            system_output.append(
+                ('total_thermal_production', total_thermal_production))
+            system_output.append(
+                ('total_electrical_production', total_electrical_production))
+            system_output.append(
+                ('total_gas_consumption', total_gas_consumption))
             system_output.append(('power_ons', power_ons))
 
             gas_costs = Configuration.objects.get(key='gas_costs')
@@ -130,8 +134,8 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
 
             output.append(('device_%s' % system.id, dict(system_output)))
 
-    except (Device.DoesNotExist, DeviceConfiguration.DoesNotExist, Configuration.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist):
-        pass
+    except (Device.DoesNotExist, DeviceConfiguration.DoesNotExist, Configuration.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist) as e:
+        logger.warning("DoesNotExist error: %s" % e)
 
     return output
 
@@ -151,7 +155,8 @@ def get_statistics_for_peak_load_boiler(start=None, end=None):
             if end is not None:
                 sensor_values = sensor_values.filter(timestamp__lte=end)
 
-            hours_of_operation = sensor_values.filter(value__gt=0).count() * (120 / 3600.0)
+            hours_of_operation = sensor_values.filter(
+                value__gt=0).count() * (120 / 3600.0)
             system_output.append(('hours_of_operation', hours_of_operation))
 
             thermal_efficiency = DeviceConfiguration.objects.get(
@@ -182,8 +187,10 @@ def get_statistics_for_peak_load_boiler(start=None, end=None):
                     power_ons += 1
                     last_time_on = not last_time_on
 
-            system_output.append(('total_thermal_production', total_thermal_production))
-            system_output.append(('total_gas_consumption', total_gas_consumption))
+            system_output.append(
+                ('total_thermal_production', total_thermal_production))
+            system_output.append(
+                ('total_gas_consumption', total_gas_consumption))
             system_output.append(('power_ons', power_ons))
 
             gas_costs = Configuration.objects.get(key='gas_costs')
@@ -192,9 +199,9 @@ def get_statistics_for_peak_load_boiler(start=None, end=None):
             system_output.append(('operating_costs', operating_costs))
 
             output.append(('device_%s' % system.id, dict(system_output)))
-            
-    except (Device.DoesNotExist, DeviceConfiguration.DoesNotExist, Configuration.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist):
-        pass
+
+    except (Device.DoesNotExist, DeviceConfiguration.DoesNotExist, Configuration.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist) as e:
+        logger.warning("DoesNotExist error: %s" % e)
 
     return output
 
@@ -227,12 +234,13 @@ def get_statistics_for_thermal_consumer(start=None, end=None):
                 warmwater_consumption += value.value * (120 / 3600.0)
 
             system_output.append(('thermal_consumption', thermal_consumption))
-            system_output.append(('warmwater_consumption', warmwater_consumption))
+            system_output.append(
+                ('warmwater_consumption', warmwater_consumption))
 
             output.append(('device_%s' % system.id, dict(system_output)))
-            
-    except (Device.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist):
-        pass
+
+    except (Device.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist) as e:
+        logger.warning("DoesNotExist error: %s" % e)
 
     return output
 
@@ -258,12 +266,13 @@ def get_statistics_for_electrical_consumer(start=None, end=None):
             for value in sensor_values.filter(sensor=sensor1):
                 electrical_consumption += value.value * (120 / 3600.0)
 
-            system_output.append(('electrical_consumption', electrical_consumption))
+            system_output.append(
+                ('electrical_consumption', electrical_consumption))
 
             output.append(('device_%s' % system.id, dict(system_output)))
-            
-    except (Device.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist):
-        pass
+
+    except (Device.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist) as e:
+        logger.warning("DoesNotExist error: %s" % e)
 
     return output
 
@@ -296,12 +305,13 @@ def get_statistics_for_power_meter(start=None, end=None):
                 total_fed_in_electricity += value.value
 
             system_output.append(('total_purchased', total_purchased))
-            system_output.append(('total_fed_in_electricity', total_fed_in_electricity))
-            
+            system_output.append(
+                ('total_fed_in_electricity', total_fed_in_electricity))
+
             output.append(('device_%s' % system.id, dict(system_output)))
-            
-    except (Device.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist):
-        pass
+
+    except (Device.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist) as e:
+        logger.warning("DoesNotExist error: %s" % e)
 
     return output
 
