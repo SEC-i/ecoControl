@@ -5,22 +5,23 @@
 
 import numpy as np
 from simulation.systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_weekend, warm_water_demand_workday, electrical_demand_su_fr, electrical_demand_wi_fr
+from dataloader import DataLoader
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
 from datetime import date, datetime, timedelta
 from holt_winters import additive, multiplicative
 
-print 'Start importing R.'
-from rpy2 import robjects 
-from rpy2.robjects.packages import importr
-from rpy2.robjects.numpy2ri import numpy2ri
-robjects.conversion.py2ri = numpy2ri
- 
-base = importr('base')
-forecast = importr('forecast')
-stats = importr('stats')
-ts = robjects.r['ts']
-print 'Finished importing R.'
+# print 'Start importing R.'
+# from rpy2 import robjects 
+# from rpy2.robjects.packages import importr
+# from rpy2.robjects.numpy2ri import numpy2ri
+# robjects.conversion.py2ri = numpy2ri
+#  
+# base = importr('base')
+# forecast = importr('forecast')
+# stats = importr('stats')
+# ts = robjects.r['ts']
+# print 'Finished importing R.'
 
 
 
@@ -77,7 +78,11 @@ def make_day_data(days, data0, data1):
             
         
     
-    
+
+def make_hourly(data,samples_per_hour):
+    avg = lambda i: sum(data[i:i+samples_per_hour])/float(samples_per_hour)
+    hours = len(data) / samples_per_hour
+    return [avg(i) for i in range(hours)]
     
 
 
@@ -123,8 +128,13 @@ def plot_dataset(sensordata):
         
 
 #data =  np.array(make_two_year_data(weekly_electrical_demand_winter,weekly_electrical_demand_summer, 15, datetime(year=2012,month=4,day=24)))
-input = make_day_data(4,  electrical_demand_wi_fr,electrical_demand_su_fr)
+#input = make_day_data(4,  electrical_demand_wi_fr,electrical_demand_su_fr)
+raw_data = DataLoader.load_from_file("../tools/Strom_2013.csv", "Strom - Verbrauchertotal (Aktuell)","\t")
+kW_data = [float(val) / 1000.0 for val in raw_data] #cast to float and convert to kW
+input = make_hourly(kW_data,6)
+
 data = np.array(input)
+print data, len(data)
 
 #series = ts(data,start=2013, frequency=(1/))
 #
@@ -141,17 +151,26 @@ data = np.array(input)
 #plot_dataset(values)
 
 #season length
-m = 24*4
+m = 24 * 7
 #forecast length
-fc = int(len(input) * 2)
+fc = int(len(data))
 alpha = 0.0000001
 beta = 0.0
 gamma = 1.0
-(forecast_values, alpha, beta, gamma, rmse) = multiplicative(input, m,fc, alpha, beta, gamma)
-if rmse > 0.5:
+(forecast_values_manual, alpha, beta, gamma, rmse_manual) = multiplicative(input, m,fc, alpha, beta, gamma)
+print rmse_manual
+if rmse_manual > 1.0:
     #find values automatically
-    (forecast_values, alpha, beta, gamma, rmse) = multiplicative(input, m,fc)
-print alpha, beta, gamma, rmse
+    (forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(input, m,fc)
+    print "HW parameters: found automatically: ", alpha, beta, gamma, rmse_auto
+
+if rmse_manual > rmse_auto:
+    forecast_values = forecast_values_auto
+    print "use auto HW"
+else:
+    forecast_values = forecast_values_manual 
+    print "use manual HW"
+
 values ={ 'forcasting':forecast_values, 'simulation':input}
 
 plot_dataset(values)

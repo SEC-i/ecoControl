@@ -162,7 +162,6 @@ def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None):
  
         if i == len(Y):
             Y.append((a[-1] + b[-1]) * s[-m])
- 
         a.append(alpha * (Y[i] / s[i]) + (1 - alpha) * (a[i] + b[i]))
         b.append(beta * (a[i + 1] - a[i]) + (1 - beta) * b[i])
         s.append(gamma * (Y[i] / (a[i] + b[i])) + (1 - gamma) * s[i])
