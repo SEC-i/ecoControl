@@ -57,7 +57,7 @@ class ThermalConsumer(BaseSystem):
         input_data = warm_water_demand_workday + warm_water_demand_weekend
         #only build once, to save lots of time
         if not copyconstructed:
-            self.warmwater_forecast = Forecast(self.env, input_data, sampling_interval=60)
+            self.warmwater_forecast = Forecast(self.env, input_data, sanples_per_hour=60)
             
 
         self.calculate()
@@ -219,7 +219,7 @@ class SimpleElectricalConsumer(BaseSystem):
                                         weekly_electrical_demand_winter,
                                         weekly_electrical_demand_summer,
                                         sample_type = "daily",
-                                        sampling_interval=15 )
+                                        sanples_per_hour=15 )
 
         # list of 24 values representing relative demand per hour
         self.demand_variation = [1 for i in range(24)]
