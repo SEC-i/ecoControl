@@ -40,7 +40,8 @@ class WeatherForecast:
         for data_set in data["list"]:
             try:
                 temperature = data_set["main"]["temp"]
-                timestamp = datetime.datetime.fromtimestamp(self.get_date()).replace(tzinfo=timezone.utc)
+                stamp_naive = datetime.datetime.fromtimestamp(self.get_date())
+                timestamp = stamp_naive.replace(tzinfo=timezone.utc)
                 new_record = WeatherValue(temperature=temperature, 
                     timestamp=timestamp)
                 results.append(new_record)
@@ -107,8 +108,22 @@ class WeatherForecast:
         
     def update_weather_estimates(self):
     # only permit forecast queries every 30min, to save some api requests
+        values = WeatherValue.objects.order_by('-timestamp')
+    
+        last_time = self.get_latest_valid_time(values)
+        if last_time:
+            time_naive = datetime.datetime.fromtimestamp(self.get_date())
+            current_time = time_naive.replace(tzinfo=timezone.utc)
+            seconds_passed = (current_time - last_time).total_seconds()
+            if seconds_passed < 1800: # 30 minutes 
+                return
         self.get_weather_forecast_three_hourly()
         
+    def get_latest_valid_time(self, values):
+        for value in values:
+            if float(value.temperature) > -273.15:
+                return value.timestamp
+            
     def mix(self, a, b, x):
         return a * (1 - x) + b * x
 
