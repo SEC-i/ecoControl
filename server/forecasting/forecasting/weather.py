@@ -28,14 +28,12 @@ class WeatherForecast:
             data = json.loads(jsondata)
             results = self.set_up_records_out_of_json(data)
         except urllib2.URLError, e:
-            print e
             logger.warning("{0}: Couln't reach {1}".format(e, url))
-            # Use history data
-            result = []
+            results = []
             for i in range(0, 40):
-                result.append(
+                results.append(
                     self.get_average_outside_temperature(self.get_date(), i))
-            return result
+            return results
         return results
         
     def set_up_records_out_of_json(self, data):
