@@ -83,10 +83,13 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
 
             hours_of_operation = sensor_values.filter(
                 value__gt=0).count() * (120 / 3600.0)
-            system_output.append(('hours_of_operation', round(hours_of_operation, 2)))
+            system_output.append(
+                ('hours_of_operation', round(hours_of_operation, 2)))
 
-            thermal_efficiency = get_device_configuration(system, 'thermal_efficiency')
-            electrical_efficiency = get_device_configuration(system, 'electrical_efficiency')
+            thermal_efficiency = get_device_configuration(
+                system, 'thermal_efficiency')
+            electrical_efficiency = get_device_configuration(
+                system, 'electrical_efficiency')
             max_gas_input = get_device_configuration(system, 'max_gas_input')
 
             total_thermal_production = 0
@@ -129,7 +132,8 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
 
             gas_costs = get_configuration('gas_costs')
             operating_costs = total_gas_consumption * gas_costs
-            system_output.append(('operating_costs', round(operating_costs, 2)))
+            system_output.append(
+                ('operating_costs', round(operating_costs, 2)))
 
             output.append(('device_%s' % system.id, dict(system_output)))
 
@@ -156,9 +160,11 @@ def get_statistics_for_peak_load_boiler(start=None, end=None):
 
             hours_of_operation = sensor_values.filter(
                 value__gt=0).count() * (120 / 3600.0)
-            system_output.append(('hours_of_operation', round(hours_of_operation, 2)))
+            system_output.append(
+                ('hours_of_operation', round(hours_of_operation, 2)))
 
-            thermal_efficiency = get_device_configuration(system, 'thermal_efficiency')
+            thermal_efficiency = get_device_configuration(
+                system, 'thermal_efficiency')
             max_gas_input = get_device_configuration(system, 'max_gas_input')
 
             total_thermal_production = 0
@@ -190,7 +196,8 @@ def get_statistics_for_peak_load_boiler(start=None, end=None):
 
             gas_costs = get_configuration('gas_costs')
             operating_costs = total_gas_consumption * gas_costs
-            system_output.append(('operating_costs', round(operating_costs, 2)))
+            system_output.append(
+                ('operating_costs', round(operating_costs, 2)))
 
             output.append(('device_%s' % system.id, dict(system_output)))
 
@@ -227,7 +234,8 @@ def get_statistics_for_thermal_consumer(start=None, end=None):
             for value in sensor_values.filter(sensor=sensor2):
                 warmwater_consumption += value.value * (120 / 3600.0)
 
-            system_output.append(('thermal_consumption', round(thermal_consumption, 2)))
+            system_output.append(
+                ('thermal_consumption', round(thermal_consumption, 2)))
             system_output.append(
                 ('warmwater_consumption', round(warmwater_consumption, 2)))
 
@@ -334,21 +342,28 @@ def get_live_data():
             output['hs_temperature'] = get_latest_value_with_unit(
                 system, 'get_temperature')
         elif system.device_type == Device.PM:
-            output['infeed_costs'] = get_latest_value_with_unit(system, 'purchased')
+            output['infeed_costs'] = get_latest_value_with_unit(
+                system, 'purchased')
             output['infeed_reward'] = get_latest_value_with_unit(
                 system, 'fed_in_electricity')
         elif system.device_type == Device.CU:
-            output['cu_workload'] = get_latest_value_with_unit(system, 'workload')
+            output['cu_workload'] = get_latest_value_with_unit(
+                system, 'workload')
             workload = get_latest_value(system, 'workload')
-            thermal_production = round(workload * get_device_configuration(system, 'thermal_efficiency') / 100.0, 2)
+            thermal_production = round(
+                workload * get_device_configuration(system, 'thermal_efficiency') / 100.0, 2)
             output['cu_thermal_production'] = '%s kWh' % thermal_production
-            electrical_efficiency = round(workload * get_device_configuration(system, 'electrical_efficiency') / 100.0, 2)
-            output['cu_electrical_production'] = '%s kWh' % electrical_efficiency
+            electrical_efficiency = round(
+                workload * get_device_configuration(system, 'electrical_efficiency') / 100.0, 2)
+            output[
+                'cu_electrical_production'] = '%s kWh' % electrical_efficiency
             output['cu_operating_costs'] = get_operating_costs(
                 system, last_month)
         elif system.device_type == Device.PLB:
-            output['plb_workload'] = get_latest_value_with_unit(system, 'workload')
-            thermal_production = round(get_latest_value(system, 'workload') * get_device_configuration(system, 'thermal_efficiency') / 100.0, 2)
+            output['plb_workload'] = get_latest_value_with_unit(
+                system, 'workload')
+            thermal_production = round(
+                get_latest_value(system, 'workload') * get_device_configuration(system, 'thermal_efficiency') / 100.0, 2)
             output['plb_thermal_production'] = '%s kWh' % thermal_production
             output['plb_operating_costs'] = get_operating_costs(
                 system, last_month)
@@ -366,13 +381,15 @@ def get_live_data():
 
 def get_latest_value(system, key):
     sensor = Sensor.objects.get(device=system, key=key)
-    sensor_value = SensorValue.objects.filter(sensor=sensor).latest('timestamp')
+    sensor_value = SensorValue.objects.filter(
+        sensor=sensor).latest('timestamp')
     return sensor_value.value
 
 
 def get_latest_value_with_unit(system, key):
     sensor = Sensor.objects.get(device=system, key=key)
-    sensor_value = SensorValue.objects.filter(sensor=sensor).latest('timestamp')
+    sensor_value = SensorValue.objects.filter(
+        sensor=sensor).latest('timestamp')
     return '%s %s' % (round(sensor_value.value, 2), sensor.unit)
 
 
@@ -380,8 +397,23 @@ def get_configuration(key):
     return parse_value(Configuration.objects.get(key=key))
 
 
+def get_configurations():
+    output = []
+    for config in Configuration.objects.all():
+        output.append([config.key, config.value, config.value_type, 0])
+    return output
+
+
 def get_device_configuration(system, key):
     return parse_value(DeviceConfiguration.objects.get(device=system, key=key))
+
+
+def get_device_configurations():
+    output = []
+    for config in DeviceConfiguration.objects.all():
+        output.append(
+            [config.key, config.value, config.value_type, config.device_id])
+    return output
 
 
 def get_operating_costs(system, start):

@@ -80,7 +80,10 @@ def configure(request):
 
 
 def settings(request):
-    return create_json_response(request, {"status": "success"})
+    output = []
+    output += functions.get_configurations()
+    output += functions.get_device_configurations()
+    return create_json_response(request, output)
 
 
 def forecast(request):
