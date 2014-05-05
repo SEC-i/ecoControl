@@ -127,8 +127,7 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
                 ('total_gas_consumption', total_gas_consumption))
             system_output.append(('power_ons', power_ons))
 
-            gas_costs = Configuration.objects.get(key='gas_costs')
-            gas_costs_value = parse_value(gas_costs)
+            gas_costs = get_configuration('gas_costs')
             operating_costs = total_gas_consumption * gas_costs_value
             system_output.append(('operating_costs', operating_costs))
 
@@ -314,6 +313,90 @@ def get_statistics_for_power_meter(start=None, end=None):
         logger.warning("DoesNotExist error: %s" % e)
 
     return output
+
+
+def get_live_data():
+    output = {
+        'electrical_consumption': '',
+        'cu_workload': '',
+        'cu_thermal_production': '',
+        'cu_electrical_production': '',
+        'cu_operating_costs': '',
+        'hs_temperature': '',
+        'infeed_costs': '',
+        'infeed_reward': '',
+        'plb_workload': '',
+        'plb_thermal_production': '',
+        'plb_operating_costs': '',
+        'thermal_consumption': '',
+        'warmwater_consumption': '',
+        'time': SensorValue.objects.all().latest('timestamp').timestamp
+    }
+    last_month = get_last_month()
+
+    for system in Device.objects.all():
+        if system.device_type == Device.HS:
+            output['hs_temperature'] = get_latest_value_with_unit(
+                system, 'get_temperature')
+        elif system.device_type == Device.PM:
+            output['infeed_costs'] = get_latest_value_with_unit(system, 'purchased')
+            output['infeed_reward'] = get_latest_value_with_unit(
+                system, 'fed_in_electricity')
+        elif system.device_type == Device.CU:
+            output['cu_workload'] = get_latest_value_with_unit(system, 'workload')
+            workload = get_latest_value(system, 'workload')
+            thermal_production = round(workload * get_device_configuration(system, 'thermal_efficiency') / 100.0, 2)
+            output['cu_thermal_production'] = '%s kWh' % thermal_production
+            electrical_efficiency = round(workload * get_device_configuration(system, 'electrical_efficiency') / 100.0, 2)
+            output['cu_electrical_production'] = '%s kWh' % electrical_efficiency
+            output['cu_operating_costs'] = get_operating_costs(
+                system, last_month)
+        elif system.device_type == Device.PLB:
+            output['plb_workload'] = get_latest_value_with_unit(system, 'workload')
+            thermal_production = round(get_latest_value(system, 'workload') * get_device_configuration(system, 'thermal_efficiency') / 100.0, 2)
+            output['plb_thermal_production'] = '%s kWh' % thermal_production
+            output['plb_operating_costs'] = get_operating_costs(
+                system, last_month)
+        elif system.device_type == Device.TC:
+            output['thermal_consumption'] = get_latest_value_with_unit(
+                system, 'get_consumption_power')
+            output['warmwater_consumption'] = get_latest_value_with_unit(
+                system, 'get_warmwater_consumption_power')
+        elif system.device_type == Device.EC:
+            output['electrical_consumption'] = get_latest_value_with_unit(
+                system, 'get_consumption_power')
+
+    return output
+
+
+def get_latest_value(system, key):
+    sensor = Sensor.objects.get(device=system, key=key)
+    sensor_value = SensorValue.objects.filter(sensor=sensor).latest('timestamp')
+    return sensor_value.value
+
+
+def get_latest_value_with_unit(system, key):
+    sensor = Sensor.objects.get(device=system, key=key)
+    sensor_value = SensorValue.objects.filter(sensor=sensor).latest('timestamp')
+    return '%s %s' % (round(sensor_value.value, 2), sensor.unit)
+
+
+def get_configuration(key):
+    return parse_value(Configuration.objects.get(key=key))
+
+
+def get_device_configuration(system, key):
+    return parse_value(DeviceConfiguration.objects.get(device=system, key=key))
+
+
+def get_operating_costs(system, start):
+    sensor = Sensor.objects.get(device=system, key='workload')
+    max_gas_input = get_device_configuration(system, 'max_gas_input')
+    total_gas_consumption = 0
+    for value in SensorValue.objects.filter(sensor=sensor, timestamp__gte=start):
+        step = (value.value / 100.0) * (120 / 3600.0)
+        total_gas_consumption += max_gas_input * step
+    return '%s Euro' % round(total_gas_consumption * get_configuration('gas_costs'), 2)
 
 
 def get_last_month():

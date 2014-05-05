@@ -109,14 +109,13 @@ def forecast(request):
     return create_json_response(request, output)
 
 
-def get_statistics(request):
-    start = functions.get_last_month()
+def get_statistics(request, start=functions.get_last_month(), end=None):
     output = []
-    output += functions.get_statistics_for_cogeneration_unit(start)
-    output += functions.get_statistics_for_peak_load_boiler(start)
-    output += functions.get_statistics_for_thermal_consumer(start)
-    output += functions.get_statistics_for_electrical_consumer(start)
-    output += functions.get_statistics_for_power_meter(start)
+    output += functions.get_statistics_for_cogeneration_unit(start, end)
+    output += functions.get_statistics_for_peak_load_boiler(start, end)
+    output += functions.get_statistics_for_thermal_consumer(start, end)
+    output += functions.get_statistics_for_electrical_consumer(start, end)
+    output += functions.get_statistics_for_power_meter(start, end)
 
     return create_json_response(request, dict(output))
 
@@ -159,3 +158,7 @@ def list_sensors(request):
     sensors = Sensor.objects.filter(in_diagram=True)
 
     return create_json_response_from_QuerySet(request, sensors)
+
+
+def live_data(request):
+    return create_json_response(request, functions.get_live_data())
