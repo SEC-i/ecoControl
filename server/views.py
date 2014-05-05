@@ -4,6 +4,7 @@ from time import time
 import json
 from datetime import datetime, timedelta
 import calendar
+import dateutil.relativedelta
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
@@ -95,18 +96,8 @@ def forecast(request):
         simulation = Simulation(initial_time=initial_time)
 
     simulation.forward(seconds=DEFAULT_FORECAST_INTERVAL, blocking=True)
-    output = []
-    for sensor in simulation.measurements.sensors:
-        output.append({
-            'id': sensor.id,
-            'device_id': sensor.device_id,
-            'name': sensor.name,
-            'unit': sensor.unit,
-            'key': sensor.key,
-            'data': list(simulation.measurements.data[sensor.id - 1])
-        })
 
-    return create_json_response(request, output)
+    return create_json_response(request, simulation.measurements.get_new())
 
 
 def get_statistics(request, start=functions.get_last_month(), end=None):
@@ -118,6 +109,30 @@ def get_statistics(request, start=functions.get_last_month(), end=None):
     output += functions.get_statistics_for_power_meter(start, end)
 
     return create_json_response(request, dict(output))
+
+
+def get_monthly_statistics(request, start=functions.get_last_year(), end=None):
+    sensor_values = SensorValue.objects.all()
+    if start is not None:
+        sensor_values = sensor_values.filter(timestamp__gte=start)
+    if end is not None:
+        sensor_values = sensor_values.filter(timestamp__lte=end)
+
+    months = sensor_values.extra({'month':"date_trunc('month', timestamp)"}).values('month').annotate(count=Count('id'))
+    output = {}
+    for month in months:
+        month_start = month['month']
+        month_end = month['month'] + dateutil.relativedelta.relativedelta(months=1) - timedelta(days=1)
+        month_data = []
+        month_data += functions.get_statistics_for_cogeneration_unit(month_start, month_end)
+        month_data += functions.get_statistics_for_peak_load_boiler(month_start, month_end)
+        month_data += functions.get_statistics_for_thermal_consumer(month_start, month_end)
+        month_data += functions.get_statistics_for_electrical_consumer(month_start, month_end)
+        month_data += functions.get_statistics_for_power_meter(month_start, month_end)
+        timestamp = calendar.timegm(month_start.utctimetuple())
+        output[timestamp] = dict(month_data)
+
+    return create_json_response(request, output)
 
 def list_values(request, start):
     sensors = Sensor.objects.filter(in_diagram=True)
@@ -133,8 +148,6 @@ def list_values(request, start):
         for date in SensorValue.objects.filter(timestamp__gte=start_time).extra({'hour':"date_trunc('hour', timestamp)"}).values('hour').annotate(count=Count('id')):
             start_date = date['hour']
             end_date = start_date + timedelta(hours=1) - timedelta(seconds=1)
-            # print SensorValue.objects.filter(sensor=sensor,
-            # timestamp__gte=date['hour'], timestamp__lte=end_date).query
             cursor = connection.cursor()
             cursor.execute(
                 'SELECT AVG(value) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\'  AND "server_sensorvalue"."timestamp" <= \'%s\' ) GROUP BY  "server_sensorvalue"."sensor_id"' %
