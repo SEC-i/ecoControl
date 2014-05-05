@@ -40,6 +40,7 @@ class Configuration(models.Model):
     value = models.CharField(max_length=255)
     value_type = models.PositiveSmallIntegerField(
         choices=TYPES, default=STR)
+    unit = models.CharField(max_length=50, default='')
 
 
 class DeviceConfiguration(models.Model):
@@ -61,6 +62,7 @@ class DeviceConfiguration(models.Model):
     value = models.CharField(max_length=255)
     value_type = models.PositiveSmallIntegerField(
         choices=TYPES, default=STR)
+    unit = models.CharField(max_length=50)
 
 
 class Sensor(models.Model):

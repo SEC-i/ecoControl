@@ -60,42 +60,42 @@
           <div class="form-group">
             <div class="col-sm-6">
               <label class="control-label" for="wizard_apartments">Number of Housing Apartments</label>
-              <input type="text" class="form-control input-sm" id="wizard_apartments" name="wizard_apartments" value="12" data-type="1" data-key="apartments" data-device="0">
+              <input type="text" class="form-control input-sm" id="wizard_apartments" name="wizard_apartments" value="12" data-type="1" data-unit="" data-key="apartments" data-device="0">
 
               <label class="control-label" for="wizard_avg_rooms_per_apartment">Average Rooms per Apartment</label>
-              <input type="text" class="form-control input-sm" id="wizard_avg_rooms_per_apartment" name="wizard_avg_rooms_per_apartment" value="4" data-type="1" data-key="avg_rooms_per_apartment" data-device="0">
+              <input type="text" class="form-control input-sm" id="wizard_avg_rooms_per_apartment" name="wizard_avg_rooms_per_apartment" value="4" data-type="1" data-unit="" data-key="avg_rooms_per_apartment" data-device="0">
 
               <label class="control-label" for="wizard_apartments">Number of Residents</label>
-              <input type="text" class="form-control input-sm" id="wizard_residents" name="wizard_residents" value="22" data-type="1" data-key="residents" data-device="0">
+              <input type="text" class="form-control input-sm" id="wizard_residents" name="wizard_residents" value="22" data-type="1" data-unit="" data-key="residents" data-device="0">
 
               <label class="control-label" for="wizard_apartments">Avg. Thermal Consumption per Year</label>
               <div class="input-group">
-                <input type="text" class="form-control input-sm" id="wizard_avg_thermal_consumption" name="wizard_avg_thermal_consumption" value="0" data-type="2" data-key="avg_thermal_consumption" data-device="0">
+                <input type="text" class="form-control input-sm" id="wizard_avg_thermal_consumption" name="wizard_avg_thermal_consumption" value="0" data-type="2" data-unit="kWh" data-key="avg_thermal_consumption" data-device="0">
                 <span class="input-group-addon">kWh</span>
               </div>          
 
               <label class="control-label" for="wizard_apartments">Type of Housing</label>
-              <select id="wizard_type_of_housing" name="wizard_type_of_housing" class="form-control input-sm" data-type="1" data-key="type_of_housing" data-device="0">
+              <select id="wizard_type_of_housing" name="wizard_type_of_housing" class="form-control input-sm" data-type="1" data-unit="" data-key="type_of_housing" data-device="0">
                 <option value="0">New Building</option>
                 <option value="1">Old Building</option>
               </select>
 
               <label class="control-label" for="wizard_location">Location</label>
-              <input type="text" class="form-control input-sm" id="wizard_location" name="wizard_location" value="Berlin" data-type="0" data-key="location" data-device="0">
+              <input type="text" class="form-control input-sm" id="wizard_location" name="wizard_location" value="Berlin" data-type="0" data-unit="" data-key="location" data-device="0">
 
             </div>
             <div class="col-sm-6">
               <label class="control-label" for="wizard_avg_windows_per_room">Avg. Windows per Room (2 m^2 per window)</label>
-              <input type="text" class="form-control input-sm" id="wizard_avg_windows_per_room"  name="wizard_avg_windows_per_room" value="3" data-type="1" data-key="avg_windows_per_room" data-device="0">
+              <input type="text" class="form-control input-sm" id="wizard_avg_windows_per_room"  name="wizard_avg_windows_per_room" value="3" data-type="1" data-unit="" data-key="avg_windows_per_room" data-device="0">
 
               <label class="control-label" for="wizard_total_heated_floor">Total Heated Living Area</label>
               <div class="input-group">
-                <input type="text" class="form-control input-sm" id="wizard_total_heated_floor" name="wizard_total_heated_floor" value="650" data-type="2" data-key="total_heated_floor" data-device="0">
+                <input type="text" class="form-control input-sm" id="wizard_total_heated_floor" name="wizard_total_heated_floor" value="650" data-type="2" data-unit="m^2" data-key="total_heated_floor" data-device="0">
                 <span class="input-group-addon">m²</span>
               </div>          
 
               <label class="control-label" for="wizard_type_of_residents">Type of Residents</label>
-              <select id="wizard_type_of_residents" name="wizard_type_of_residents" class="form-control input-sm" data-type="1" data-key="type_of_residents" data-device="0">
+              <select id="wizard_type_of_residents" name="wizard_type_of_residents" class="form-control input-sm" data-type="1" data-unit="" data-key="type_of_residents" data-device="0">
                 <option value="">Mixed</option>
                 <option value="">Young</option>
                 <option value="">Old</option>
@@ -103,12 +103,12 @@
 
               <label class="control-label" for="wizard_avg_electrical_consumption">Average Electrical Consumption per Year</label>
               <div class="input-group">
-                <input type="text" class="form-control input-sm" id="wizard_avg_electrical_consumption" name="wizard_avg_electrical_consumption" value="0" data-type="2" data-key="avg_electrical_consumption" data-device="0">
+                <input type="text" class="form-control input-sm" id="wizard_avg_electrical_consumption" name="wizard_avg_electrical_consumption" value="0" data-type="2" data-unit="kWh" data-key="avg_electrical_consumption" data-device="0">
                 <span class="input-group-addon">kWh</span>
               </div>
 
               <label class="control-label" for="wizard_type_of_windows">Type of Windows</label>
-              <select id="wizard_type_of_windows" name="wizard_type_of_windows" class="form-control input-sm" data-type="1" data-key="type_of_windows" data-device="0">
+              <select id="wizard_type_of_windows" name="wizard_type_of_windows" class="form-control input-sm" data-type="1" data-unit="" data-key="type_of_windows" data-device="0">
                 <option value="0">Single Glazing</option>
                 <option value="1">Double Glazing</option>
                 <option value="2">XP</option>
@@ -125,13 +125,13 @@
             <div class="col-sm-6">
               <label class="control-label" for="wizard_gas_costs">Gas Costs per kWh</label>
               <div class="input-group">
-                <input type="text" class="form-control" id="wizard_gas_costs" name="wizard_gas_costs" value="0.0655" data-type="2" data-key="gas_costs" data-device="0">
+                <input type="text" class="form-control" id="wizard_gas_costs" name="wizard_gas_costs" value="0.0655" data-type="2" data-unit="€" data-key="gas_costs" data-device="0">
                 <span class="input-group-addon">€</span>
               </div>
 
               <label class="control-label" for="wizard_feed_in_reward">Feed In Reward per kWh</label>
               <div class="input-group">
-                <input type="text" class="form-control" id="wizard_feed_in_reward" name="wizard_feed_in_reward" value="0.0917" data-type="2" data-key="feed_in_reward" data-device="0">
+                <input type="text" class="form-control" id="wizard_feed_in_reward" name="wizard_feed_in_reward" value="0.0917" data-type="2" data-unit="€" data-key="feed_in_reward" data-device="0">
                 <span class="input-group-addon">€</span>
               </div>
             </div>
@@ -139,7 +139,7 @@
             <div class="col-sm-6">
               <label class="control-label" for="wizard_electrical_costs">Electrical Costs per kWh</label>
               <div class="input-group">
-                <input type="text" class="form-control" id="wizard_electrical_costs" name="wizard_electrical_costs" value="0.283" data-type="2" data-key="electrical_costs" data-device="0">
+                <input type="text" class="form-control" id="wizard_electrical_costs" name="wizard_electrical_costs" value="0.283" data-type="2" data-unit="€" data-key="electrical_costs" data-device="0">
                 <span class="input-group-addon">€</span>
               </div>
             </div>
@@ -155,39 +155,45 @@
 
               <label class="control-label" for="wizard_cu_max_gas_input">Power</label>
               <div class="input-group">
-                <input type="text" class="form-control"id="wizard_cu_max_gas_input" name="wizard_cu_max_gas_input" value="19.0" data-type="2" data-key="max_gas_input" data-device="3">
+                <input type="text" class="form-control"id="wizard_cu_max_gas_input" name="wizard_cu_max_gas_input" value="19.0" data-type="2" data-unit="€" data-key="max_gas_input" data-device="3">
                 <span class="input-group-addon">€</span>
               </div>
 
               <label class="control-label" for="wizard_cu_thermal_efficiency">Thermal Efficiency</label>
-              <input type="text" class="form-control" id="wizard_cu_thermal_efficiency" name="wizard_cu_thermal_efficiency" value="65.0" data-type="2" data-key="thermal_efficiency" data-device="3">
+              <div class="input-group">
+                <input type="text" class="form-control" id="wizard_cu_thermal_efficiency" name="wizard_cu_thermal_efficiency" value="65.0" data-type="2" data-unit="%" data-key="thermal_efficiency" data-device="3">
+                <span class="input-group-addon">%</span>
+              </div>
 
               <label class="control-label" for="wizard_cu_maintenance_interval_hours">Maintenance Interval (Time)</label>
               <div class="input-group">
-                <input type="text" class="form-control" id="wizard_cu_maintenance_interval_hours" name="wizard_cu_maintenance_interval_hours" value="8000" data-type="2" data-key="maintenance_interval_hours" data-device="3">
+                <input type="text" class="form-control" id="wizard_cu_maintenance_interval_hours" name="wizard_cu_maintenance_interval_hours" value="8000" data-type="2" data-unit="h" data-key="maintenance_interval_hours" data-device="3">
                 <span class="input-group-addon">h</span>
               </div>
               
               <label class="control-label" for="wizard_cu_purchase_date">Date of Purchase</label>
-              <input type="text" class="form-control" id="wizard_cu_purchase_date" name="wizard_cu_purchase_date" value="01.01.2013" data-type="0" data-key="purchase_date" data-device="3">
+              <input type="text" class="form-control" id="wizard_cu_purchase_date" name="wizard_cu_purchase_date" value="01.01.2013" data-type="0" data-unit="" data-key="purchase_date" data-device="3">
             </div>
             <div class="col-sm-6">
               <label class="control-label" for="wizard_cu_minimal_workload">Minimal Workload</label>
               <div class="input-group">
-                <input type="text" class="form-control" id="wizard_cu_minimal_workload" name="wizard_cu_minimal_workload" value="40.0" data-type="2" data-key="minimal_workload" data-device="3">
+                <input type="text" class="form-control" id="wizard_cu_minimal_workload" name="wizard_cu_minimal_workload" value="40.0" data-type="2" data-unit="%" data-key="minimal_workload" data-device="3">
                 <span class="input-group-addon">%</span>
               </div>
 
               <label class="control-label" for="wizard_cu_electrical_efficiency">Electrical Efficiency</label>
-              <input type="text" class="form-control" id="wizard_cu_electrical_efficiency" name="wizard_cu_electrical_efficiency" value="24.7" data-type="2" data-key="electrical_efficiency" data-device="3">
+              <div class="input-group">
+                <input type="text" class="form-control" id="wizard_cu_electrical_efficiency" name="wizard_cu_electrical_efficiency" value="24.7" data-type="2" data-unit="%" data-key="electrical_efficiency" data-device="3">
+                <span class="input-group-addon">%</span>
+              </div>
 
 
               <label class="control-label" for="wizard_cu_maintenance_interval_powerons">Maintenance Interval (Power-Ons)</label>
-              <input type="text" class="form-control" id="wizard_cu_maintenance_interval_powerons" name="wizard_cu_maintenance_interval_powerons" value="2000" data-type="2" data-key="maintenance_interval_powerons" data-device="3">
+              <input type="text" class="form-control" id="wizard_cu_maintenance_interval_powerons" name="wizard_cu_maintenance_interval_powerons" value="2000" data-type="2" data-unit="" data-key="maintenance_interval_powerons" data-device="3">
 
               <label class="control-label" for="wizard_cu_purchase_price">Purchase Price</label>
               <div class="input-group">
-                <input type="text" class="form-control" id="wizard_cu_purchase_price" name="wizard_cu_purchase_price" value="15000" data-type="2" data-key="purchase_price" data-device="3">
+                <input type="text" class="form-control" id="wizard_cu_purchase_price" name="wizard_cu_purchase_price" value="15000" data-type="2" data-unit="€" data-key="purchase_price" data-device="3">
                 <span class="input-group-addon">€</span>
               </div>
             </div>
@@ -202,13 +208,16 @@
             <div class="col-sm-6">
               <label class="control-label" for="wizard_plb_max_gas_input">Power</label>
               <div class="input-group">
-                <input type="text" class="form-control" id="wizard_plb_max_gas_input" name="wizard_plb_max_gas_input" value="45.0" data-type="2" data-key="max_gas_input" data-device="4">
+                <input type="text" class="form-control" id="wizard_plb_max_gas_input" name="wizard_plb_max_gas_input" value="45.0" data-type="2" data-unit="kWh" data-key="max_gas_input" data-device="4">
                 <span class="input-group-addon">m³</span>
               </div>
             </div>
             <div class="col-sm-6">
               <label class="control-label" for="wizard_plb_thermal_efficiency">Thermal Efficiency</label>
-              <input type="text" class="form-control" id="wizard_plb_thermal_efficiency" name="wizard_plb_thermal_efficiency" value="80.0" data-type="2" data-key="thermal_efficiency" data-device="4">
+              <div class="input-group">
+                <input type="text" class="form-control" id="wizard_plb_thermal_efficiency" name="wizard_plb_thermal_efficiency" value="80.0" data-type="2" data-unit="%" data-key="thermal_efficiency" data-device="4">
+                <span class="input-group-addon">%</span>
+              </div>
             </div>
           </div>
         </div>
@@ -221,26 +230,26 @@
             <div class="col-sm-6">
               <label class="control-label" for="wizard_hs_capacity">Capacity</label>
               <div class="input-group">
-                <input type="text" class="form-control" id="wizard_hs_capacity" name="wizard_hs_capacity" value="2500" data-type="2" data-key="capacity" data-device="1">
+                <input type="text" class="form-control" id="wizard_hs_capacity" name="wizard_hs_capacity" value="2500" data-type="2" data-unit="m³" data-key="capacity" data-device="1">
                 <span class="input-group-addon">m³</span>
               </div>
               
               <label class="control-label" for="wizard_hs_min_temperature">Minimal Temperature</label>
               <div class="input-group">
-                <input type="text" class="form-control" id="wizard_hs_min_temperature" name="wizard_hs_min_temperature" value="55.0" data-type="2" data-key="min_temperature" data-device="1">
+                <input type="text" class="form-control" id="wizard_hs_min_temperature" name="wizard_hs_min_temperature" value="55.0" data-type="2" data-unit="°C" data-key="min_temperature" data-device="1">
                 <span class="input-group-addon">°C</span>
               </div>
             </div>
             <div class="col-sm-6">
               <label class="control-label" for="wizard_hs_target_temperature">Target Temperature</label>
               <div class="input-group">
-                <input type="text" class="form-control" id="wizard_hs_target_temperature" name="wizard_hs_target_temperature" value="70.0" data-type="2" data-key="target_temperature" data-device="1">
+                <input type="text" class="form-control" id="wizard_hs_target_temperature" name="wizard_hs_target_temperature" value="70.0" data-type="2" data-unit="°C" data-key="target_temperature" data-device="1">
                 <span class="input-group-addon">°C</span>
               </div>
 
               <label class="control-label" for="wizard_hs_critical_temperature">Critical Temperature</label>
               <div class="input-group">
-                <input type="text" class="form-control" id="wizard_hs_critical_temperature" name="wizard_hs_critical_temperature" value="90.0" data-type="2" data-key="hs_critical_temperature" data-device="1">
+                <input type="text" class="form-control" id="wizard_hs_critical_temperature" name="wizard_hs_critical_temperature" value="90.0" data-type="2" data-unit="°C" data-key="hs_critical_temperature" data-device="1">
                 <span class="input-group-addon">°C</span>
               </div>
             </div>

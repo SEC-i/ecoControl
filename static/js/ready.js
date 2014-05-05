@@ -350,7 +350,8 @@ function initialize_wizard(show) {
             var input = $('[name="' + post_data[i].name + '"]');
             post_data[i]['device_id'] = input.attr('data-device');
             post_data[i]['key'] = input.attr('data-key');
-            post_data[i]['value_type'] = input.attr('data-type');
+            post_data[i]['type'] = input.attr('data-type');
+            post_data[i]['unit'] = input.attr('data-unit');
         };
 
         $.ajax({

@@ -3,7 +3,7 @@ $(function() {
     $.getJSON('/api/settings/', function(data) {
         $.each(data, function(index, device_config) {
             var namespace = undefined;
-            switch(device_config[3]) {
+            switch(device_config[4]) {
                 case 0:
                     namespace = 'general';
                     break;
@@ -19,11 +19,22 @@ $(function() {
             }
             var item = $('#' + namespace + '_settings');
             if (item.length) {
-                item.append(
-                    '<div class="col-sm-6"><div class="form-group">' +
-                        '<label for="' + namespace + '_' + device_config[0] + '">' + device_config[0] + '</label>' +
-                        '<input type="text" class="form-control" id="' + namespace + '_' + device_config[0] + '" data-key="' + device_config[0] + '""  value="' + device_config[1] + '"" />' +
-                    '</div></div>');
+                var code =
+                        '<div class="col-sm-6"><div class="form-group">' +
+                            '<label for="' + namespace + '_' + device_config[0] + '">' + device_config[0] + '</label>';
+                if (device_config[3] == '') {
+                    code +=
+                            '<input type="text" class="form-control" id="' + namespace + '_' + device_config[0] + '" data-key="' + device_config[0] + '" data-unit="' + device_config[3] + '"  value="' + device_config[1] + '">';
+                } else {
+                    code +=
+                            '<div class="input-group">' +
+                                '<input type="text" class="form-control" id="' + namespace + '_' + device_config[0] + '" data-key="' + device_config[0] + '" data-unit="' + device_config[3] + '"  value="' + device_config[1] + '">' +
+                                '<span class="input-group-addon">' + device_config[3] + '</span>' +
+                            '</div>';
+                }
+                code += '</div></div>';
+
+                item.append(code);
             }
         });
     });

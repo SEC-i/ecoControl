@@ -21,18 +21,19 @@ def perform_configuration(data):
     configurations = []
     device_configurations = []
     for config in data:
-        if all(x in config for x in ['device_id', 'key', 'value', 'value_type']):
+        if all(x in config for x in ['device_id', 'key', 'value', 'type', 'unit']):
             if config['device_id'] == '0':
                 try:
                     existing_config = Configuration.objects.get(
                         key=config['key'])
                     existing_config.value = config['value']
-                    existing_config.value = value_type = int(
-                        config['value_type'])
+                    existing_config.value_type = int(
+                        config['type'])
+                    existing_config.unit = config['unit']
                     existing_config.save()
                 except Configuration.DoesNotExist:
                     configurations.append(
-                        Configuration(key=config['key'], value=config['value'], value_type=int(config['value_type'])))
+                        Configuration(key=config['key'], value=config['value'], value_type=int(config['type']), unit=config['unit']))
             else:
                 try:
                     device = Device.objects.get(id=config['device_id'])
@@ -48,17 +49,18 @@ def perform_configuration(data):
                                 key=config['key'])
                             existing_config.device = device
                             existing_config.value = config['value']
-                            existing_config.value = value_type = int(
-                                config['value_type'])
+                            existing_config.value_type = int(
+                                config['type'])
+                            existing_config.unit = config['unit']
                             existing_config.save()
                         except DeviceConfiguration.DoesNotExist:
                             device_configurations.append(
-                                DeviceConfiguration(device=device, key=config['key'], value=config['value'], value_type=int(config['value_type'])))
+                                DeviceConfiguration(device=device, key=config['key'], value=config['value'], value_type=int(config['type']), unit=config['unit']))
                 except ObjectDoesNotExist:
                     logger.error("Unknown device %s" % config['device_id'])
                 except ValueError:
                     logger.error(
-                        "ValueError value_type '%s' not an int" % config['value_type'])
+                        "ValueError value_type '%s' not an int" % config['type'])
         else:
             logger.error("Incomplete config data: %s" % config)
 
@@ -400,7 +402,7 @@ def get_configuration(key):
 def get_configurations():
     output = []
     for config in Configuration.objects.all():
-        output.append([config.key, config.value, config.value_type, 0])
+        output.append([config.key, config.value, config.value_type, config.unit, 0])
     return output
 
 
@@ -412,7 +414,7 @@ def get_device_configurations():
     output = []
     for config in DeviceConfiguration.objects.all():
         output.append(
-            [config.key, config.value, config.value_type, config.device_id])
+            [config.key, config.value, config.value_type, config.unit, config.device_id])
     return output
 
 
