@@ -4,10 +4,12 @@ import time
 from datetime import date
 import datetime
 from django.utils import timezone
+import logging
 
 from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
 from server.models import WeatherSource, WeatherValue
 
+logger = logging.getLogger('django')
 
 class WeatherForecast:
 
@@ -27,6 +29,7 @@ class WeatherForecast:
             results = self.set_up_records_out_of_json(data)
         except urllib2.URLError, e:
             print e
+            logger.warning("{0}: Couln't reach {1}".format(e, url))
             # Use history data
             result = []
             for i in range(0, 40):

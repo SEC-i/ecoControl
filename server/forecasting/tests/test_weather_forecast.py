@@ -7,8 +7,10 @@ from StringIO import StringIO
 import datetime
 import time
 from django.utils.timezone import utc
+from mock import Mock
 
 from server.forecasting.forecasting.weather import WeatherForecast
+import server.forecasting.forecasting.weather as weather
 from server.models import Sensor, Device, SensorValue, WeatherSource, WeatherValue
 
 class ForecastingDBTest(TestCase):
@@ -237,6 +239,23 @@ class UpdateWeatherEstimatesTest(TestCase):
         values = WeatherValue.objects.all()
         timestamp = self.forecast.get_latest_valid_time(values)
         self.assertFalse(timestamp)
+ 
+class GetWeatherForecastURLErrorTest(unittest.TestCase):
+    def test_urlError(self):
+        ''' if a data set is not readable, save an invalid record an notify the system of the problem '''
+        mock = MagicMock(side_effect=urllib2.URLError('No Response'))
+        logger = weather.logger
+        logger.warning = Mock()
+        with patch('urllib2.urlopen', mock):
+            try:
+                fcast = WeatherForecast()
+                fcast.get_weather_forecast("")
+            except urllib2.URLError:
+                self.fail("the weather forecast should know how to handle the unavailability of the weather api.")
+        #logger.warning.assert_called_with('Put')
+        argument = logger.warning.call_args[0][0]
+        self.assertIn("Couln't reach", argument)
+
         
 def aware_timestamp_from_seconds(seconds):
     naive = datetime.datetime.fromtimestamp(seconds)
