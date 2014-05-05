@@ -13,10 +13,12 @@ from server.forecasting.forecasting.weather import WeatherForecast
 import server.forecasting.forecasting.weather as weather
 from server.models import Sensor, Device, SensorValue, WeatherSource, WeatherValue
 
+absolute_zero_point = -273.15
+
 class ForecastingDBTest(TestCase):
     def setUp(self):
         self.forecast = WeatherForecast()
-        self.data = '{"list" : [{"main": {"temp": 30}}]}'
+        self.data = '{"list" : [{"main": {"temp": 30}}, {"main": {"temp": 30}}, {"main": {"temp": 30}}, {"main": {"temp": 30}}]}'
         resp = urllib2.addinfourl(StringIO(self.data), 'fill', '')
         resp.code = 200
         resp.msg = "Ok"
@@ -52,6 +54,35 @@ class ForecastingDBTest(TestCase):
                 datetime.datetime.fromtimestamp(0+i).replace(tzinfo=utc))
             i = i+10800 # seconds of three hour 3*60*60
     
+    def test_source_of_forecast_three_hourly(self):
+        with patch('urllib2.urlopen', self.api_answer_mock):
+            self.forecast.save_weather_forecast_three_hourly()
+        argument = self.api_answer_mock.call_args[0][0]
+        self.assertEqual(self.forecast.three_hourly_url, argument)
+    
+    def test_time_of_forecast_daily(self):
+        # a request is always made at the current date
+        # the function should return daily values
+        time_mock = MagicMock(return_value = 0)
+        with patch('urllib2.urlopen', self.api_answer_mock):
+            with patch('time.time', time_mock):
+                self.forecast.save_weather_forecast_daily() 
+                
+        results = WeatherValue.objects.order_by('target_time')
+        self.assertTrue(results)
+        '''
+        i = 0
+        for entry in results:
+            self.assertEqual(entry.target_time, 
+                datetime.datetime.fromtimestamp(0+i).replace(tzinfo=utc))
+            i = i+10800 # seconds of three hour 3*60*60
+        '''
+    def test_source_of_forecast_daily(self):
+        with patch('urllib2.urlopen', self.api_answer_mock):
+            self.forecast.save_weather_forecast_daily()
+        argument = self.api_answer_mock.call_args[0][0]
+        self.assertEqual(self.forecast.daily_url, argument)
+    
     def test_get_weather_forecast(self):
         '''the function returns the temperatures as a list of TemperatureValues.
         it opens the given url of openweather map ans extracts the data.'''
@@ -59,7 +90,6 @@ class ForecastingDBTest(TestCase):
             self.forecast.get_weather_forecast("test_url")
         self.api_answer_mock.assert_called_with("test_url")
     
-        # commented out because I rather see the error
     # def test_wrong_list(self):
         ''' if a data set is not readable, save an invalid record an notify the system of the problem '''
         # data = '{"list" : [{"main": {"temp": 30}}, {"broken": 0}]}'
@@ -70,16 +100,21 @@ class ForecastingDBTest(TestCase):
         # api_answer_mock = MagicMock(return_value = extern_information)
         
         # with patch('urllib2.urlopen', api_answer_mock):
-            # self.forecast.get_weather_forecast("some_url")
+            # self.forecast.set_up_records_out_of_json()
         
-        # results = WeatherValue.objects.filter(temperature = -274) # not valid, beneath the absolute zero point 
+        # results = WeatherValue.objects.filter(temperature < absolute_zero_point) # not valid, beneath the absolute zero point 
          
 
     def test_set_up_records_out_of_json(self):
         naive_timestamp = datetime.datetime.fromtimestamp(0)
         expected_timestamp = naive_timestamp.replace(tzinfo=utc)
-        expected_records = [WeatherValue(temperature = 30, 
-            timestamp=expected_timestamp)]   #'{"list" : [{"main": {"temp": 30}}]}'
+        expected_records = []
+        for i in range(4):
+            entry = WeatherValue(temperature = 30, 
+                                    timestamp=expected_timestamp)
+            expected_records.append(entry)
+        #{"list" : [{"main": {"temp": 30}}, {"main": {"temp": 30}}, {"main": {"temp": 30}}, {"main": {"temp": 30}}]}
+        
         time_mock = MagicMock(return_value = 0)
         with patch('urllib2.urlopen', self.api_answer_mock):
             with patch('time.time', time_mock):
@@ -260,6 +295,14 @@ class GetWeatherForecastURLErrorTest(unittest.TestCase):
             self.fcast.get_weather_forecast("")
         argument = logger.warning.call_args[0][0]
         self.assertIn("Couln't reach", argument)
+    
+    def test_return_value(self):
+        '''there should be invalid return values.'''
+        with patch('urllib2.urlopen', self.mock):
+            result = self.fcast.get_weather_forecast("")
+        self.assertTrue(result, "get_weather_forecast should return values.")
+        for entry in result:
+            self.assertLess(float(entry.temperature), absolute_zero_point)
         
 def aware_timestamp_from_seconds(seconds):
     naive = datetime.datetime.fromtimestamp(seconds)

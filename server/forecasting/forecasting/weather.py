@@ -17,11 +17,9 @@ class WeatherForecast:
         self.forecast_temperatures_3hourly = []
         self.forecast_temperatures_daily = []
         self.three_hourly_url = "http://openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5&mode=json"
+        self.daily_url = "http://openweathermap.org/data/2.3/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"
 
-
-    def get_weather_forecast(self, url, hourly=True):
-        if not hourly:
-            url = "http://openweathermap.org/data/2.3/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"       
+    def get_weather_forecast(self, url):       
         try:
             result = urllib2.urlopen(url)
             jsondata = result.read()
@@ -30,9 +28,11 @@ class WeatherForecast:
         except urllib2.URLError, e:
             logger.warning("{0}: Couln't reach {1}".format(e, url))
             results = []
+            stamp_naive = datetime.datetime.fromtimestamp(self.get_date())
+            timestamp = stamp_naive.replace(tzinfo=timezone.utc)
             for i in range(0, 40):
                 results.append(
-                    self.get_average_outside_temperature(self.get_date(), i))
+                    WeatherValue(temperature=-300, timestamp=timestamp))
             return results
         return results
         
@@ -60,7 +60,11 @@ class WeatherForecast:
                 self.get_date()+i*10800).replace(tzinfo=timezone.utc) # every 3-hours: 3*60*60 
             record.save()
             i = i+1
-
+            
+    def save_weather_forecast_daily(self):
+        results = self.get_weather_forecast(self.daily_url)
+        return results
+        
     def get_temperature_estimate(self, date):
         """get most accurate forecast for given date
         that can be derived from 5 days forecast, 14 days forecast or from history data"""
