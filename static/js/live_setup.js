@@ -1,12 +1,17 @@
 // READY
 $(function() {
-    $.get("/static/img/simulation.svg", function(data) {
-        var svg_item = document.importNode(data.documentElement, true);
-        $("#schema_container").append(svg_item);
-    }, "xml").done(function() {
-        refresh();
+    $.getJSON("/api/status/", function(data) {
+        if (data['system'] == 'init') {
+            redirect_to_settings();
+        }
+    }).done(function() {
+        $.get("/static/img/simulation.svg", function(data) {
+            var svg_item = document.importNode(data.documentElement, true);
+            $("#schema_container").append(svg_item);
+        }, "xml").done(function() {
+            refresh();
+        });
     });
-
 });
 
 function refresh() {
@@ -28,4 +33,8 @@ function update_schema(data) {
             }
         }
     });
+}
+
+function redirect_to_settings(show) {
+    window.location.href = 'settings.html';    
 }

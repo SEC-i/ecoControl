@@ -64,19 +64,28 @@ def status(request):
 @require_POST
 def configure(request):
     functions.perform_configuration(json.loads(request.body))
-    system_status = Configuration.objects.get(key='system_status')
-    system_status.value = 'running'
-    system_status.save()
-
-    simulation = Simulation(
-        demo=True, initial_time=time() - DEFAULT_FORECAST_INTERVAL)
-    if 'test' in sys.argv:
-        simulation.forward(60 * 60, blocking=False)
-    else:
-        simulation.forward(DEFAULT_FORECAST_INTERVAL, blocking=False)
-    simulation.start()
-
     return create_json_response(request, {"status": "success"})
+
+@require_POST
+def start_system(request):
+    system_status = Configuration.objects.get(key='system_status')
+    if system_status.value != 'running':
+        system_status.value = 'running'
+        system_status.save()
+
+        if 'demo' in request.POST and request.POST['demo'] == '1':
+            simulation = Simulation(
+                demo=True, initial_time=time() - DEFAULT_FORECAST_INTERVAL)
+            if 'test' in sys.argv:
+                simulation.forward(60 * 60, blocking=False)
+            else:
+                simulation.forward(DEFAULT_FORECAST_INTERVAL, blocking=False)
+            simulation.start()
+            return create_json_response(request, {"status": "demo started"})
+
+        return create_json_response(request, {"status": "system started without demo"})
+
+    return create_json_response(request, {"status": "system already running"})
 
 
 def settings(request):

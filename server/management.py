@@ -1,9 +1,8 @@
+# -*- coding: utf-8 -*-
 import logging
 
 from django.db.models.signals import post_syncdb
-from server.models import Device, Sensor, Configuration
-
-logger = logging.getLogger('django')
+from server.models import Device, Sensor, Configuration, DeviceConfiguration
 
 def install_devices(**kwargs):
     if len(Device.objects.all()) == 0:
@@ -21,10 +20,11 @@ def install_devices(**kwargs):
         ec.save()
         ce = Device(name='Code Executer', device_type=Device.CE)
         ce.save()
+        print "Default power systems initialized"
 
         sensors = []
         sensors.append(
-            Sensor(device=hs, name='Temperature', key='get_temperature', setter='set_temperature', unit='Celsius', in_diagram=True))
+            Sensor(device=hs, name='Temperature', key='get_temperature', setter='set_temperature', unit='°C', in_diagram=True))
         sensors.append(
             Sensor(device=pm, name='Purchased', key='purchased', unit='kWh'))
         sensors.append(
@@ -38,15 +38,81 @@ def install_devices(**kwargs):
         sensors.append(Sensor(device=tc, name='Warm Warter Consumption',
                        key='get_warmwater_consumption_power', unit='kWh', in_diagram=True))
         sensors.append(Sensor(device=tc, name='Outside Temperature',
-                       key='get_outside_temperature', unit='Celsius', in_diagram=True))
+                       key='get_outside_temperature', unit='°C', in_diagram=True))
         sensors.append(Sensor(device=ec, name='Electrical Consumption',
                        key='get_consumption_power', unit='kWh', in_diagram=True))
 
         Sensor.objects.bulk_create(sensors)
-        logger.info("Default power systems initialized")
+        print "Default sensors initialized"
 
-        system_status = Configuration(
-            key='system_status', value='init', value_type=Configuration.STR)
-        system_status.save()
+        configurations = []
+        configurations.append(Configuration(
+            key='system_status', value='init', value_type=Configuration.STR, unit=''))
+        configurations.append(Configuration(
+            key='apartments', value='12', value_type=Configuration.INT))
+        configurations.append(Configuration(
+            key='avg_rooms_per_apartment', value='4', value_type=Configuration.INT, unit=''))
+        configurations.append(Configuration(
+            key='residents', value='22', value_type=Configuration.INT, unit=''))
+        configurations.append(Configuration(
+            key='avg_thermal_consumption', value='0', value_type=Configuration.FLOAT, unit='kWh'))
+        configurations.append(Configuration(
+            key='type_of_housing', value='0', value_type=Configuration.INT, unit=''))
+        configurations.append(Configuration(
+            key='location', value='Berlin', value_type=Configuration.STR, unit=''))
+        configurations.append(Configuration(
+            key='avg_windows_per_room', value='3', value_type=Configuration.INT, unit=''))
+        configurations.append(Configuration(
+            key='total_heated_floor', value='650', value_type=Configuration.FLOAT, unit='m²'))
+        configurations.append(Configuration(
+            key='type_of_residents', value='0', value_type=Configuration.INT, unit=''))
+        configurations.append(Configuration(
+            key='avg_electrical_consumption', value='0', value_type=Configuration.FLOAT, unit='kWh'))
+        configurations.append(Configuration(
+            key='type_of_windows', value='0', value_type=Configuration.INT, unit=''))
+        configurations.append(Configuration(
+            key='gas_costs', value='0.0655', value_type=Configuration.FLOAT, unit='€'))
+        configurations.append(Configuration(
+            key='feed_in_reward', value='0.0917', value_type=Configuration.FLOAT, unit='€'))
+        configurations.append(Configuration(
+            key='electrical_costs', value='0.283', value_type=Configuration.FLOAT, unit='€'))
+
+        Configuration.objects.bulk_create(configurations)
+        print "Default configurations initialized"
+
+        device_configurations = []
+        device_configurations.append(
+            DeviceConfiguration(device=cu, key='max_gas_input', value='19.0', value_type=DeviceConfiguration.FLOAT, unit='kWh'))
+        device_configurations.append(
+            DeviceConfiguration(device=cu, key='thermal_efficiency', value='65.0', value_type=DeviceConfiguration.FLOAT, unit='%'))
+        device_configurations.append(
+            DeviceConfiguration(device=cu, key='electrical_efficiency', value='24.7', value_type=DeviceConfiguration.FLOAT, unit='%'))
+        device_configurations.append(
+            DeviceConfiguration(device=cu, key='minimal_workload', value='40.0', value_type=DeviceConfiguration.FLOAT, unit='%'))
+        device_configurations.append(
+            DeviceConfiguration(device=cu, key='purchase_price', value='15000', value_type=DeviceConfiguration.FLOAT, unit='€'))
+        device_configurations.append(
+            DeviceConfiguration(device=cu, key='purchase_date', value='01.01.2013', value_type=DeviceConfiguration.STR, unit=''))
+        device_configurations.append(
+            DeviceConfiguration(device=cu, key='maintenance_interval_hours', value='8000', value_type=DeviceConfiguration.INT, unit='h'))
+        device_configurations.append(
+            DeviceConfiguration(device=cu, key='maintenance_interval_powerons', value='2000', value_type=DeviceConfiguration.INT, unit=''))
+
+        device_configurations.append(
+            DeviceConfiguration(device=plb, key='max_gas_input', value='45.0', value_type=DeviceConfiguration.FLOAT, unit='kWh'))
+        device_configurations.append(
+            DeviceConfiguration(device=plb, key='thermal_efficiency', value='91.0', value_type=DeviceConfiguration.FLOAT, unit='%'))
+
+        device_configurations.append(
+            DeviceConfiguration(device=hs, key='capacity', value='2500.0', value_type=DeviceConfiguration.FLOAT, unit='%'))
+        device_configurations.append(
+            DeviceConfiguration(device=hs, key='min_temperature', value='55.0', value_type=DeviceConfiguration.FLOAT, unit='°C'))
+        device_configurations.append(
+            DeviceConfiguration(device=hs, key='target_temperature', value='70.0', value_type=DeviceConfiguration.FLOAT, unit='°C'))
+        device_configurations.append(
+            DeviceConfiguration(device=hs, key='critical_temperature', value='90.0', value_type=DeviceConfiguration.FLOAT, unit='°C'))
+
+        DeviceConfiguration.objects.bulk_create(device_configurations)
+        print "Default device configurations initialized"
 
 post_syncdb.connect(install_devices)

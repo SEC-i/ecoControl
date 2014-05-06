@@ -46,7 +46,7 @@ def perform_configuration(data):
                     if getattr(system_class(0, ForwardableRealtimeEnvironment()), config['key'], None) is not None:
                         try:
                             existing_config = DeviceConfiguration.objects.get(
-                                key=config['key'])
+                                device=device, key=config['key'])
                             existing_config.device = device
                             existing_config.value = config['value']
                             existing_config.value_type = int(

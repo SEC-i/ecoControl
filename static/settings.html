@@ -53,17 +53,80 @@
     </div>
 
     <!-- Settings page -->
-    <div class="container">
+    <div class="container" id="container">
       <form role="form">
-        <h3>General</h3>
-        <div class="row" id="general_settings"></div>
-        <h3>Heat Storage</h3>
-        <div class="row" id="hs_settings"></div>
-        <h3>Cogeneration Unit</h3>
-        <div class="row" id="cu_settings"></div>
-        <h3>PLB</h3>
-        <div class="row" id="plb_settings"></div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="panel-group" id="accordion">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#general_panel">
+                      General
+                    </a>
+                  </h4>
+                </div>
+                <div id="general_panel" class="panel-collapse collapse in">
+                  <div class="panel-body">
+                    <div class="row" id="general_settings"></div>
+                    <button type="button" class="btn btn-primary" class="configure_button">Apply</button>
+                  </div>
+                </div>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#hs_panel">
+                      Heat Storage
+                    </a>
+                  </h4>
+                </div>
+                <div id="hs_panel" class="panel-collapse collapse">
+                  <div class="panel-body">
+                    <div class="row" id="hs_settings"></div>
+                    <button type="button" class="btn btn-primary" class="configure_button">Apply</button>
+                  </div>
+                </div>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#cu_panel">
+                      Cogeneration Unit
+                    </a>
+                  </h4>
+                </div>
+                <div id="cu_panel" class="panel-collapse collapse">
+                  <div class="panel-body">
+                    <div class="row" id="cu_settings"></div>
+                    <button type="button" class="btn btn-primary" class="configure_button">Apply</button>
+                  </div>
+                </div>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#plb_panel">
+                      Peak Load Boiler
+                    </a>
+                  </h4>
+                </div>
+                <div id="plb_panel" class="panel-collapse collapse">
+                  <div class="panel-body">
+                    <div class="row" id="plb_settings"></div>
+                    <button type="button" class="btn btn-primary" class="configure_button">Apply</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </form>
+
+      <hr>
+      <footer>
+        <p>&copy; BP2013H1 2013-present</p>
+      </footer>
     </div> <!-- /container -->
 
     <!-- Bootstrap core JavaScript

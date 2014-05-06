@@ -8,7 +8,7 @@ $(function() {
     initialize_hourly_demands();
     $.getJSON("/api/status/", function(data) {
         if (data['system'] == 'init') {
-            initialize_wizard();
+            redirect_to_settings();
         } else {
             initialize_diagram();
         }
@@ -328,48 +328,6 @@ function initialize_diagram_filters() {
 
 }
 
-function initialize_wizard(show) {
-    // $.fn.wizard.logging = true;
-    var options = {
-        submitUrl: '/api/configure/',
-        contentWidth: 1000,
-        contentHeight: 500,
-        showCancel: false,
-        showClose: false,
-        buttons: {
-            submitText: 'Configure',
-            submittingText: "Configuring..."
-        }
-    };
-    var wizard = $("#startup").wizard(options);
-    wizard.show();
-
-    wizard.on('submit', function(wizard) {
-        var post_data = wizard.serializeArray();
-        for (var i = 0; i < post_data.length; i++) {
-            var input = $('[name="' + post_data[i].name + '"]');
-            post_data[i]['device_id'] = input.attr('data-device');
-            post_data[i]['key'] = input.attr('data-key');
-            post_data[i]['type'] = input.attr('data-type');
-            post_data[i]['unit'] = input.attr('data-unit');
-        };
-
-        $.ajax({
-            type: "POST",
-            contentType: 'application/json',
-            url: wizard.args.submitUrl,
-            data: JSON.stringify(post_data),
-            dataType: "json"
-        }).done(function(response) {
-            initialize_diagram();
-            wizard.submitSuccess();
-            wizard.close();
-        }).fail(function() {
-            wizard.submitFailure();
-            wizard.hideButtons();
-        });
-        $.getJSON("/api/settings/", function(data) {
-            update_setting(data);
-        });
-    });
+function redirect_to_settings(show) {
+    window.location.href = 'settings.html';    
 }
