@@ -5,19 +5,14 @@ $(function() {
             if (device_config[0] == 'system_status') {
                 if (device_config[1] == 'init') {
                     $('#container').prepend(
-                      '<div class="row">\
-                        <div class="col-sm-12">\
-                          <div class="panel panel-warning">\
-                            <div class="panel-heading"><b>Please Configure The System</b></div>\
-                            <div class="panel-body">\
-                              <div class="row">\
-                                <div class="col-sm-3 col-sm-offset-3"><button type="button" class="btn btn-success btn-block" id="configure_demo_button">Start Demo</button></div>\
-                                <div class="col-sm-3"><button type="button" class="btn btn-success btn-block" id="configure_normal_button">Start Normal</button></div>\
-                              </div>\
-                            </div>\
-                          </div>\
-                        </div>\
-                      </div>'
+                        '<div class="alert alert-warning fade in">\
+                          <h4>Please Configure The System</h4>\
+                          <p>Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Cras mattis consectetur purus sit amet fermentum.</p>\
+                          <p>\
+                            <button type="button" class="btn btn-success" id="configure_demo_button">Start Demo</button>\
+                            <button type="button" class="btn btn-success" id="configure_normal_button">Start Normal</button>\
+                          </p>\
+                        </div>'
                     );
                     $("#configure_demo_button").click(function(event) {
                         $.post("/api/start/", {
@@ -79,9 +74,6 @@ $(function() {
                     unit: $(this).attr('data-unit')
                 })
             });
-
-            console.log(post_data);
-
 
             $.ajax({
                 type: 'POST',
