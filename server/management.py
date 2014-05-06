@@ -35,7 +35,7 @@ def install_devices(**kwargs):
             Sensor(device=plb, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True))
         sensors.append(Sensor(device=tc, name='Thermal Consumption',
                        key='get_consumption_power', unit='kWh', in_diagram=True))
-        sensors.append(Sensor(device=tc, name='Warm Warter Consumption',
+        sensors.append(Sensor(device=tc, name='Warm Water Consumption',
                        key='get_warmwater_consumption_power', unit='kWh', in_diagram=True))
         sensors.append(Sensor(device=tc, name='Outside Temperature',
                        key='get_outside_temperature', unit='°C', in_diagram=True))
