@@ -21,8 +21,8 @@ def perform_configuration(data):
     configurations = []
     device_configurations = []
     for config in data:
-        if all(x in config for x in ['device_id', 'key', 'value', 'type', 'unit']):
-            if config['device_id'] == '0':
+        if all(x in config for x in ['device', 'key', 'value', 'type', 'unit']):
+            if config['device'] == '0':
                 try:
                     existing_config = Configuration.objects.get(
                         key=config['key'])
@@ -36,7 +36,7 @@ def perform_configuration(data):
                         Configuration(key=config['key'], value=config['value'], value_type=int(config['type']), unit=config['unit']))
             else:
                 try:
-                    device = Device.objects.get(id=config['device_id'])
+                    device = Device.objects.get(id=config['device'])
                     for device_type, class_name in Device.DEVICE_TYPES:
                         if device.device_type == device_type:
                             system_class = globals()[class_name]
@@ -57,7 +57,7 @@ def perform_configuration(data):
                             device_configurations.append(
                                 DeviceConfiguration(device=device, key=config['key'], value=config['value'], value_type=int(config['type']), unit=config['unit']))
                 except ObjectDoesNotExist:
-                    logger.error("Unknown device %s" % config['device_id'])
+                    logger.error("Unknown device %s" % config['device'])
                 except ValueError:
                     logger.error(
                         "ValueError value_type '%s' not an int" % config['type'])
