@@ -45,7 +45,7 @@ $(function() {
                 if (item.length) {
                     var code =
                             '<div class="col-sm-6"><div class="form-group">' +
-                                '<label for="' + namespace + '_' + device_config[0] + '">' + device_config[0] + '</label>';
+                                '<label for="' + namespace + '_' + device_config[0] + '">' + get_text(device_config[0]) + '</label>';
                     if (device_config[3] == '') {
                         code +=
                                 '<input type="text" class="configuration form-control" id="' + namespace + '_' + device_config[0] + '" data-device="' + device_config[4] + '" data-key="' + device_config[0] + '" data-type="' + device_config[2] + '" data-unit="' + device_config[3] + '"  value="' + device_config[1] + '">';

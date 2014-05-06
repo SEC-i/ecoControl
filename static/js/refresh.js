@@ -48,7 +48,7 @@ function update_item(key, value, suffix) {
                 }
                 break;
             default:
-                item.text(value + " " + systems_units[key]);
+                item.text(value);
         }
     }
     if (key == "time") {
