@@ -15,7 +15,7 @@
    id="svg4624"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="scheme_plain.svg">
+   sodipodi:docname="schema.svg">
   <defs
      id="defs4626">
     <linearGradient
@@ -2045,7 +2045,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="0.59"
      inkscape:cx="471.85926"
-     inkscape:cy="446.75382"
+     inkscape:cy="330.02479"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -2064,7 +2064,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -2258,7 +2258,7 @@
        sodipodi:cy="242.36218"
        sodipodi:rx="20.454546"
        sodipodi:ry="30.90909"
-       d="m -747.27275,242.36218 a 20.454546,30.90909 0 1 1 -40.90909,0 20.454546,30.90909 0 1 1 40.90909,0 z" />
+       d="m -747.27275,242.36218 c 0,17.07062 -9.15781,30.90909 -20.45454,30.90909 -11.29674,0 -20.45455,-13.83847 -20.45455,-30.90909 0,-17.07062 9.15781,-30.90909 20.45455,-30.90909 11.29673,0 20.45454,13.83847 20.45454,30.90909 z" />
     <path
        style="fill:none;stroke:#d9534f;stroke-width:9.19999981;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        d="m 459.38982,830.32829 181.35593,-1.69492"
@@ -2797,7 +2797,7 @@
        sodipodi:cy="443.24704"
        sodipodi:rx="46.610168"
        sodipodi:ry="46.610168"
-       d="m 225.42372,443.24704 a 46.610168,46.610168 0 1 1 -93.22034,0 46.610168,46.610168 0 1 1 93.22034,0 z"
+       d="m 225.42372,443.24704 c 0,25.74209 -20.86808,46.61017 -46.61017,46.61017 -25.74208,0 -46.61017,-20.86808 -46.61017,-46.61017 0,-25.74209 20.86809,-46.61017 46.61017,-46.61017 25.74209,0 46.61017,20.86808 46.61017,46.61017 z"
        transform="matrix(0.72727272,0,0,0.72727272,121.00462,346.84817)" />
     <path
        style="fill:#ffffff;fill-opacity:1;stroke:#428bca;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
@@ -2819,9 +2819,9 @@
        sodipodi:nodetypes="cccc" />
     <text
        xml:space="preserve"
-       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#428bca;fill-opacity:1;stroke:none;font-family:Arial;text-anchor:middle;text-align:center"
+       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#428bca;fill-opacity:1;stroke:none;font-family:Arial"
        x="236.0807"
-       y="1015.074"
+       y="998.12482"
        id="infeed_costs"
        sodipodi:linespacing="125%"
        inkscape:label="#text9341">infeed_costs</text>
@@ -2832,44 +2832,44 @@
        y="650.87415"
        id="text9383"
        sodipodi:linespacing="125%"
-       transform="translate(0,308.2677)"></text>
+       transform="translate(0,308.2677)" />
     <text
        xml:space="preserve"
        style="font-size:16px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#428bca;fill-opacity:1;stroke:none;font-family:Arial"
-       x="114.71115"
-       y="585.55603"
+       x="129.96539"
+       y="549.96283"
        id="infeed_reward"
        sodipodi:linespacing="125%"
        inkscape:label="#text9341">infeed_reward</text>
     <text
        xml:space="preserve"
        style="font-size:16px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#428bca;fill-opacity:1;stroke:none;font-family:Arial"
-       x="274.5459"
-       y="360.13235"
+       x="267.76624"
+       y="366.91202"
        id="electrical_consumption"
        sodipodi:linespacing="125%"
        inkscape:label="#text9341">electrical_consumption</text>
     <text
        xml:space="preserve"
        style="font-size:16px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#d9534f;fill-opacity:1;stroke:none;font-family:Arial"
-       x="598.76831"
-       y="363.20111"
+       x="608.93781"
+       y="365.67569"
        id="thermal_consumption"
        sodipodi:linespacing="125%"
        inkscape:label="#text9341">thermal_consumption</text>
     <text
        xml:space="preserve"
        style="font-size:16px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#d9534f;fill-opacity:1;stroke:none;font-family:Arial"
-       x="815.93347"
-       y="363.20105"
+       x="788.81482"
+       y="365.98071"
        id="warmwater_consumption"
        sodipodi:linespacing="125%"
        inkscape:label="#text9341">warmwater_consumption</text>
     <text
        xml:space="preserve"
        style="font-size:16px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#d9534f;fill-opacity:1;stroke:none;font-family:Arial"
-       x="821.12622"
-       y="887.72485"
+       x="824.51605"
+       y="869.08081"
        id="plb_thermal_production"
        sodipodi:linespacing="125%"
        inkscape:label="#text9341"
@@ -2877,9 +2877,9 @@
        inkscape:transform-center-y="-359.32203">plb_thermal_production</text>
     <text
        xml:space="preserve"
-       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#d9534f;fill-opacity:1;stroke:none;font-family:Arial;"
+       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#d9534f;fill-opacity:1;stroke:none;font-family:Arial"
        x="580.34027"
-       y="892.01465"
+       y="868.28583"
        id="cu_thermal_production"
        sodipodi:linespacing="125%"
        inkscape:label="#text9341"
@@ -2888,8 +2888,8 @@
     <text
        xml:space="preserve"
        style="font-size:16px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#428bca;fill-opacity:1;stroke:none;font-family:Arial"
-       x="304.54166"
-       y="892.33575"
+       x="306.23657"
+       y="870.30188"
        id="cu_electrical_production"
        sodipodi:linespacing="125%"
        inkscape:label="#text9341">cu_electrical_production</text>
@@ -2897,7 +2897,7 @@
        xml:space="preserve"
        style="font-size:16px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#5cb85c;fill-opacity:1;stroke:none;font-family:Arial"
        x="435.51645"
-       y="1015.7435"
+       y="998.79437"
        id="cu_operating_costs"
        sodipodi:linespacing="125%"
        inkscape:label="#text9341"
@@ -2906,8 +2906,8 @@
     <text
        xml:space="preserve"
        style="font-size:16px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#5cb85c;fill-opacity:1;stroke:none;font-family:Arial"
-       x="966.09863"
-       y="1013.0045"
+       x="967.79352"
+       y="999.44525"
        id="plb_operating_costs"
        sodipodi:linespacing="125%"
        inkscape:label="#text9341"
