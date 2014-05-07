@@ -17,14 +17,18 @@ class WeatherForecast:
         self.forecast_temperatures_3hourly = []
         self.forecast_temperatures_daily = []
         self.three_hourly_url = "http://openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5&mode=json"
-        self.daily_url = "http://openweathermap.org/data/2.3/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"
-
-    def get_weather_forecast(self, url):       
+        self.daily_url = "http://openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"
+        
+    def get_weather_forecast(self, daily = True):
+        if daily:
+            url = self.daily_url
+        else:
+            url = self.three_hourly_url      
         try:
             result = urllib2.urlopen(url)
             jsondata = result.read()
             data = json.loads(jsondata)
-            results = self.set_up_records_out_of_json(data)
+            results = self.set_up_records_out_of_json(data, daily)
         except urllib2.URLError, e:
             logger.warning("{0}: Couln't reach {1}".format(e, url))
             results = []
@@ -36,15 +40,22 @@ class WeatherForecast:
             return results
         return results
         
-    def set_up_records_out_of_json(self, data):
+    def set_up_records_out_of_json(self, data, daily=True):
         results = []
         for data_set in data["list"]:
             try:
-                temperature = data_set["main"]["temp"]
+                if(daily):
+                    temperature = data_set['temp']['day']
+                else:
+                    temperature = data_set['main']['temp']
+                target_sec = data_set['dt']
+                target_naive = datetime.datetime.fromtimestamp(target_sec)
+                target_time = target_naive.replace(tzinfo=timezone.utc)
+                
                 stamp_naive = datetime.datetime.fromtimestamp(self.get_date())
-                timestamp = stamp_naive.replace(tzinfo=timezone.utc)
+                timestamp = stamp_naive.replace(tzinfo=timezone.utc) 
                 new_record = WeatherValue(temperature=temperature, 
-                    timestamp=timestamp)
+                    timestamp=timestamp, target_time = target_time)
                 results.append(new_record)
             except KeyError as k:
                 # last value of data seams always to be gdps
@@ -53,17 +64,25 @@ class WeatherForecast:
         return results
     
     def save_weather_forecast_three_hourly(self):
-        results = self.get_weather_forecast(self.three_hourly_url)
-        i = 0
-        for record in results:
-            record.target_time = datetime.datetime.fromtimestamp(
-                self.get_date()+i*10800).replace(tzinfo=timezone.utc) # every 3-hours: 3*60*60 
+        results = self.get_weather_forecast(daily=False)
+        for record in results: 
             record.save()
-            i = i+1
             
     def save_weather_forecast_daily(self):
-        results = self.get_weather_forecast(self.daily_url)
-        return results
+        results = self.get_weather_forecast(daily=True)
+        for record in results:
+            record.save()
+    
+    def save_weather_forecast_daily_from_day_six(self):
+        today = self.get_date()
+        day_six = today + 5*25*60*60
+        stamp_naive = datetime.datetime.fromtimestamp(day_six)
+        timestamp_day_six = stamp_naive.replace(tzinfo=timezone.utc) 
+        
+        results = self.get_weather_forecast(daily=True)
+        for record in results:
+            if record.target_time >= timestamp_day_six:
+                record.save()
         
     def get_temperature_estimate(self, date):
         """get most accurate forecast for given date

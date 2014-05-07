@@ -15,83 +15,54 @@ from server.models import Sensor, Device, SensorValue, WeatherSource, WeatherVal
 
 absolute_zero_point = -273.15
 
-class ForecastingDBTest(TestCase):
+class ForecastingTestDaily(TestCase):
     def setUp(self):
         self.forecast = WeatherForecast()
-        self.data = '{"list" : [{"main": {"temp": 30}}, {"main": {"temp": 30}}, {"main": {"temp": 30}}, {"main": {"temp": 30}}]}'
+        self.data = '{"list": [{"dt":30, "temp": {"day": 30}}]}'
         resp = urllib2.addinfourl(StringIO(self.data), 'fill', '')
         resp.code = 200
         resp.msg = "Ok"
         extern_information = resp  
         self.api_answer_mock = MagicMock(return_value = extern_information)
-        WeatherValue.objects.all().delete()
-            
-    def test_if_weather_sources_in_db(self):
-        '''In the database should at least exist one weather source.'''
-        source = WeatherSource.objects.all()[0]
-        self.assertTrue(source.location)
-    
-    def test_time_of_forecast_three_hourly(self): 
-        # consider requested time. a request is always made at the current date
-        # and in a 3-hourly distance to the next request
-        data = '{"list" : [{"main": {"temp": 30}}, {"main": {"temp": 30}}, {"main": {"temp": 30}}, {"main": {"temp": 30}}]}'
-        resp = urllib2.addinfourl(StringIO(data), 'fill', '')
-        resp.code = 200
-        resp.msg = "Ok"
-        extern_information = resp  
-        self.api_answer_mock = MagicMock(return_value = extern_information)
         
-        time_mock = MagicMock(return_value = 0)
-        with patch('urllib2.urlopen', self.api_answer_mock):
-            with patch('time.time', time_mock):
-                self.forecast.save_weather_forecast_three_hourly() 
-                
-        results = WeatherValue.objects.order_by('target_time')
-
-        i = 0
-        for entry in results:
-            self.assertEqual(entry.target_time, 
-                datetime.datetime.fromtimestamp(0+i).replace(tzinfo=utc))
-            i = i+10800 # seconds of three hour 3*60*60
+        target_sec = 30 # dt
+        target_time = aware_timestamp_from_seconds(target_sec)
+        
+        seconds = 0
+        self.time_mock = MagicMock(return_value = seconds)
+        expected_timestamp = aware_timestamp_from_seconds(seconds)
+        
+        self.expected_weather_value = WeatherValue(temperature = 30, 
+            timestamp = expected_timestamp, target_time = target_time)
+        WeatherValue.objects.all().delete()
     
-    def test_source_of_forecast_three_hourly(self):
+    def test_get_weather_forecast_daily_right_url(self):
+        '''the function returns the temperatures as a list of TemperatureValues.
+        it opens the given url of openweather map ans extracts the data.'''
         with patch('urllib2.urlopen', self.api_answer_mock):
-            self.forecast.save_weather_forecast_three_hourly()
-        argument = self.api_answer_mock.call_args[0][0]
-        self.assertEqual(self.forecast.three_hourly_url, argument)
-    
-    def test_time_of_forecast_daily(self):
-        # a request is always made at the current date
-        # the function should return daily values
-        time_mock = MagicMock(return_value = 0)
-        with patch('urllib2.urlopen', self.api_answer_mock):
-            with patch('time.time', time_mock):
-                self.forecast.save_weather_forecast_daily() 
-                
-        results = WeatherValue.objects.order_by('target_time')
-        self.assertTrue(results)
-        '''
-        i = 0
-        for entry in results:
-            self.assertEqual(entry.target_time, 
-                datetime.datetime.fromtimestamp(0+i).replace(tzinfo=utc))
-            i = i+10800 # seconds of three hour 3*60*60
-        '''
-    def test_source_of_forecast_daily(self):
-        with patch('urllib2.urlopen', self.api_answer_mock):
-            self.forecast.save_weather_forecast_daily()
-        argument = self.api_answer_mock.call_args[0][0]
-        self.assertEqual(self.forecast.daily_url, argument)
-    
+            self.forecast.get_weather_forecast(daily=True)
+        self.api_answer_mock.assert_called_with(self.forecast.daily_url)
+            
     def test_get_weather_forecast(self):
         '''the function returns the temperatures as a list of TemperatureValues.
         it opens the given url of openweather map ans extracts the data.'''
         with patch('urllib2.urlopen', self.api_answer_mock):
-            self.forecast.get_weather_forecast("test_url")
-        self.api_answer_mock.assert_called_with("test_url")
-    
-    # def test_wrong_list(self):
-        ''' if a data set is not readable, save an invalid record an notify the system of the problem '''
+            with patch('time.time', self.time_mock):
+                result = self.forecast.get_weather_forecast(daily=True)
+        self.assertTrue(len(result)==1)
+        self.assertTrue(weathervalues_equal_attributes(result[0], self.expected_weather_value))
+        
+    def test_daily_records_out_of_json(self):
+        "the method should return a list with WeatherValues with timestamp and target_time"
+        input_json = json.loads(self.data)
+        
+        with patch('time.time', self.time_mock):
+            result = self.forecast.set_up_records_out_of_json(input_json, daily=True)
+        self.assertTrue(len(result)==1)
+        self.assertTrue(weathervalues_equal_attributes(result[0], self.expected_weather_value))
+        
+        # def test_wrong_list(self):
+    #    ''' if a data set is not readable, save an invalid record an notify the system of the problem '''
         # data = '{"list" : [{"main": {"temp": 30}}, {"broken": 0}]}'
         # resp = urllib2.addinfourl(StringIO(data), 'fill', '')
         # resp.code = 200
@@ -105,23 +76,129 @@ class ForecastingDBTest(TestCase):
         # results = WeatherValue.objects.filter(temperature < absolute_zero_point) # not valid, beneath the absolute zero point 
          
 
-    def test_set_up_records_out_of_json(self):
-        naive_timestamp = datetime.datetime.fromtimestamp(0)
-        expected_timestamp = naive_timestamp.replace(tzinfo=utc)
-        expected_records = []
-        for i in range(4):
-            entry = WeatherValue(temperature = 30, 
-                                    timestamp=expected_timestamp)
-            expected_records.append(entry)
-        #{"list" : [{"main": {"temp": 30}}, {"main": {"temp": 30}}, {"main": {"temp": 30}}, {"main": {"temp": 30}}]}
+class ForecastingTestHourly(TestCase):
+    def setUp(self):
+        self.forecast = WeatherForecast()
+        self.data = '{"list": [{"dt":30, "main": {"temp": 30}}]}'
+        resp = urllib2.addinfourl(StringIO(self.data), 'fill', '')
+        resp.code = 200
+        resp.msg = "Ok"
+        extern_information = resp  
+        self.api_answer_mock = MagicMock(return_value = extern_information)
         
-        time_mock = MagicMock(return_value = 0)
+        target_sec = 30 # dt
+        target_time = aware_timestamp_from_seconds(target_sec)
+        
+        seconds = 0
+        self.time_mock = MagicMock(return_value = seconds)
+        expected_timestamp = aware_timestamp_from_seconds(seconds)
+        
+        self.expected_weather_value = WeatherValue(temperature = 30, 
+            timestamp = expected_timestamp, target_time = target_time)
+
+    def test_get_weather_forecast_right_url(self):
+        '''the function returns the temperatures as a list of TemperatureValues.
+        it opens the given url of openweather map ans extracts the data.'''
         with patch('urllib2.urlopen', self.api_answer_mock):
-            with patch('time.time', time_mock):
-                values = json.loads(self.data)
-                records = self.forecast.set_up_records_out_of_json(values)
-        self.assertListEqual(records, expected_records)
+            self.forecast.get_weather_forecast(daily=False)
+        self.api_answer_mock.assert_called_with(self.forecast.three_hourly_url)
+           
+    def test_get_weather_forecast(self):
+        '''the function returns the temperatures as a list of TemperatureValues.
+        it opens the given url of openweather map ans extracts the data.'''
+        with patch('urllib2.urlopen', self.api_answer_mock):
+            with patch('time.time', self.time_mock):
+                result = self.forecast.get_weather_forecast(daily=False)
+        self.assertTrue(len(result)==1)
+        self.assertTrue(weathervalues_equal_attributes(result[0], self.expected_weather_value))
+
+    def test_3hourly_records_out_of_json(self):
+        "the method should return a list with WeatherValues with timestamp and target_time"
+        input_json = json.loads(self.data)
+        with patch('time.time', self.time_mock):
+            result = self.forecast.set_up_records_out_of_json(input_json, daily = False)
+        self.assertTrue(len(result)==1)
+        self.assertTrue(weathervalues_equal_attributes(result[0], self.expected_weather_value))
+
+    # def test_wrong_list(self):
+    #    ''' if a data set is not readable, save an invalid record an notify the system of the problem '''
+        # data = '{"list" : [{"main": {"temp": 30}}, {"broken": 0}]}'
+        # resp = urllib2.addinfourl(StringIO(data), 'fill', '')
+        # resp.code = 200
+        # resp.msg = "Ok"
+        # extern_information = resp      
+        # api_answer_mock = MagicMock(return_value = extern_information)
         
+        # with patch('urllib2.urlopen', api_answer_mock):
+            # self.forecast.set_up_records_out_of_json()
+        
+        # results = WeatherValue.objects.filter(temperature < absolute_zero_point) # not valid, beneath the absolute zero point 
+         
+
+class ForecastingDBTest(TestCase):
+    def setUp(self):
+        self.forecast = WeatherForecast()
+        self.temperature = 30
+        data = '{"list": [{"dt":30, "main": {"temp": 30}}]}'
+        self.api_answer_mock = get_http_response_mock(data)
+        
+        data_daily = '{"list": [{"dt":30, "temp": {"day": 30}}]}' 
+        self.api_answer_mock_daily = get_http_response_mock(data_daily)
+        
+        target_sec = 30 # dt
+        self.target_time = aware_timestamp_from_seconds(target_sec)
+        
+        seconds = 0
+        self.time_mock = MagicMock(return_value = seconds)
+        self.timestamp = aware_timestamp_from_seconds(seconds)
+        
+        #self.expected_weather_value = WeatherValue(temperature = 30, 
+        #    timestamp = expected_timestamp, target_time = target_time)
+        
+        WeatherValue.objects.all().delete()
+            
+    def test_if_weather_sources_in_db(self):
+        '''In the database should at least exist one weather source.'''
+        source = WeatherSource.objects.all()[0]
+        self.assertTrue(source.location)
+    
+    def test_save_weather_forecast_three_hourly(self):
+        with patch('urllib2.urlopen', self.api_answer_mock):
+            with patch('time.time', self.time_mock):
+                self.forecast.save_weather_forecast_three_hourly()
+        results = WeatherValue.objects.all().filter(temperature=self.temperature, 
+            timestamp = self.timestamp, target_time=self.target_time)
+        self.assertTrue(results)
+        
+    def test_save_weather_forecast_daily(self):
+        # achtung! do you want to save four values?
+        with patch('urllib2.urlopen', self.api_answer_mock_daily):
+            with patch('time.time', self.time_mock):
+                self.forecast.save_weather_forecast_daily()
+        results = WeatherValue.objects.all().filter(temperature=self.temperature, 
+            timestamp = self.timestamp, target_time=self.target_time)
+        self.assertTrue(results)
+    
+    def test_save_weather_forecast_daily_from_day_six(self):
+        ''' We only need to save from the sixth to the 14th day, 
+        because the three hourly forecast provides dates for the 
+        first five days.
+        '''
+        # today + 5*25*60*60
+        # 1399784400
+        data_with_dates = '{"list": [{"dt":1399334400, "temp": {"day": 30 }}, {"dt":1399334400, "temp": {"day": 30}},{"dt":1399784460, "temp": {"day": 30}}]}'
+        response_mock = get_http_response_mock(data_with_dates)
+        today = 1399334400 #2014/5/6
+        time_mock = MagicMock(return_value = today)
+        timestamp_day_six = aware_timestamp_from_seconds(1399784460)
+        
+        with patch('urllib2.urlopen', response_mock):
+            with patch('time.time', time_mock):
+                self.forecast.save_weather_forecast_daily_from_day_six()
+        result = WeatherValue.objects.all()
+        self.assertEqual(result[0].target_time, timestamp_day_six)
+        
+    # test if api returns expected target times and expected json format
     
     def test_calculate_weather_diff(self):
         '''calculate weather diff should return the difference between
@@ -141,12 +218,20 @@ class ForecastingDBTest(TestCase):
 class UpdateWeatherEstimatesTest(TestCase):
     def setUp(self):
         self.forecast = WeatherForecast()
-        self.data = '{"list" : [{"main": {"temp": 30}}]}'
-        resp = urllib2.addinfourl(StringIO(self.data), '', '')
-        resp.code = 200
-        resp.msg = "Ok"
-        extern_information = resp  
-        self.api_answer_mock = MagicMock(return_value = extern_information)
+        daily_data = '{"cod":"200","message":0.0989,"city":{"id":2950159,"name":"Berlin","coord":{"lon":13.41053,"lat":52.524368},"country":"DE","population":0,"sys":{"population":0}},"cnt":14,"list":[{"dt":1399460400,"temp":{"day":14.9,"min":10.94,"max":14.9,"night":10.94,"eve":13.73,"morn":14.9},"pressure":1011.62,"humidity":80,"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10d"}],"speed":8.41,"deg":253,"clouds":44,"rain":0.25},{"dt":1399546800,"temp":{"day":14.95,"min":11.79,"max":14.95,"night":12.16,"eve":14.09,"morn":11.79},"pressure":1015.82,"humidity":72,"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04d"}],"speed":7.17,"deg":227,"clouds":80},{"dt":1399633200,"temp":{"day":13.99,"min":10.09,"max":14.25,"night":10.09,"eve":13.07,"morn":12.25},"pressure":1010.81,"humidity":93,"weather":[{"id":501,"main":"Rain","description":"moderate rain","icon":"10d"}],"speed":8.25,"deg":245,"clouds":44,"rain":4},{"dt":1399719600,"temp":{"day":13.76,"min":10.5,"max":14.5,"night":10.68,"eve":13.46,"morn":10.5},"pressure":1014.14,"humidity":78,"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10d"}],"speed":6.56,"deg":267,"clouds":64,"rain":1},{"dt":1399806000,"temp":{"day":13.38,"min":9.66,"max":13.38,"night":9.66,"eve":12,"morn":11.22},"pressure":1000.65,"humidity":88,"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10d"}],"speed":5.83,"deg":247,"clouds":80,"rain":2.5},{"dt":1399892400,"temp":{"day":13.76,"min":10.32,"max":13.76,"night":10.32,"eve":11.79,"morn":10.42},"pressure":1006.47,"humidity":79,"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10d"}],"speed":5.12,"deg":235,"clouds":80,"rain":1},{"dt":1399978800,"temp":{"day":13.81,"min":9.09,"max":14.34,"night":12.13,"eve":14.34,"morn":9.09},"pressure":1017.02,"humidity":0,"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10d"}],"speed":4.61,"deg":233,"clouds":8,"rain":1.72},{"dt":1400065200,"temp":{"day":16.52,"min":10.39,"max":16.52,"night":10.39,"eve":14.65,"morn":12.03},"pressure":1010.45,"humidity":0,"weather":[{"id":501,"main":"Rain","description":"moderate rain","icon":"10d"}],"speed":2.39,"deg":226,"clouds":2,"rain":4.79},{"dt":1400151600,"temp":{"day":12.5,"min":7.91,"max":13.1,"night":7.91,"eve":13.1,"morn":9.51},"pressure":1021.74,"humidity":0,"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10d"}],"speed":7.2,"deg":281,"clouds":4,"rain":1.42},{"dt":1400238000,"temp":{"day":12.1,"min":8.9,"max":13.01,"night":9.97,"eve":13.01,"morn":8.9},"pressure":1021.17,"humidity":0,"weather":[{"id":501,"main":"Rain","description":"moderate rain","icon":"10d"}],"speed":2.38,"deg":141,"clouds":98,"rain":3.57},{"dt":1400324400,"temp":{"day":16.19,"min":10.45,"max":16.34,"night":11.86,"eve":16.34,"morn":10.45},"pressure":1024.84,"humidity":0,"weather":[{"id":502,"main":"Rain","description":"heavy intensity rain","icon":"10d"}],"speed":2.05,"deg":210,"clouds":29,"rain":14.68},{"dt":1400410800,"temp":{"day":18.58,"min":12.66,"max":18.58,"night":14.91,"eve":17.99,"morn":12.66},"pressure":1023.84,"humidity":0,"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10d"}],"speed":8.68,"deg":131,"clouds":61,"rain":0.24},{"dt":1400497200,"temp":{"day":22.73,"min":15.39,"max":22.73,"night":17.04,"eve":21.9,"morn":15.39},"pressure":1016.4,"humidity":0,"weather":[{"id":800,"main":"Clear","description":"sky is clear","icon":"01d"}],"speed":6.86,"deg":135,"clouds":3},{"dt":1400583600,"temp":{"day":22.35,"min":16.78,"max":22.35,"night":17.41,"eve":21.38,"morn":16.78},"pressure":1016.61,"humidity":0,"weather":[{"id":800,"main":"Clear","description":"sky is clear","icon":"01d"}],"speed":6.57,"deg":127,"clouds":0}]}'
+        hourly_data = '{"cod":"200","message":0.243,"city":{"id":2950159,"name":"Berlin","coord":{"lon":13.41053,"lat":52.524368},"country":"DE","population":0,"sys":{"population":0}},"cnt":41,"list":[{"dt":1399464000,"main":{"temp":19.12,"temp_min":16.2,"temp_max":19.12,"pressure":1015.27,"sea_level":1021.03,"grnd_level":1015.27,"humidity":77,"temp_kf":2.92},"weather":[{"id":801,"main":"Clouds","description":"few clouds","icon":"02d"}],"clouds":{"all":24},"wind":{"speed":7.81,"deg":258.5},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-07 12:00:00"},{"dt":1399474800,"main":{"temp":17.95,"temp_min":15.17,"temp_max":17.95,"pressure":1016.79,"sea_level":1022.64,"grnd_level":1016.79,"humidity":73,"temp_kf":2.78},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04d"}],"clouds":{"all":64},"wind":{"speed":7.51,"deg":264.001},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-07 15:00:00"},{"dt":1399485600,"main":{"temp":16.71,"temp_min":14.08,"temp_max":16.71,"pressure":1017.96,"sea_level":1023.79,"grnd_level":1017.96,"humidity":72,"temp_kf":2.63},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04d"}],"clouds":{"all":68},"wind":{"speed":6.26,"deg":266.501},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-07 18:00:00"},{"dt":1399496400,"main":{"temp":14.79,"temp_min":12.31,"temp_max":14.79,"pressure":1019.08,"sea_level":1024.93,"grnd_level":1019.08,"humidity":76,"temp_kf":2.49},"weather":[{"id":802,"main":"Clouds","description":"scattered clouds","icon":"03n"}],"clouds":{"all":32},"wind":{"speed":5.07,"deg":254.501},"rain":{"3h":0},"sys":{"pod":"n"},"dt_txt":"2014-05-07 21:00:00"},{"dt":1399507200,"main":{"temp":13.48,"temp_min":11.14,"temp_max":13.48,"pressure":1019.37,"sea_level":1025.45,"grnd_level":1019.37,"humidity":86,"temp_kf":2.34},"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10n"}],"clouds":{"all":92},"wind":{"speed":4.82,"deg":243.001},"rain":{"3h":0.25},"sys":{"pod":"n"},"dt_txt":"2014-05-08 00:00:00"},{"dt":1399518000,"main":{"temp":12.87,"temp_min":10.68,"temp_max":12.87,"pressure":1019.92,"sea_level":1025.69,"grnd_level":1019.92,"humidity":86,"temp_kf":2.19},"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10n"}],"clouds":{"all":64},"wind":{"speed":4.66,"deg":247.004},"rain":{"3h":0.25},"sys":{"pod":"n"},"dt_txt":"2014-05-08 03:00:00"},{"dt":1399528800,"main":{"temp":13.88,"temp_min":11.84,"temp_max":13.88,"pressure":1020.13,"sea_level":1026.14,"grnd_level":1020.13,"humidity":89,"temp_kf":2.05},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04d"}],"clouds":{"all":68},"wind":{"speed":4.67,"deg":236.502},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-08 06:00:00"},{"dt":1399539600,"main":{"temp":16.21,"temp_min":14.31,"temp_max":16.21,"pressure":1019.94,"sea_level":1025.81,"grnd_level":1019.94,"humidity":81,"temp_kf":1.9},"weather":[{"id":801,"main":"Clouds","description":"few clouds","icon":"02d"}],"clouds":{"all":24},"wind":{"speed":5.71,"deg":231.002},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-08 09:00:00"},{"dt":1399550400,"main":{"temp":17.1,"temp_min":15.35,"temp_max":17.1,"pressure":1019.39,"sea_level":1025.16,"grnd_level":1019.39,"humidity":74,"temp_kf":1.75},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04d"}],"clouds":{"all":56},"wind":{"speed":6.47,"deg":230.501},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-08 12:00:00"},{"dt":1399561200,"main":{"temp":17.15,"temp_min":15.54,"temp_max":17.15,"pressure":1019.08,"sea_level":1024.87,"grnd_level":1019.08,"humidity":71,"temp_kf":1.61},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04d"}],"clouds":{"all":76},"wind":{"speed":6.56,"deg":238.503},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-08 15:00:00"},{"dt":1399572000,"main":{"temp":15.85,"temp_min":14.39,"temp_max":15.85,"pressure":1019.04,"sea_level":1024.78,"grnd_level":1019.04,"humidity":70,"temp_kf":1.46},"weather":[{"id":802,"main":"Clouds","description":"scattered clouds","icon":"03d"}],"clouds":{"all":44},"wind":{"speed":5.46,"deg":235.509},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-08 18:00:00"},{"dt":1399582800,"main":{"temp":14.15,"temp_min":12.83,"temp_max":14.15,"pressure":1018.26,"sea_level":1024.1,"grnd_level":1018.26,"humidity":71,"temp_kf":1.32},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04n"}],"clouds":{"all":56},"wind":{"speed":3.77,"deg":214.003},"rain":{"3h":0},"sys":{"pod":"n"},"dt_txt":"2014-05-08 21:00:00"},{"dt":1399593600,"main":{"temp":13.28,"temp_min":12.11,"temp_max":13.28,"pressure":1016.73,"sea_level":1022.57,"grnd_level":1016.73,"humidity":78,"temp_kf":1.17},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04n"}],"clouds":{"all":80},"wind":{"speed":3.41,"deg":192.501},"rain":{"3h":0},"sys":{"pod":"n"},"dt_txt":"2014-05-09 00:00:00"},{"dt":1399604400,"main":{"temp":12.79,"temp_min":11.77,"temp_max":12.79,"pressure":1014.21,"sea_level":1020.18,"grnd_level":1014.21,"humidity":98,"temp_kf":1.02},"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10n"}],"clouds":{"all":92},"wind":{"speed":5.61,"deg":198.002},"rain":{"3h":2.75},"sys":{"pod":"n"},"dt_txt":"2014-05-09 03:00:00"},{"dt":1399615200,"main":{"temp":13.13,"temp_min":12.25,"temp_max":13.13,"pressure":1012.75,"sea_level":1018.49,"grnd_level":1012.75,"humidity":98,"temp_kf":0.88},"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10d"}],"clouds":{"all":92},"wind":{"speed":7.91,"deg":205.5},"rain":{"3h":2},"sys":{"pod":"d"},"dt_txt":"2014-05-09 06:00:00"},{"dt":1399626000,"main":{"temp":16.05,"temp_min":15.32,"temp_max":16.05,"pressure":1013.32,"sea_level":1019.24,"grnd_level":1013.32,"humidity":98,"temp_kf":0.73},"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10d"}],"clouds":{"all":68},"wind":{"speed":9.16,"deg":245.002},"rain":{"3h":0.5},"sys":{"pod":"d"},"dt_txt":"2014-05-09 09:00:00"},{"dt":1399636800,"main":{"temp":15.63,"temp_min":15.04,"temp_max":15.63,"pressure":1014.94,"sea_level":1020.55,"grnd_level":1014.94,"humidity":95,"temp_kf":0.58},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04d"}],"clouds":{"all":64},"wind":{"speed":8.4,"deg":250.502},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-09 12:00:00"},{"dt":1399647600,"main":{"temp":15.64,"temp_min":15.2,"temp_max":15.64,"pressure":1014.94,"sea_level":1020.59,"grnd_level":1014.94,"humidity":87,"temp_kf":0.44},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04d"}],"clouds":{"all":64},"wind":{"speed":7.16,"deg":243.505},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-09 15:00:00"},{"dt":1399658400,"main":{"temp":14.46,"temp_min":14.17,"temp_max":14.46,"pressure":1014.86,"sea_level":1020.71,"grnd_level":1014.86,"humidity":78,"temp_kf":0.29},"weather":[{"id":804,"main":"Clouds","description":"overcast clouds","icon":"04d"}],"clouds":{"all":88},"wind":{"speed":5.67,"deg":248.5},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-09 18:00:00"},{"dt":1399669200,"main":{"temp":11.93,"temp_min":11.78,"temp_max":11.93,"pressure":1015.07,"sea_level":1020.83,"grnd_level":1015.07,"humidity":78,"temp_kf":0.15},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04n"}],"clouds":{"all":64},"wind":{"speed":5.12,"deg":245.509},"rain":{"3h":0},"sys":{"pod":"n"},"dt_txt":"2014-05-09 21:00:00"},{"dt":1399680000,"main":{"temp":10.59,"temp_min":10.59,"temp_max":10.59,"pressure":1015.42,"sea_level":1021.18,"grnd_level":1015.42,"humidity":85},"weather":[{"id":802,"main":"Clouds","description":"scattered clouds","icon":"03n"}],"clouds":{"all":32},"wind":{"speed":6.96,"deg":249.5},"rain":{"3h":0},"sys":{"pod":"n"},"dt_txt":"2014-05-10 00:00:00"},{"dt":1399690800,"main":{"temp":9.99,"temp_min":9.99,"temp_max":9.99,"pressure":1016.18,"sea_level":1022.07,"grnd_level":1016.18,"humidity":86},"weather":[{"id":804,"main":"Clouds","description":"overcast clouds","icon":"04n"}],"clouds":{"all":88},"wind":{"speed":6.96,"deg":258.502},"rain":{"3h":0},"sys":{"pod":"n"},"dt_txt":"2014-05-10 03:00:00"},{"dt":1399701600,"main":{"temp":10.9,"temp_min":10.9,"temp_max":10.9,"pressure":1017.06,"sea_level":1022.85,"grnd_level":1017.06,"humidity":86},"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10d"}],"clouds":{"all":80},"wind":{"speed":7.47,"deg":248.004},"rain":{"3h":0.5},"sys":{"pod":"d"},"dt_txt":"2014-05-10 06:00:00"},{"dt":1399712400,"main":{"temp":11.02,"temp_min":11.02,"temp_max":11.02,"pressure":1017.36,"sea_level":1023.41,"grnd_level":1017.36,"humidity":90},"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10d"}],"clouds":{"all":92},"wind":{"speed":7.61,"deg":263.001},"rain":{"3h":0.5},"sys":{"pod":"d"},"dt_txt":"2014-05-10 09:00:00"},{"dt":1399723200,"main":{"temp":13.91,"temp_min":13.91,"temp_max":13.91,"pressure":1017.95,"sea_level":1023.73,"grnd_level":1017.95,"humidity":80},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04d"}],"clouds":{"all":64},"wind":{"speed":6.41,"deg":267.511},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-10 12:00:00"},{"dt":1399734000,"main":{"temp":14.9,"temp_min":14.9,"temp_max":14.9,"pressure":1016.66,"sea_level":1022.4,"grnd_level":1016.66,"humidity":74},"weather":[{"id":801,"main":"Clouds","description":"few clouds","icon":"02d"}],"clouds":{"all":24},"wind":{"speed":5.65,"deg":255.5},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-10 15:00:00"},{"dt":1399744800,"main":{"temp":13.71,"temp_min":13.71,"temp_max":13.71,"pressure":1015.01,"sea_level":1020.92,"grnd_level":1015.01,"humidity":70},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04d"}],"clouds":{"all":80},"wind":{"speed":4.48,"deg":233.001},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-10 18:00:00"},{"dt":1399755600,"main":{"temp":11.83,"temp_min":11.83,"temp_max":11.83,"pressure":1013.26,"sea_level":1019.1,"grnd_level":1013.26,"humidity":89},"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10n"}],"clouds":{"all":80},"wind":{"speed":3.87,"deg":207.501},"rain":{"3h":0.5},"sys":{"pod":"n"},"dt_txt":"2014-05-10 21:00:00"},{"dt":1399766400,"main":{"temp":10.98,"temp_min":10.98,"temp_max":10.98,"pressure":1009.95,"sea_level":1015.74,"grnd_level":1009.95,"humidity":87},"weather":[{"id":804,"main":"Clouds","description":"overcast clouds","icon":"04n"}],"clouds":{"all":92},"wind":{"speed":4.56,"deg":181.002},"rain":{"3h":0},"sys":{"pod":"n"},"dt_txt":"2014-05-11 00:00:00"},{"dt":1399777200,"main":{"temp":10.69,"temp_min":10.69,"temp_max":10.69,"pressure":1006.71,"sea_level":1012.5,"grnd_level":1006.71,"humidity":96},"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10n"}],"clouds":{"all":92},"wind":{"speed":5.35,"deg":186.506},"rain":{"3h":1.5},"sys":{"pod":"n"},"dt_txt":"2014-05-11 03:00:00"},{"dt":1399788000,"main":{"temp":11.22,"temp_min":11.22,"temp_max":11.22,"pressure":1004.51,"sea_level":1010.22,"grnd_level":1004.51,"humidity":100},"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10d"}],"clouds":{"all":92},"wind":{"speed":4.01,"deg":200.503},"rain":{"3h":1},"sys":{"pod":"d"},"dt_txt":"2014-05-11 06:00:00"},{"dt":1399798800,"main":{"temp":12.35,"temp_min":12.35,"temp_max":12.35,"pressure":1003.68,"sea_level":1009.56,"grnd_level":1003.68,"humidity":100},"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10d"}],"clouds":{"all":64},"wind":{"speed":3.66,"deg":232.502},"rain":{"3h":3},"sys":{"pod":"d"},"dt_txt":"2014-05-11 09:00:00"},{"dt":1399809600,"main":{"temp":12.48,"temp_min":12.48,"temp_max":12.48,"pressure":1004.22,"sea_level":1009.98,"grnd_level":1004.22,"humidity":100},"weather":[{"id":804,"main":"Clouds","description":"overcast clouds","icon":"04d"}],"clouds":{"all":92},"wind":{"speed":6.48,"deg":252},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-11 12:00:00"},{"dt":1399820400,"main":{"temp":13,"temp_min":13,"temp_max":13,"pressure":1004.83,"sea_level":1010.55,"grnd_level":1004.83,"humidity":99},"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10d"}],"clouds":{"all":24},"wind":{"speed":6.86,"deg":247.005},"rain":{"3h":1},"sys":{"pod":"d"},"dt_txt":"2014-05-11 15:00:00"},{"dt":1399831200,"main":{"temp":11.45,"temp_min":11.45,"temp_max":11.45,"pressure":1005.76,"sea_level":1011.57,"grnd_level":1005.76,"humidity":92},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04d"}],"clouds":{"all":68},"wind":{"speed":5.17,"deg":241.001},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-11 18:00:00"},{"dt":1399842000,"main":{"temp":10.23,"temp_min":10.23,"temp_max":10.23,"pressure":1006.6,"sea_level":1012.5,"grnd_level":1006.6,"humidity":92},"weather":[{"id":801,"main":"Clouds","description":"few clouds","icon":"02n"}],"clouds":{"all":24},"wind":{"speed":4.41,"deg":215.502},"rain":{"3h":0},"sys":{"pod":"n"},"dt_txt":"2014-05-11 21:00:00"},{"dt":1399852800,"main":{"temp":9.11,"temp_min":9.11,"temp_max":9.11,"pressure":1006.77,"sea_level":1012.54,"grnd_level":1006.77,"humidity":94},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04n"}],"clouds":{"all":64},"wind":{"speed":5.47,"deg":213.001},"rain":{"3h":0},"sys":{"pod":"n"},"dt_txt":"2014-05-12 00:00:00"},{"dt":1399863600,"main":{"temp":8.71,"temp_min":8.71,"temp_max":8.71,"pressure":1006.49,"sea_level":1012.36,"grnd_level":1006.49,"humidity":91},"weather":[{"id":801,"main":"Clouds","description":"few clouds","icon":"02n"}],"clouds":{"all":20},"wind":{"speed":6.26,"deg":219.003},"rain":{"3h":0},"sys":{"pod":"n"},"dt_txt":"2014-05-12 03:00:00"},{"dt":1399874400,"main":{"temp":9.87,"temp_min":9.87,"temp_max":9.87,"pressure":1007.53,"sea_level":1013.39,"grnd_level":1007.53,"humidity":96},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04d"}],"clouds":{"all":68},"wind":{"speed":6.56,"deg":225.009},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-12 06:00:00"},{"dt":1399885200,"main":{"temp":11.25,"temp_min":11.25,"temp_max":11.25,"pressure":1008.65,"sea_level":1014.51,"grnd_level":1008.65,"humidity":95},"weather":[{"id":500,"main":"Rain","description":"light rain","icon":"10d"}],"clouds":{"all":64},"wind":{"speed":6.11,"deg":237.504},"rain":{"3h":1},"sys":{"pod":"d"},"dt_txt":"2014-05-12 09:00:00"},{"dt":1399896000,"main":{"temp":13.76,"temp_min":13.76,"temp_max":13.76,"pressure":1009.72,"sea_level":1015.54,"grnd_level":1009.72,"humidity":88},"weather":[{"id":803,"main":"Clouds","description":"broken clouds","icon":"04d"}],"clouds":{"all":56},"wind":{"speed":4.92,"deg":236.003},"rain":{"3h":0},"sys":{"pod":"d"},"dt_txt":"2014-05-12 12:00:00"}]}'  
+        now = 1399464000
+        time_mock = MagicMock(return_value = now)
+        self.now_timestamp = aware_timestamp_from_seconds(now)
+        response_daily = get_http_response(daily_data)
+        response_hourly = get_http_response(hourly_data)
+        def response(url):
+            if(url==self.forecast.three_hourly_url):
+                return response_hourly
+            elif(url==self.forecast.daily_url):
+                return response_daily
+        self.response_mock = MagicMock(side_effect=response)
+        
         WeatherValue.objects.all().delete()    
         '''the update function should save new forecasts 
         if enough time passed since the last saving or the last savings
@@ -166,88 +251,88 @@ class UpdateWeatherEstimatesTest(TestCase):
         current_seconds = 1860 # 31*60: 31 minutes later
         time_mock = MagicMock(return_value = current_seconds) 
 
-        with patch('urllib2.urlopen', self.api_answer_mock):
+        with patch('urllib2.urlopen', self.response_mock):
             with patch('time.time', time_mock):
                 self.forecast.update_weather_estimates()                            
         new_time = aware_timestamp_from_seconds(current_seconds)
         results = WeatherValue.objects.filter(temperature=30, 
             timestamp = new_time)
         self.assertTrue(results)
+
+    #def test_to_little_time_passed(self):
+        #'''the update function shouldn't save new forecasts 
+        #if less than 30 minutes passed since the last savings.
+        #'''
+        #last_timestamp = aware_timestamp_from_seconds(0)
+        #target_timestamp = aware_timestamp_from_seconds(15)
+        #WeatherValue(timestamp = last_timestamp, temperature=20, target_time=target_timestamp).save()
+        #current_timestamp = 900 # 15*60: 15 minutes later
+        #time_mock = MagicMock(return_value = current_timestamp) 
+        
+        #with patch('urllib2.urlopen', self.api_answer_mock):
+            #with patch('time.time', time_mock):
+                    #self.forecast.update_weather_estimates()
+        #expected_timestamp = aware_timestamp_from_seconds(current_timestamp)
+        #results = WeatherValue.objects.filter(timestamp = expected_timestamp)
+        #self.assertFalse(results)
     
-    def test_to_little_time_passed(self):
-        '''the update function shouldn't save new forecasts 
-        if less than 30 minutes passed since the last savings.
-        '''
-        last_timestamp = aware_timestamp_from_seconds(0)
-        target_timestamp = aware_timestamp_from_seconds(15)
-        WeatherValue(timestamp = last_timestamp, temperature=20, target_time=target_timestamp).save()
-        current_timestamp = 900 # 15*60: 15 minutes later
-        time_mock = MagicMock(return_value = current_timestamp) 
+    #def test_no_values_saved(self):
+        #'''the update function should save new forecasts 
+        #if there aren't savings in the database.
+        #'''
+        #current_timestamp = 0
+        #time_mock = MagicMock(return_value = current_timestamp) 
         
-        with patch('urllib2.urlopen', self.api_answer_mock):
-            with patch('time.time', time_mock):
-                    self.forecast.update_weather_estimates()
-        expected_timestamp = aware_timestamp_from_seconds(current_timestamp)
-        results = WeatherValue.objects.filter(timestamp = expected_timestamp)
-        self.assertFalse(results)
+        #with patch('urllib2.urlopen', self.api_answer_mock):
+            #with patch('time.time', time_mock):
+                    #self.forecast.update_weather_estimates()
+        #expected_timestamp = aware_timestamp_from_seconds(current_timestamp)
+        #results = WeatherValue.objects.filter(timestamp = expected_timestamp)
+        #self.assertTrue(results)        
     
-    def test_no_values_saved(self):
-        '''the update function should save new forecasts 
-        if there aren't savings in the database.
-        '''
-        current_timestamp = 0
-        time_mock = MagicMock(return_value = current_timestamp) 
+    #def test_only_invalid_values_saved(self):
+        #''' the update function should save new forecasts 
+        #if there are only invalid records in the database.
+        #'''
+        #last_timestamp = aware_timestamp_from_seconds(0)
+        #target_timestamp = aware_timestamp_from_seconds(15)
+        #invalid_temperature = -274
+        #WeatherValue(timestamp = last_timestamp, temperature= -274, 
+            #target_time=target_timestamp).save()
         
-        with patch('urllib2.urlopen', self.api_answer_mock):
-            with patch('time.time', time_mock):
-                    self.forecast.update_weather_estimates()
-        expected_timestamp = aware_timestamp_from_seconds(current_timestamp)
-        results = WeatherValue.objects.filter(timestamp = expected_timestamp)
-        self.assertTrue(results)        
+        #current_seconds = 30
+        #time_mock = MagicMock(return_value = current_seconds) 
+        
+        #with patch('urllib2.urlopen', self.api_answer_mock):
+            #with patch('time.time', time_mock):
+                    #self.forecast.update_weather_estimates()
+        
+        #expected_timestamp = aware_timestamp_from_seconds(current_seconds)            
+        #results = WeatherValue.objects.filter(timestamp = expected_timestamp)
+        #self.assertTrue(results)  
     
-    def test_only_invalid_values_saved(self):
-        ''' the update function should save new forecasts 
-        if there are only invalid records in the database.
-        '''
-        last_timestamp = aware_timestamp_from_seconds(0)
-        target_timestamp = aware_timestamp_from_seconds(15)
-        invalid_temperature = -274
-        WeatherValue(timestamp = last_timestamp, temperature= -274, 
-            target_time=target_timestamp).save()
+    #def test_invalid_and_valid_values_saved(self):
+        #'''it shouldn't save new forecasts, if the latest valid entry is new enough
+        #'''
+        #last_timestamp = aware_timestamp_from_seconds(5)
+        #target_timestamp = aware_timestamp_from_seconds(15)
+        #invalid_temperature = -274
+        #WeatherValue(timestamp = last_timestamp, temperature= -274, 
+            #target_time=target_timestamp).save()
+        #passed_timestamp = aware_timestamp_from_seconds(0)
+        #WeatherValue(timestamp = passed_timestamp, temperature= 20, 
+            #target_time=target_timestamp).save()
         
-        current_seconds = 30
-        time_mock = MagicMock(return_value = current_seconds) 
+        #current_seconds = 30
+        #time_mock = MagicMock(return_value = current_seconds) 
         
-        with patch('urllib2.urlopen', self.api_answer_mock):
-            with patch('time.time', time_mock):
-                    self.forecast.update_weather_estimates()
+        #with patch('urllib2.urlopen', self.api_answer_mock):
+            #with patch('time.time', time_mock):
+                    #self.forecast.update_weather_estimates()
         
-        expected_timestamp = aware_timestamp_from_seconds(current_seconds)            
-        results = WeatherValue.objects.filter(timestamp = expected_timestamp)
-        self.assertTrue(results)  
-    
-    def test_invalid_and_valid_values_saved(self):
-        '''it shouldn't save new forecasts, if the latest valid entry is new enough
-        '''
-        last_timestamp = aware_timestamp_from_seconds(5)
-        target_timestamp = aware_timestamp_from_seconds(15)
-        invalid_temperature = -274
-        WeatherValue(timestamp = last_timestamp, temperature= -274, 
-            target_time=target_timestamp).save()
-        passed_timestamp = aware_timestamp_from_seconds(0)
-        WeatherValue(timestamp = passed_timestamp, temperature= 20, 
-            target_time=target_timestamp).save()
-        
-        current_seconds = 30
-        time_mock = MagicMock(return_value = current_seconds) 
-        
-        with patch('urllib2.urlopen', self.api_answer_mock):
-            with patch('time.time', time_mock):
-                    self.forecast.update_weather_estimates()
-        
-        expected_timestamp = aware_timestamp_from_seconds(current_seconds)            
-        results = WeatherValue.objects.filter(timestamp = expected_timestamp)
-        self.assertFalse(results)
+        #expected_timestamp = aware_timestamp_from_seconds(current_seconds)            
+        #results = WeatherValue.objects.filter(timestamp = expected_timestamp)
+        #self.assertFalse(results)
 
     
     def test_get_latest_valid_time(self):
@@ -275,38 +360,56 @@ class UpdateWeatherEstimatesTest(TestCase):
         timestamp = self.forecast.get_latest_valid_time(values)
         self.assertFalse(timestamp)
  
-class GetWeatherForecastURLErrorTest(unittest.TestCase):
-    def setUp(self):
-        self.mock = MagicMock(side_effect=urllib2.URLError('No Response'))
-        self.fcast = WeatherForecast()
+#class GetWeatherForecastURLErrorTest(unittest.TestCase):
+    #def setUp(self):
+        #self.mock = MagicMock(side_effect=urllib2.URLError('No Response'))
+        #self.fcast = WeatherForecast()
     
-    def test_url_error_handled(self):
-        ''' if a data set is not readable, save an invalid record an notify the system of the problem '''
-        with patch('urllib2.urlopen', self.mock):
-            try:
-                self.fcast.get_weather_forecast("")
-            except urllib2.URLError:
-                self.fail("the weather forecast should know how to handle the unavailability of the weather api.")
+    #def test_url_error_handled(self):
+        #''' if a data set is not readable, save an invalid record an notify the system of the problem '''
+        #with patch('urllib2.urlopen', self.mock):
+            #try:
+                #self.fcast.get_weather_forecast("")
+            #except urllib2.URLError:
+                #self.fail("the weather forecast should know how to handle the unavailability of the weather api.")
     
-    def test_url_error_logged(self):
-        logger = weather.logger
-        logger.warning = Mock()
-        with patch('urllib2.urlopen', self.mock):
-            self.fcast.get_weather_forecast("")
-        argument = logger.warning.call_args[0][0]
-        self.assertIn("Couln't reach", argument)
+    #def test_url_error_logged(self):
+        #logger = weather.logger
+        #logger.warning = Mock()
+        #with patch('urllib2.urlopen', self.mock):
+            #self.fcast.get_weather_forecast("")
+        #argument = logger.warning.call_args[0][0]
+        #self.assertIn("Couln't reach", argument)
     
-    def test_return_value(self):
-        '''there should be invalid return values.'''
-        with patch('urllib2.urlopen', self.mock):
-            result = self.fcast.get_weather_forecast("")
-        self.assertTrue(result, "get_weather_forecast should return values.")
-        for entry in result:
-            self.assertLess(float(entry.temperature), absolute_zero_point)
+    #def test_return_value(self):
+        #'''there should be invalid return values.'''
+        #with patch('urllib2.urlopen', self.mock):
+            #result = self.fcast.get_weather_forecast("")
+        #self.assertTrue(result, "get_weather_forecast should return values.")
+        #for entry in result:
+            #self.assertLess(float(entry.temperature), absolute_zero_point)
         
 def aware_timestamp_from_seconds(seconds):
     naive = datetime.datetime.fromtimestamp(seconds)
     return naive.replace(tzinfo=utc)
+    
+def weathervalues_equal_attributes(value1, value2):
+    return \
+    value1.temperature == value2.temperature and \
+    value1.timestamp == value2.timestamp and \
+    value1.target_time == value2.target_time    
+    
+def get_http_response(content):
+    resp = urllib2.addinfourl(StringIO(content), 'fill', '')
+    resp.code = 200
+    resp.msg = "Ok"
+    return resp
+
+def get_http_response_mock(content):
+    extern_information = get_http_response(content)  
+    return MagicMock(return_value = extern_information)
+
+
                 
 if __name__ == '__main__':
     unittest.main()
