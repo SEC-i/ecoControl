@@ -38,9 +38,10 @@ $(function() {
                 </div>'
             );
             $(".configure_button").click(function(event) {
+                var demo = $(this).attr('data-demo');
                 send_configuration(function(){
                     $.post("/api/start/", {
-                        demo: $(this).attr('data-demo')
+                        demo: demo
                     }).done(function() {
                         window.location.href = 'index.html';
                     });

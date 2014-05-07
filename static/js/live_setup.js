@@ -24,7 +24,7 @@ function refresh() {
 
 function update_schema(data) {
     $.each(data, function(key, value) {
-        var item = $('.' + key);
+        var item = $('#' + key);
         if (item.length) { // check if item exists
             if (key == 'time') {
                 item.html($.format.date(new Date(parseFloat(value)), "dd.MM.yyyy HH:MM"));
