@@ -69,7 +69,7 @@ class MeasurementStorage():
                     else:
                         if sensor.in_diagram:
                             self.data[i].append(
-                                [int(self.env.now * 1000), str(value)])
+                                [int(self.env.now), round(float(value), 2)])
                 i += 1
 
         if len(sensor_values) > 0:

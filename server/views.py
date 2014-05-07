@@ -22,7 +22,7 @@ from forecasting import Simulation
 
 logger = logging.getLogger('django')
 
-DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 7
+DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 14
 
 
 def index(request):
@@ -112,7 +112,7 @@ def forecast(request):
     return create_json_response(request, simulation.measurements.get_new())
 
 
-def get_statistics(request, start=functions.get_last_month(), end=None):
+def get_statistics(request, start=functions.get_past_time(months=1), end=None):
     output = []
     output += functions.get_statistics_for_cogeneration_unit(start, end)
     output += functions.get_statistics_for_peak_load_boiler(start, end)
@@ -123,7 +123,7 @@ def get_statistics(request, start=functions.get_last_month(), end=None):
     return create_json_response(request, dict(output))
 
 
-def get_monthly_statistics(request, start=functions.get_last_year(), end=None):
+def get_monthly_statistics(request, start=functions.get_past_time(years=1), end=None):
     sensor_values = SensorValue.objects.all()
     if start is not None:
         sensor_values = sensor_values.filter(timestamp__gte=start)
@@ -154,10 +154,12 @@ def list_values(request, start, accuracy='hour'):
 
     start_time = end_time = 0
     if start:
-        if start == '0':
-            start_time = functions.get_last_year()
+        start_time = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
+    else:
+        if accuracy == 'day':
+            start_time = functions.get_past_time(years=1)
         else:
-            start_time = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
+            start_time = functions.get_past_time(days=14)
 
     output = []
     for sensor in sensors:
@@ -178,7 +180,7 @@ def list_values(request, start, accuracy='hour'):
 
         output.append({
             'id': sensor.id,
-            'device_id': sensor.device_id,
+            'device': sensor.device.name,
             'name': sensor.name,
             'unit': sensor.unit,
             'key': sensor.key,
@@ -189,9 +191,12 @@ def list_values(request, start, accuracy='hour'):
 
 
 def list_sensors(request):
-    sensors = Sensor.objects.filter(in_diagram=True)
+    sensors = Sensor.objects.filter(in_diagram=True).values('id', 'name', 'unit', 'device__name')
 
-    return create_json_response_from_QuerySet(request, sensors)
+    # rename device__name to device for convenience
+    output = [{'id': x['id'], 'name': x['name'], 'unit': x['unit'], 'device': x['device__name']} for x in sensors]
+
+    return create_json_response(request, output)
 
 
 def live_data(request):

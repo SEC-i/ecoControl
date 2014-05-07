@@ -338,7 +338,7 @@ def get_live_data():
         'warmwater_consumption': '',
         'time': SensorValue.objects.all().latest('timestamp').timestamp
     }
-    last_month = get_last_month()
+    last_month = get_past_time(months=1)
 
     for system in Device.objects.all():
         if system.device_type == Device.HS:
@@ -441,19 +441,10 @@ def get_operating_costs(system, start):
     return '%s Euro' % round(total_gas_consumption * get_configuration('gas_costs'), 2)
 
 
-def get_last_month():
+def get_past_time(years=0, months=0, days=0):
     try:
         latest_value = SensorValue.objects.latest('timestamp')
         return latest_value.timestamp + \
-            dateutil.relativedelta.relativedelta(months=-1)
-    except SensorValue.DoesNotExist:
-        return None
-
-
-def get_last_year():
-    try:
-        latest_value = SensorValue.objects.latest('timestamp')
-        return latest_value.timestamp + \
-            dateutil.relativedelta.relativedelta(years=-1)
+            dateutil.relativedelta.relativedelta(years=-years, months=-months, days=-days)
     except SensorValue.DoesNotExist:
         return None

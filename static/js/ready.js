@@ -1,6 +1,6 @@
 var refresh_gui = true;
+var series_data = [];
 var editor = null;
-var series_data = []
 
 // READY
 $(function() {
@@ -112,14 +112,6 @@ function initialize_event_handlers() {
         immediate_feedback();
     });
 
-    
-
-    $(".fast_forward_button").click(function(event) {
-        $.post("/api/simulation/", {
-            forward: $(this).val()
-        });
-    });
-
     $("#editor_button").click(function() {
         $.post("/api/settings/", {
             code: editor.getValue(),
@@ -139,26 +131,6 @@ function initialize_event_handlers() {
         }, function(data) {
             update_forecast(data, true);
         });
-    });
-
-    $("#pause_refresh").click(function(event) {
-        refresh_gui = !refresh_gui;
-        if (refresh_gui) {
-            $("#pause_refresh span").removeClass('glyphicon-pause');
-            $("#pause_refresh span").addClass('glyphicon-refresh');
-        } else {
-            $("#pause_refresh span").removeClass('glyphicon-refresh');
-            $("#pause_refresh span").addClass('glyphicon-pause');
-
-        }
-        event.preventDefault();
-    });
-
-    $("#reset_simulation").click(function(event) {
-        $.post("/api/simulation/", {
-            reset: 1
-        });
-        // location.reload(true);
     });
 
     $("#save_snippet").submit(function(event) {
@@ -206,7 +178,7 @@ function initialize_diagram() {
     $.getJSON('/api/sensors/', function(data) {
         $.each(data, function(index, value) {
             series_data.push({
-                name: value.name + ' (Device #' + value.device_id + ')',
+                name: value.name + ' (' + value.device + ')',
                 data: [],
                 color: colors_past[index],
                 tooltip: {
@@ -214,7 +186,7 @@ function initialize_diagram() {
                 }
             });
             series_data.push({
-                name: value.name + ' (Device #' + value.device_id + ' predicted)',
+                name: value.name + ' (' + value.device + ' predicted)',
                 data: [],
                 color: colors_future[index],
                 dashStyle: 'shortdot',
@@ -278,7 +250,7 @@ function initialize_diagram() {
                     type: 'all',
                     text: 'All'
                 }],
-                selected: 6,
+                selected: 5,
                 inputEnabled: false
             },
             xAxis: {
@@ -313,19 +285,17 @@ function initialize_diagram() {
                 enabled: false
             }
         });
-        initialize_diagram_filters();
+        initialize_diagram_filters(data);
     });
 
 }
 
-function initialize_diagram_filters() {
-    for (var i = 0; i < 7; i++) {
-        series = series_data[i];
-        $('#diagram_filters').append('<label class="btn btn-default" style="color: ' + series.color + ';"><input class="btn diagram_filter" type="checkbox" value="' + i + '">' + series.name + '</label>');
-    };
+function initialize_diagram_filters(data) {
+    $.each(data, function(index, sensor) {
+        $('#diagram_filters').append('<label class="btn btn-default" style="color: ' + colors_past[index] + ';"><input class="btn diagram_filter" type="checkbox" value="' + index + '">' + sensor.name + ' (' + sensor.device + ')</label>');
+    });
 
     $('.diagram_filter').change(filter_series);
-
 }
 
 function redirect_to_settings(show) {
