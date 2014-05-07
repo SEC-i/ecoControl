@@ -80,7 +80,7 @@ class Sensor(models.Model):
 class SensorValue(models.Model):
     sensor = models.ForeignKey('Sensor')
     value = models.FloatField()
-    timestamp = models.DateTimeField(auto_now=False)
+    timestamp = models.DateTimeField(auto_now=False, db_index=True)
 
     def __unicode__(self):
         return str(self.pk) + " (" + self.sensor.name + ")"
