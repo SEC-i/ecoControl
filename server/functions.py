@@ -120,7 +120,8 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
                     power_ons += 1
                     last_time_on = not last_time_on
 
-            average_workload /= len(values)
+            if len(values) > 0:
+                average_workload /= len(values)
             system_output.append(
                 ('average_workload', round(average_workload, 2)))
 

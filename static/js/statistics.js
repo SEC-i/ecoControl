@@ -136,7 +136,7 @@ $(function() {
                 tooltip: {
                     shared: true
                 },
-                series: cu_series_data_1,
+                series: cu_series_data_2,
                 credits: {
                     enabled: false
                 }
