@@ -154,12 +154,15 @@ def list_values(request, start, accuracy='hour'):
 
     start_time = end_time = 0
     if start:
-        start_time = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
+        if start == '0':
+            start_time = functions.get_last_year()
+        else:
+            start_time = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
 
     output = []
     for sensor in sensors:
         values = []
-        for date in SensorValue.objects.filter(timestamp__gte=start_time).extra({accuracy:"date_trunc('%s', timestamp)" % accuracy}).values(accuracy).annotate(count=Count('id')):
+        for date in SensorValue.objects.filter(sensor=sensor, timestamp__gte=start_time).extra({accuracy:"date_trunc('%s', timestamp)" % accuracy}).values(accuracy).annotate(count=Count('id')):
             start_date = date[accuracy]
             if accuracy ==  'day':
                 end_date = start_date + timedelta(days=1)
@@ -168,7 +171,7 @@ def list_values(request, start, accuracy='hour'):
 
             cursor = connection.cursor()
             cursor.execute(
-                'SELECT ROUND(AVG(value), 2) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\' AND "server_sensorvalue"."timestamp" < \'%s\' )' %
+                'SELECT AVG(value) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\' AND "server_sensorvalue"."timestamp" < \'%s\' )' %
                            (sensor.id, start_date, end_date))
             values.append(
                 [calendar.timegm(start_date.utctimetuple()), float(cursor.fetchone()[0])])
