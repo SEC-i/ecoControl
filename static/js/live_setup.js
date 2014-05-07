@@ -5,7 +5,7 @@ $(function() {
             redirect_to_settings();
         }
     }).done(function() {
-        $.get("/static/img/simulation.svg", function(data) {
+        $.get("/static/img/schema.svg", function(data) {
             var svg_item = document.importNode(data.documentElement, true);
             $("#schema_container").append(svg_item);
         }, "xml").done(function() {
