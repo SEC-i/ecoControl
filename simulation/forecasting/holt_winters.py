@@ -104,14 +104,14 @@ def linear(x, forecast, alpha = None, beta = None):
  
     return Y[-forecast:], alpha, beta, rmse
  
-def additive(x, m, forecast, alpha = None, beta = None, gamma = None):
+def additive(x, m, forecast, alpha = None, beta = None, gamma = None,alpha_bound=0.01):
  
     Y = x[:]
  
     if (alpha == None or beta == None or gamma == None):
  
         initial_values = array([0.3, 0.1, 0.1])
-        boundaries = [(0, 1), (0, 1), (0, 1)]
+        boundaries = [(0, alpha_bound), (0, 1), (0, 1)]
         type = 'additive'
  
         parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True)
@@ -137,14 +137,14 @@ def additive(x, m, forecast, alpha = None, beta = None, gamma = None):
  
     return Y[-forecast:], alpha, beta, gamma, rmse
  
-def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None):
+def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, alpha_bound=0.001):
  
     Y = x[:]
  
     if (alpha == None or beta == None or gamma == None):
  
         initial_values = array([0.0, 1.0, 0.0])
-        boundaries = [(0, 1), (0, 1), (0, 1)]
+        boundaries = [(0, alpha_bound), (0, 1), (0, 1)]
         type = 'multiplicative'
  
         parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True)

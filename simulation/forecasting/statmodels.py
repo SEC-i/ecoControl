@@ -7,7 +7,6 @@ import numpy as np
 from simulation.systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_weekend, warm_water_demand_workday, electrical_demand_su_fr, electrical_demand_wi_fr
 from dataloader import DataLoader
 import matplotlib.pyplot as plt
-import matplotlib.dates as md
 from datetime import date, datetime, timedelta
 from holt_winters import additive, multiplicative
 
@@ -129,7 +128,7 @@ def plot_dataset(sensordata):
 
 #data =  np.array(make_two_year_data(weekly_electrical_demand_winter,weekly_electrical_demand_summer, 15, datetime(year=2012,month=4,day=24)))
 #input = make_day_data(4,  electrical_demand_wi_fr,electrical_demand_su_fr)
-raw_data = DataLoader.load_from_file("../tools/Strom_2013.csv", "Strom - Verbrauchertotal (Aktuell)","\t")
+raw_data = DataLoader.load_from_file("../tools/Strom_2013.csv", "Strom - Verbrauchertotal (Aktuell)",delim="\t")
 kW_data = [float(val) / 1000.0 for val in raw_data] #cast to float and convert to kW
 input = make_hourly(kW_data,6)
 
@@ -149,7 +148,7 @@ print data, len(data)
 #values ={ 'forcasting':list(forecast_values), 'simulation':data}
 #  
 #plot_dataset(values)
-
+  
 #season length
 m = 24 * 7
 #forecast length
@@ -163,16 +162,16 @@ if rmse_manual > 1.0:
     #find values automatically
     (forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(input, m,fc)
     print "HW parameters: found automatically: ", alpha, beta, gamma, rmse_auto
-
+ 
 if rmse_manual > rmse_auto:
     forecast_values = forecast_values_auto
     print "use auto HW"
 else:
     forecast_values = forecast_values_manual 
     print "use manual HW"
-
+ 
 values ={ 'forcasting':forecast_values, 'simulation':input}
-
+ 
 plot_dataset(values)
 
 # r = robjects.r

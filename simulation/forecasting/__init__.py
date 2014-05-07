@@ -9,7 +9,7 @@ class Forecast:
         if hw_parameters == ():
             self.hw_parameters = (None,None,None)
         else:
-            self.hw_parameters = (0.0000001,0.0,1.0) # default hw alpha, beta, gamma
+            self.hw_parameters = hw_parameters # default hw alpha, beta, gamma
         
         
         self.samples_per_hour = samples_per_hour
@@ -44,17 +44,17 @@ class Forecast:
             (alpha,beta,gamma) = self.hw_parameters
             (forecast_values_manual, alpha, beta, gamma, rmse_manual) = multiplicative(demand, m,fc, alpha, beta, gamma)
             rmse_auto = 10 ** 6 #some really high value, wil be overwritten
-            if rmse_manual > 1.0:
+            if rmse_manual > 1.5:
                 #find values automatically
                 (forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(demand, m,fc)
-                print "HW parameters - found automatically: alpha: ", alpha," beta: ", beta," gamma: ",  gamma," RMSE: ",  rmse_auto
+                #print "HW parameters - found automatically: alpha: ", alpha," beta: ", beta," gamma: ",  gamma," RMSE: ",  rmse_auto
             
             if rmse_manual > rmse_auto:
                 forecast_values = forecast_values_auto
-                print "use auto HW"
+                print "use auto HW with RMSE", rmse_auto
             else:
                 forecast_values = forecast_values_manual 
-                print "use manual HW"
+                print "use manual HW with RMSE", rmse_manual
             
             forecasted_demands.append(list(forecast_values))
             
@@ -72,7 +72,12 @@ class Forecast:
     
     @classmethod
     def make_hourly(cls, data, samples_per_hour):
-        avg = lambda i: sum(data[i:i+samples_per_hour])/float(samples_per_hour)
+        def avg(hour):
+            sum = 0
+            for i in range(samples_per_hour):
+                sum += data[hour*samples_per_hour + i]
+            return sum / samples_per_hour
+
         hours = len(data) / samples_per_hour
         return [avg(i) for i in range(hours)]
             

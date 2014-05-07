@@ -86,5 +86,3 @@ def test_dataset():
     (forecast_values, alpha, beta, gamma, rmse) = multiplicative(y, m, fc,None, 0.0, 0.0)
     values ={ 'forcasting':list(forecast_values), 'simulation':y}
     plot_dataset(values)
-    
-test_dataset()
