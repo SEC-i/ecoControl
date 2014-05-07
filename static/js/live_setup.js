@@ -5,7 +5,7 @@ $(function() {
             redirect_to_settings();
         }
     }).done(function() {
-        $.get("/static/img/simulation.svg", function(data) {
+        $.get("/static/img/schema.svg", function(data) {
             var svg_item = document.importNode(data.documentElement, true);
             $("#schema_container").append(svg_item);
         }, "xml").done(function() {
@@ -24,7 +24,7 @@ function refresh() {
 
 function update_schema(data) {
     $.each(data, function(key, value) {
-        var item = $('.' + key);
+        var item = $('#' + key);
         if (item.length) { // check if item exists
             if (key == 'time') {
                 item.html($.format.date(new Date(parseFloat(value)), "dd.MM.yyyy HH:MM"));
