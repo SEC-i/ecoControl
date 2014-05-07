@@ -3,24 +3,25 @@
 
 """max: some examples of using R in python"""
 
-import numpy as np
+import np as np
 from simulation.systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_weekend, warm_water_demand_workday, electrical_demand_su_fr, electrical_demand_wi_fr
 from dataloader import DataLoader
 import matplotlib.pyplot as plt
 from datetime import date, datetime, timedelta
 from holt_winters import additive, multiplicative
+from simulation.forecasting import Forecast
 
-# print 'Start importing R.'
-# from rpy2 import robjects 
-# from rpy2.robjects.packages import importr
-# from rpy2.robjects.numpy2ri import numpy2ri
-# robjects.conversion.py2ri = numpy2ri
-#  
-# base = importr('base')
-# forecast = importr('forecast')
-# stats = importr('stats')
-# ts = robjects.r['ts']
-# print 'Finished importing R.'
+print 'Start importing R.'
+from rpy2 import robjects 
+from rpy2.robjects.packages import importr
+from rpy2.robjects.numpy2ri import numpy2ri
+robjects.conversion.py2ri = numpy2ri
+  
+base = importr('base')
+forecast = importr('forecast')
+stats = importr('stats')
+ts = robjects.r['ts']
+print 'Finished importing R.'
 
 
 
@@ -78,13 +79,6 @@ def make_day_data(days, data0, data1):
         
     
 
-def make_hourly(data,samples_per_hour):
-    avg = lambda i: sum(data[i:i+samples_per_hour])/float(samples_per_hour)
-    hours = len(data) / samples_per_hour
-    return [avg(i) for i in range(hours)]
-    
-
-
 def ets(y):
     print forecast.ets.formals()
     fit = forecast.ets(y, model="MAM")
@@ -130,7 +124,7 @@ def plot_dataset(sensordata):
 #input = make_day_data(4,  electrical_demand_wi_fr,electrical_demand_su_fr)
 raw_data = DataLoader.load_from_file("../tools/Strom_2013.csv", "Strom - Verbrauchertotal (Aktuell)",delim="\t")
 kW_data = [float(val) / 1000.0 for val in raw_data] #cast to float and convert to kW
-input = make_hourly(kW_data,6)
+input = Forecast.make_hourly(kW_data,6)
 
 data = np.array(input)
 print data, len(data)
@@ -150,7 +144,7 @@ print data, len(data)
 #plot_dataset(values)
   
 #season length
-m = 24 * 7
+m = 24  * 7
 #forecast length
 fc = int(len(data))
 alpha = 0.0000001
@@ -177,15 +171,15 @@ plot_dataset(values)
 # r = robjects.r
 # r.X11()
   
-#fit = forecast.tbats(series, periods=24*4)
-#forecast_result = forecast.forecast(fit, horizon=400)
+# fit = forecast.tbats(series, periods=24*4)
+# forecast_result = forecast.forecast(fit, horizon=400)
 # forecast_result = ets(series)
 # r.layout(r.matrix(robjects.IntVector([1,2,3,2]), nrow=2, ncol=2))
 # r.plot(forecast_result)
-# #  
+#  #  
 # values ={ 'forcasting':list(forecast_result.rx2("mean")), 'simulation':series}
-#   
+#    
 # plot_dataset(values)
-#      
+      
 
 #  

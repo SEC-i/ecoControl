@@ -1,6 +1,6 @@
 from datetime import date,datetime,timedelta
 from holt_winters import multiplicative, additive
-
+import numpy as np
 
 
 class Forecast:
@@ -11,7 +11,7 @@ class Forecast:
         else:
             self.hw_parameters = hw_parameters # default hw alpha, beta, gamma
         
-        
+        self.calculated_parameters = []
         self.samples_per_hour = samples_per_hour
         self.env = env
         
@@ -30,6 +30,7 @@ class Forecast:
         self.forecast_interval = 24 * 60 * 60
 
 
+
         
         
     def forecast_demands(self):
@@ -44,17 +45,34 @@ class Forecast:
             (alpha,beta,gamma) = self.hw_parameters
             (forecast_values_manual, alpha, beta, gamma, rmse_manual) = multiplicative(demand, m,fc, alpha, beta, gamma)
             rmse_auto = 10 ** 6 #some really high value, wil be overwritten
-            if rmse_manual > 1.5:
+            mase_auto = 10 ** 6
+            mase_manual = Forecast.MASE(demand, demand, forecast_values_manual)
+            print mase_manual
+            if rmse_manual > 6 or mase_manual > 4:
                 #find values automatically
-                (forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(demand, m,fc)
+                (forecast_values_auto1, alpha1, beta1, gamma1, rmse_auto1) =  multiplicative(demand, m,fc)
+                mase_auto1 = Forecast.MASE(demand, demand, forecast_values_auto1)
+                
+                (forecast_values_auto2, alpha2, beta2, gamma2, rmse_auto2) =  multiplicative(demand, m,fc,initial_values_optimization=[0.5,0.0,0.0])
+                mase_auto2 = Forecast.MASE(demand, demand, forecast_values_auto2)
+                
+                if mase_auto1 > mase_auto2:
+                    (forecast_values_auto, alpha, beta, gamma, rmse_auto) = (forecast_values_auto2, alpha2, beta2, gamma2, rmse_auto2)
+                    mase_auto = mase_auto2
+                else:
+                    (forecast_values_auto, alpha, beta, gamma, rmse_auto) = (forecast_values_auto1, alpha1, beta1, gamma1, rmse_auto1)
+                    mase_auto = mase_auto1
+   
                 #print "HW parameters - found automatically: alpha: ", alpha," beta: ", beta," gamma: ",  gamma," RMSE: ",  rmse_auto
             
-            if rmse_manual > rmse_auto:
+            if mase_manual > mase_auto:
                 forecast_values = forecast_values_auto
-                print "use auto HW with RMSE", rmse_auto
+                self.calculated_parameters.append({"alpha":alpha, "beta":beta, "gamma":gamma, "rmse":rmse_auto})
+                print "use auto HW with RMSE", rmse_auto, " and MASE ", mase_auto
             else:
                 forecast_values = forecast_values_manual 
-                print "use manual HW with RMSE", rmse_manual
+                self.calculated_parameters.append({"alpha":alpha, "beta":beta, "gamma":gamma, "rmse":rmse_manual})
+                print "use manual HW with RMSE", rmse_manual, " and MASE ", mase_manual
             
             forecasted_demands.append(list(forecast_values))
             
@@ -80,6 +98,7 @@ class Forecast:
 
         hours = len(data) / samples_per_hour
         return [avg(i) for i in range(hours)]
+    
             
     
     
@@ -99,4 +118,25 @@ class Forecast:
         delta = (date - self.time_series_end).total_seconds() 
         arr_index = (delta / 60) / self.samples_per_hour
         return self.forecasted_demands[int(arr_index)]
+    
+    @classmethod
+    def MASE(cls, training_series, testing_series, prediction_series):
+        """
+        Computes the MEAN-ABSOLUTE SCALED ERROR forcast error for univariate time series prediction.
+        
+        See "Another look at measures of forecast accuracy", Rob J Hyndman
+        
+        parameters:
+            training_series: the series used to train the model, 1d np array
+            testing_series: the test series to predict, 1d np array or float
+            prediction_series: the prediction of testing_series, 1d np array (same size as testing_series) or float
+        """
+        training_series = np.array(training_series)
+        testing_series = np.array(testing_series)
+        prediction_series = np.array(prediction_series)
+        n = training_series.shape[0]
+        d = np.abs(  np.diff(training_series) ).sum()/(n-1)
+        
+        errors = np.abs(testing_series - prediction_series )
+        return errors.mean()/d
     

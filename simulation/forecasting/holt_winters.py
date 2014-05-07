@@ -114,7 +114,7 @@ def additive(x, m, forecast, alpha = None, beta = None, gamma = None,alpha_bound
         boundaries = [(0, alpha_bound), (0, 1), (0, 1)]
         type = 'additive'
  
-        parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True)
+        parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True,factr=10**6)
         alpha, beta, gamma = parameters[0]
  
     a = [sum(Y[0:m]) / float(m)]
@@ -137,17 +137,17 @@ def additive(x, m, forecast, alpha = None, beta = None, gamma = None,alpha_bound
  
     return Y[-forecast:], alpha, beta, gamma, rmse
  
-def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, alpha_bound=0.001):
+def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, initial_values_optimization=[0.0,1.0,0.0]):
  
     Y = x[:]
  
     if (alpha == None or beta == None or gamma == None):
  
-        initial_values = array([0.0, 1.0, 0.0])
-        boundaries = [(0, alpha_bound), (0, 1), (0, 1)]
+        initial_values = array(initial_values_optimization)
+        boundaries = [(0, 1), (0, 1), (0, 1)]
         type = 'multiplicative'
  
-        parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True)
+        parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True,factr=10**6)
         alpha, beta, gamma = parameters[0]
  
     a = [sum(Y[0:m]) / float(m)]
