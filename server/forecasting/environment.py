@@ -8,7 +8,7 @@ logger = logging.getLogger('simulation')
 
 class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
-    def __init__(self, initial_time=1356998400, interval=120, strict=False):
+    def __init__(self, initial_time=1356998400, interval=15 * 60, strict=False):
         RealtimeEnvironment.__init__(
             self, initial_time, 1.0 / 3600, strict)
 
