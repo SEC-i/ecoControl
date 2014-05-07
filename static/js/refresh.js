@@ -70,7 +70,7 @@ function update_diagram(data, forecast) {
             chart.series[index * 2 + 1].setData(data_set, false);
         } else {
             $.each(sensor_value.data, function(index2, sensor_data) {
-                chart.series[index * 2].addPoint([sensor_data[0], parseFloat(sensor_data[1])], false);
+                chart.series[index * 2].addPoint([sensor_data[0] * 1000, parseFloat(sensor_data[1])], false);
             });
         }
     });

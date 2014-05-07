@@ -146,26 +146,32 @@ def get_monthly_statistics(request, start=functions.get_last_year(), end=None):
 
     return create_json_response(request, output)
 
-def list_values(request, start):
+def list_values(request, start, accuracy='hour'):
+    if accuracy not in ['day', 'hour']:
+        return create_json_response(request, {"status": "accuracy invalid"})
+
     sensors = Sensor.objects.filter(in_diagram=True)
 
     start_time = end_time = 0
     if start:
-        start_time = datetime.fromtimestamp(
-            int(start) / 1000.0).replace(tzinfo=utc)
+        start_time = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
 
     output = []
     for sensor in sensors:
         values = []
-        for date in SensorValue.objects.filter(timestamp__gte=start_time).extra({'hour':"date_trunc('hour', timestamp)"}).values('hour').annotate(count=Count('id')):
-            start_date = date['hour']
-            end_date = start_date + timedelta(hours=1) - timedelta(seconds=1)
+        for date in SensorValue.objects.filter(timestamp__gte=start_time).extra({accuracy:"date_trunc('%s', timestamp)" % accuracy}).values(accuracy).annotate(count=Count('id')):
+            start_date = date[accuracy]
+            if accuracy ==  'day':
+                end_date = start_date + timedelta(days=1)
+            else:
+                end_date = start_date + timedelta(hours=1)
+
             cursor = connection.cursor()
             cursor.execute(
-                'SELECT AVG(value) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\'  AND "server_sensorvalue"."timestamp" <= \'%s\' ) GROUP BY  "server_sensorvalue"."sensor_id"' %
+                'SELECT ROUND(AVG(value), 2) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\' AND "server_sensorvalue"."timestamp" < \'%s\' )' %
                            (sensor.id, start_date, end_date))
             values.append(
-                [calendar.timegm(start_date.utctimetuple()) * 1000, float(cursor.fetchone()[0])])
+                [calendar.timegm(start_date.utctimetuple()), float(cursor.fetchone()[0])])
 
         output.append({
             'id': sensor.id,
