@@ -142,6 +142,7 @@ class WeatherForecast:
             if seconds_passed < 1800: # 30 minutes 
                 return
         self.save_weather_forecast_three_hourly()
+        self.save_weather_forecast_daily_from_day_six()
         
     def get_latest_valid_time(self, values):
         for value in values:
