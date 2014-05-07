@@ -400,10 +400,14 @@ def get_configuration(key):
 
 
 def get_configurations():
-    output = []
+    configurations = {}
     for config in Configuration.objects.all():
-        output.append([config.key, config.value, config.value_type, config.unit, 0])
-    return output
+        configurations[config.key] = {
+                'value': config.value,
+                'type': config.value_type,
+                'unit': config.unit
+            }
+    return [(0, configurations)]
 
 
 def get_device_configuration(system, key):
@@ -412,9 +416,17 @@ def get_device_configuration(system, key):
 
 def get_device_configurations():
     output = []
-    for config in DeviceConfiguration.objects.all():
-        output.append(
-            [config.key, config.value, config.value_type, config.unit, config.device_id])
+    for device in Device.objects.all():
+        configurations = {}
+        for config in DeviceConfiguration.objects.filter(device=device):
+            configurations[config.key] = {
+                    'value': config.value,
+                    'type': config.value_type,
+                    'unit': config.unit
+                }
+        if len(configurations) > 0:
+            output += [(device.id, configurations)]
+
     return output
 
 

@@ -1,102 +1,207 @@
+var namespaces = ['general', 'hs', 'pm', 'cu', 'plb'];
+var settings_data = null;
+
 // READY
 $(function() {
     $.getJSON('/api/settings/', function(data) {
-        $.each(data, function(index, device_config) {
-            if (device_config[0] == 'system_status') {
-                if (device_config[1] == 'init') {
-                    $('#container').prepend(
-                        '<div class="alert alert-warning fade in">\
-                          <h4>Please Configure The System</h4>\
-                          <p>Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Cras mattis consectetur purus sit amet fermentum.</p>\
-                          <p>\
-                            <button type="button" class="btn btn-success" id="configure_demo_button">Start Demo</button>\
-                            <button type="button" class="btn btn-success" id="configure_normal_button">Start Normal</button>\
-                          </p>\
-                        </div>'
-                    );
-                    $("#configure_demo_button").click(function(event) {
-                        $.post("/api/start/", {
-                            demo: 1
-                        });
+        settings_data = data;
+        var system_status = settings_data[0]['system_status'].value;
+        $.each(settings_data, function(device_id, device_configurations) {
+            $.each(device_configurations, function(key, config_data) {
+                var namespace = namespaces[device_id];
+                var item = $('#' + namespace + '_panel .panel-body');
+                if (item.length) {
+                    if (system_status == 'init') {
+                        item.append(get_input_field_code(namespace, key, config_data));
+                    } else {
+                        item.append(get_plain_text(key, config_data));
+                    }
+                }
+            });
+        });
+
+        if (system_status == 'init') {
+            $('#container').prepend(
+                '<div class="alert alert-warning fade in">\
+                  <h4>Please Configure The System</h4>\
+                  <p>Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Cras mattis consectetur purus sit amet fermentum.</p>\
+                </div>'
+            );
+            $('#panels').append(
+                '<div class="row">\
+                    <div class="col-sm-3 col-sm-offset-2">\
+                        <button type="button" class="configure_button btn btn-success btn-block btn-lg" data-demo="1">Start Demo</button>\
+                    </div>\
+                    <div class="col-sm-3 col-sm-offset-2">\
+                        <button type="button" class="configure_button btn btn-success btn-block btn-lg" data-demo="0">Start Normal</button>\
+                    </div>\
+                </div>'
+            );
+            $(".configure_button").click(function(event) {
+                send_configuration(function(){
+                    $.post("/api/start/", {
+                        demo: $(this).attr('data-demo')
+                    }).done(function() {
                         window.location.href = 'index.html';
                     });
-                    $("#configure_normal_button").click(function(event) {
-                        $.post("/api/start/");
-                        location.reload(true);
-                    });
-                }
-            } else {
-                var namespace = undefined;
-                switch(device_config[4]) {
-                    case 0:
-                        namespace = 'general';
-                        break;
-                    case 1:
-                        namespace = 'hs';
-                        break;
-                    case 3:
-                        namespace = 'cu';
-                        break;
-                    case 4:
-                        namespace = 'plb';
-                        break;
-                }
-                var item = $('#' + namespace + '_settings');
-                if (item.length) {
-                    var code =
-                            '<div class="col-sm-6"><div class="form-group">' +
-                                '<label for="' + namespace + '_' + device_config[0] + '">' + get_text(device_config[0]) + '</label>';
-                    if (device_config[3] == '') {
-                        code +=
-                                '<input type="text" class="configuration form-control" id="' + namespace + '_' + device_config[0] + '" data-device="' + device_config[4] + '" data-key="' + device_config[0] + '" data-type="' + device_config[2] + '" data-unit="' + device_config[3] + '"  value="' + device_config[1] + '">';
-                    } else {
-                        code +=
-                                '<div class="input-group">' +
-                                    '<input type="text" class="configuration form-control" id="' + namespace + '_' + device_config[0] + '" data-device="' + device_config[4] + '" data-key="' + device_config[0] + '" data-type="' + device_config[2] + '" data-unit="' + device_config[3] + '"  value="' + device_config[1] + '">' +
-                                    '<span class="input-group-addon">' + device_config[3] + '</span>' +
-                                '</div>';
-                    }
-                    code += '</div></div>';
+                });
+            });
+        }
 
-                    item.append(code);
-                }
-            }
-        });
-
-        $('.configure_button').click(function() {
-            var post_data = [];
-            $( ".configuration" ).each(function( index ) {
-                post_data.push({
-                    device: $(this).attr('data-device'),
-                    key: $(this).attr('data-key'),
-                    type: $(this).attr('data-type'),
-                    value: $(this).val(),
-                    unit: $(this).attr('data-unit')
-                })
+        if (system_status != 'init') {
+            $.each(namespaces, function(index, value) {
+                $('#' + value + '_panel .panel-heading').append('<a href="#" class="edit_button" data-namespace=' + value + '><span class="glyphicon glyphicon-pencil pull-right"></span></a>');
             });
 
-            $.ajax({
-                type: 'POST',
-                contentType: 'application/json',
-                url: '/api/configure/',
-                data: JSON.stringify(post_data),
-                dataType: 'json'
-            }).done(function(response) {
-                $('#panels').prepend(
-                    '<div class="alert alert-success alert-dismissable">\
-                      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>\
-                      <strong>Configurations updated successfully!</strong>\
-                    </div>'
-                );
-            }).fail(function(response) {
-                $('#panels').prepend(
-                    '<div class="alert alert-danger alert-dismissable">\
-                      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>\
-                      <strong>Warning!</strong> An error occured. Is the server up and running?\
-                    </div>'
-                );
+            $('.edit_button').click(function() {
+                edit_settings($(this).attr('data-namespace'));
             });
-            setTimeout(function(){$(".alert").alert('close')}, 3000); // close alert after 3s
-        });
+        }
+
+        // $('.configure_button').click(function() {
+        //     var post_data = [];
+        //     $( ".configuration" ).each(function( index ) {
+        //         post_data.push({
+        //             device: $(this).attr('data-device'),
+        //             key: $(this).attr('data-key'),
+        //             type: $(this).attr('data-type'),
+        //             value: $(this).val(),
+        //             unit: $(this).attr('data-unit')
+        //         })
+        //     });
+
+        //     $.ajax({
+        //         type: 'POST',
+        //         contentType: 'application/json',
+        //         url: '/api/configure/',
+        //         data: JSON.stringify(post_data),
+        //         dataType: 'json'
+        //     }).done(function(response) {
+        //         $('#panels').prepend(
+        //             '<div class="alert alert-success alert-dismissable">\
+        //               <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>\
+        //               <strong>Configurations updated successfully!</strong>\
+        //             </div>'
+        //         );
+        //     }).fail(function(response) {
+        //         $('#panels').prepend(
+        //             '<div class="alert alert-danger alert-dismissable">\
+        //               <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>\
+        //               <strong>Warning!</strong> An error occured. Is the server up and running?\
+        //             </div>'
+        //         );
+        //     });
+        //     setTimeout(function(){$(".alert").alert('close')}, 3000); // close alert after 3s
+        // });
     });
 });
+
+function send_configuration(callback, prefix) {
+    prefix = typeof prefix !== 'undefined' ? prefix : '';
+
+    var post_data = [];
+    $( prefix + ' .configuration' ).each(function( index ) {
+        post_data.push({
+            device: $(this).attr('data-device'),
+            key: $(this).attr('data-key'),
+            type: $(this).attr('data-type'),
+            value: $(this).val(),
+            unit: $(this).attr('data-unit')
+        })
+    });
+
+    $.ajax({
+        type: 'POST',
+        contentType: 'application/json',
+        url: '/api/configure/',
+        data: JSON.stringify(post_data),
+        dataType: 'json'
+    }).done(function(response) {
+        callback();
+    });
+}
+
+function edit_settings(namespace) {
+    var device_id = namespaces.indexOf(namespace);
+    var item = $('#' + namespace + '_panel .panel-body');
+    if (item.length) {
+        item.empty();
+
+        $.each(settings_data[device_id], function(key, config_data) {
+            item.append(get_input_field_code(namespace, key, config_data));
+        });
+
+        item.append(
+            '<div class="row">\
+                <div class="col-sm-12">\
+                    <div class="row">\
+                        <div class="col-sm-6">\
+                            <button type="button" class="btn btn-primary btn-block" id="' + namespace + '_apply_button" data-namespace="' + namespace + '">Apply</button>\
+                        </div>\
+                        <div class="col-sm-6">\
+                            <button type="button" class="btn btn-warning btn-block" id="' + namespace + '_reset_button" data-namespace="' + namespace + '">Reset</button>\
+                        </div>\
+                    </div>\
+                </div>\
+            </div>'
+        );
+
+        $('#' + namespace + '_apply_button').click(function() {
+            var namespace = $(this).attr('data-namespace');
+            var device_id = namespaces.indexOf(namespace);
+            send_configuration(function( index ) {
+                var item = $('#' + namespace + '_panel .panel-body');
+                if (item.length) {
+                    item.empty();
+                    $.each(settings_data[device_id], function(key, config_data) {
+                        item.append(get_plain_text(key, config_data));
+                    });
+                }
+            }, '#' + namespace + '_panel');
+        });
+
+
+        $('#' + namespace + '_reset_button').click(function() {
+            var namespace = $(this).attr('data-namespace');
+            var item = $('#' + namespace + '_panel .panel-body');
+            if (item.length) {
+                item.empty();
+                $.each(settings_data[device_id], function(key, config_data) {
+                    item.append(get_plain_text(key, config_data));
+                });
+            }
+        });
+    }
+}
+
+function get_input_field_code(namespace, key, data) {
+    var device_id = namespaces.indexOf(namespace);
+    var output =
+            '<div class="col-sm-4"><div class="form-group">' +
+                '<label for="' + namespace + '_' + key + '">' + get_text(key) + '</label>';
+    if (data.unit == '') {
+        output +=
+                '<input type="text" class="configuration form-control" id="' + namespace + '_' + key + '" data-device="' + device_id + '" data-key="' + key + '" data-type="' + data.type + '" data-unit="' + data.unit + '"  value="' + data.value + '">';
+    } else {
+        output +=
+                '<div class="input-group">' +
+                    '<input type="text" class="configuration form-control" id="' + namespace + '_' + key + '" data-device="' + device_id + '" data-key="' + key + '" data-type="' + data.type + '" data-unit="' + data.unit + '"  value="' + data.value + '">' +
+                    '<span class="input-group-addon">' + data.unit + '</span>' +
+                '</div>';
+    }
+    output += '</div></div>';
+    return output;
+}
+
+function get_plain_text(key, data) {
+    return '<div class="col-lg-4 col-sm-6">\
+                <div class="row">\
+                    <div class="col-xs-9">\
+                        <b>' + get_text(key) + '</b>:\
+                    </div>\
+                    <div class="col-xs-3 text-right">\
+                        ' + data.value + ' ' + data.unit + '\
+                    </div>\
+                </div>\
+            </div>';
+}
