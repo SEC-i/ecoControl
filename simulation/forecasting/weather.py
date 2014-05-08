@@ -5,13 +5,39 @@ import time
 
 
 class WeatherForecast:
-
-    def __init__(self, env=None):
+    def __init__(self, env=None, city="Berlin"):
         self.env = env
 
         self.forecast_query_date = None
         self.forecast_temperatures_3hourly = []
         self.forecast_temperatures_daily = []
+
+        self.city_id = self.find_city(city)['default']
+
+    """
+    returns a dictionary with city id, names and country based on the given search name
+    the first search result is returnd as 'default' too
+    """
+    def find_city(self, name):
+        url = "http://api.openweathermap.org/data/2.5/find?q=" + name + "&mode=json"
+        cities = {}
+        first_city = None
+        try:
+            result = urllib2.urlopen(url)
+            jsondata = result.read()
+            data = json.loads(jsondata)
+
+            for data_set in data["list"]:
+                if first_city is None:
+                    first_city = data_set['id']
+                cities[data_set['id']] = {'name':data_set['name'],
+                                          'country':data_set['sys']['country']}
+        except urllib2.URLError, KeyError:
+            print "error in weatherforecast"
+            print "use default city 'Berlin'"
+            return {'default':2950159, 'cities':{}}
+
+        return {'default':first_city, 'cities':cities}
 
     def get_weather_forecast(self, hourly=True):
         # only permit forecast queries every 30min, to save some api requests
@@ -22,10 +48,10 @@ class WeatherForecast:
                 return self.forecast_temperatures_daily
 
         if hourly:
-            # 3-hourly forecast for 5 days for Berlin
-            url = "http://openweathermap.org/data/2.3/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5&mode=json"
+            # 3-hourly forecast for 5 days
+            url = "http://openweathermap.org/data/2.3/forecast/city?id=" + str(self.city_id) + "&units=metric&APPID=b180579fb094bd498cdeab9f909870a5&mode=json"
         else:
-            url = "http://openweathermap.org/data/2.3/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"
+            url = "http://openweathermap.org/data/2.3/forecast/city?id=" + str(self.city_id) + "&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"
         forecast_temperatures = []
         self.forecast_query_date = self.get_date()
         try:
