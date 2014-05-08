@@ -5,7 +5,7 @@ import numpy as np
 from numpy import array
 
 """Holt-Winters algorithms to forecasting
-Coded in Python 2 by: Andre Queiroz
+Original Gist: Andre Queiroz, modified and extended by MR
 Description: This module contains three exponential smoothing algorithms. They are Holt's linear trend method and Holt-Winters seasonal methods (additive and multiplicative).
 References:
  Hyndman, R. J.; Athanasopoulos, G. (2013) Forecasting: principles and practice. http://otexts.com/fpp/. Accessed on 07/03/2013.
@@ -94,7 +94,6 @@ def RMSE(params, *args):
     
     rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(input, forecast[:-1])]) / len(input))
     
- 
     return rmse
 
 def MASE(params, *args):
@@ -169,7 +168,7 @@ def additive(x, m, forecast, alpha = None, beta = None, gamma = None,alpha_bound
  
     return Y[-forecast:], alpha, beta, gamma, rmse
  
-def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, initial_values_optimization=[0.0,1.0,0.0]):
+def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, initial_values_optimization=[0.0,1.0,0.0], optimization_type="RMSE"):
  
     Y = x[:]
  
@@ -178,8 +177,9 @@ def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, init
         initial_values = array(initial_values_optimization)
         boundaries = [(0, 1), (0, 1), (0, 1)]
         type = 'multiplicative'
- 
-        parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True,factr=10**6)
+        optimization_criterion = RMSE if optimization_type == "RMSE" else MASE
+        
+        parameters = fmin_l_bfgs_b(optimization_criterion, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True,factr=10**6)
         alpha, beta, gamma = parameters[0]
  
     a = [sum(Y[0:m]) / float(m)]

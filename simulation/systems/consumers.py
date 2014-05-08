@@ -57,7 +57,7 @@ class ThermalConsumer(BaseSystem):
         input_data = warm_water_demand_workday + warm_water_demand_weekend
         #only build once, to save lots of time
         if not copyconstructed:
-            self.warmwater_forecast = Forecast(self.env, input_data, sanples_per_hour=60)
+            self.warmwater_forecast = Forecast(self.env, input_data, samples_per_hour=1)
             
 
         self.calculate()
