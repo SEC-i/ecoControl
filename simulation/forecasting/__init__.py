@@ -47,15 +47,16 @@ class Forecast:
             rmse_auto = 10 ** 6 #some really high value, wil be overwritten
             mase_auto = 10 ** 6
             mase_manual = Forecast.MASE(demand, demand, forecast_values_manual)
-            print mase_manual
             if rmse_manual > 6 or mase_manual > 4:
                 #find values automatically
+                #check with MASE error measure
                 (forecast_values_auto1, alpha1, beta1, gamma1, rmse_auto1) =  multiplicative(demand, m,fc)
                 mase_auto1 = Forecast.MASE(demand, demand, forecast_values_auto1)
                 
-                (forecast_values_auto2, alpha2, beta2, gamma2, rmse_auto2) =  multiplicative(demand, m,fc,initial_values_optimization=[0.5,0.0,0.0])
-                mase_auto2 = Forecast.MASE(demand, demand, forecast_values_auto2)
+                (forecast_values_auto2, alpha2, beta2, gamma2, rmse_auto2) =  multiplicative(demand, m,fc,initial_values_optimization=[0.02,0.01, 0.08])
                 
+                mase_auto2 = Forecast.MASE(demand, demand, forecast_values_auto2)
+                #print mase_manual, mase_auto1, mase_auto2
                 if mase_auto1 > mase_auto2:
                     (forecast_values_auto, alpha, beta, gamma, rmse_auto) = (forecast_values_auto2, alpha2, beta2, gamma2, rmse_auto2)
                     mase_auto = mase_auto2
