@@ -133,7 +133,6 @@ class WeatherForecast:
     def update_weather_estimates(self):
     # only permit forecast queries every 30min, to save some api requests
         values = WeatherValue.objects.order_by('-timestamp')
-    
         last_time = self.get_latest_valid_time(values)
         if last_time:
             time_naive = datetime.datetime.fromtimestamp(self.get_date())

@@ -224,17 +224,18 @@ class UpdateWeatherEstimatesTest(TestCase):
         
         current_time = time.gmtime(self.now)
         hours = current_time.tm_hour
-        current_day = self.now - hours*60*60
+        self.current_day = self.now - hours*60*60
         
-        last_target_time = current_day+13*24*60*60 #day 13, we should have values for day 14
+        last_target_time = self.current_day+13*24*60*60 #day 13, we should have values for day 14
         self.last_target_timestamp = aware_timestamp_from_seconds(last_target_time)
         
-        self.early_new_stamp = aware_timestamp_from_seconds(current_day-60)
+        self.early_new_stamp = aware_timestamp_from_seconds(self.current_day-60)
        
         self.time_mock = MagicMock(return_value = self.now)
         self.now_timestamp = aware_timestamp_from_seconds(self.now)
         response_daily = get_http_response(daily_data)
         response_hourly = get_http_response(hourly_data)
+        
         def response(url):
             if(url==self.forecast.three_hourly_url):
                 return response_hourly
@@ -287,63 +288,47 @@ class UpdateWeatherEstimatesTest(TestCase):
             target_time__gt = self.last_target_timestamp)
         self.assertFalse(results)
     
-    #def test_no_values_saved(self):
-        #'''the update function should save new forecasts 
-        #if there aren't savings in the database.
-        #'''
-        #current_timestamp = 0
-        #time_mock = MagicMock(return_value = current_timestamp) 
-        
-        #with patch('urllib2.urlopen', self.api_answer_mock):
-            #with patch('time.time', time_mock):
-                    #self.forecast.update_weather_estimates()
-        #expected_timestamp = aware_timestamp_from_seconds(current_timestamp)
-        #results = WeatherValue.objects.filter(timestamp = expected_timestamp)
-        #self.assertTrue(results)        
+    def test_no_values_saved(self):
+        '''the update function should save new forecasts 
+        if there aren't savings in the database.
+        '''        
+        with patch('urllib2.urlopen', self.response_mock):
+            with patch('time.time', self.time_mock):
+                    self.forecast.update_weather_estimates()
+        results = WeatherValue.objects.all()
+        self.assertTrue(results)        
     
-    #def test_only_invalid_values_saved(self):
-        #''' the update function should save new forecasts 
-        #if there are only invalid records in the database.
-        #'''
-        #last_timestamp = aware_timestamp_from_seconds(0)
-        #target_timestamp = aware_timestamp_from_seconds(15)
-        #invalid_temperature = -274
-        #WeatherValue(timestamp = last_timestamp, temperature= -274, 
-            #target_time=target_timestamp).save()
+    def test_only_invalid_values_saved(self):
+        ''' the update function should save new forecasts 
+        if there are only invalid records in the database.
+        '''
+        WeatherValue(timestamp = self.early_new_stamp, temperature= -274, 
+            target_time=self.early_new_stamp).save()
         
-        #current_seconds = 30
-        #time_mock = MagicMock(return_value = current_seconds) 
-        
-        #with patch('urllib2.urlopen', self.api_answer_mock):
-            #with patch('time.time', time_mock):
-                    #self.forecast.update_weather_estimates()
-        
-        #expected_timestamp = aware_timestamp_from_seconds(current_seconds)            
-        #results = WeatherValue.objects.filter(timestamp = expected_timestamp)
-        #self.assertTrue(results)  
+        with patch('urllib2.urlopen', self.response_mock):
+            with patch('time.time', self.time_mock):
+                    self.forecast.update_weather_estimates()
     
-    #def test_invalid_and_valid_values_saved(self):
-        #'''it shouldn't save new forecasts, if the latest valid entry is new enough
-        #'''
-        #last_timestamp = aware_timestamp_from_seconds(5)
-        #target_timestamp = aware_timestamp_from_seconds(15)
-        #invalid_temperature = -274
-        #WeatherValue(timestamp = last_timestamp, temperature= -274, 
-            #target_time=target_timestamp).save()
-        #passed_timestamp = aware_timestamp_from_seconds(0)
-        #WeatherValue(timestamp = passed_timestamp, temperature= 20, 
-            #target_time=target_timestamp).save()
+        results = WeatherValue.objects.exclude(temperature= -274)
+        self.assertTrue(results)  
+    
+    def test_invalid_and_valid_values_saved(self):
+        '''it shouldn't save new forecasts, if the latest valid entry is new enough
+        '''
+        earlier_stamp = aware_timestamp_from_seconds(self.now-2*60) # one minute earlier than the early_new_stamp
         
-        #current_seconds = 30
-        #time_mock = MagicMock(return_value = current_seconds) 
+        WeatherValue(timestamp = self.early_new_stamp, temperature= -274, 
+            target_time=self.early_new_stamp).save()
+            
+        WeatherValue(timestamp = earlier_stamp, temperature= 20, 
+            target_time=earlier_stamp).save() 
         
-        #with patch('urllib2.urlopen', self.api_answer_mock):
-            #with patch('time.time', time_mock):
-                    #self.forecast.update_weather_estimates()
-        
-        #expected_timestamp = aware_timestamp_from_seconds(current_seconds)            
-        #results = WeatherValue.objects.filter(timestamp = expected_timestamp)
-        #self.assertFalse(results)
+        with patch('urllib2.urlopen', self.response_mock):
+            with patch('time.time', self.time_mock):
+                    self.forecast.update_weather_estimates()
+                    
+        results = WeatherValue.objects.all()
+        self.assertLess(len(results),3)
 
     
     def test_get_latest_valid_time(self):
