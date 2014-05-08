@@ -1,6 +1,8 @@
 from datetime import date,datetime,timedelta
 from holt_winters import multiplicative, additive
 import numpy as np
+from multiprocessing import Pool
+import time
 
 
 class Forecast:
@@ -31,13 +33,7 @@ class Forecast:
 
 
 
-        
-        
-    def forecast_demands(self):
-        forecasted_demands  = []
-        
-        for demand in self.demands:
-            
+    def forecast_demand(self, demand):
             #alpha, beta, gamma. if any is None, holt.winters determines them automatically
             #cost-expensive, so only do this once..
             m = 24
@@ -68,16 +64,34 @@ class Forecast:
             
             if mase_manual > mase_auto:
                 forecast_values = forecast_values_auto
-                self.calculated_parameters.append({"alpha":alpha, "beta":beta, "gamma":gamma, "rmse":rmse_auto})
+                calculated_parameters = {"alpha":alpha, "beta":beta, "gamma":gamma, "rmse":rmse_auto}
                 print "use auto HW with RMSE", rmse_auto, " and MASE ", mase_auto
             else:
                 forecast_values = forecast_values_manual 
-                self.calculated_parameters.append({"alpha":alpha, "beta":beta, "gamma":gamma, "rmse":rmse_manual})
+                calculated_parameters = {"alpha":alpha, "beta":beta, "gamma":gamma, "rmse":rmse_manual}
                 print "use manual HW with RMSE", rmse_manual, " and MASE ", mase_manual
-            
-            forecasted_demands.append(list(forecast_values))
+                
+            return (forecast_values, calculated_parameters)
+        
+    def forecast_demands(self):
+        forecasted_demands  = []
+        forecasts = []
+        
+        # multiprocessing with processes, to use multiple processors
+        pool = Pool(processes=len(self.demands))
+        # pass class instance, which will call the __call__ method. This is done, because instance methods are not 
+        # pickeable and cant be used with with processes
+        forecasts = pool.map(self,self.demands)
+        
+        for fc_tuple in forecasts:
+            forecasted_demands.append(list(fc_tuple[0]))
+            self.calculated_parameters.append(fc_tuple[1])
             
         return forecasted_demands
+    
+    #callable class
+    def __call__(self, demand):
+        return self.forecast_demand(demand)
     
     @classmethod
     def split_weekdata(self, data, samples_per_hour):

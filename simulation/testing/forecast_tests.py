@@ -44,16 +44,12 @@ class ForecastTests(unittest.TestCase):
         env = ForwardableRealtimeEnvironment()
         fc = Forecast(env, hourly_data, 1, None, (0.0000000, 0.0,1.0))
 
-        #week_split_series = fc.split_weekdata(hourly_data)
-
         self.assertTrue(
             len(fc.demands) == 7, "week_split does not contain 7 series")
         
         self.assertTrue(len(fc.demands[0]) / 24 >= 50, "the day series only contains " + str(
             len(fc.demands[0]) / 24) + " days, not 52 (or at least more than 50)")
         
-        #Plotting.plot_dataset({'measured': fc.demands[1], 'forecasted': fc.forecasted_demands[1]})
-
         for i in range(7):
             Plotting.plot_dataset({'measured': fc.demands[i], 'forecasted': fc.forecasted_demands[i]})
             self.assertTrue(fc.calculated_parameters[i]["rmse"] < 10.0, "RMSE of " + str(
