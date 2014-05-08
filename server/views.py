@@ -108,9 +108,9 @@ def forecast(request):
         initial_time = time()
     if request.method == 'POST':
         configurations = parse_configurations(request.POST)
-        simulation = Simulation(configurations, initial_time=initial_time)
+        simulation = Simulation(initial_time, configurations)
     else:
-        simulation = Simulation(initial_time=initial_time)
+        simulation = Simulation(initial_time)
 
     simulation.forward(seconds=DEFAULT_FORECAST_INTERVAL, blocking=True)
 

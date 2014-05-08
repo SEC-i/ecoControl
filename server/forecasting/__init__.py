@@ -17,7 +17,7 @@ logger = logging.getLogger('simulation')
 
 class Simulation(object):
 
-    def __init__(self, configurations=DeviceConfiguration.objects.all(), demo=False, initial_time=1356998400):
+    def __init__(self, initial_time, configurations=DeviceConfiguration.objects.all(), demo=False):
 
         if initial_time % 3600 != 0.0:
             # ensure that initial_time always at full hour, to avoid

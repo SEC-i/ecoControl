@@ -7,7 +7,7 @@ import calendar
 from django.http import HttpResponse
 
 from server.forecasting import Simulation
-from server.models import DeviceConfiguration, SensorValue
+from server.models import Configuration, DeviceConfiguration, SensorValue
 
 logger = logging.getLogger('django')
 
@@ -48,9 +48,23 @@ def create_json_response_from_QuerySet(request, data):
     return create_json_response(request, list(data.values()))
 
 
-def start_demo_simulation():
-    simulation = Simulation(demo=True, initial_time=get_initial_time())
-    simulation.start()
+def start_demo_simulation(print_visible=False):
+    """
+    This method start a new demo simulation
+    if neccessary and it makes sure that only
+    one demo simulation can run at once
+    """
+    if not write_pidfile_or_fail("/tmp/simulation.pid"):
+        # Start demo simulation if in demo mode
+        system_mode = Configuration.objects.get(key='system_mode')
+        if system_mode.value == 'demo':
+            if print_visible:
+                print 'Starting demo simulation...'
+            else:
+                logger.debug('Starting demo simulation...')
+                
+            simulation = Simulation(get_initial_time(), demo=True)
+            simulation.start()
 
 
 def get_initial_time():
@@ -60,10 +74,11 @@ def get_initial_time():
     except SensorValue.DoesNotExist:
         return 1356998400  # Tuesday 1st January 2013 12:00:00
 
-# checks if pid belongs to a running process
-
 
 def pid_is_running(pid):
+    """
+    checks if pid belongs to a running process
+    """
     try:
         os.kill(pid, 0)
 
@@ -73,10 +88,12 @@ def pid_is_running(pid):
     else:
         return pid
 
-# writes pid to pidfile but returns false if pidfile belongs to running process
-
 
 def write_pidfile_or_fail(path_to_pidfile):
+    """
+    writes pid to pidfile but returns false
+    if pidfile belongs to running process
+    """
     if os.path.exists(path_to_pidfile):
         pid = int(open(path_to_pidfile).read())
 
