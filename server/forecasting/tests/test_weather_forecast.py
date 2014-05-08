@@ -416,38 +416,66 @@ class ApiWorksAsExpectedTest(TestCase):
             self.fail('Cannot acces daily data. The url is not valid')
     
     def test_three_hourly_json(self):
-        try:
-            self.forecast.set_up_records_out_of_json(self.hourly_data, daily=False)
-        except KeyError:
-            self.fail('Json for hourly data, has an unexpected structure.')
+        if self.three_valid:
+            try:
+                self.forecast.set_up_records_out_of_json(self.hourly_data, daily=False)
+            except KeyError:
+                self.fail('Json for hourly data, has an unexpected structure.')
 
     def test_daily_json(self):
-        try:
-            self.forecast.set_up_records_out_of_json(self.daily_data, daily=True)
-        except KeyError:
-            self.fail('Json for daily data, has an unexpected structure.')
+        if self.daily_valid:
+            try:
+                self.forecast.set_up_records_out_of_json(self.daily_data, daily=True)
+            except KeyError:
+                self.fail('Json for daily data, has an unexpected structure.')
+                
+    def test_hourly_values(self):
+        '''We expect from the hour which is nearest to the current time
+        every three hours a value.
+        '''
+        '''
+        if not self.three_valid:
+            return
+        records = self.forecast.set_up_records_out_of_json(self.hourly_data, daily=False)
+        for i in records:
+            print i.target_time
+ 
+        stamp_naive = datetime.datetime.fromtimestamp(time.time())
+        
+        current_hour = stamp_naive.hour  
+        print current_hour
+        last_measurement = current_hour - current_hour % 3
+
+        current_day_count = (24 - last_measurement)/3 # the current day has less measurements,
+        next_four_days_count = 32 # 4*8, four days. eight measurements
+        expected_count =  current_day_count + next_four_days_count
+        
+        self.assertEqual(len(records), expected_count)
+         
+        # the full days have per d  
+        '''      
+        
             
-'''
+
 class GetWeatherTest(unittest.TestCase):
     
-    def set
-    Up(self):
-        f = open('offline_weather.py', 'w')
+    def setUp(self):
+        pass
     
     def test_get_temperature_estimate(self):
-        '\''get most accurate forecast for given date
+        '''get most accurate forecast for given date
         that can be derived from 5 days forecast, 14 days forecast or from history data.
-        '\''
+        '''
         # case 1: the date is in the past. We should know the correct temperature hourly accurate
         # case 2: the date is in the next five days. three hourly accurate.
         # case 3: the date is in the next five days. daily accurate.
-    '\''     S  
+    '''
     get_temperature_estimate
     get_forecast_temperature_hourly
     get_forecast_temperature_daily
     get_average_outside_temperature
-    '\''
- '''       
+    '''
+       
 def aware_timestamp_from_seconds(seconds):
     naive = datetime.datetime.fromtimestamp(seconds)
     return naive.replace(tzinfo=utc)
