@@ -20,11 +20,13 @@ function refresh() {
         }
         $.getJSON('/api/forecast/', function(forecast) {
             update_diagram(data);
-            update_diagram(forecast, true);
-        }).done(function () {
+            if (forecast.length > 0) {
+                update_diagram(forecast, true);
+            }
+        })
+    }).done(function () {
             setTimeout(refresh, 2000);
-        });
-    });
+        });;
 }
 
 function update_diagram(data, forecast) {

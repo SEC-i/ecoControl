@@ -23,6 +23,8 @@ from forecasting import Simulation
 logger = logging.getLogger('django')
 
 DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 14
+SYSTEM_STATUS = 'init'
+DEMO_SIMULATION = None
 
 
 def index(request):
@@ -53,12 +55,17 @@ def logout_user(request):
 
 
 def status(request):
-    system_status = Configuration.objects.get(key='system_status')
+    global SYSTEM_STATUS
+
+    output = [("system_status", SYSTEM_STATUS)]
 
     if request.user.is_authenticated():
-        return create_json_response(request, {"system": system_status.value, "login": "active", "user": request.user.get_full_name()})
+        output.append(("login", "active"))
+        output.append(("user", request.user.get_full_name()))
     else:
-        return create_json_response(request, {"system": system_status.value, "login": "inactive"})
+        output.append(("login", "inactive"))
+
+    return create_json_response(request, dict(output))
 
 
 @require_POST
@@ -66,21 +73,23 @@ def configure(request):
     functions.perform_configuration(json.loads(request.body))
     return create_json_response(request, {"status": "success"})
 
+
 @require_POST
 def start_system(request):
-    system_status = Configuration.objects.get(key='system_status')
-    if system_status.value != 'running':
-        system_status.value = 'running'
-        system_status.save()
+    global DEMO_SIMULATION, SYSTEM_STATUS
 
+    if SYSTEM_STATUS != 'running':
+        SYSTEM_STATUS = 'running'
         if 'demo' in request.POST and request.POST['demo'] == '1':
-            simulation = Simulation(
+            SYSTEM_STATUS = 'forwarding'
+            DEMO_SIMULATION = Simulation(
                 demo=True, initial_time=time() - DEFAULT_FORECAST_INTERVAL)
             if 'test' in sys.argv:
-                simulation.forward(60 * 60, blocking=False)
+                DEMO_SIMULATION.forward(60 * 60, blocking=False)
             else:
-                simulation.forward(DEFAULT_FORECAST_INTERVAL, blocking=False)
-            simulation.start()
+                DEMO_SIMULATION.forward(
+                    DEFAULT_FORECAST_INTERVAL, blocking=False)
+            DEMO_SIMULATION.start()
             return create_json_response(request, {"status": "demo started"})
 
         return create_json_response(request, {"status": "system started without demo"})
@@ -96,6 +105,11 @@ def settings(request):
 
 
 def forecast(request):
+    global DEMO_SIMULATION, SYSTEM_STATUS
+
+    if DEMO_SIMULATION is not None and DEMO_SIMULATION.env.forward > 0:
+        return create_json_response(request, [])
+
     try:
         latest_value = SensorValue.objects.latest('timestamp')
         initial_time = calendar.timegm(latest_value.timestamp.utctimetuple())
@@ -130,21 +144,29 @@ def get_monthly_statistics(request, start=functions.get_past_time(years=1), end=
     if end is not None:
         sensor_values = sensor_values.filter(timestamp__lte=end)
 
-    months = sensor_values.extra({'month':"date_trunc('month', timestamp)"}).values('month').annotate(count=Count('id'))
+    months = sensor_values.extra({'month': "date_trunc('month', timestamp)"}).values(
+        'month').annotate(count=Count('id'))
     output = {}
     for month in months:
         month_start = month['month']
-        month_end = month['month'] + dateutil.relativedelta.relativedelta(months=1) - timedelta(days=1)
+        month_end = month['month'] + dateutil.relativedelta.relativedelta(
+            months=1) - timedelta(days=1)
         month_data = []
-        month_data += functions.get_statistics_for_cogeneration_unit(month_start, month_end)
-        month_data += functions.get_statistics_for_peak_load_boiler(month_start, month_end)
-        month_data += functions.get_statistics_for_thermal_consumer(month_start, month_end)
-        month_data += functions.get_statistics_for_electrical_consumer(month_start, month_end)
-        month_data += functions.get_statistics_for_power_meter(month_start, month_end)
+        month_data += functions.get_statistics_for_cogeneration_unit(
+            month_start, month_end)
+        month_data += functions.get_statistics_for_peak_load_boiler(
+            month_start, month_end)
+        month_data += functions.get_statistics_for_thermal_consumer(
+            month_start, month_end)
+        month_data += functions.get_statistics_for_electrical_consumer(
+            month_start, month_end)
+        month_data += functions.get_statistics_for_power_meter(
+            month_start, month_end)
         timestamp = calendar.timegm(month_start.utctimetuple())
         output[timestamp] = dict(month_data)
 
     return create_json_response(request, output)
+
 
 def list_values(request, start, accuracy='hour'):
     if accuracy not in ['day', 'hour']:
@@ -164,9 +186,9 @@ def list_values(request, start, accuracy='hour'):
     output = []
     for sensor in sensors:
         values = []
-        for date in SensorValue.objects.filter(sensor=sensor, timestamp__gte=start_time).extra({accuracy:"date_trunc('%s', timestamp)" % accuracy}).values(accuracy).annotate(count=Count('id')):
+        for date in SensorValue.objects.filter(sensor=sensor, timestamp__gte=start_time).extra({accuracy: "date_trunc('%s', timestamp)" % accuracy}).values(accuracy).annotate(count=Count('id')):
             start_date = date[accuracy]
-            if accuracy ==  'day':
+            if accuracy == 'day':
                 end_date = start_date + timedelta(days=1)
             else:
                 end_date = start_date + timedelta(hours=1)
@@ -174,7 +196,7 @@ def list_values(request, start, accuracy='hour'):
             cursor = connection.cursor()
             cursor.execute(
                 'SELECT AVG(value) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\' AND "server_sensorvalue"."timestamp" < \'%s\' )' %
-                           (sensor.id, start_date, end_date))
+                (sensor.id, start_date, end_date))
             values.append(
                 [calendar.timegm(start_date.utctimetuple()), float(cursor.fetchone()[0])])
 
@@ -191,10 +213,12 @@ def list_values(request, start, accuracy='hour'):
 
 
 def list_sensors(request):
-    sensors = Sensor.objects.filter(in_diagram=True).values('id', 'name', 'unit', 'device__name')
+    sensors = Sensor.objects.filter(in_diagram=True).values(
+        'id', 'name', 'unit', 'device__name')
 
     # rename device__name to device for convenience
-    output = [{'id': x['id'], 'name': x['name'], 'unit': x['unit'], 'device': x['device__name']} for x in sensors]
+    output = [{'id': x['id'], 'name': x['name'], 'unit': x['unit'], 'device': x['device__name']}
+              for x in sensors]
 
     return create_json_response(request, output)
 

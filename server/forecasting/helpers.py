@@ -51,8 +51,14 @@ class MeasurementStorage():
             self.data.append([])
 
     def take(self):
+        # save demo values every 15mins
+        if self.demo and self.env.now % 60 * 60 != 0:
+            return
+
+        # save forecasting values every hour
         if not self.demo and self.env.now % 3600 != 0:
             return
+
         sensor_values = []
         timestamp = None
         if self.demo:

@@ -1,7 +1,7 @@
 // READY
 $(function() {
     $.getJSON("/api/status/", function(data) {
-        if (data['system'] == 'init') {
+        if (data['system_status'] == 'init') {
             redirect_to_settings();
         }
     }).done(function() {

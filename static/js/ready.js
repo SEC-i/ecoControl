@@ -7,7 +7,7 @@ $(function() {
     initialize_editor();
     initialize_hourly_demands();
     $.getJSON("/api/status/", function(data) {
-        if (data['system'] == 'init') {
+        if (data['system_status'] == 'init') {
             redirect_to_settings();
         } else {
             initialize_diagram();

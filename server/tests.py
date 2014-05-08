@@ -36,7 +36,7 @@ class APITestCase(TestCase):
 
         # Check that the response equals {"login": "inactive"}
         self.assertEqual(json.loads(response.content), {
-                         "login": "active", "user": "test_fn test_ln", "system": "init"})
+                         "login": "active", "user": "test_fn test_ln", "system_status": "init"})
 
         # Issue a request to logout
         response = self.client.get('/api/logout/')
@@ -48,7 +48,7 @@ class APITestCase(TestCase):
 
         # Check that the response equals {"login": "inactive"}
         self.assertEqual(json.loads(response.content), {
-                         "login": "inactive", "system": "init"})
+                         "login": "inactive", "system_status": "init"})
 
     def test_update_system_configurations(self):
         self.assertEqual(len(DeviceConfiguration.objects.all()), 14)
