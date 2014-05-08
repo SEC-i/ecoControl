@@ -10,6 +10,7 @@ from server.models import Sensor, SensorValue, DeviceConfiguration
 
 logger = logging.getLogger('simulation')
 
+
 class BulkProcessor(object):
 
     def __init__(self, env, processes):
@@ -49,12 +50,14 @@ class MeasurementStorage():
         for i in self.sensors:
             self.data.append([])
 
-
     def take(self):
         if not self.demo and self.env.now % 3600 != 0:
             return
         sensor_values = []
-        timestamp = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=pytz.utc)
+        timestamp = None
+        if self.demo:
+            timestamp = datetime.utcfromtimestamp(
+                self.env.now).replace(tzinfo=pytz.utc)
         i = 0
         for device in self.devices:
             for sensor in Sensor.objects.filter(device_id=device.id):
@@ -69,29 +72,15 @@ class MeasurementStorage():
                     else:
                         if sensor.in_diagram:
                             self.data[i].append(
-                                [int(self.env.now), round(float(value), 2)])
+                                [self.env.now, round(float(value), 2)])
                 i += 1
 
         if len(sensor_values) > 0:
             cursor = connection.cursor()
-            cursor.executemany("""INSERT INTO "server_sensorvalue" ("sensor_id", "value", "timestamp") VALUES (%s, %s, %s)""", sensor_values)
+            cursor.executemany(
+                """INSERT INTO "server_sensorvalue" ("sensor_id", "value", "timestamp") VALUES (%s, %s, %s)""", sensor_values)
 
-    def get(self, start=None):
-        if start is not None:
-            i = 0
-            while i < len(self.data[0]) and start + 1 > self.data[0][i]:
-                i += 1
-
-        output = []
-        for index, sensor in enumerate(self.sensors):
-            if start is not None:
-                output.append(
-                    (sensor.id, list(itertools.islice(self.data[index], i, None))))
-            else:
-                output.append((sensor.id, list(self.data[index])))
-        return output
-
-    def get_new(self):
+    def get(self):
         output = []
         for index, sensor in enumerate(self.sensors):
             if sensor.in_diagram:
@@ -109,21 +98,7 @@ class MeasurementStorage():
         index = self.sensors.index(value)
         if len(self.data[index]) > 0:
             return self.data[index][-1]  # return newest item
-        else:
-            return None
-
-    def clear(self):
-        for i in self.data:
-            self.data[i].clear()
-
-
-def parse_hourly_demand_values(namespace, data):
-    output = []
-    for i in range(24):
-        key = namespace + '_' + str(i)
-        if key in data:
-            output.append(float(data[key]))
-    return output
+        return None
 
 
 def parse_value(config):
@@ -138,5 +113,6 @@ def parse_value(config):
             logger.warning(
                 "Couldn't determine type of %s (%s)" % (config.value, config.value_type))
     except ValueError:
-        logger.warning("ValueError parsing %s to %s" % (config.value, config.value_type))
+        logger.warning("ValueError parsing %s to %s" %
+                       (config.value, config.value_type))
     return str(config.value)

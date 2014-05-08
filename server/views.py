@@ -109,7 +109,7 @@ def forecast(request):
 
     simulation.forward(seconds=DEFAULT_FORECAST_INTERVAL, blocking=True)
 
-    return create_json_response(request, simulation.measurements.get_new())
+    return create_json_response(request, simulation.measurements.get())
 
 
 def get_statistics(request, start=functions.get_past_time(months=1), end=None):
