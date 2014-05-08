@@ -17,7 +17,6 @@ logger = logging.getLogger('simulation')
 
 class Simulation(object):
 
-    # initial_time = Tuesday 1st January 2013 12:00:00
     def __init__(self, configurations=DeviceConfiguration.objects.all(), demo=False, initial_time=1356998400):
 
         if initial_time % 3600 != 0.0:
@@ -55,7 +54,8 @@ class Simulation(object):
             # connect power systems
             device.find_dependent_devices_in(system_list)
             if not device.connected():
-                logger.error("Simulation: Device %s is not connected" % device.name)
+                logger.error(
+                    "Simulation: Device %s is not connected" % device.name)
                 raise RuntimeError
 
             # configure systems
@@ -81,8 +81,8 @@ class Simulation(object):
 
                 except SensorValue.DoesNotExist:
                     logger.warning("Simulation: No sensor values \
-                        found for sensor '%s' at device '%s'" \
-                        % (sensor.name, sensor.device.name))
+                        found for sensor '%s' at device '%s'"
+                                   % (sensor.name, sensor.device.name))
                 except Sensor.DoesNotExist:
                     logger.warning(
                         'Could not find any sensor values to configure simulation')

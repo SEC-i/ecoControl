@@ -16,14 +16,13 @@ from django.db import connection
 
 import functions
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue
-from helpers import create_json_response, create_json_response_from_QuerySet
+from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation
 from forecasting import Simulation
 
 
 logger = logging.getLogger('django')
 
 DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 14
-SYSTEM_STATUS = 'init'
 DEMO_SIMULATION = None
 
 
@@ -55,9 +54,9 @@ def logout_user(request):
 
 
 def status(request):
-    global SYSTEM_STATUS
+    system_status = Configuration.objects.get(key="system_status")
 
-    output = [("system_status", SYSTEM_STATUS)]
+    output = [("system_status", system_status.value)]
 
     if request.user.is_authenticated():
         output.append(("login", "active"))
@@ -76,22 +75,19 @@ def configure(request):
 
 @require_POST
 def start_system(request):
-    global DEMO_SIMULATION, SYSTEM_STATUS
+    system_status = Configuration.objects.get(key='system_status')
+    system_mode = Configuration.objects.get(key='system_mode')
 
-    if SYSTEM_STATUS != 'running':
-        SYSTEM_STATUS = 'running'
+    if system_status.value != 'running':
+        system_status.value = 'running'
+        system_status.save()
         if 'demo' in request.POST and request.POST['demo'] == '1':
-            SYSTEM_STATUS = 'forwarding'
-            DEMO_SIMULATION = Simulation(
-                demo=True, initial_time=time() - DEFAULT_FORECAST_INTERVAL)
-            if 'test' in sys.argv:
-                DEMO_SIMULATION.forward(60 * 60, blocking=False)
-            else:
-                DEMO_SIMULATION.forward(
-                    DEFAULT_FORECAST_INTERVAL, blocking=False)
-            DEMO_SIMULATION.start()
+            system_mode.value = 'demo'
+            system_mode.save()
+            start_demo_simulation()
             return create_json_response(request, {"status": "demo started"})
-
+        system_mode.value = 'normal'
+        system_mode.save()
         return create_json_response(request, {"status": "system started without demo"})
 
     return create_json_response(request, {"status": "system already running"})
@@ -105,11 +101,6 @@ def settings(request):
 
 
 def forecast(request):
-    global DEMO_SIMULATION, SYSTEM_STATUS
-
-    if DEMO_SIMULATION is not None and DEMO_SIMULATION.env.forward > 0:
-        return create_json_response(request, [])
-
     try:
         latest_value = SensorValue.objects.latest('timestamp')
         initial_time = calendar.timegm(latest_value.timestamp.utctimetuple())

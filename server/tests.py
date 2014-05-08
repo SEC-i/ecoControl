@@ -54,9 +54,9 @@ class APITestCase(TestCase):
         self.assertEqual(len(DeviceConfiguration.objects.all()), 14)
 
         data = [
-            {'device_id': '1', 'key': 'capacity',
+            {'device': '1', 'key': 'capacity',
                 'value': '12344', 'type': '1', 'unit': 'l'},
-            {'device_id': '3', 'key': 'max_gas_input', 'value': '223445', 'type': '2', 'unit': 'kWh'}]
+            {'device': '3', 'key': 'max_gas_input', 'value': '223445', 'type': '2', 'unit': 'kWh'}]
         response = self.client.post(
             '/api/configure/', json.dumps(data), content_type='application/json')
 
