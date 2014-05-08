@@ -384,7 +384,70 @@ class GetWeatherForecastURLErrorTest(unittest.TestCase):
         self.assertTrue(result, "get_weather_forecast should return values.")
         for entry in result:
             self.assertLess(float(entry.temperature), absolute_zero_point)
+            
+class ApiWorksAsExpectedTest(TestCase):
+    def setUp(self):
+        self.forecast = WeatherForecast()
+        try:
+            result = urllib2.urlopen(self.forecast.three_hourly_url)
+            jsondata = result.read()
+            self.hourly_data = json.loads(jsondata)
+            self.three_valid = True
+        except urllib2.URLError, e:
+            self.three_valid = False
+
+        try:
+            result = urllib2.urlopen(self.forecast.daily_url)
+            jsondata = result.read()
+            self.daily_data = json.loads(jsondata)
+            self.daily_valid = True
+        except urllib2.URLError, e:
+            self.daily_valid = False
         
+        if not self.three_valid and not self.daily_valid:
+            self.fail('Cannot access urls. Check internet connection. Or the API has changed again.')
+        
+    def test_three_hourly_url(self):
+        if not self.three_valid:
+            self.fail('Cannot acces hourly data. The url is not valid')
+            
+    def test_daily_url(self):
+        if not self.daily_valid:
+            self.fail('Cannot acces daily data. The url is not valid')
+    
+    def test_three_hourly_json(self):
+        try:
+            self.forecast.set_up_records_out_of_json(self.hourly_data, daily=False)
+        except KeyError:
+            self.fail('Json for hourly data, has an unexpected structure.')
+
+    def test_daily_json(self):
+        try:
+            self.forecast.set_up_records_out_of_json(self.daily_data, daily=True)
+        except KeyError:
+            self.fail('Json for daily data, has an unexpected structure.')
+            
+'''
+class GetWeatherTest(unittest.TestCase):
+    
+    def set
+    Up(self):
+        f = open('offline_weather.py', 'w')
+    
+    def test_get_temperature_estimate(self):
+        '\''get most accurate forecast for given date
+        that can be derived from 5 days forecast, 14 days forecast or from history data.
+        '\''
+        # case 1: the date is in the past. We should know the correct temperature hourly accurate
+        # case 2: the date is in the next five days. three hourly accurate.
+        # case 3: the date is in the next five days. daily accurate.
+    '\''     S  
+    get_temperature_estimate
+    get_forecast_temperature_hourly
+    get_forecast_temperature_daily
+    get_average_outside_temperature
+    '\''
+ '''       
 def aware_timestamp_from_seconds(seconds):
     naive = datetime.datetime.fromtimestamp(seconds)
     return naive.replace(tzinfo=utc)
