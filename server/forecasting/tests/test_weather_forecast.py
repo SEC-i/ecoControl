@@ -356,34 +356,34 @@ class UpdateWeatherEstimatesTest(TestCase):
         timestamp = self.forecast.get_latest_valid_time(values)
         self.assertFalse(timestamp)
  
-#class GetWeatherForecastURLErrorTest(unittest.TestCase):
-    #def setUp(self):
-        #self.mock = MagicMock(side_effect=urllib2.URLError('No Response'))
-        #self.fcast = WeatherForecast()
+class GetWeatherForecastURLErrorTest(unittest.TestCase):
+    def setUp(self):
+        self.mock = MagicMock(side_effect=urllib2.URLError('No Response'))
+        self.fcast = WeatherForecast()
     
-    #def test_url_error_handled(self):
-        #''' if a data set is not readable, save an invalid record an notify the system of the problem '''
-        #with patch('urllib2.urlopen', self.mock):
-            #try:
-                #self.fcast.get_weather_forecast("")
-            #except urllib2.URLError:
-                #self.fail("the weather forecast should know how to handle the unavailability of the weather api.")
+    def test_url_error_handled(self):
+        ''' if a data set is not readable, save an invalid record an notify the system of the problem '''
+        with patch('urllib2.urlopen', self.mock):
+            try:
+                self.fcast.get_weather_forecast()
+            except urllib2.URLError:
+                self.fail("the weather forecast should know how to handle the unavailability of the weather api.")
     
-    #def test_url_error_logged(self):
-        #logger = weather.logger
-        #logger.warning = Mock()
-        #with patch('urllib2.urlopen', self.mock):
-            #self.fcast.get_weather_forecast("")
-        #argument = logger.warning.call_args[0][0]
-        #self.assertIn("Couln't reach", argument)
+    def test_url_error_logged(self):
+        logger = weather.logger
+        logger.warning = Mock()
+        with patch('urllib2.urlopen', self.mock):
+            self.fcast.get_weather_forecast()
+        argument = logger.warning.call_args[0][0]
+        self.assertIn("Couln't reach", argument)
     
-    #def test_return_value(self):
-        #'''there should be invalid return values.'''
-        #with patch('urllib2.urlopen', self.mock):
-            #result = self.fcast.get_weather_forecast("")
-        #self.assertTrue(result, "get_weather_forecast should return values.")
-        #for entry in result:
-            #self.assertLess(float(entry.temperature), absolute_zero_point)
+    def test_return_value(self):
+        '''there should be invalid return values.'''
+        with patch('urllib2.urlopen', self.mock):
+            result = self.fcast.get_weather_forecast()
+        self.assertTrue(result, "get_weather_forecast should return values.")
+        for entry in result:
+            self.assertLess(float(entry.temperature), absolute_zero_point)
         
 def aware_timestamp_from_seconds(seconds):
     naive = datetime.datetime.fromtimestamp(seconds)
