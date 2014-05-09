@@ -169,9 +169,9 @@ values ={ 'forcasting':forecast_values, 'simulation':input}
 (fig, sim_plot,forecast_plot) = plot_dataset(values)
 
 axcolor = 'lightgoldenrodyellow'
-axalpa = axes([0.25, 0.0, 0.65, 0.03], axisbg=axcolor)
-axbeta  = axes([0.25, 0.05, 0.65, 0.03], axisbg=axcolor)
-axgamma  = axes([0.25, 0.1, 0.65, 0.03], axisbg=axcolor)
+axalpa = axes([0.25, 0.02, 0.65, 0.02], axisbg=axcolor)
+axbeta  = axes([0.25, 0.06, 0.65, 0.02], axisbg=axcolor)
+axgamma  = axes([0.25, 0.1, 0.65, 0.02], axisbg=axcolor)
 
 alpha_slider = Slider(axalpa, 'Alpha', 0.0, 1.0, valinit=alpha)
 beta_slider = Slider(axbeta, 'Beta', 0.0, 1.0, valinit=beta)

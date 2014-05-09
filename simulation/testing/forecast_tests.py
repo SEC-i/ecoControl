@@ -65,18 +65,19 @@ class ForecastTests(unittest.TestCase):
         env = ForwardableRealtimeEnvironment()
         fc = Forecast(env, hourly_data, 1, None, (0.0000000, 0.0,1.0), hw_optimization="None")
         
-        (at_now, day_index, hour_index)  = fc._forecast_at(env.now)
+        (at_now, week_index, hour_index)  = fc._forecast_at(env.now)
         
-        self.assertTrue(day_index == 0, "day should be 0 but was " +str(day_index))
+        self.assertTrue(week_index == 0, "day should be 0 but was " +str(week_index))
         self.assertTrue(hour_index == 0, "day should be 0 but was " +str(hour_index))
         
-        forward = 60 * 60 * 24
+        hour = 60 * 60
+        forward =  (24 * 7 +  2) * hour
         
         print datetime.fromtimestamp(env.now), datetime.fromtimestamp(env.now + forward)
-        (at_now, day_index, hour_index)  = fc._forecast_at(env.now + forward)
+        (at_now, week_index, hour_index)  = fc._forecast_at(env.now + forward)
         
-        self.assertTrue(day_index == 1, "day should be 1 but was " +str(day_index))
-        self.assertTrue(hour_index == 2, "day should be 1 but was " +str(hour_index))
+        self.assertTrue(week_index == 1, "week should be 1 but was " +str(week_index))
+        self.assertTrue(hour_index == 2, "hour should be 2 but was " +str(hour_index))
         
 
 

@@ -151,12 +151,11 @@ class Forecast:
         date = datetime.fromtimestamp(timestamp)
         delta = (date - self.time_series_end).total_seconds()
         arr_index = int((delta / (60.0 * 60.0)) * self.samples_per_hour)
-
-        day_index = int(arr_index / (7 * 24))
+        week_index = int(arr_index / (7 * 24))
         hour_index = arr_index % 24
-        return (self.forecasted_demands[date.weekday()][day_index * 24 + hour_index], day_index, hour_index)
+        return (self.forecasted_demands[date.weekday()][week_index * 24 + hour_index], week_index, hour_index)
 
-    def forecast_at(self, timestamp):
+    def get_forecast_at(self, timestamp):
         return self._forecast_at(timestamp)[0]
 
     @classmethod
