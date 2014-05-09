@@ -16,6 +16,7 @@ var lang = {
     max_gas_input: 'Maximal Gas Input',
     min_temperature: 'Minimal Temperature',
     minimal_workload: 'Minimal Workload',
+    minimal_off_time: 'Minimal Time between Power-Ons',
     purchase_date: 'Date of Purchase',
     purchase_price: 'Purchase Price',
     residents: 'Residents',
