@@ -86,6 +86,7 @@ class ForecastTests(unittest.TestCase):
         print "--------- test append_values ------------------"
         self.setup_forecast()
         raw_dataset_2014 = DataLoader.load_from_file("../tools/Electricity_until_may_2014.csv", "Strom - Verbrauchertotal (Aktuell)", "\t")
+
         #cast to float and convert to kW
         dataset_2014 =  Forecast.make_hourly([float(val) / 1000.0 for val in raw_dataset_2014], 6)
         
