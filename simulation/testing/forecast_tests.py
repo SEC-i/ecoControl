@@ -15,6 +15,12 @@ class ForecastTests(unittest.TestCase):
         #cast to float and convert to kW
         self.dataset = [float(val) / 1000.0 for val in raw_dataset]
         pass
+    
+    def setup_forecast(self):
+        hourly_data = Forecast.make_hourly(self.dataset, 6)
+        self.env = ForwardableRealtimeEnvironment()
+        self.forecast = Forecast(self.env, hourly_data, 1, None, (0.0000000, 0.0,1.0), hw_optimization="None")
+        
 
     def test_data(self):
         print "--------- test data ------------------"
@@ -61,11 +67,8 @@ class ForecastTests(unittest.TestCase):
             
     def test_forecast_at(self):
         print "--------- test forecast_at ------------------"
-        hourly_data = Forecast.make_hourly(self.dataset, 6)
-        env = ForwardableRealtimeEnvironment()
-        fc = Forecast(env, hourly_data, 1, None, (0.0000000, 0.0,1.0), hw_optimization="None")
-        
-        (at_now, week_index, hour_index)  = fc._forecast_at(env.now)
+        self.setup_forecast()
+        (at_now, week_index, hour_index)  = self.forecast._forecast_at(self.env.now)
         
         self.assertTrue(week_index == 0, "day should be 0 but was " +str(week_index))
         self.assertTrue(hour_index == 0, "day should be 0 but was " +str(hour_index))
@@ -73,11 +76,35 @@ class ForecastTests(unittest.TestCase):
         hour = 60 * 60
         forward =  (24 * 7 +  2) * hour
         
-        print datetime.fromtimestamp(env.now), datetime.fromtimestamp(env.now + forward)
-        (at_now, week_index, hour_index)  = fc._forecast_at(env.now + forward)
+        print datetime.fromtimestamp(self.env.now), datetime.fromtimestamp(self.env.now + forward)
+        (at_now, week_index, hour_index)  = self.forecast._forecast_at(self.env.now + forward)
         
         self.assertTrue(week_index == 1, "week should be 1 but was " +str(week_index))
         self.assertTrue(hour_index == 2, "hour should be 2 but was " +str(hour_index))
+        
+    def test_append_data(self):
+        print "--------- test append_values ------------------"
+        self.setup_forecast()
+        raw_dataset_2014 = DataLoader.load_from_file("../tools/Strom_bis_mai_2014.csv", "Strom - Verbrauchertotal (Aktuell)", "\t")
+        #cast to float and convert to kW
+        dataset_2014 =  Forecast.make_hourly([float(val) / 1000.0 for val in raw_dataset_2014], 6)
+        
+        start = datetime(year=2014,month=1,day=1)
+        split_demands14 = Forecast.split_weekdata(dataset_2014, 1, start)
+        
+        self.forecast.append_values(dataset_2014,start)
+        
+        idx = len(split_demands14[start.weekday()])
+        #check that arrays on same weekdays are equal
+        self.assertSequenceEqual(self.forecast.demands[start.weekday()][-idx:], split_demands14[start.weekday()])
+        
+        idx = len(split_demands14[3])
+        self.assertSequenceEqual(self.forecast.demands[3][-idx:], split_demands14[3])
+        
+        idx = len(split_demands14[6])
+        self.assertSequenceEqual(self.forecast.demands[6][-idx:], split_demands14[6])
+        
+        
         
 
 
