@@ -175,30 +175,34 @@ def list_values(request, start, accuracy='hour'):
             start_time = functions.get_past_time(days=14)
 
     output = []
-    for sensor in sensors:
-        values = []
-        for date in SensorValue.objects.filter(sensor=sensor, timestamp__gte=start_time).extra({accuracy: "date_trunc('%s', timestamp)" % accuracy}).values(accuracy).annotate(count=Count('id')):
-            start_date = date[accuracy]
-            if accuracy == 'day':
-                end_date = start_date + timedelta(days=1)
-            else:
-                end_date = start_date + timedelta(hours=1)
+    if start_time is not None:
+        try:
+            for sensor in sensors:
+                values = []
+                for date in SensorValue.objects.filter(sensor=sensor, timestamp__gte=start_time).extra({accuracy: "date_trunc('%s', timestamp)" % accuracy}).values(accuracy).annotate(count=Count('id')):
+                    start_date = date[accuracy]
+                    if accuracy == 'day':
+                        end_date = start_date + timedelta(days=1)
+                    else:
+                        end_date = start_date + timedelta(hours=1)
 
-            cursor = connection.cursor()
-            cursor.execute(
-                'SELECT AVG(value) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\' AND "server_sensorvalue"."timestamp" < \'%s\' )' %
-                (sensor.id, start_date, end_date))
-            values.append(
-                [calendar.timegm(start_date.utctimetuple()), float(cursor.fetchone()[0])])
+                    cursor = connection.cursor()
+                    cursor.execute(
+                        'SELECT AVG(value) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\' AND "server_sensorvalue"."timestamp" < \'%s\' )' %
+                        (sensor.id, start_date, end_date))
+                    values.append(
+                        [calendar.timegm(start_date.utctimetuple()), float(cursor.fetchone()[0])])
 
-        output.append({
-            'id': sensor.id,
-            'device': sensor.device.name,
-            'name': sensor.name,
-            'unit': sensor.unit,
-            'key': sensor.key,
-            'data': values
-        })
+                output.append({
+                    'id': sensor.id,
+                    'device': sensor.device.name,
+                    'name': sensor.name,
+                    'unit': sensor.unit,
+                    'key': sensor.key,
+                    'data': values
+                })
+        except SensorValue.DoesNotExist:
+            logger.debug('No sensor values found in database.')
 
     return create_json_response(request, output)
 
