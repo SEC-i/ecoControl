@@ -402,7 +402,7 @@ def get_configuration(key):
 
 def get_configurations():
     configurations = {}
-    for config in Configuration.objects.all():
+    for config in Configuration.objects.filter(internal=False):
         configurations[config.key] = {
             'value': config.value,
             'type': config.value_type,

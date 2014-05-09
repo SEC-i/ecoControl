@@ -47,9 +47,9 @@ def install_devices(**kwargs):
 
         configurations = []
         configurations.append(Configuration(
-            key='system_status', value='init', value_type=Configuration.STR))
+            key='system_status', value='init', value_type=Configuration.STR, internal=True))
         configurations.append(Configuration(
-            key='system_mode', value='', value_type=Configuration.STR))
+            key='system_mode', value='', value_type=Configuration.STR, internal=True))
         configurations.append(Configuration(
             key='apartments', value='12', value_type=Configuration.INT))
         configurations.append(Configuration(

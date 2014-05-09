@@ -41,6 +41,7 @@ class Configuration(models.Model):
     value_type = models.PositiveSmallIntegerField(
         choices=TYPES, default=STR)
     unit = models.CharField(max_length=50)
+    internal = models.BooleanField(default=False)
 
 
 class DeviceConfiguration(models.Model):
