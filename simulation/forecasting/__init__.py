@@ -47,53 +47,55 @@ class Forecast:
         self.forecast_interval = 24 * 60 * 60
 
     def forecast_demand(self, demand):
-            # alpha, beta, gamma. if any is None, holt.winters determines them automatically
-            # cost-expensive, so only do this once..
-            m = 24
-            fc = len(demand)
-            (alpha, beta, gamma) = self.hw_parameters
+        #seasonality length -- one day
+        m = 24
+        #forecast_length
+        fc = len(demand)
+        # alpha, beta, gamma. if any is None, holt.winters determines them automatically
+        # cost-expensive, so only do this once..
+        (alpha, beta, gamma) = self.hw_parameters
 
-            (forecast_values_manual, alpha, beta, gamma, rmse_manual) = multiplicative(
-                demand, m, fc, alpha, beta, gamma)
+        (forecast_values_manual, alpha, beta, gamma, rmse_manual) = multiplicative(
+            demand, m, fc, alpha, beta, gamma)
 
-            rmse_auto = 10 ** 6  # some really high value, wil be overwritten
-            mase_auto = 10 ** 6
-            mase_manual = Forecast.MASE(demand, demand, forecast_values_manual)
-            if self.hw_optimization != "None" and (rmse_manual > 6 or mase_manual > 4):
-                # find values automatically
-                # check with MASE error measure
-                (forecast_values_auto1, alpha1, beta1, gamma1, rmse_auto1) = multiplicative(
-                    demand, m, fc, optimization_type=self.hw_optimization)
-                
-                mase_auto1 = Forecast.MASE(demand, demand,  forecast_values_auto1)
+        rmse_auto = 10 ** 6  # some really high value, wil be overwritten
+        mase_auto = 10 ** 6
+        mase_manual = Forecast.MASE(demand, demand, forecast_values_manual)
+        if self.hw_optimization != "None" and (rmse_manual > 6 or mase_manual > 4):
+            # find values automatically
+            # check with MASE error measure
+            (forecast_values_auto1, alpha1, beta1, gamma1, rmse_auto1) = multiplicative(
+                demand, m, fc, optimization_type=self.hw_optimization)
+            
+            mase_auto1 = Forecast.MASE(demand, demand,  forecast_values_auto1)
 
-                (forecast_values_auto2, alpha2, beta2, gamma2, rmse_auto2) = multiplicative(demand, m, fc, 
-                    initial_values_optimization=[0.02, 0.01, 0.08], optimization_type=self.hw_optimization)
+            (forecast_values_auto2, alpha2, beta2, gamma2, rmse_auto2) = multiplicative(demand, m, fc, 
+                initial_values_optimization=[0.02, 0.01, 0.08], optimization_type=self.hw_optimization)
 
-                mase_auto2 = Forecast.MASE(demand, demand, forecast_values_auto2)
-                
-                if mase_auto1 > mase_auto2:
-                    (forecast_values_auto, alpha, beta, gamma, rmse_auto) = (
-                        forecast_values_auto2, alpha2, beta2, gamma2, rmse_auto2)
-                    mase_auto = mase_auto2
-                else:
-                    (forecast_values_auto, alpha, beta, gamma, rmse_auto) = (
-                        forecast_values_auto1, alpha1, beta1, gamma1, rmse_auto1)
-                    mase_auto = mase_auto1
-
-
-            if mase_manual > mase_auto:
-                forecast_values = forecast_values_auto
-                calculated_parameters = {
-                    "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_auto}
-                print "use auto HW with RMSE", rmse_auto, " and MASE ", mase_auto
+            mase_auto2 = Forecast.MASE(demand, demand, forecast_values_auto2)
+            
+            if mase_auto1 > mase_auto2:
+                (forecast_values_auto, alpha, beta, gamma, rmse_auto) = (
+                    forecast_values_auto2, alpha2, beta2, gamma2, rmse_auto2)
+                mase_auto = mase_auto2
             else:
-                forecast_values = forecast_values_manual
-                calculated_parameters = {
-                    "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_manual}
-                print "use manual HW with RMSE", rmse_manual, " and MASE ", mase_manual
+                (forecast_values_auto, alpha, beta, gamma, rmse_auto) = (
+                    forecast_values_auto1, alpha1, beta1, gamma1, rmse_auto1)
+                mase_auto = mase_auto1
 
-            return (forecast_values, calculated_parameters)
+
+        if mase_manual > mase_auto:
+            forecast_values = forecast_values_auto
+            calculated_parameters = {
+                "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_auto}
+            print "use auto HW with RMSE", rmse_auto, " and MASE ", mase_auto
+        else:
+            forecast_values = forecast_values_manual
+            calculated_parameters = {
+                "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_manual}
+            print "use manual HW with RMSE", rmse_manual, " and MASE ", mase_manual
+
+        return (forecast_values, calculated_parameters)
 
     def forecast_demands(self):
         forecasted_demands = []
@@ -117,8 +119,11 @@ class Forecast:
         return self.forecast_demand(demand)
 
     @classmethod
-    def split_weekdata(self, data, samples_per_hour, start=0):
-        weekday = start.weekday()
+    def split_weekdata(self, data, samples_per_hour, start_date=None):
+        if start_date != None:
+            weekday = start_date.weekday()
+        else:
+            weekday = 0
         split_array = [[] for i in range(7)]
         for index, element in enumerate(data):
             if index % (24 * samples_per_hour) == 0:
@@ -137,12 +142,12 @@ class Forecast:
         hours = len(data) / samples_per_hour
         return [avg(i) for i in range(hours)]
 
-    def append_values(self, data):
-        new_demands = Forecast.split_weekdata(data, self.samples_per_hour)
+    def append_values(self, data, start_date=None):
+        new_demands = Forecast.split_weekdata(data, self.samples_per_hour, start_date)
         for index, demand in enumerate(new_demands):
             self.demands[index] += demand
 
-        delta = (self.env.now - self.start_date).total_seconds()
+        delta = (datetime.fromtimestamp(self.env.now) - self.time_series_end).total_seconds()
         if delta > self.forecast_interval:
             self.forecasted_demands = self.forecast_demands()
             self.time_series_end = self.env.now

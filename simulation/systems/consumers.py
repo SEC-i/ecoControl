@@ -142,7 +142,7 @@ class ThermalConsumer(BaseSystem):
     def get_warmwater_consumption_power(self):
         specific_heat_capacity_water = 0.001163708  # kWh/(kg*K)
         
-        demand_liters_per_hour = self.warmwater_forecast.forecast_at(self.env.now)
+        demand_liters_per_hour = self.warmwater_forecast.get_forecast_at(self.env.now)
 
         power_demand = demand_liters_per_hour * \
             (self.temperature_warmwater - self.heat_storage.base_temperature) * \
