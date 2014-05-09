@@ -16,8 +16,26 @@ class WeatherForecast:
     def __init__(self, env=None):
         self.forecast_temperatures_3hourly = []
         self.forecast_temperatures_daily = []
-        self.three_hourly_url = "http://openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5&mode=json"
-        self.daily_url = "http://openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"
+        self.three_hourly_url = "http://api.openweathermap.org/data/2.5/forecast?q=berlin&mode=json&units=metric"
+        self.daily_url = "http://api.openweathermap.org/data/2.5/forecast/daily?q=berlin&cnt=14&mode=json&units=metric"
+        
+    def update_weather_estimates(self):
+    # only permit forecast queries every 30min, to save some api requests
+        values = WeatherValue.objects.order_by('-timestamp')
+        last_time = self.get_latest_valid_time(values)
+        if last_time:
+            time_naive = datetime.datetime.fromtimestamp(self.get_date())
+            current_time = time_naive.replace(tzinfo=timezone.utc)
+            seconds_passed = (current_time - last_time).total_seconds()
+            if seconds_passed < 1800: # 30 minutes 
+                return
+        self.save_weather_forecast_three_hourly()
+        self.save_weather_forecast_daily_from_day_six()
+        
+    def get_latest_valid_time(self, values):
+        for value in values:
+            if float(value.temperature) > -273.15:
+                return value.timestamp
         
     def get_weather_forecast(self, daily = True):
         if daily:
@@ -85,8 +103,35 @@ class WeatherForecast:
                 record.save()
         
     def get_temperature_estimate(self, date):
+        #self.update_weather_estimates()
+        if date.minute > 30:
+            look_up_hour=date.hour+1
+        else:
+            look_up_hour=date.hour
+        
+        look_up_date_earlier = date.replace(hour=look_up_hour-2,
+                                    minute=0, second=0, microsecond=0)
+                                    
+        look_up_date_later = date.replace(hour=(look_up_hour+2),
+                                    minute=0, second=0, microsecond=0)
+        entries = WeatherValue.objects.filter(
+            target_time__gte = look_up_date_earlier,
+            target_time__lte=look_up_date_later
+            ) # entries contain one to two entries
+            
+        
+        if len(entries) > 1:
+            result = self.get_nearest_weather_value(entries[0],
+                                                    entries[1],
+                                                    look_up_hour)
+        else:
+            result = entries[0].temperature
+        
+        return result
+        
         """get most accurate forecast for given date
         that can be derived from 5 days forecast, 14 days forecast or from history data"""
+        '''
         history_data = self.get_average_outside_temperature(date)
         time_passed = (date - self.get_date()) / (60.0 * 60.0 * 24)  # in days
         if time_passed < 0.0 or time_passed > 13.0:
@@ -98,6 +143,14 @@ class WeatherForecast:
             return forecast_data_hourly
         else:
             return forecast_data_daily
+        '''
+    def get_nearest_weather_value(self, entry1, entry2, target_time):
+        diff_1 = abs(target_time - entry1.target_time.hour)
+        diff_2 = abs(target_time - entry2.target_time.hour)
+        if diff_1 > diff_2:
+            return entry2.temperature
+        else:
+            return entry1.temperature
 
     def get_forecast_temperature_hourly(self, date):
         self.forecast_temperatures_3hourly = self.get_weather_forecast(
@@ -129,24 +182,6 @@ class WeatherForecast:
         d0 = outside_temperatures_2013[day * 24 + hour]
         d1 = outside_temperatures_2012[day * 24 + hour]
         return (d0 + d1) / 2.0
-        
-    def update_weather_estimates(self):
-    # only permit forecast queries every 30min, to save some api requests
-        values = WeatherValue.objects.order_by('-timestamp')
-        last_time = self.get_latest_valid_time(values)
-        if last_time:
-            time_naive = datetime.datetime.fromtimestamp(self.get_date())
-            current_time = time_naive.replace(tzinfo=timezone.utc)
-            seconds_passed = (current_time - last_time).total_seconds()
-            if seconds_passed < 1800: # 30 minutes 
-                return
-        self.save_weather_forecast_three_hourly()
-        self.save_weather_forecast_daily_from_day_six()
-        
-    def get_latest_valid_time(self, values):
-        for value in values:
-            if float(value.temperature) > -273.15:
-                return value.timestamp
             
     def mix(self, a, b, x):
         return a * (1 - x) + b * x
