@@ -404,10 +404,10 @@ def get_configurations():
     configurations = {}
     for config in Configuration.objects.all():
         configurations[config.key] = {
-                'value': config.value,
-                'type': config.value_type,
-                'unit': config.unit
-            }
+            'value': config.value,
+            'type': config.value_type,
+            'unit': config.unit
+        }
     return [(0, configurations)]
 
 
@@ -421,10 +421,10 @@ def get_device_configurations():
         configurations = {}
         for config in DeviceConfiguration.objects.filter(device=device):
             configurations[config.key] = {
-                    'value': config.value,
-                    'type': config.value_type,
-                    'unit': config.unit
-                }
+                'value': config.value,
+                'type': config.value_type,
+                'unit': config.unit
+            }
         if len(configurations) > 0:
             output += [(device.id, configurations)]
 
@@ -445,6 +445,7 @@ def get_past_time(years=0, months=0, days=0):
     try:
         latest_value = SensorValue.objects.latest('timestamp')
         return latest_value.timestamp + \
-            dateutil.relativedelta.relativedelta(years=-years, months=-months, days=-days)
+            dateutil.relativedelta.relativedelta(
+                years=-years, months=-months, days=-days)
     except SensorValue.DoesNotExist:
         return None

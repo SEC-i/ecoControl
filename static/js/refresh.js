@@ -15,15 +15,17 @@ function refresh() {
         url += current_time + '/';
     }
     $.getJSON(url, function(data) {
-        if (data[0]['data'].length > 0) {
-            current_time = data[0]['data'][data[0]['data'].length - 1][0];
-        }
-        $.getJSON('/api/forecast/', function(forecast) {
-            update_diagram(data);
-            if (forecast.length > 0) {
-                update_diagram(forecast, true);
+        if (data.length > 0) {
+            if (data[0]['data'].length > 0) {
+                current_time = data[0]['data'][data[0]['data'].length - 1][0];
             }
-        })
+            $.getJSON('/api/forecast/', function(forecast) {
+                update_diagram(data);
+                if (forecast.length > 0) {
+                    update_diagram(forecast, true);
+                }
+            });
+        }
     }).done(function () {
             setTimeout(refresh, 2000);
         });;
