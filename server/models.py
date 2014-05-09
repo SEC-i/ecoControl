@@ -64,6 +64,7 @@ class DeviceConfiguration(models.Model):
     value_type = models.PositiveSmallIntegerField(
         choices=TYPES, default=STR)
     unit = models.CharField(max_length=50)
+    tunable = models.BooleanField(default=False)
 
 
 class Sensor(models.Model):

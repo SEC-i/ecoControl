@@ -1,4 +1,3 @@
-var namespaces = ['general', 'hs', 'pm', 'cu', 'plb'];
 var settings_data = null;
 
 // READY

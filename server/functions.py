@@ -415,11 +415,15 @@ def get_device_configuration(system, key):
     return parse_value(DeviceConfiguration.objects.get(device=system, key=key))
 
 
-def get_device_configurations():
+def get_device_configurations(tunable=None):
     output = []
     for device in Device.objects.all():
         configurations = {}
-        for config in DeviceConfiguration.objects.filter(device=device):
+        configuration_queryset = DeviceConfiguration.objects.filter(device=device)
+        if tunable is not None:
+            configuration_queryset = configuration_queryset.filter(tunable=tunable)
+
+        for config in configuration_queryset:
             configurations[config.key] = {
                 'value': config.value,
                 'type': config.value_type,

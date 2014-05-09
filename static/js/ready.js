@@ -4,6 +4,7 @@ var editor = null;
 
 // READY
 $(function() {
+    initialize_tuning_form();
     initialize_editor();
     initialize_hourly_demands();
     $.getJSON("/api/status/", function(data) {
@@ -22,6 +23,48 @@ $(function() {
 });
 
 // INITIALIZATIONS
+function initialize_tuning_form() {
+    $.getJSON('/api/settings/tunable/', function(data) {
+        var item = $('#tuning_container');
+        $.each(data, function(device_id, device_configurations) {
+            $.each(device_configurations, function(key, config_data) {
+                var namespace = namespaces[device_id];
+                item.append(get_input_field_code(namespace, key, config_data));
+            });
+        });
+        $('#tuning_button').click(function () {
+            $('.configuration').each(function () {
+                console.log($(this).val());
+            });
+        });
+        $('#tuning_simulate_button').click(function () {
+            $('.configuration').each(function () {
+                console.log($(this).val());
+            });
+        });
+    });
+    
+}
+
+function get_input_field_code(namespace, key, data) {
+    var device_id = namespaces.indexOf(namespace);
+    var output =
+            '<div class="col-sm-4"><div class="form-group">' +
+                '<label for="' + namespace + '_' + key + '">' + get_text(key) + ' (Device #' + device_id + ')</label>';
+    if (data.unit == '') {
+        output +=
+                '<input type="text" class="configuration form-control" id="' + namespace + '_' + key + '" data-device="' + device_id + '" data-key="' + key + '" data-type="' + data.type + '" data-unit="' + data.unit + '"  value="' + data.value + '">';
+    } else {
+        output +=
+                '<div class="input-group">' +
+                    '<input type="text" class="configuration form-control" id="' + namespace + '_' + key + '" data-device="' + device_id + '" data-key="' + key + '" data-type="' + data.type + '" data-unit="' + data.unit + '"  value="' + data.value + '">' +
+                    '<span class="input-group-addon">' + data.unit + '</span>' +
+                '</div>';
+    }
+    output += '</div></div>';
+    return output;
+}
+
 function initialize_editor() {
     ace.require("ace/ext/language_tools");
     editor = ace.edit("editor");

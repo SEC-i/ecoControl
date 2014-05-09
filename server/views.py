@@ -100,6 +100,11 @@ def settings(request):
     return create_json_response(request, dict(output))
 
 
+def get_tunable_device_configurations(request):
+    output = dict(functions.get_device_configurations(tunable=True))
+    return create_json_response(request, output)
+
+
 def forecast(request):
     try:
         latest_value = SensorValue.objects.latest('timestamp')
