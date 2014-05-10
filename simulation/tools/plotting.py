@@ -87,7 +87,7 @@ class Plotting(object):
         plt.xticks(rotation=90)
         plt.grid(True)
         plt.show(block=True)
-
+        
 
 
 if __name__ == "__main__":

@@ -12,6 +12,8 @@ from matplotlib.widgets import Slider, Button, RadioButtons
 from datetime import date, datetime, timedelta
 from holt_winters import additive, multiplicative
 from simulation.forecasting import Forecast
+from simulation.core.environment import ForwardableRealtimeEnvironment
+from simulation.tools.plotting import Plotting
 # 
 # print 'Start importing R.'
 # from rpy2 import robjects 
@@ -80,16 +82,6 @@ def make_day_data(days, data0, data1):
             
         
     
-def split_weekdata(data, samples_per_hour):
-    weekday = 0
-    split_array = [[] for i in range(7)]
-    for index, element in enumerate(data):
-        if index % (24  * samples_per_hour) == 0:
-            weekday = (weekday + 1) % 7
-        split_array[weekday].append(element)
-    return split_array
-    
-    
 def ets(y):
     print forecast.ets.formals()
     fit = forecast.ets(y, model="MAM")
@@ -99,11 +91,10 @@ def ets(y):
   
   
 
-def plot_dataset(sensordata,block=True):
+def plot_dataset(sensordata,forecast_start=0,block=True):
     fig, ax = plt.subplots()
-    
-    sim_plot, = ax.plot(range(len(sensordata["forcasting"])), sensordata["forcasting"], label="forcasting")
-    forecast_plot, = ax.plot(range(len(sensordata["simulation"])), sensordata["simulation"], label="simulation")
+    forecast_plot, = ax.plot(range(forecast_start,len(sensordata["forecasted"])+forecast_start), sensordata["forecasted"], label="forecasted")
+    sim_plot, = ax.plot(range(len(sensordata["measured"])), sensordata["measured"], label="measured")
     
     # Now add the legend with some customizations.
     legend = ax.legend(loc='upper center', shadow=True)
@@ -123,11 +114,67 @@ def plot_dataset(sensordata,block=True):
     plt.xlabel('Simulated time in seconds')
     plt.xticks(rotation=90)
     plt.grid(True)
-    
-    
-    return (fig, sim_plot,forecast_plot)
+    plt.show()
 
 
+def strategy_testing():
+    alpha = 0.0000001
+    beta = 0.0
+    gamma = 1.0
+
+    m = 24
+    #forecast length weeks
+    fc_length = 24 * 8
+    max_training_length = 24 * 16 #point where (maximal) training data ends
+    
+    
+    raw_dataset = DataLoader.load_from_file("../tools/Electricity_2013.csv", "Strom - Verbrauchertotal (Aktuell)", "\t")
+    #cast to float and convert to kW
+    start = datetime(year=2013,month=1,day=1)
+    
+    dataset = [float(val) / 1000.0 for val in raw_dataset]
+    hourly_data = Forecast.make_hourly(dataset, 6)
+    split_data = Forecast.split_weekdata(hourly_data , 1, start)
+    
+    
+    env = ForwardableRealtimeEnvironment()
+    days = ["Mo","Di","Mi","Do","Fr","Sa","So"]
+    input_length = [24*8, 24*10, 24*12, 24*16]
+    
+    with open('series_results.txt', 'w') as the_file:
+        
+        for i, day in enumerate(days):
+            the_file.write("Day: " + day + "\n")
+            
+            for training_length in input_length:
+                the_file.write("Training length:" + str(training_length)+ "\n")
+                
+                startpoint = max_training_length - training_length
+                training_data = split_data[i][startpoint: max_training_length ]
+                testing_data = split_data[i][max_training_length : max_training_length+fc_length]
+                
+                the_file.write("RMSE optimization: ")
+                (forecast_values, alpha, beta, gamma, rmse) = multiplicative(training_data, m, fc_length, alpha, beta, None, optimization_type="RMSE")
+                
+                #if day == "Mo":
+                #    plot_dataset({'measured': split_data[i], 'forecasted': forecast_values}, forecast_start=training_length)
+                
+                mase = Forecast.MASE(training_data, testing_data, forecast_values)
+                the_file.write("RMSE: " + str(rmse) + "| MASE: " + str(mase) + "\n")
+                
+                the_file.write("MASE optimization: ")
+                (forecast_values, alpha, beta, gamma, rmse) = multiplicative(training_data, m, fc_length, alpha, beta, None, optimization_type="MASE")
+                mase = Forecast.MASE(training_data, testing_data, forecast_values)
+                
+                the_file.write("RMSE: " + str(rmse) + "| MASE: " + str(mase) + "\n")
+                #if day == "Mo":
+                #    plot_dataset({'measured': split_data[i], 'forecasted': forecast_values}, forecast_start=training_length)
+            
+            the_file.write("\n")
+            
+
+
+strategy_testing()
 
 # Example
 #data = np.array(weekly_electrical_demand_winter)
@@ -135,13 +182,12 @@ def plot_dataset(sensordata,block=True):
 
 #data =  np.array(make_two_year_data(weekly_electrical_demand_winter,weekly_electrical_demand_summer, 15, datetime(year=2012,month=4,day=24)))
 #input = make_day_data(4,  electrical_demand_wi_fr,electrical_demand_su_fr)
-raw_data = DataLoader.load_from_file("../tools/Strom_2013.csv", "Strom - Verbrauchertotal (Aktuell)",delim="\t")
-kW_data = [float(val) / 1000.0 for val in raw_data] #cast to float and convert to kW
-input = Forecast.make_hourly(kW_data,6)
-input = split_weekdata(input,1)[1]
 
-data = np.array(input)
-print data, len(data)
+
+
+    
+    
+
 
 #series = ts(data,start=2013, frequency=(1/))
 #
@@ -155,51 +201,6 @@ print data, len(data)
 #forecast_values = forecast_result.rx2("mean")
 #values ={ 'forcasting':list(forecast_values), 'simulation':data}
 #  
-
-alpha = 0.0000001
-beta = 0.0
-gamma = 1.0
-#plot_dataset(values)
-m = 24
-#forecast length
-fc = int(len(data))
-(forecast_values, alpha, beta, gamma, rmse) = multiplicative(input, m,fc, alpha, beta, gamma)
-values ={ 'forcasting':forecast_values, 'simulation':input}
-
-(fig, sim_plot,forecast_plot) = plot_dataset(values)
-
-axcolor = 'lightgoldenrodyellow'
-axalpa = axes([0.25, 0.02, 0.65, 0.02], axisbg=axcolor)
-axbeta  = axes([0.25, 0.06, 0.65, 0.02], axisbg=axcolor)
-axgamma  = axes([0.25, 0.1, 0.65, 0.02], axisbg=axcolor)
-
-alpha_slider = Slider(axalpa, 'Alpha', 0.0, 1.0, valinit=alpha)
-beta_slider = Slider(axbeta, 'Beta', 0.0, 1.0, valinit=beta)
-gamma_slider = Slider(axgamma, 'Gamma', 0.0, 1.0, valinit=gamma)
-
-def HoltWinters(val):
-    alpha = alpha_slider.val
-    beta = beta_slider.val
-    gamma = gamma_slider.val
-    print alpha, beta, gamma
-    #season length
-    m = 24
-    #forecast length
-    fc = int(len(data))
-    (forecast_values, alpha, beta, gamma, rmse) = multiplicative(input, m,fc, alpha, beta, gamma)
-    values ={ 'forcasting':forecast_values, 'simulation':input}
-    
-    forecast_plot.set_ydata(forecast_values)
-    sim_plot.set_ydata(input)
-    fig.canvas.draw_idle()
-    
-    
-
-alpha_slider.on_changed(HoltWinters)
-beta_slider.on_changed(HoltWinters)
-gamma_slider.on_changed(HoltWinters)
-
-plt.show()
 
 # r = robjects.r
 # r.X11()

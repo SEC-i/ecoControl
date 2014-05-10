@@ -76,7 +76,6 @@ class ForecastTests(unittest.TestCase):
         hour = 60 * 60
         forward =  (24 * 7 +  2) * hour
         
-        print datetime.fromtimestamp(self.env.now), datetime.fromtimestamp(self.env.now + forward)
         (at_now, week_index, hour_index)  = self.forecast._forecast_at(self.env.now + forward)
         
         self.assertTrue(week_index == 1, "week should be 1 but was " +str(week_index))
@@ -95,20 +94,19 @@ class ForecastTests(unittest.TestCase):
         
         self.forecast.append_values(dataset_2014,start)
         
-        idx = len(split_demands14[start.weekday()])
+        four_weeks = 24 *4
         #check that arrays on same weekdays are equal
-        self.assertSequenceEqual(self.forecast.demands[start.weekday()][-idx:], split_demands14[start.weekday()])
-        
-        idx = len(split_demands14[3])
-        self.assertSequenceEqual(self.forecast.demands[3][-idx:], split_demands14[3])
-        
-        idx = len(split_demands14[6])
-        self.assertSequenceEqual(self.forecast.demands[6][-idx:], split_demands14[6])
-        
-        
-        
+        self.assertSequenceEqual(self.forecast.demands[start.weekday()][-four_weeks:], split_demands14[start.weekday()][-four_weeks:])
 
+
+        self.assertSequenceEqual(self.forecast.demands[3][-four_weeks:], split_demands14[3][-four_weeks:])
+        
+        
+        
+        
+        
 
 if __name__ == "__main__":
+    #import sys;sys.argv = ['', 'Test.testName']
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

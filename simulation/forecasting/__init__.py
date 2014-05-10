@@ -8,10 +8,12 @@ import time
 class Forecast:
 
     """
-    @param hw_optimisation: "None" --> given hw_parameters are always used (fastest, hw_parameters required)
-                            "RMSE" --> Root Mean Square Error used als optimization parameter for holt winters (slow)
-                            "MASE" --> Mean Absolute Scaled Error is used. Slowest but yield most accurate results.
+    @param input_data: list of consecutive values sampled in samples_per_hour
+    @param start: start date of input data
     @param hw_parameters: tuple with (alpha, beta, gamma)
+    @param hw_optimisation: "None" --> given hw_parameters are always used (fastest, hw_parameters required)
+                            "RMSE" --> Root Mean Square Error used as optimization parameter for Holt-Winters (slow)
+                            "MASE" --> Mean Absolute Scaled Error is used. Yields most accurate results (slowest)
     """
 
     def __init__(self, env, input_data, samples_per_hour=1, start=None, hw_parameters=(), hw_optimization="RMSE"):
@@ -21,7 +23,6 @@ class Forecast:
             self.hw_parameters = hw_parameters  # default hw alpha, beta, gamma
 
         self.hw_optimization = hw_optimization
-
         self.calculated_parameters = []
         self.samples_per_hour = samples_per_hour
         self.env = env
@@ -35,16 +36,25 @@ class Forecast:
         #always set to start of day
         start = start.replace(hour=0,minute=0) 
         
+        #only forecast with this many weeks of data, approx 4 months
+        self.input_weeks = 16
+        #the forecast will cover 8 weeks of future data
+        self.output_weeks = 8
 
         # demands split into weekdays
-        self.demands = self.split_weekdata(input_data, samples_per_hour, start)
-
+        self.demands = Forecast.split_weekdata(input_data, samples_per_hour, start)
+        #self.demands = self.demands[:self.input_weeks*24*self.samples_per_hour]
+        
+        #forecast all demands.. might take long
         self.forecasted_demands = self.forecast_demands()
+       
         # ending time of input data
         self.time_series_end = datetime.fromtimestamp(env.now)
-
+        
         # wait at least one day before making a new forecast
-        self.forecast_interval = 24 * 60 * 60
+        self.forecast_update_interval = 24 * 60 * 60
+        
+
 
     def forecast_demand(self, demand):
         #seasonality length -- one day
@@ -119,7 +129,7 @@ class Forecast:
         return self.forecast_demand(demand)
 
     @classmethod
-    def split_weekdata(self, data, samples_per_hour, start_date=None):
+    def split_weekdata(cls, data, samples_per_hour, start_date=None):
         if start_date != None:
             weekday = start_date.weekday()
         else:
@@ -144,11 +154,19 @@ class Forecast:
 
     def append_values(self, data, start_date=None):
         new_demands = Forecast.split_weekdata(data, self.samples_per_hour, start_date)
+        max_data = self.input_weeks * 24 * self.samples_per_hour
+        
         for index, demand in enumerate(new_demands):
             self.demands[index] += demand
+        if len(self.demands[index]) > max_data:
+            #only keep number of input_weeks
+            #start_index = len(self.demands[index]) - max_data
+            #self.demands[index] = self.demands[index][start_index:]
+            pass
+            
 
         delta = (datetime.fromtimestamp(self.env.now) - self.time_series_end).total_seconds()
-        if delta > self.forecast_interval:
+        if delta > self.forecast_update_interval:
             self.forecasted_demands = self.forecast_demands()
             self.time_series_end = self.env.now
 
