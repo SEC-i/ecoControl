@@ -95,3 +95,12 @@ class Threshold(models.Model):
 
     def __unicode__(self):
         return str(self.pk) + " (" + self.sensor.name + ")"
+
+
+class Notification(models.Model):
+    threshold = models.ForeignKey('Threshold')
+    message = models.CharField(max_length=200)
+    timestamp = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return str(self.pk) + " (" + self.threshold.name + ")"
