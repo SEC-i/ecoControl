@@ -144,6 +144,14 @@ LOGGING = {
             'maxBytes': 1024 * 1024 * 4,
             'backupCount': 5,
             'formatter': 'verbose'
+        }
+        'worker': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(os.path.dirname(__file__), '../logs/worker.log'),
+            'maxBytes': 1024 * 1024 * 4,
+            'backupCount': 5,
+            'formatter': 'verbose'
         },
     },
     'loggers': {
@@ -154,6 +162,11 @@ LOGGING = {
         },
         'simulation': {
             'handlers': ['simulation'],
+            'propagate': True,
+            'level': 'WARNING',
+        }
+        'worker': {
+            'handlers': ['worker'],
             'propagate': True,
             'level': 'WARNING',
         },
