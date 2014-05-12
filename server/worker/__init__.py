@@ -1,9 +1,18 @@
-import logging
+import time
 
-logger = logging.getLogger('worker')
+import functions
+
+WORKER_INTERVAL = 60
 
 
-class Worker(object):
+class Worker(Thread):
 
     def __init__(self):
-        pass
+        Thread.__init__(self)
+        self.daemon = True
+
+    def run(self):
+        while True:
+            functions.check_thresholds()
+
+            time.sleep(WORKER_INTERVAL)

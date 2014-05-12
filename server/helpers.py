@@ -7,6 +7,7 @@ import calendar
 from django.http import HttpResponse
 
 from server.forecasting import Simulation
+from server.worker import Worker
 from server.models import Configuration, DeviceConfiguration, SensorValue
 
 logger = logging.getLogger('django')
@@ -46,6 +47,12 @@ def create_json_response(request, data):
 
 def create_json_response_from_QuerySet(request, data):
     return create_json_response(request, list(data.values()))
+
+
+def start_worker():
+    if not write_pidfile_or_fail("/tmp/worker.pid"):
+        print 'Starting working...'
+        Worker.start()
 
 
 def start_demo_simulation(print_visible=False):
