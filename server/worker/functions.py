@@ -1,7 +1,7 @@
 import logging
 import time
 
-from server.models import Threshold, Notification
+from server.models import SensorValue, Threshold, Notification
 import functions
 
 logger = logging.getLogger('worker')
@@ -29,4 +29,4 @@ def check_thresholds():
 
         except SensorValue.DoesNotExist:
             logger.debug('No SensorValue found for Sensor #%s' %
-                         threshold.sensor__id)
+                         threshold.sensor_id)
