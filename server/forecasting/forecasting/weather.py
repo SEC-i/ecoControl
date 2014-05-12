@@ -46,9 +46,9 @@ class WeatherForecast:
     def get_openweathermapdata(self):
         if self.hourly:
             # 3-hourly forecast for 5 days for Berlin
-            url = "http://openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5&mode=json"
+            url = "http://api.openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5&mode=json"
         else:
-            url = "http://openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"
+            url = "http://api.openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"
         try:
             return urllib2.urlopen(url).read()
         except urllib2.URLError, e:
