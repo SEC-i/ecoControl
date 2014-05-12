@@ -52,7 +52,8 @@ def create_json_response_from_QuerySet(request, data):
 def start_worker():
     if not write_pidfile_or_fail("/tmp/worker.pid"):
         print 'Starting working...'
-        Worker.start()
+        worker = Worker()
+        worker.start()
 
 
 def start_demo_simulation(print_visible=False):
