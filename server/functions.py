@@ -336,48 +336,55 @@ def get_live_data():
         'plb_operating_costs': '',
         'thermal_consumption': '',
         'warmwater_consumption': '',
-        'time': SensorValue.objects.all().latest('timestamp').timestamp
+        'time': ''
     }
-    last_month = get_past_time(months=1)
 
-    for system in Device.objects.all():
-        if system.device_type == Device.HS:
-            output['hs_temperature'] = get_latest_value_with_unit(
-                system, 'get_temperature')
-        elif system.device_type == Device.PM:
-            output['infeed_costs'] = get_latest_value_with_unit(
-                system, 'purchased')
-            output['infeed_reward'] = get_latest_value_with_unit(
-                system, 'fed_in_electricity')
-        elif system.device_type == Device.CU:
-            output['cu_workload'] = get_latest_value_with_unit(
-                system, 'workload')
-            workload = get_latest_value(system, 'workload')
-            thermal_production = round(
-                workload * get_device_configuration(system, 'thermal_efficiency') / 100.0, 2)
-            output['cu_thermal_production'] = '%s kWh' % thermal_production
-            electrical_efficiency = round(
-                workload * get_device_configuration(system, 'electrical_efficiency') / 100.0, 2)
-            output[
-                'cu_electrical_production'] = '%s kWh' % electrical_efficiency
-            output['cu_operating_costs'] = get_operating_costs(
-                system, last_month)
-        elif system.device_type == Device.PLB:
-            output['plb_workload'] = get_latest_value_with_unit(
-                system, 'workload')
-            thermal_production = round(
-                get_latest_value(system, 'workload') * get_device_configuration(system, 'thermal_efficiency') / 100.0, 2)
-            output['plb_thermal_production'] = '%s kWh' % thermal_production
-            output['plb_operating_costs'] = get_operating_costs(
-                system, last_month)
-        elif system.device_type == Device.TC:
-            output['thermal_consumption'] = get_latest_value_with_unit(
-                system, 'get_consumption_power')
-            output['warmwater_consumption'] = get_latest_value_with_unit(
-                system, 'get_warmwater_consumption_power')
-        elif system.device_type == Device.EC:
-            output['electrical_consumption'] = get_latest_value_with_unit(
-                system, 'get_consumption_power')
+    try:
+        output['time'] = SensorValue.objects.all().latest(
+            'timestamp').timestamp
+        last_month = get_past_time(months=1)
+
+        for system in Device.objects.all():
+            if system.device_type == Device.HS:
+                output['hs_temperature'] = get_latest_value_with_unit(
+                    system, 'get_temperature')
+            elif system.device_type == Device.PM:
+                output['infeed_costs'] = get_latest_value_with_unit(
+                    system, 'purchased')
+                output['infeed_reward'] = get_latest_value_with_unit(
+                    system, 'fed_in_electricity')
+            elif system.device_type == Device.CU:
+                output['cu_workload'] = get_latest_value_with_unit(
+                    system, 'workload')
+                workload = get_latest_value(system, 'workload')
+                thermal_production = round(
+                    workload * get_device_configuration(system, 'thermal_efficiency') / 100.0, 2)
+                output['cu_thermal_production'] = '%s kWh' % thermal_production
+                electrical_efficiency = round(
+                    workload * get_device_configuration(system, 'electrical_efficiency') / 100.0, 2)
+                output[
+                    'cu_electrical_production'] = '%s kWh' % electrical_efficiency
+                output['cu_operating_costs'] = get_operating_costs(
+                    system, last_month)
+            elif system.device_type == Device.PLB:
+                output['plb_workload'] = get_latest_value_with_unit(
+                    system, 'workload')
+                thermal_production = round(
+                    get_latest_value(system, 'workload') * get_device_configuration(system, 'thermal_efficiency') / 100.0, 2)
+                output[
+                    'plb_thermal_production'] = '%s kWh' % thermal_production
+                output['plb_operating_costs'] = get_operating_costs(
+                    system, last_month)
+            elif system.device_type == Device.TC:
+                output['thermal_consumption'] = get_latest_value_with_unit(
+                    system, 'get_consumption_power')
+                output['warmwater_consumption'] = get_latest_value_with_unit(
+                    system, 'get_warmwater_consumption_power')
+            elif system.device_type == Device.EC:
+                output['electrical_consumption'] = get_latest_value_with_unit(
+                    system, 'get_consumption_power')
+    except SensorValue.DoesNotExist:
+        logger.debug('SensorValue.DoesNotExist')
 
     return output
 
