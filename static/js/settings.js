@@ -109,7 +109,7 @@ function send_configuration(callback, prefix) {
             type: $(this).attr('data-type'),
             value: $(this).val(),
             unit: $(this).attr('data-unit')
-        })
+        });
     });
 
     $.ajax({

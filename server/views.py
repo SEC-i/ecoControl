@@ -112,7 +112,7 @@ def forecast(request):
     except SensorValue.DoesNotExist:
         initial_time = time()
     if request.method == 'POST':
-        configurations = parse_configurations(request.POST)
+        configurations = functions.get_modified_configurations(json.loads(request.body))
         simulation = Simulation(initial_time, configurations)
     else:
         simulation = Simulation(initial_time)

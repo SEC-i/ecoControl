@@ -33,17 +33,51 @@ function initialize_tuning_form() {
             });
         });
         $('#tuning_button').click(function () {
-            $('.configuration').each(function () {
-                console.log($(this).val());
-            });
+            send_configuration(true);
+        });
+        $('#tuning_form').change(function () {
+            send_configuration(false);
         });
         $('#tuning_simulate_button').click(function () {
-            $('.configuration').each(function () {
-                console.log($(this).val());
-            });
+            send_configuration(false);
         });
     });
     
+}
+
+function send_configuration(apply) {
+
+    var post_data = [];
+    $('.configuration').each(function( index ) {
+        post_data.push({
+            device: $(this).attr('data-device'),
+            key: $(this).attr('data-key'),
+            type: $(this).attr('data-type'),
+            value: $(this).val(),
+            unit: $(this).attr('data-unit')
+        });
+    });
+
+    if (apply) {
+         $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: '/api/configure/',
+            data: JSON.stringify(post_data),
+            dataType: 'json'
+        });
+    } else {
+         $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: '/api/forecast/',
+            data: JSON.stringify(post_data),
+            dataType: 'json',
+            success: function(data) {
+                console.log(data);
+            }
+        });
+    }
 }
 
 function get_input_field_code(namespace, key, data) {
