@@ -2,7 +2,6 @@ branches:
   only:
     - master
     - dev
-    - dev-tuning-form
 notifications:
   email:
     - bp2013h1@lists.myhpi.de
