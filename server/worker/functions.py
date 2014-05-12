@@ -1,7 +1,7 @@
 import logging
 import time
 
-from server.models import SensorValue, Threshold, Notification
+from server.models import Threshold, Notification
 import functions
 
 logger = logging.getLogger('worker')
