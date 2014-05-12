@@ -85,3 +85,13 @@ class SensorValue(models.Model):
 
     def __unicode__(self):
         return str(self.pk) + " (" + self.sensor.name + ")"
+
+
+class Threshold(models.Model):
+    sensor = models.ForeignKey('Sensor')
+    name = models.CharField(max_length=100)
+    min_value = models.FloatField(null=True, blank=True)
+    max_value = models.FloatField(null=True, blank=True)
+
+    def __unicode__(self):
+        return str(self.pk) + " (" + self.sensor.name + ")"
