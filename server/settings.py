@@ -144,7 +144,7 @@ LOGGING = {
             'maxBytes': 1024 * 1024 * 4,
             'backupCount': 5,
             'formatter': 'verbose'
-        }
+        },
         'worker': {
             'level': 'WARNING',
             'class': 'logging.handlers.RotatingFileHandler',
@@ -164,7 +164,7 @@ LOGGING = {
             'handlers': ['simulation'],
             'propagate': True,
             'level': 'WARNING',
-        }
+        },
         'worker': {
             'handlers': ['worker'],
             'propagate': True,
