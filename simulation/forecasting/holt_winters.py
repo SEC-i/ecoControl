@@ -179,7 +179,7 @@ def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, init
         type = 'multiplicative'
         optimization_criterion = RMSE if optimization_type == "RMSE" else MASE
         
-        parameters = fmin_l_bfgs_b(optimization_criterion, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True,factr=10**6)
+        parameters = fmin_l_bfgs_b(optimization_criterion, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True,factr=10**4)
         alpha, beta, gamma = parameters[0]
  
     a = [sum(Y[0:m]) / float(m)]

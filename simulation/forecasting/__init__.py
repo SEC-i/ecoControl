@@ -16,7 +16,7 @@ class Forecast:
                             "MASE" --> Mean Absolute Scaled Error is used. Yields most accurate results (slowest)
     """
 
-    def __init__(self, env, input_data, samples_per_hour=1, start=None, hw_parameters=(), hw_optimization="RMSE"):
+    def __init__(self, env, input_data, samples_per_hour=1, start=None, hw_parameters=(), hw_optimization="MASE"):
         if hw_parameters == ():
             self.hw_parameters = (None, None, None)
         else:
@@ -36,17 +36,19 @@ class Forecast:
         #always set to start of day
         start = start.replace(hour=0,minute=0) 
         
-        #only forecast with this many weeks of data, approx 4 months
-        self.input_weeks = 16
+        #only forecast with this many weeks of data, approx 3 months
+        self.input_weeks = 12
+        self.input_hours = self.input_weeks*24*self.samples_per_hour
         #the forecast will cover 8 weeks of future data
         self.output_weeks = 8
 
         # demands split into weekdays
         self.demands = Forecast.split_weekdata(input_data, samples_per_hour, start)
-        #self.demands = self.demands[:self.input_weeks*24*self.samples_per_hour]
+        self.demands = [demand[-self.input_hours:] for demand in self.demands]
         
         #forecast all demands.. might take long
         self.forecasted_demands = self.forecast_demands()
+        
        
         # ending time of input data
         self.time_series_end = datetime.fromtimestamp(env.now)
@@ -71,39 +73,25 @@ class Forecast:
         rmse_auto = 10 ** 6  # some really high value, wil be overwritten
         mase_auto = 10 ** 6
         mase_manual = Forecast.MASE(demand, demand, forecast_values_manual)
-        if self.hw_optimization != "None" and (rmse_manual > 6 or mase_manual > 4):
+        if self.hw_optimization != "None" and (rmse_manual > 6 or mase_manual > 3):
             # find values automatically
             # check with MASE error measure
-            (forecast_values_auto1, alpha1, beta1, gamma1, rmse_auto1) = multiplicative(
+            (forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(
                 demand, m, fc, optimization_type=self.hw_optimization)
             
-            mase_auto1 = Forecast.MASE(demand, demand,  forecast_values_auto1)
-
-            (forecast_values_auto2, alpha2, beta2, gamma2, rmse_auto2) = multiplicative(demand, m, fc, 
-                initial_values_optimization=[0.02, 0.01, 0.08], optimization_type=self.hw_optimization)
-
-            mase_auto2 = Forecast.MASE(demand, demand, forecast_values_auto2)
+            mase_auto = Forecast.MASE(demand, demand,  forecast_values_auto)
             
-            if mase_auto1 > mase_auto2:
-                (forecast_values_auto, alpha, beta, gamma, rmse_auto) = (
-                    forecast_values_auto2, alpha2, beta2, gamma2, rmse_auto2)
-                mase_auto = mase_auto2
-            else:
-                (forecast_values_auto, alpha, beta, gamma, rmse_auto) = (
-                    forecast_values_auto1, alpha1, beta1, gamma1, rmse_auto1)
-                mase_auto = mase_auto1
-
-
+            
         if mase_manual > mase_auto:
             forecast_values = forecast_values_auto
             calculated_parameters = {
                 "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_auto}
-            print "use auto HW with RMSE", rmse_auto, " and MASE ", mase_auto
+            #print "use auto HW with RMSE", rmse_auto, " and MASE ", mase_auto
         else:
             forecast_values = forecast_values_manual
             calculated_parameters = {
                 "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_manual}
-            print "use manual HW with RMSE", rmse_manual, " and MASE ", mase_manual
+            #print "use manual HW with RMSE", rmse_manual, " and MASE ", mase_manual
 
         return (forecast_values, calculated_parameters)
 
@@ -115,7 +103,7 @@ class Forecast:
         pool = Pool(processes=len(self.demands))
         # pass class instance, which will call the __call__ method. This is done, because instance methods are not
         # pickeable and cant be used with with processes
-        forecasts = pool.map(self, self.demands)
+        forecasts = [self.forecast_demand(demand) for demand in  self.demands]#pool.map(self, self.demands)
 
         self.calculated_parameters = []
         for fc_tuple in forecasts:
@@ -154,14 +142,13 @@ class Forecast:
 
     def append_values(self, data, start_date=None):
         new_demands = Forecast.split_weekdata(data, self.samples_per_hour, start_date)
-        max_data = self.input_weeks * 24 * self.samples_per_hour
         
         for index, demand in enumerate(new_demands):
             self.demands[index] += demand
-        if len(self.demands[index]) > max_data:
+        if len(self.demands[index]) > self.input_hours:
             #only keep number of input_weeks
-            #start_index = len(self.demands[index]) - max_data
-            #self.demands[index] = self.demands[index][start_index:]
+            start_index = len(self.demands[index]) - self.input_hours
+            self.demands[index] = self.demands[index][start_index:]
             pass
             
 

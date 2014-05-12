@@ -11,6 +11,22 @@ def linear_interpolation(a,b,x):
     return a * x + b * (1.0 - x)
 
 
+def approximate_index(dataset, findvalue):
+    index = dataset.index(findvalue)
+    if index != -1:
+        return index
+    
+    i = int(findvalue - dataset[0])
+    while i < len(dataset) -1 and i >= 0:
+        if dataset[i] < findvalue and dataset[i+1] > findvalue:
+            return i
+        elif dataset[i] > findvalue:
+            i-=1
+        else:
+            i+=1
+    return -1
+
+
 """function interpolates between summer and winterset, returning a year of data sampled at sampling interval, begining at start
 assuming a sub-hour sampled dataset.
 map_weekday is a function which maps each weekday to an array index, so a array with only a workday and a weekend day
@@ -42,47 +58,3 @@ def make_two_year_data(dataset_winter, dataset_summer, sampling_interval, start,
         wholeyear_data.append(result_value)
     twoyear = wholeyear_data + wholeyear_data
     return twoyear
-
-
-
-def plot_dataset(sensordata):
-    import matplotlib.pyplot as plt
-    fig, ax = plt.subplots()
-    for name, sensorvals in sensordata.items():
-        if name != "time":
-            ax.plot(range(len(sensorvals)), sensorvals, label=name)
-    
-    # Now add the legend with some customizations.
-    legend = ax.legend(loc='upper center', shadow=True)
-    
-    # The frame is matplotlib.patches.Rectangle instance surrounding the legend.
-    frame = legend.get_frame()
-    frame.set_facecolor('0.90')
-    
-    # Set the fontsize
-    for label in legend.get_texts():
-        label.set_fontsize('medium')
-    
-    for label in legend.get_lines():
-        label.set_linewidth(1.5)
-    
-    plt.subplots_adjust(bottom=0.2)
-    plt.xlabel('Simulated time in seconds')
-    plt.xticks(rotation=90)
-    plt.grid(True)
-    plt.show(block=True)
-
-def test_dataset():
-    from simulation.systems.data import electrical_demand_su_mo,electrical_demand_wi_mo,warm_water_demand_weekend,warm_water_demand_workday
-    from holt_winters import multiplicative
-    #dataset with on day
-    y = make_two_year_data(electrical_demand_wi_mo,electrical_demand_su_mo, 15, datetime(year=2012,month=1,day=1), lambda x :0)
-    
-
-    m = int(len(y) / 2 + 1) #value sampling shift.. somehow
-    fc = len(y) * 2 # whole data length
-    
-    
-    (forecast_values, alpha, beta, gamma, rmse) = multiplicative(y, m, fc,None, 0.0, 0.0)
-    values ={ 'forcasting':list(forecast_values), 'simulation':y}
-    plot_dataset(values)

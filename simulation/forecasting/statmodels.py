@@ -14,6 +14,7 @@ from holt_winters import additive, multiplicative
 from simulation.forecasting import Forecast
 from simulation.core.environment import ForwardableRealtimeEnvironment
 from simulation.tools.plotting import Plotting
+import time
 # 
 # print 'Start importing R.'
 # from rpy2 import robjects 
@@ -124,7 +125,7 @@ def strategy_testing():
 
     m = 24
     #forecast length weeks
-    fc_length = 24 * 8
+    fc_length = 24 * 2
     max_training_length = 24 * 16 #point where (maximal) training data ends
     
     
@@ -141,7 +142,7 @@ def strategy_testing():
     days = ["Mo","Di","Mi","Do","Fr","Sa","So"]
     input_length = [24*8, 24*10, 24*12, 24*16]
     
-    with open('series_results.txt', 'w') as the_file:
+    with open('series_results_2_weeks.txt', 'w') as the_file:
         
         for i, day in enumerate(days):
             the_file.write("Day: " + day + "\n")
@@ -154,22 +155,22 @@ def strategy_testing():
                 testing_data = split_data[i][max_training_length : max_training_length+fc_length]
                 
                 the_file.write("RMSE optimization: ")
+                t0 = time.time()
                 (forecast_values, alpha, beta, gamma, rmse) = multiplicative(training_data, m, fc_length, alpha, beta, None, optimization_type="RMSE")
-                
-                #if day == "Mo":
-                #    plot_dataset({'measured': split_data[i], 'forecasted': forecast_values}, forecast_start=training_length)
-                
                 mase = Forecast.MASE(training_data, testing_data, forecast_values)
-                the_file.write("RMSE: " + str(rmse) + "| MASE: " + str(mase) + "\n")
+                
+                the_file.write("testing MASE: " + str(mase) + "| time: " + str(time.time() - t0) + "secs \n")
                 
                 the_file.write("MASE optimization: ")
-                (forecast_values, alpha, beta, gamma, rmse) = multiplicative(training_data, m, fc_length, alpha, beta, None, optimization_type="MASE")
+                t0 = time.time()
+                (forecast_values, alpha, beta, gamma, rmse) = multiplicative(training_data, m, fc_length, alpha, beta, None,initial_values_optimization=[0.02, 0.01, 0.08], optimization_type="MASE")
                 mase = Forecast.MASE(training_data, testing_data, forecast_values)
+#                 if day == "Mo":
+#                     print mase,rmse
+#                     plot_dataset({'measured': split_data[i], 'forecasted': forecast_values}, forecast_start=training_length)
+                    
                 
-                the_file.write("RMSE: " + str(rmse) + "| MASE: " + str(mase) + "\n")
-                #if day == "Mo":
-                #    plot_dataset({'measured': split_data[i], 'forecasted': forecast_values}, forecast_start=training_length)
-            
+                the_file.write("testing MASE: " + str(mase) + "| time: " + str(time.time() - t0) + "secs \n")
             the_file.write("\n")
             
 

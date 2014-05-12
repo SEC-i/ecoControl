@@ -57,8 +57,9 @@ class ForecastTests(unittest.TestCase):
         self.assertTrue(
             len(fc.demands) == 7, "week_split does not contain 7 series")
         
-        self.assertTrue(len(fc.demands[0]) / 24 >= 50, "the day series only contains " + str(
-            len(fc.demands[0]) / 24) + " days, not 52 (or at least more than 50)")
+        
+        self.assertTrue(len(fc.demands[0]) / 24 >= fc.input_weeks, "the day series only contains " + str(
+            len(fc.demands[0]) / 24) + " days, not " + str(fc.input_weeks) + " (or at least more than 50)")
         
         for i in range(7):
             #Plotting.plot_dataset({'measured': fc.demands[i], 'forecasted': fc.forecasted_demands[i]})
