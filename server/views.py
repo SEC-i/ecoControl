@@ -15,7 +15,7 @@ from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
 
 import functions
-from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue
+from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, Notification
 from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation
 from forecasting import Simulation
 
@@ -220,3 +220,8 @@ def list_sensors(request):
 
 def live_data(request):
     return create_json_response(request, functions.get_live_data())
+
+
+def list_notifications(request):
+    notifications = Notification.objects.all()
+    return create_json_response_from_QuerySet(request, notifications)
