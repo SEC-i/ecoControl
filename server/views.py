@@ -15,7 +15,7 @@ from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
 
 import functions
-from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue
+from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly
 from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation
 from forecasting import Simulation
 
@@ -160,51 +160,13 @@ def get_monthly_statistics(request, start=functions.get_past_time(years=1), end=
 
 
 def list_values(request, start, accuracy='hour'):
-    if accuracy not in ['day', 'hour']:
-        return create_json_response(request, {"status": "accuracy invalid"})
 
-    sensors = Sensor.objects.filter(in_diagram=True)
+    if start is None:
+        start = functions.get_past_time(days=14)
 
-    start_time = end_time = 0
-    if start:
-        start_time = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
-    else:
-        if accuracy == 'day':
-            start_time = functions.get_past_time(years=1)
-        else:
-            start_time = functions.get_past_time(days=14)
+    sensor_values_hourly = SensorValueHourly.objects.filter(interval_group__gte=start)
 
-    output = []
-    if start_time is not None:
-        try:
-            for sensor in sensors:
-                values = []
-                for date in SensorValue.objects.filter(sensor=sensor, timestamp__gte=start_time).extra({accuracy: "date_trunc('%s', timestamp)" % accuracy}).values(accuracy).annotate(count=Count('id')):
-                    start_date = date[accuracy]
-                    if accuracy == 'day':
-                        end_date = start_date + timedelta(days=1)
-                    else:
-                        end_date = start_date + timedelta(hours=1)
-
-                    cursor = connection.cursor()
-                    cursor.execute(
-                        'SELECT AVG(value) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\' AND "server_sensorvalue"."timestamp" < \'%s\' )' %
-                        (sensor.id, start_date, end_date))
-                    values.append(
-                        [calendar.timegm(start_date.utctimetuple()), float(cursor.fetchone()[0])])
-
-                output.append({
-                    'id': sensor.id,
-                    'device': sensor.device.name,
-                    'name': sensor.name,
-                    'unit': sensor.unit,
-                    'key': sensor.key,
-                    'data': values
-                })
-        except SensorValue.DoesNotExist:
-            logger.debug('No sensor values found in database.')
-
-    return create_json_response(request, output)
+    return create_json_response_from_QuerySet(request, sensor_values_hourly)
 
 
 def list_sensors(request):
