@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import sys
 
 from django.db.models.signals import post_syncdb
 from django.db import connection
@@ -122,18 +123,20 @@ def install_devices(**kwargs):
         print "Default device configurations initialized"
 
 
-        cursor = connection.cursor()
-        cursor.execute('''CREATE MATERIALIZED VIEW public.server_sensorvaluehourly AS
-            SELECT row_number() OVER (ORDER BY t1.interval_group) AS id,
-                t1.sensor_id,
-                t1.interval_group,
-                avg(t1.value) AS value
-               FROM ( SELECT             server_sensorvalue.sensor_id,
-                        '1970-01-01 00:00:00'::timestamp without time zone + '01:00:00'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 3600)::double precision AS interval_group,
-                        server_sensorvalue.value
-                       FROM server_sensorvalue) t1
-              GROUP BY  t1.interval_group, t1.sensor_id
-              ORDER BY t1.interval_group
-             WITH DATA;''')
+        if 'test' not in sys.argv:
+
+            cursor = connection.cursor()
+            cursor.execute('''CREATE MATERIALIZED VIEW public.server_sensorvaluehourly AS
+                SELECT row_number() OVER (ORDER BY t1.interval_group) AS id,
+                    t1.sensor_id,
+                    t1.interval_group,
+                    avg(t1.value) AS value
+                   FROM ( SELECT             server_sensorvalue.sensor_id,
+                            '1970-01-01 00:00:00'::timestamp without time zone + '01:00:00'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 3600)::double precision AS interval_group,
+                            server_sensorvalue.value
+                           FROM server_sensorvalue) t1
+                  GROUP BY  t1.interval_group, t1.sensor_id
+                  ORDER BY t1.interval_group
+                 WITH DATA;''')
 
 post_syncdb.connect(install_devices)
