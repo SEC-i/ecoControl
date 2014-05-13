@@ -5,9 +5,11 @@ import json
 from datetime import datetime, timedelta
 import calendar
 import dateutil.relativedelta
+import csv
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
+from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.debug import sensitive_post_parameters
 from django.utils.timezone import utc
@@ -126,6 +128,22 @@ def get_statistics(request, start=functions.get_past_time(months=1), end=None):
     output += functions.get_statistics_for_power_meter(start, end)
 
     return create_json_response(request, dict(output))
+
+
+def export_sensor_values(request, start=functions.get_past_time(months=1), end=None):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="statistics.csv"'
+
+    writer = csv.writer(response)
+    sensor_values = SensorValue.objects.filter(timestamp__gte=start)
+
+    if end is not None:
+        sensor_values = sensor_values.filter(timestamp__lte=end)
+
+    for sensor_value in sensor_values[:1000]:
+        writer.writerow([sensor_value.id, sensor_value.sensor_id, sensor_value.sensor.name, sensor_value.value, sensor_value.timestamp])
+
+    return response
 
 
 def get_monthly_statistics(request, start=functions.get_past_time(years=1), end=None):
