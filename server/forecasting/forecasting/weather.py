@@ -62,13 +62,18 @@ class WeatherForecast:
         results = []
         for data_set in data["list"]:
             try:
-                if(daily):
-                    temperature = data_set['temp']['day']
-                else:
-                    temperature = data_set['main']['temp']
                 target_sec = data_set['dt']
                 target_naive = datetime.datetime.fromtimestamp(target_sec)
                 target_time = target_naive.replace(tzinfo=timezone.utc)
+                
+                if(daily):
+                    target_time = target_time.replace(hour = 0, 
+                                        minute=0, second=0, microsecond=0)
+                    temperature = data_set['temp']['day']
+                else:
+                    target_time = self.get_nearest_hour(target_time)
+                    temperature = data_set['main']['temp']
+
                 
                 stamp_naive = datetime.datetime.fromtimestamp(self.get_date())
                 timestamp = stamp_naive.replace(tzinfo=timezone.utc) 
@@ -80,6 +85,12 @@ class WeatherForecast:
                 if "gdps" not in data_set:
                     raise k 
         return results
+    
+    def get_nearest_hour(self, date):
+        if date.minute < 30:
+            return date.replace(minute=0, second=0, microsecond=0)    
+        return date.replace(hour = date.hour+1, 
+                            minute=0, second=0, microsecond=0)
     
     def save_weather_forecast_three_hourly(self):
         results = self.get_weather_forecast(daily=False)
@@ -104,6 +115,8 @@ class WeatherForecast:
         
     def get_temperature_estimate(self, date):
         #self.update_weather_estimates()
+        #print (date - datetime.datetime.fromtimestamp(self.get_date()).replace(tzinfo=timezone.utc) ).days
+        print date
         if date.minute > 30:
             look_up_hour=date.hour+1
         else:
@@ -117,16 +130,13 @@ class WeatherForecast:
         entries = WeatherValue.objects.filter(
             target_time__gte = look_up_date_earlier,
             target_time__lte=look_up_date_later
-            ) # entries contain one to two entries
-            
-        
+            ) # entries contain one to two entries        
         if len(entries) > 1:
             result = self.get_nearest_weather_value(entries[0],
                                                     entries[1],
                                                     look_up_hour)
         else:
-            result = entries[0].temperature
-        
+            result = entries[0].temperature     
         return result
         
         """get most accurate forecast for given date

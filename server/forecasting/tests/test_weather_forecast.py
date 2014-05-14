@@ -26,7 +26,8 @@ class ForecastingTestDaily(TestCase):
         self.api_answer_mock = MagicMock(return_value = extern_information)
         
         target_sec = 30 # dt
-        target_time = aware_timestamp_from_seconds(target_sec)
+        target_time = aware_timestamp_from_seconds(target_sec).replace(
+            hour=0, minute=0, second=0, microsecond=0)  
         
         seconds = 0
         self.time_mock = MagicMock(return_value = seconds)
@@ -50,7 +51,7 @@ class ForecastingTestDaily(TestCase):
             with patch('time.time', self.time_mock):
                 result = self.forecast.get_weather_forecast(daily=True)
         self.assertTrue(len(result)==1)
-        self.assertTrue(weathervalues_equal_attributes(result[0], self.expected_weather_value))
+        weathervalues_equal_attributes(result[0], self.expected_weather_value) # makes assertion
         
     def test_daily_records_out_of_json(self):
         "the method should return a list with WeatherValues with timestamp and target_time"
@@ -59,7 +60,7 @@ class ForecastingTestDaily(TestCase):
         with patch('time.time', self.time_mock):
             result = self.forecast.set_up_records_out_of_json(input_json, daily=True)
         self.assertTrue(len(result)==1)
-        self.assertTrue(weathervalues_equal_attributes(result[0], self.expected_weather_value))
+        weathervalues_equal_attributes(result[0], self.expected_weather_value)  # makes assertion
         
         # def test_wrong_list(self):
     #    ''' if a data set is not readable, save an invalid record an notify the system of the problem '''
@@ -86,8 +87,10 @@ class ForecastingTestHourly(TestCase):
         extern_information = resp  
         self.api_answer_mock = MagicMock(return_value = extern_information)
         
-        target_sec = 30 # dt
-        target_time = aware_timestamp_from_seconds(target_sec)
+        target_sec = 30 # dt 
+        target_time = aware_timestamp_from_seconds(target_sec).replace(
+            minute=0, second=0, microsecond=0)    
+        # the hourly target time should contain only the full hour
         
         seconds = 0
         self.time_mock = MagicMock(return_value = seconds)
@@ -110,7 +113,36 @@ class ForecastingTestHourly(TestCase):
             with patch('time.time', self.time_mock):
                 result = self.forecast.get_weather_forecast(daily=False)
         self.assertTrue(len(result)==1)
-        self.assertTrue(weathervalues_equal_attributes(result[0], self.expected_weather_value))
+        weathervalues_equal_attributes(result[0], 
+            self.expected_weather_value) # makes assertion
+    
+    def test_get_weather_forecast_with_almost_full_hour(self):
+        '''the function returns the temperatures as a list of TemperatureValues.
+        it opens the given url of openweather map ans extracts the data.
+        If the returned target time is nearer at the next hour, store
+        it for the next hour.'''
+        
+        self.data = '{"list": [{"dt":2100, "main": {"temp": 30}}]}'   
+        resp = urllib2.addinfourl(StringIO(self.data), 'fill', '')
+        resp.code = 200
+        resp.msg = "Ok"
+        extern_information = resp  
+        self.api_answer_mock = MagicMock(return_value = extern_information)
+        
+        target_sec = 2100 # dt 35 Minutes
+        full_hour = aware_timestamp_from_seconds(target_sec)
+        target_time = full_hour.replace( 
+            hour=full_hour.hour+1, minute=0, second=0, microsecond=0)    
+        # the hourly target time should contain only the full hour
+        expected_timestamp = aware_timestamp_from_seconds(self.time_mock())
+        self.expected_weather_value = WeatherValue(temperature = 30, 
+            timestamp = expected_timestamp, target_time = target_time)
+        with patch('urllib2.urlopen', self.api_answer_mock):
+            with patch('time.time', self.time_mock):
+                result = self.forecast.get_weather_forecast(daily=False)
+        self.assertTrue(len(result)==1)
+        weathervalues_equal_attributes(result[0], 
+            self.expected_weather_value) # makes assertion
 
     def test_3hourly_records_out_of_json(self):
         "the method should return a list with WeatherValues with timestamp and target_time"
@@ -118,7 +150,8 @@ class ForecastingTestHourly(TestCase):
         with patch('time.time', self.time_mock):
             result = self.forecast.set_up_records_out_of_json(input_json, daily = False)
         self.assertTrue(len(result)==1)
-        self.assertTrue(weathervalues_equal_attributes(result[0], self.expected_weather_value))
+        weathervalues_equal_attributes(result[0],
+            self.expected_weather_value) # makes assertion
 
     # def test_wrong_list(self):
     #    ''' if a data set is not readable, save an invalid record an notify the system of the problem '''
@@ -476,17 +509,28 @@ class GetWeatherTest(unittest.TestCase):
         # return the temperature of the nearest target_time
         now = self.begin_seconds+2*24*60*60 # 2014-05-09 14:00:00+00:00
         now_stamp = aware_timestamp_from_seconds(now)
-        self.time_mock = MagicMock(return_value = now)
+        self.time_mock = MagicMock(return_value = self.end_seconds)
         with patch('time.time', self.time_mock):
             temperature = self.forecast.get_temperature_estimate(now_stamp)
         expected_temperature = '15.63'
         self.assertEqual(temperature, expected_temperature)
-    '''    
+       
     def test_get_temperature_estimate_of_14days_date(self):
         # case 2: the date is in the next fourteen days. daily accurate.
         now = self.begin_seconds+10*24*60*60  #'2014-05-17 13:00:00+00:00', temperature=17.24
         now_stamp = aware_timestamp_from_seconds(now)
-        self.time_mock = MagicMock(return_value = now)
+        self.time_mock = MagicMock(return_value = self.end_seconds)
+        with patch('time.time', self.time_mock):
+            temperature = self.forecast.get_temperature_estimate(now_stamp)
+        expected_temperature = '17.24'
+        self.assertEqual(temperature, expected_temperature)
+        
+    def test_get_temperature_estimate_of_date_with_random_hour(self):
+        # case 2: the date is in the next fourteen days. daily accurate.
+        # the date has a time which is not saved
+        now = self.begin_seconds+10*24*60*60 - 10*60*60  #'2014-05-17 03:00:00+00:00', temperature=17.24
+        now_stamp = aware_timestamp_from_seconds(now)
+        self.time_mock = MagicMock(return_value = self.end_seconds)
         with patch('time.time', self.time_mock):
             temperature = self.forecast.get_temperature_estimate(now_stamp)
         expected_temperature = '17.24'
@@ -495,7 +539,7 @@ class GetWeatherTest(unittest.TestCase):
         
         # case 3: the date is in the past. We should know the correct temperature at least accurate for 15 minutes
         # it should return the newest entry
-    '''
+    
     '''
     get_temperature_estimate
     get_forecast_temperature_hourly
@@ -559,10 +603,9 @@ def aware_timestamp_from_seconds(seconds):
     return naive.replace(tzinfo=utc)
     
 def weathervalues_equal_attributes(value1, value2):
-    return \
-    value1.temperature == value2.temperature and \
-    value1.timestamp == value2.timestamp and \
-    value1.target_time == value2.target_time    
+    assert value1.temperature == value2.temperature, "{0} != {1}".format(value1.temperature, value2.temperature)
+    assert value1.timestamp == value2.timestamp, "{0} != {1}".format(value1.timestamp, value2.timestamp)
+    assert value1.target_time == value2.target_time, "{0} != {1}".format(value1.target_time, value2.target_time)  
     
 def get_http_response(content):
     resp = urllib2.addinfourl(StringIO(content), 'fill', '')
