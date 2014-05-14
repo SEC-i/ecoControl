@@ -43,33 +43,88 @@
           <ul class="nav navbar-nav">
             <li><a href="index.html">Overview</a></li>
             <li><a href="statistics.html">Statistics</a></li>
-            <li class="active"><a href="notifications.html">Notifications</a></li>
+            <li><a href="notifications.html">Notifications</a></li>
             <li><a href="live_setup.html">Live Setup</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="thresholds.html">Thresholds</a></li>
+            <li class="active"><a href="thresholds.html">Thresholds</a></li>
             <li><a href="settings.html">Settings</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
     </div>
 
-    <!-- Notification page -->
+    <!-- Thresholds page -->
     <div class="container">
       <div class="row">
         <div class="col-sm-12">
           <div class="panel panel-default">
-            <div class="panel-heading">Notification History</div>
+            <div class="panel-heading">Threshold List</div>
             <div class="panel-body">
-              <table class="table" id="notification_list">
+              <table class="table" id="threshold_list">
                 <thead>
                   <tr>
-                    <th>Time</th>
-                    <th>Message</th>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Sensor</th>
+                    <th>Min</th>
+                    <th>Max</th>
+                    <th>Type</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody></tbody>
               </table>
+
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading">Add New Threshold</div>
+            <div class="panel-body">
+
+              <form id="add_threshold_form" class="form" role="form">
+                <div class="row">
+                  <div class="col-sm-4">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="threshold_name" placeholder="Enter name for Threshold" required="required">
+                    </div>
+                  </div>
+                  <div class="col-sm-3">
+                    <div class="form-group">
+                        <select id="sensor_list" name="sensor_id" class="form-control" required="required"></select>
+                    </div>
+                  </div>
+                  <div class="col-sm-1">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="min_value" placeholder="Min.">
+                    </div>
+                  </div>
+                  <div class="col-sm-1">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="max_value" placeholder="Max.">
+                    </div>
+                  </div>
+                  <div class="col-sm-2">
+                    <div class="form-group">
+                        <select name="category" class="form-control" required="required">
+                          <option value="">Select Type</option>
+                          <option value="0">Default</option>
+                          <option value="1">Primary</option>
+                          <option value="2">Success</option>
+                          <option value="3">Info</option>
+                          <option value="4">Warning</option>
+                          <option value="5">Danger</option>
+                        </select>
+                    </div>
+                  </div>
+                  <div class="col-sm-1">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+
             </div>
           </div>
         </div>
@@ -92,7 +147,7 @@
     <script src="/static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
     <script src="/static/libs/bootstrap/js/bootstrap.min.js"></script>
 
-    <script src="/static/js/notifications.js"></script>
+    <script src="/static/js/thresholds.js"></script>
 
   </body>
 </html>

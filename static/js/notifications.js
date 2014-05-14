@@ -10,11 +10,8 @@ $(function() {
             $.each(data, function(index, notification) {
                 $('#notification_list tbody').append(
                     '<tr>\
-                        <td>' + notification['id'] + '</td>\
-                        <td>' + get_label(notification['category']) + '</td>\
-                        <td>' + notification['message'] + '</td>\
                         <td>' + $.format.date(new Date(parseFloat(notification['timestamp'])), "HH:MM dd.MM.yyyy") + '</td>\
-                        <td>' + (notification['read'] == true ? '' : '<span class="glyphicon glyphicon-ok"></span>' ) + '</td>\
+                        <td>' + get_label(notification['category']) + ' ' + notification['message'] + '</td>\
                     </tr>'
                 );
             });

@@ -88,8 +88,25 @@ class SensorValue(models.Model):
 
 
 class Threshold(models.Model):
+    Default = 0
+    Primary = 1
+    Success = 2
+    Info = 3
+    Warning = 4
+    Danger = 5
+
+    TYPES = (
+        (Default, 'Default'),
+        (Primary, 'Primary'),
+        (Success, 'Success'),
+        (Info, 'Info'),
+        (Warning, 'Warning'),
+        (Danger, 'Danger'),
+    )
+
     sensor = models.ForeignKey('Sensor')
     name = models.CharField(max_length=100)
+    category = models.PositiveSmallIntegerField(choices=TYPES, default=Default)
     min_value = models.FloatField(null=True, blank=True)
     max_value = models.FloatField(null=True, blank=True)
 
@@ -117,8 +134,7 @@ class Notification(models.Model):
     threshold = models.ForeignKey('Threshold')
     message = models.CharField(max_length=200)
     timestamp = models.DateTimeField(auto_now=True)
-    category = models.PositiveSmallIntegerField(
-        choices=TYPES, default=Default)
+    category = models.PositiveSmallIntegerField(choices=TYPES, default=Default)
     read = models.BooleanField(default=False)
 
     def __unicode__(self):

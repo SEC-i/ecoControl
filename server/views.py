@@ -15,7 +15,7 @@ from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
 
 import functions
-from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, Notification
+from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, Threshold, Notification
 from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation
 from forecasting import Simulation
 
@@ -222,6 +222,40 @@ def live_data(request):
     return create_json_response(request, functions.get_live_data())
 
 
+def list_thresholds(request):
+    thresholds = Threshold.objects.extra(select={
+        'sensor_name': 'SELECT name FROM server_sensor WHERE id = sensor_id'
+    })
+    return create_json_response_from_QuerySet(request, thresholds)
+
+
+@require_POST
+def handle_threshold(request):
+    data = json.loads(request.body)
+    if 'id' in data:
+        threshold = Threshold.objects.filter(id=data['id'])
+        if threshold.count() > 0:
+            if 'name' in data:
+                threshold.name = data['name']
+            if 'sensor_id' in data:
+                threshold.sensor_id = data['sensor_id']
+            if 'min_value' in data:
+                threshold.min_value = data['min_value']
+            if 'max_value' in data:
+                threshold.max_value = data['max_value']
+            if 'category' in data:
+                threshold.category = data['category']
+            threshold.update()
+            return create_json_response(request, {"status": "success"})
+    else:
+        if all(x in data for x in ['name', 'sensor_id', 'min_value', 'max_value', 'category']):
+            threshold = Threshold(name=data['name'], sensor_id=data['sensor_id'], min_value=data['min_value'], max_value=data['max_value'], category=data['category'])
+            threshold.save()
+            return create_json_response(request, {"status": "success"})
+
+    return create_json_response(request, {"status": "failed"})
+
+
 def list_notifications(request):
-    notifications = Notification.objects.all()
+    notifications = Notification.objects.all().order_by('-timestamp')
     return create_json_response_from_QuerySet(request, notifications)
