@@ -7,7 +7,7 @@ from server import server, main
 
 
 if __name__ == '__main__':
-
+    main.setup_devices()
     if "profile" in sys.argv:
         import cProfile
         main.env.stop_after_forward = True

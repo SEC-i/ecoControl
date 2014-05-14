@@ -66,7 +66,7 @@ class Forecast:
         # alpha, beta, gamma. if any is None, holt.winters determines them automatically
         # cost-expensive, so only do this once..
         (alpha, beta, gamma) = self.hw_parameters
-
+        print "find holt winter parameters for day: ", self.demands.index(demand)
         (forecast_values_manual, alpha, beta, gamma, rmse_manual) = multiplicative(
             demand, m, fc, alpha, beta, gamma)
 
@@ -76,6 +76,7 @@ class Forecast:
         if self.hw_optimization != "None" and (rmse_manual > 6 or mase_manual > 3):
             # find values automatically
             # check with MASE error measure
+            
             (forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(
                 demand, m, fc, optimization_type=self.hw_optimization)
             
@@ -103,7 +104,7 @@ class Forecast:
         pool = Pool(processes=len(self.demands))
         # pass class instance, which will call the __call__ method. This is done, because instance methods are not
         # pickeable and cant be used with with processes
-        forecasts = [self.forecast_demand(demand) for demand in  self.demands]#pool.map(self, self.demands)
+        forecasts = pool.map(self, self.demands) #[self.forecast_demand(demand) for demand in  self.demands]#pool.map(self, self.demands) #
 
         self.calculated_parameters = []
         for fc_tuple in forecasts:
@@ -151,11 +152,11 @@ class Forecast:
             self.demands[index] = self.demands[index][start_index:]
             pass
             
-
-        delta = (datetime.fromtimestamp(self.env.now) - self.time_series_end).total_seconds()
+        now = datetime.fromtimestamp(self.env.now) 
+        delta = (now - self.time_series_end).total_seconds()
         if delta > self.forecast_update_interval:
             self.forecasted_demands = self.forecast_demands()
-            self.time_series_end = self.env.now
+            self.time_series_end = datetime.fromtimestamp(self.env.now)
 
     def _forecast_at(self, timestamp):
         date = datetime.fromtimestamp(timestamp)

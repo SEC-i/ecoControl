@@ -1,5 +1,6 @@
 import time
 from datetime import datetime
+import os
 
 from simulation.systems import BaseSystem
 from simulation.systems.helpers import interpolate_year
@@ -60,7 +61,8 @@ class ThermalConsumer(BaseSystem):
         input_data = warm_water_demand_workday + warm_water_demand_weekend
         #only build once, to save lots of time
         if not copyconstructed:
-            self.warmwater_forecast = Forecast(self.env, input_data, samples_per_hour=1)
+            #self.warmwater_forecast = Forecast(self.env, input_data, samples_per_hour=1)
+            pass
             
 
         self.calculate()
@@ -143,15 +145,25 @@ class ThermalConsumer(BaseSystem):
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
 
     def get_warmwater_consumption_power(self):
+        #demand_liters_per_hour = self.warmwater_forecast.get_forecast_at(self.env.now)
         specific_heat_capacity_water = 0.001163708  # kWh/(kg*K)
-        
-        demand_liters_per_hour = self.warmwater_forecast.get_forecast_at(self.env.now)
+        time_tuple = time.gmtime(self.env.now)
+
+        hour = time_tuple.tm_hour
+        wday = time_tuple.tm_wday
+        weight = time_tuple.tm_min / 60.0
+        if wday in [5, 6]:  # weekend
+            demand_liters_per_hour = self.linear_interpolation(
+                warm_water_demand_weekend[hour],
+                warm_water_demand_weekend[(hour + 1) % 24], weight)
+        else:
+            demand_liters_per_hour = self.linear_interpolation(
+                warm_water_demand_workday[hour],
+                warm_water_demand_workday[(hour + 1) % 24], weight)
 
         power_demand = demand_liters_per_hour * \
             (self.temperature_warmwater - self.heat_storage.base_temperature) * \
             specific_heat_capacity_water
-            
-        
         return power_demand * self.residents
 
     def get_warmwater_consumption_energy(self):
@@ -229,7 +241,7 @@ class SimpleElectricalConsumer(BaseSystem):
         
         self.new_data_interval = 24 * 60 * 60 #append data each day
         self.last_forecast_update = self.env.now
-        
+        self.copyconstructed = copyconstructed
 
     @classmethod
     def copyconstruct(cls, env, other_electrical_consumer, power_meter):
@@ -246,10 +258,10 @@ class SimpleElectricalConsumer(BaseSystem):
         self.total_consumption += consumption
         self.power_meter.consume_energy(consumption)
         self.power_meter.current_power_consum = self.get_consumption_power()
-        
-        if self.env.now - self.last_forecast_update > self.new_data_interval:
-            self.update_forecast_data()
-        
+        ##copyconstructed means its running a forecasting
+        if not self.copyconstructed:
+            if self.env.now - self.last_forecast_update > self.new_data_interval:
+                self.update_forecast_data()
         
     def update_forecast_data(self):
         
@@ -263,6 +275,7 @@ class SimpleElectricalConsumer(BaseSystem):
     def get_consumption_power(self):
         time_tuple = time.gmtime(self.env.now)
         demand = self.electrical_forecast.get_forecast_at(self.env.now)
+        
         # calculate variation using demand and variation
         return demand * self.demand_variation[time_tuple.tm_hour]
 
@@ -273,20 +286,23 @@ class SimpleElectricalConsumer(BaseSystem):
         #! TODO: reading data from csv will have to be replaced by live/fake data from database
         date = datetime.fromtimestamp(timestamp)
         
-        raw_dataset = DataLoader.load_from_file("../tools/Electricity_2013.csv", "Strom - Verbrauchertotal (Aktuell)", "\t")
-        dates = DataLoader.load_from_file("../tools/Electricity_2013.csv", "Datum", "\t")
+        path = os.path.join(os.path.realpath('..'), "simulation/tools/Electricity_2013.csv")
+        raw_dataset = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
+        dates = DataLoader.load_from_file(path, "Datum", "\t")
         
-        if date.year == 2014:  
-            raw_dataset += DataLoader.load_from_file("../tools/Electricity_until_may_2014.csv", "Strom - Verbrauchertotal (Aktuell)", "\t")
-            dates += DataLoader.load_from_file("../tools/Electricity_until_may_2014.csv", "Datum", "\t")
+        if date.year == 2014: 
+            path = os.path.join(os.path.realpath('..'), "simulation/tools/Electricity_until_may_2014.csv") 
+            raw_dataset += DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
+            dates += DataLoader.load_from_file(path, "Datum", "\t")
 
-        now_index = approximate_index(self.env.now)
+        dates = [int(date) for date in dates]
+        now_index = approximate_index(dates, self.env.now)
         
         #take data until simulated now time
         if start_timestamp == None:
             return raw_dataset[:now_index]
         else:
-            start_index = approximate_index(start_timestamp)
+            start_index = approximate_index(dates, start_timestamp)
             return raw_dataset[start_index:now_index]
        
          

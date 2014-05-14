@@ -5,6 +5,7 @@ from simulation.forecasting import Forecast
 from simulation.forecasting.dataloader import DataLoader
 from simulation.core.environment import ForwardableRealtimeEnvironment
 from simulation.tools.plotting import Plotting
+from simulation.forecasting.helpers import approximate_index
 
 
 class ForecastTests(unittest.TestCase):
@@ -102,6 +103,14 @@ class ForecastTests(unittest.TestCase):
 
         self.assertSequenceEqual(self.forecast.demands[3][-four_weeks:], split_demands14[3][-four_weeks:])
         
+    def test_approximate_index(self):
+        data = [1,2,3,5,6,7,8]
+        self.assertTrue( approximate_index(data, 4) in [2,3], "index approximation was wrong" )
+        print  approximate_index(data, 8)
+        self.assertTrue( approximate_index(data, 8) == data.index(8))
+        self.assertTrue( approximate_index(data, 9) == -1)
+        self.assertTrue( approximate_index(data, 1.2436) == 0)
+        self.assertTrue( approximate_index(data, 0) == -1)
         
         
         

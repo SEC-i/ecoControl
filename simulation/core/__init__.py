@@ -23,7 +23,8 @@ class Simulation(object):
             # measurement bug
             initial_time = (int(initial_time) / 3600) * 3600.0
         self.env = ForwardableRealtimeEnvironment(initial_time=initial_time)
-
+    
+    def setup_devices(self):
         # initialize power systems
         self.heat_storage = HeatStorage(self.env)
         self.power_meter = PowerMeter(self.env)

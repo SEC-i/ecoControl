@@ -18,8 +18,9 @@ def index():
 
 @server.route('/api/start/', methods=['POST'])
 def start():
+    
     update_simulation(main, request.form)
-    main.forward(60 * 60 * 24 * 30, blocking=True)
+    main.forward(60 * 60 * 24 * 1, blocking=True)
     main.start()
     return "1"
 
