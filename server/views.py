@@ -163,10 +163,57 @@ def list_values(request, start, accuracy='hour'):
 
     if start is None:
         start = functions.get_past_time(days=14)
+    else:
+        # Convert JavaScript timestamp (milliseconds)
+        start = datetime.fromtimestamp(int(start)/1000).replace(tzinfo=utc)
+    print "Start " + str(start)
+    output = []
+    # 10 Queries about 15 ms -> 0.3 sec call
+    #sensors = Sensor.objects.all().select_related('device__name')
+    #for sensor in sensors:
+        #sensor_values_hourly = SensorValueHourly.objects.filter(timestamp__gte=start, sensor_id=sensor.id)#.select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
+        #output.append({
+                        #'id': sensor.id,
+                        #'device': sensor.device.name,
+                        #'name': sensor.name,
+                        #'unit': sensor.unit,
+                        #'key': sensor.key,
+                        #'data': list(sensor_values_hourly.values_list('timestamp', 'value'))
+                        #})
 
-    sensor_values_hourly = SensorValueHourly.objects.filter(interval_group__gte=start)
+    # 2 queries 32+1 ms, 0.31 sec call unformated
+    #sensor_values_hourly = SensorValueHourly.objects.filter(timestamp__gte=start).select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
+    #for value in sensor_values_hourly:
+        #output.append({
+                        #'id': value.sensor.id,
+                        #'device': value.sensor.device.name,
+                        #'name': value.sensor.name,
+                        #'unit': value.sensor.unit,
+                        #'key': value.sensor.key,
+                        #'data': [value.timestamp, value.value]
+                        #})
 
-    return create_json_response_from_QuerySet(request, sensor_values_hourly)
+    # -||-              , 0,23 sec call (formated)
+    sensor_values_hourly = SensorValueHourly.objects.filter(timestamp__gte=start).select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
+    values = {}
+    output = {}
+    for value in sensor_values_hourly:
+        if value.sensor.id not in values.keys():
+            values[value.sensor.id] = []
+            output[value.sensor.id] = {
+                        'id': value.sensor.id,
+                        'device': value.sensor.device.name,
+                        'name': value.sensor.name,
+                        'unit': value.sensor.unit,
+                        'key': value.sensor.key,
+                        }
+
+        values[value.sensor.id].append((value.timestamp, value.value))
+
+    for sensor_id in output.keys():
+        output[sensor_id]['data'] = values[sensor_id]
+
+    return create_json_response(request, output.values())
 
 
 def list_sensors(request):
