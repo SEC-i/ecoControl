@@ -127,16 +127,16 @@ def install_devices(**kwargs):
 
             cursor = connection.cursor()
             cursor.execute('''CREATE MATERIALIZED VIEW public.server_sensorvaluehourly AS
-                SELECT row_number() OVER (ORDER BY t1.interval_group) AS id,
+                SELECT row_number() OVER (ORDER BY t1.timestamp) AS id,
                     t1.sensor_id,
-                    t1.interval_group,
+                    t1.timestamp,
                     avg(t1.value) AS value
                    FROM ( SELECT             server_sensorvalue.sensor_id,
-                            '1970-01-01 00:00:00'::timestamp without time zone + '01:00:00'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 3600)::double precision AS interval_group,
+                            '1970-01-01 00:00:00'::timestamp without time zone + '01:00:00'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 3600)::double precision AS timestamp,
                             server_sensorvalue.value
                            FROM server_sensorvalue) t1
-                  GROUP BY  t1.interval_group, t1.sensor_id
-                  ORDER BY t1.interval_group
+                  GROUP BY  t1.timestamp, t1.sensor_id
+                  ORDER BY t1.timestamp
                  WITH DATA;''')
 
 post_syncdb.connect(install_devices)

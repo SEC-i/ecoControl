@@ -89,7 +89,7 @@ class SensorValue(models.Model):
 
 class SensorValueHourly(models.Model):
     sensor = models.ForeignKey('Sensor')
-    interval_group = models.DateTimeField(auto_now=False, db_index=True)
+    timestamp = models.DateTimeField(auto_now=False, db_index=True)
     value = models.FloatField()
 
     class Meta:
