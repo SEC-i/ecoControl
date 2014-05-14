@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="BP2013H1">
+
+    <title>Energy Management System</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="/static/libs/bootstrap/css/bootstrap.min.css">
+     <!-- jQuery UI CSS core CSS -->
+    <link rel="stylesheet" href="/static/libs/jquery-ui/css/jquery-ui.min.css">
+    <link rel="stylesheet" href="/static/libs/jquery-ui/css/jquery.ui.slider.min.css">
+
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="/static/css/basic.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body>
+    <!-- Navbar -->
+    <div class="navbar navbar-default" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">BP2013H1</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Overview</a></li>
+            <li><a href="statistics.html">Statistics</a></li>
+            <li><a href="live_setup.html">Live Setup</a></li>
+            <li><a href="settings.html">Settings</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <!-- Simulation page -->
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="panel-group" id="accordion">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#diagram_container">
+                    Live Diagram
+                  </a>
+                </h4>
+              </div>
+              <div id="diagram_container" class="panel-collapse collapse in">
+                <div class="panel-body text-center">
+                  <div id="simulation_diagram"></div>
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div id="diagram_filters" class="btn-group btn-group-sm" data-toggle="buttons"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#data_container">
+                    Live Data
+                  </a>
+                </h4>
+              </div>
+              <div id="data_container" class="panel-collapse collapse">
+                <div class="panel-body">
+
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#settings_panel">
+                    Tuning
+                  </a>
+                </h4>
+              </div>
+              <div id="settings_panel" class="panel-collapse collapse">
+                <div class="panel-body">
+                  
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#editor_container">
+                    Code Editor
+                    <span class="badge badge-success pull-right code_execution_status">OK</span>
+                  </a>
+                </h4>
+              </div>
+              <div id="editor_container" class="panel-collapse collapse">
+                <div class="panel-body">
+                  <div class="row">
+                    <div class="col-lg-6">
+                      <button type="submit" id="editor_button" class="btn btn-primary btn-block">Apply</button>
+                    </div>
+                    <div class="col-lg-6">
+                      <button type="submit" id="editor_simulate_button" class="btn btn-warning btn-block">Simulate</button>
+                    </div>
+                  </div>
+                  <br />
+                  <div class="row">
+                    <div class="col-lg-12">
+                      <pre id="editor"></pre>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-lg-6">
+                      <p>
+                        <form id="save_snippet" class="form-inline" role="form">
+                          <div class="form-group">
+                            <input type="text" class="form-control" id="snippet_name" placeholder="snippet.py" required>
+                          </div>
+                          <button type="submit" class="btn btn-primary">Save</button>
+                        </form>
+                      </p>
+                    </div>
+                    <div class="col-lg-6 text-right">
+                      <p>
+                        <form id="load_snippet" class="form-inline" role="form">
+                          <div class="form-group">
+                            <select class="form-control" id="snippets"></select>
+                          </div>
+                          <button type="submit" class="btn btn-primary">Load</button>
+                        </form>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+      <footer>
+        <p>&copy; BP2013H1 2013-2014</p>
+      </footer>
+    </div> <!-- /container -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/static/libs/jquery/jquery.min.js"></script>
+    <script src="/static/libs/jquery-ui/js/jquery.ui.core.min.js"></script>
+    <script src="/static/libs/jquery-ui/js/jquery.ui.widget.min.js"></script>
+    <script src="/static/libs/jquery-ui/js/jquery.ui.mouse.min.js"></script>
+    <script src="/static/libs/jquery-ui/js/jquery.ui.slider.min.js"></script>
+    <script src="/static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
+    <script src="/static/libs/bootstrap/js/bootstrap.min.js"></script>
+
+    <script src="/static/libs/highstock/highstock.js"></script>
+    <script src="/static/libs/highstock/modules/no-data-to-display.js"></script>
+    <script src="/static/libs/highstock/modules/exporting.js"></script>
+
+    <script src="/static/libs/ace/ace.js"></script>
+    <script src="/static/libs/ace/ext-language_tools.js"></script>
+
+    <script src="/static/js/helpers.js"></script>
+    <script src="/static/js/lang.js"></script>
+    <script src="/static/js/snippets.js"></script>
+    <script src="/static/js/refresh.js"></script>
+    <script src="/static/js/ready.js"></script>
+  </body>
+</html>

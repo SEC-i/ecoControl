@@ -2,6 +2,7 @@ branches:
   only:
     - master
     - dev
+    - dev-startup-changes
 notifications:
   email:
     - bp2013h1@lists.myhpi.de
@@ -12,8 +13,8 @@ env:
   - DJANGO_VERSION=1.6
 install: 
   - pip install -r requirements.txt --use-mirrors
+# before_script:
+#   - psql -U postgres -c 'create database bp2013h1;' -U postgres
 script:
-  - cd server
-  - python manage.py test
-  - cd ..
-  - nosetests simulation --with-coverage --cover-package=systems
+  - coverage run --source='.' manage.py test
+  - coverage report
