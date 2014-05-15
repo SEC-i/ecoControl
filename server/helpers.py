@@ -23,8 +23,7 @@ class WebAPIEncoder(json.JSONEncoder):
                 obj = obj - obj.utcoffset()
             obj.replace(tzinfo=pytz.timezone('CET'))
             milliseconds = int(
-                calendar.timegm(obj.timetuple()) * 1000 +
-                obj.microsecond / 1000
+                calendar.timegm(obj.timetuple())
             )
             return milliseconds
 
