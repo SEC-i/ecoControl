@@ -13,6 +13,7 @@ from systems.consumers import ThermalConsumer, ElectricalConsumer
 import cProfile
 
 
+
 logger = logging.getLogger('simulation')
 
 
@@ -26,7 +27,9 @@ class Simulation(object):
             logger.info("Simulation: Change initial time to full hour")
             initial_time = (int(initial_time) / 3600) * 3600.0
         # initialize real-time environment
+
         self.env = ForwardableRealtimeEnvironment(initial_time=initial_time,demo=demo)
+
         self.demo = demo
 
         self.devices = self.get_initialized_scenario(configurations)

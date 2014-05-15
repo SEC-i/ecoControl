@@ -38,12 +38,12 @@ class SimulationBackgroundRunner(Thread):
 
 class MeasurementStorage():
 
-    def __init__(self, env, devices, demo=True):
+
+    def __init__(self, env, devices, demo=False):
         self.env = env
         self.devices = devices
         self.sensors = Sensor.objects.filter(
             device_id__in=[x.id for x in devices])
-        
         self.demo = demo
 
         # initialize empty deques
@@ -51,28 +51,27 @@ class MeasurementStorage():
         for i in self.sensors:
             self.data.append([])
 
-
     def take_demo(self):
-        # save demo values every 15mins
-        if self.env.now % 60 * 60 != 0:
-            return
-        sensor_values = []
-        timestamp = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=pytz.utc)
-        for device in self.devices:
-            for sensor in Sensor.objects.filter(device_id=device.id):
-                value = getattr(device, sensor.key, None)
-                if value is not None:
-                    # in case value is a function, call that function
-                    if hasattr(value, '__call__'):
-                        value = value()
-                    
-                    sensor_values.append((sensor.id, value, timestamp))
-        
-        if len(sensor_values) > 0:
-            cursor = connection.cursor()
-            cursor.executemany(
-                """INSERT INTO "server_sensorvalue" ("sensor_id", "value", "timestamp") VALUES (%s, %s, %s)""", sensor_values)
+            # save demo values every 15mins
+            if self.env.now % 60 * 60 != 0:
+                return
+            sensor_values = []
+            timestamp = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=pytz.utc)
+            for device in self.devices:
+                for sensor in Sensor.objects.filter(device_id=device.id):
+                    value = getattr(device, sensor.key, None)
+                    if value is not None:
+                        # in case value is a function, call that function
+                        if hasattr(value, '__call__'):
+                            value = value()
+                        
+                        sensor_values.append((sensor.id, value, timestamp))
             
+            if len(sensor_values) > 0:
+                cursor = connection.cursor()
+                cursor.executemany(
+                    """INSERT INTO "server_sensorvalue" ("sensor_id", "value", "timestamp") VALUES (%s, %s, %s)""", sensor_values)
+                
     def take_forecast(self):
         if self.env.now % 3600 != 0:
             return

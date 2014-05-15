@@ -141,6 +141,7 @@ LOGGING = {
             'level': 'WARNING',
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
+
         },
         'simulation': {
             'level': 'WARNING',
@@ -158,7 +159,8 @@ LOGGING = {
             'level': 'WARNING',
         },
         'simulation': {
-            'handlers': ['simulation', 'console'],
+            'handlers': ['simulation'],
+
             'propagate': True,
             'level': 'WARNING',
         },

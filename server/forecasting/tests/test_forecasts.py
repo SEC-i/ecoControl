@@ -27,7 +27,8 @@ class ForecastTests(unittest.TestCase):
 
     def test_data(self):
         print "--------- test data ------------------"
-        date_dataset = DataLoader.load_from_file("../tools/Electricity_2013.csv", "Datum", "\t")
+        path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_2013.csv")
+        date_dataset = DataLoader.load_from_file(path, "Datum", "\t")
         ten_min = 10 * 60
         epsilon = 599  # maximal 599 seconds deviatiation from samplinginterval
         print len(date_dataset)
