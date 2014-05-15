@@ -97,15 +97,13 @@ class Simulation(object):
         self.running = True
         if blocking:
             self.env.stop_after_forward = True
-            #self.env.run()
-            cProfile.runctx("self.env.run()", globals(), locals())
+            t0 = time.time()
+            self.env.run()
+            print "time: ", time.time() - t0
+            #cProfile.runctx("self.env.run()", globals(), locals(), "profile.profile")
         else:
             self.thread = SimulationBackgroundRunner(self.env)
             self.thread.start()
-            # wait on forwarding to end
-            # cant use thread.join() here, because sim will not stop after
-            # forward
-            # cProfile.runctx("self.thread.run()", globals(), locals()) 
 
     def forward(self, seconds, blocking=False):
         self.env.forward = seconds
