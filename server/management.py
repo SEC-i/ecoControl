@@ -139,4 +139,11 @@ def install_devices(**kwargs):
                   ORDER BY t1.timestamp
                  WITH DATA;''')
 
+            cursor.execute('''CREATE VIEW server_sensorvaluedaily AS
+                        SELECT row_number() OVER (ORDER BY timestamp) AS id,
+                            sensor_id, AVG(value) AS value,
+                            date_trunc('day', server_sensorvaluehourly.timestamp) AS timestamp
+                        FROM server_sensorvaluehourly INNER JOIN server_sensor ON server_sensor.id=server_sensorvaluehourly.sensor_id
+                        GROUP BY sensor_id, timestamp;''')
+
 post_syncdb.connect(install_devices)

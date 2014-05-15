@@ -97,3 +97,14 @@ class SensorValueHourly(models.Model):
 
     def __unicode__(self):
         return str(self.pk) + " (" + self.sensor.name + ")"
+
+class SensorValueDaily(models.Model):
+    sensor = models.ForeignKey('Sensor')
+    timestamp = models.DateTimeField(auto_now=False, db_index=True)
+    value = models.FloatField()
+
+    class Meta:
+        managed = False
+
+    def __unicode__(self):
+        return str(self.pk) + " (" + self.sensor.name + ")"
