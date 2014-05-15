@@ -15,7 +15,7 @@ from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
 
 import functions
-from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly
+from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily
 from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation
 from forecasting import Simulation
 
@@ -167,12 +167,18 @@ def list_values(request, start, accuracy='hour'):
         start = datetime.fromtimestamp(start).replace(tzinfo=utc)
     output = []
   
-    sensor_values_hourly = SensorValueHourly.objects.\
+    if accuracy=='hour':
+        sensor_values = SensorValueHourly.objects.\
             filter(timestamp__gte=start, sensor__in_diagram=True).\
             select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
+    elif accuracy=='day':
+        sensor_values = SensorValueDaily.objects.\
+            filter(timestamp__gte=start, sensor__in_diagram=True).\
+            select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
+
     values = {}
     output = {}
-    for value in sensor_values_hourly:
+    for value in sensor_values:
         # Save sensor data
         if value.sensor.id not in values.keys():
             values[value.sensor.id] = []
