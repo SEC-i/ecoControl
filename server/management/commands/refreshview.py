@@ -7,4 +7,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         cursor = connection.cursor()
         cursor.execute('''REFRESH MATERIALIZED VIEW server_sensorvaluehourly;''')
-        self.stdout.write('Succressfully refreshed views')
+        self.stdout.write('Successfully refreshed views')
