@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import logging
 import sys
 
 from django.db.models.signals import post_syncdb
