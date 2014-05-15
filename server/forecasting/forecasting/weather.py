@@ -122,65 +122,46 @@ class WeatherForecast:
         days_in_future = date.day - current_date.day
         
         if days_in_future <=5:
-            if date.minute > 30:
-                look_up_hour=date.hour+1
-            else:
-                look_up_hour=date.hour
-            earlier_hour = (look_up_hour-2) % 24
-            look_up_date_earlier = date.replace(hour= earlier_hour,
-                                        minute=0, second=0, microsecond=0)
-            later_hour = (look_up_hour+2) % 24                     
-            look_up_date_later = date.replace(hour=later_hour,
-                                        minute=0, second=0, microsecond=0)
-            entries = WeatherValue.objects.filter(
-                target_time__gte = look_up_date_earlier,
-                target_time__lte=look_up_date_later
-                ) # entries contain one to two entries  
-            # for i in entries:
-            #    print "target:  {0} stamp: {1} temp: {2}".format(i.target_time, i.timestamp, i.temperature)    
-            if len(entries) > 1:
-                result = self.get_nearest_weather_value(entries[0],
-                                                        entries[1],
-                                                        look_up_hour)
-            else:
-                result = entries[0].temperature     
-            return result
+            return self.get_forecast_temperature_hourly(date)           
         else:
-            entries = WeatherValue.objects.filter(
-                target_time = date.replace(hour= 0,
-                                        minute=0, second=0, microsecond=0)
-                )
-            if len(entries) > 1:
-                raise Error
-            else:
-                return entries[0].temperature
+            return self.get_forecast_temperature_daily(date)
             
-        
-        """get most accurate forecast for given date
-        that can be derived from 5 days forecast, 14 days forecast or from history data"""
-        '''
-        history_data = self.get_average_outside_temperature(date)
-        time_passed = (date - self.get_date()) / (60.0 * 60.0 * 24)  # in days
-        if time_passed < 0.0 or time_passed > 13.0:
-            return history_data
-
-        forecast_data_hourly = self.get_forecast_temperature_hourly(date)
-        forecast_data_daily = self.get_forecast_temperature_daily(date)
-        if time_passed < 5.0:
-            return forecast_data_hourly
-        else:
-            return forecast_data_daily
-        '''
-    def get_nearest_weather_value(self, entry1, entry2, target_time):
+    def get_nearest_and_newest_weather_value(self, entry1, entry2, target_time):
         diff_1 = abs(target_time - entry1.target_time.hour)
         diff_2 = abs(target_time - entry2.target_time.hour)
         if diff_1 > diff_2:
-            return entry2.temperature
+            return entry2
+        elif diff_1 < diff_2:
+            return entry1
         else:
-            return entry1.temperature
-
+            sorted_list = sorted([entry1, entry2], key=lambda x: x.timestamp)
+            return sorted_list[1]
+            
     def get_forecast_temperature_hourly(self, date):
-        self.forecast_temperatures_3hourly = self.get_weather_forecast(
+        if date.minute > 30:
+            look_up_hour=date.hour+1
+        else:
+            look_up_hour=date.hour
+        earlier_hour = (look_up_hour-2) % 24
+        look_up_date_earlier = date.replace(hour= earlier_hour,
+                                    minute=0, second=0, microsecond=0)
+        later_hour = (look_up_hour+2) % 24                     
+        look_up_date_later = date.replace(hour=later_hour,
+                                    minute=0, second=0, microsecond=0)
+        entries = WeatherValue.objects.filter(
+            target_time__gte = look_up_date_earlier,
+            target_time__lte=look_up_date_later
+            ) # entries contain one to two entries  
+  
+        if len(entries) > 1:
+            value = self.get_nearest_and_newest_weather_value(entries[0],
+                                                    entries[1],
+                                                    look_up_hour)
+            result = value.temperature
+        else:
+            result = entries[0].temperature     
+        return result
+        '''self.forecast_temperatures_3hourly = self.get_weather_forecast(
             hourly=True)
         time_passed = int((date - self.get_date()) / (60.0 * 60.0))  # in hours
         weight = (time_passed % 3) / 3.0
@@ -190,9 +171,15 @@ class WeatherForecast:
         a0 = self.forecast_temperatures_3hourly[t0]
         a1 = self.forecast_temperatures_3hourly[t1]
         return self.mix(a0, a1, weight)
+        '''
 
     def get_forecast_temperature_daily(self, date):
-        self.forecast_temperatures_daily = self.get_weather_forecast(
+        entries = WeatherValue.objects.filter(
+                target_time = date.replace(hour= 0,
+                                        minute=0, second=0, microsecond=0)
+                ).order_by('-timestamp')
+        return entries[0].temperature
+        '''self.forecast_temperatures_daily = self.get_weather_forecast(
             hourly=False)
         time_passed = int((date - self.get_date()) / (60.0 * 60.0))  # in days
         weight = (time_passed % 24) / 24.0
@@ -202,6 +189,7 @@ class WeatherForecast:
         a0 = self.forecast_temperatures_daily[t0]
         a1 = self.forecast_temperatures_daily[t1]
         return self.mix(a0, a1, weight)
+        '''
 
     def get_average_outside_temperature(self, date, offset_days=0):
         day = (time.gmtime(date).tm_yday + offset_days) % 365

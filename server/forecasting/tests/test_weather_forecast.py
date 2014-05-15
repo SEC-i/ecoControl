@@ -562,13 +562,27 @@ class GetWeatherTest(TestCase):
         self.forecast.get_temperature_estimate(now_stamp)
         self.forecast.update_weather_estimates.assert_called_with()
 
-
-        
-        
-
         # case 3: the date is in the past. We should know the correct temperature at least accurate for 15 minutes
         # it should return the newest entry
                 # the date has a time which is not saved
+    
+    def test_return_newer_temperature_daily(self):
+        search_date = 1401228000.0  # 2014-05-28 00:00:00+00:00
+        search_stamp = aware_timestamp_from_seconds(search_date)
+        with patch('time.time', self.time_mock):
+            temperature = self.forecast.get_temperature_estimate(search_stamp)
+        expected_temperature = '100' # and not 25.28
+        self.assertEqual(temperature, expected_temperature)
+    
+    def test_return_newer_temperature_hourly(self):
+        WeatherValue(timestamp='2014-05-15 09:03:14.448208+00:00', target_time='2014-05-16 14:00:00+00:00', temperature=17.22).save()
+
+        search_date = 1400241600.0  # 2014-05-28 00:00:00+00:00
+        search_stamp = aware_timestamp_from_seconds(search_date)
+        with patch('time.time', self.time_mock):
+            temperature = self.forecast.get_temperature_estimate(search_stamp)
+        expected_temperature = '17.22' # and not 100.22
+        self.assertEqual(temperature, expected_temperature)
     
     '''
     get_temperature_estimate
@@ -576,6 +590,8 @@ class GetWeatherTest(TestCase):
     get_forecast_temperature_daily
     get_average_outside_temperature
     '''
+    
+    # wann alte werte remove
     def save_records(self):
         WeatherValue(timestamp='2014-05-15 09:03:14.447479+00:00', target_time='2014-05-15 08:00:00+00:00', temperature=9.45).save()
         WeatherValue(timestamp='2014-05-15 09:03:14.447603+00:00', target_time='2014-05-15 11:00:00+00:00', temperature=12.66).save()
@@ -587,7 +603,8 @@ class GetWeatherTest(TestCase):
         WeatherValue(timestamp='2014-05-15 09:03:14.448013+00:00', target_time='2014-05-16 05:00:00+00:00', temperature=6.42).save()
         WeatherValue(timestamp='2014-05-15 09:03:14.448078+00:00', target_time='2014-05-16 08:00:00+00:00', temperature=9.89).save()
         WeatherValue(timestamp='2014-05-15 09:03:14.448144+00:00', target_time='2014-05-16 11:00:00+00:00', temperature=15.17).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448208+00:00', target_time='2014-05-16 14:00:00+00:00', temperature=17.22).save()
+        WeatherValue(timestamp='2014-05-15 09:03:14.448208+00:00', target_time='2014-05-16 14:00:00+00:00', temperature=100.22).save()
+        WeatherValue(timestamp='2014-05-15 10:03:14.448208+00:00', target_time='2014-05-16 14:00:00+00:00', temperature=17.22).save()
         WeatherValue(timestamp='2014-05-15 09:03:14.448273+00:00', target_time='2014-05-16 17:00:00+00:00', temperature=16.89).save()
         WeatherValue(timestamp='2014-05-15 09:03:14.448337+00:00', target_time='2014-05-16 20:00:00+00:00', temperature=15.45).save()
         WeatherValue(timestamp='2014-05-15 09:03:14.448400+00:00', target_time='2014-05-16 23:00:00+00:00', temperature=11.27).save()
@@ -625,7 +642,8 @@ class GetWeatherTest(TestCase):
         WeatherValue(timestamp='2014-05-15 09:03:14.534539+00:00', target_time='2014-05-26 00:00:00+00:00', temperature=25.93).save()
         WeatherValue(timestamp='2014-05-15 09:03:14.534602+00:00', target_time='2014-05-27 00:00:00+00:00', temperature=27.56).save()
         WeatherValue(timestamp='2014-05-15 09:03:14.534665+00:00', target_time='2014-05-28 00:00:00+00:00', temperature=25.28).save()
-       
+        WeatherValue(timestamp='2014-05-15 20:03:14.534665+00:00', target_time='2014-05-28 00:00:00+00:00', temperature=100).save()
+
 def aware_timestamp_from_seconds(seconds):
     naive = datetime.datetime.fromtimestamp(seconds)
     return naive.replace(tzinfo=utc)
