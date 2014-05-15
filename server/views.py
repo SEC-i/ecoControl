@@ -164,52 +164,27 @@ def list_values(request, start, accuracy='hour'):
     if start is None:
         start = functions.get_past_time(days=14)
     else:
-        # Convert JavaScript timestamp (milliseconds)
-        start = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
-    print "Start " + str(start)
+        start = datetime.fromtimestamp(start).replace(tzinfo=utc)
     output = []
-    # 10 Queries about 15 ms -> 0.3 sec call
-    #sensors = Sensor.objects.all().select_related('device__name')
-    #for sensor in sensors:
-        #sensor_values_hourly = SensorValueHourly.objects.filter(timestamp__gte=start, sensor_id=sensor.id)#.select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
-        #output.append({
-                        #'id': sensor.id,
-                        #'device': sensor.device.name,
-                        #'name': sensor.name,
-                        #'unit': sensor.unit,
-                        #'key': sensor.key,
-                        #'data': list(sensor_values_hourly.values_list('timestamp', 'value'))
-                        #})
-
-    # 2 queries 32+1 ms, 0.31 sec call unformated
-    #sensor_values_hourly = SensorValueHourly.objects.filter(timestamp__gte=start).select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
-    #for value in sensor_values_hourly:
-        #output.append({
-                        #'id': value.sensor.id,
-                        #'device': value.sensor.device.name,
-                        #'name': value.sensor.name,
-                        #'unit': value.sensor.unit,
-                        #'key': value.sensor.key,
-                        #'data': [value.timestamp, value.value]
-                        #})
-
-    # -||-              , 0,23 sec call (formated)
-    sensor_values_hourly = SensorValueHourly.objects.filter(timestamp__gte=start).select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name', 'sensor__in_diagram')
+  
+    sensor_values_hourly = SensorValueHourly.objects.\
+            filter(timestamp__gte=start, sensor__in_diagram=True).\
+            select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
     values = {}
     output = {}
     for value in sensor_values_hourly:
-        if value.sensor.in_diagram:
-            if value.sensor.id not in values.keys():
-                values[value.sensor.id] = []
-                output[value.sensor.id] = {
-                            'id': value.sensor.id,
-                            'device': value.sensor.device.name,
-                            'name': value.sensor.name,
-                            'unit': value.sensor.unit,
-                            'key': value.sensor.key,
-                            }
-
-            values[value.sensor.id].append((value.timestamp, value.value))
+        # Save sensor data
+        if value.sensor.id not in values.keys():
+            values[value.sensor.id] = []
+            output[value.sensor.id] = {
+                        'id': value.sensor.id,
+                        'device': value.sensor.device.name,
+                        'name': value.sensor.name,
+                        'unit': value.sensor.unit,
+                        'key': value.sensor.key,
+                        }
+        # Save sensor values
+        values[value.sensor.id].append((value.timestamp, value.value))
 
     for sensor_id in output.keys():
         output[sensor_id]['data'] = values[sensor_id]
