@@ -106,7 +106,8 @@ class WeatherForecast:
         today = self.get_date()
         day_six = today + 5*25*60*60
         stamp_naive = datetime.datetime.fromtimestamp(day_six)
-        timestamp_day_six = stamp_naive.replace(tzinfo=timezone.utc) 
+        timestamp_day_six = stamp_naive.replace(tzinfo=timezone.utc,
+            hour=0, minute=0, second=0, microsecond=0) 
         
         results = self.get_weather_forecast(daily=True)
         for record in results:
@@ -115,29 +116,44 @@ class WeatherForecast:
         
     def get_temperature_estimate(self, date):
         #self.update_weather_estimates()
-        #print (date - datetime.datetime.fromtimestamp(self.get_date()).replace(tzinfo=timezone.utc) ).days
-        print date
-        if date.minute > 30:
-            look_up_hour=date.hour+1
-        else:
-            look_up_hour=date.hour
+        current_date = datetime.datetime.fromtimestamp(self.get_date())\
+                      .replace(tzinfo=timezone.utc)
+        days_in_future = date.day - current_date.day
         
-        look_up_date_earlier = date.replace(hour=look_up_hour-2,
-                                    minute=0, second=0, microsecond=0)
-                                    
-        look_up_date_later = date.replace(hour=(look_up_hour+2),
-                                    minute=0, second=0, microsecond=0)
-        entries = WeatherValue.objects.filter(
-            target_time__gte = look_up_date_earlier,
-            target_time__lte=look_up_date_later
-            ) # entries contain one to two entries        
-        if len(entries) > 1:
-            result = self.get_nearest_weather_value(entries[0],
-                                                    entries[1],
-                                                    look_up_hour)
+        if days_in_future <=5:
+            if date.minute > 30:
+                look_up_hour=date.hour+1
+            else:
+                look_up_hour=date.hour
+            earlier_hour = (look_up_hour-2) % 24
+            look_up_date_earlier = date.replace(hour= earlier_hour,
+                                        minute=0, second=0, microsecond=0)
+            later_hour = (look_up_hour+2) % 24                     
+            look_up_date_later = date.replace(hour=later_hour,
+                                        minute=0, second=0, microsecond=0)
+            entries = WeatherValue.objects.filter(
+                target_time__gte = look_up_date_earlier,
+                target_time__lte=look_up_date_later
+                ) # entries contain one to two entries  
+            # for i in entries:
+            #    print "target:  {0} stamp: {1} temp: {2}".format(i.target_time, i.timestamp, i.temperature)    
+            if len(entries) > 1:
+                result = self.get_nearest_weather_value(entries[0],
+                                                        entries[1],
+                                                        look_up_hour)
+            else:
+                result = entries[0].temperature     
+            return result
         else:
-            result = entries[0].temperature     
-        return result
+            entries = WeatherValue.objects.filter(
+                target_time = date.replace(hour= 0,
+                                        minute=0, second=0, microsecond=0)
+                )
+            if len(entries) > 1:
+                raise Error
+            else:
+                return entries[0].temperature
+            
         
         """get most accurate forecast for given date
         that can be derived from 5 days forecast, 14 days forecast or from history data"""
