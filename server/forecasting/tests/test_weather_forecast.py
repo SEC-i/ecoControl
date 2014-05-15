@@ -518,12 +518,13 @@ class ApiWorksAsExpectedTest(TestCase):
 class GetWeatherTest(TestCase):
     
     def setUp(self):
-        self.saveRecords()
+        self.save_records()
         self.begin_seconds = 1400133600 #2014-05-15 08:00:00+00:00
         self.end_seconds = 1401228000
-        now_stamp = 1400137394
-        self.time_mock = MagicMock(return_value = now_stamp)
+        self.now_stamp = 1400137394
+        self.time_mock = MagicMock(return_value = self.now_stamp)
         self.forecast = WeatherForecast()
+        self.forecast.update_weather_estimates = MagicMock(return_value = None)
     
     def test_get_temperature_estimate_of_5days_date(self):
         '''get most accurate forecast for given date
@@ -531,39 +532,40 @@ class GetWeatherTest(TestCase):
         '''
         # case 1: the date is in the next five days. three hourly accurate.
         # return the temperature of the nearest target_time
-        now = self.begin_seconds+2*24*60*60+23 # 2014-07-15 08:00:23+00:00
-        now_stamp = aware_timestamp_from_seconds(now)
+        search_date = self.begin_seconds+2*24*60*60+23 # 2014-07-15 08:00:23+00:00
+        search_stamp = aware_timestamp_from_seconds(search_date)
         with patch('time.time', self.time_mock):
-            temperature = self.forecast.get_temperature_estimate(now_stamp)
+            temperature = self.forecast.get_temperature_estimate(search_stamp)
         expected_temperature = '11.65'
         self.assertEqual(temperature, expected_temperature)
        
     def test_get_temperature_estimate_of_14days_date(self):
         # case 2: the date is in the next fourteen days. daily accurate.
-        '''
-        results = WeatherValue.objects.all()
-        for entry in results:
-            print "WeatherValue(timestamp={0}, target_time={1}, temperature={2})".format(entry.timestamp, entry.target_time, entry.temperature)
-            #WeatherValue(timestamp='2014-05-07 14:00:00+00:00', target_time='2014-05-07 14:00:00+00:00', temperature=19.12).save()  
-        '''
-        now = self.begin_seconds+10*24*60*60+23  #'2014-05-25 8:00:23+00:00'
-        now_stamp = aware_timestamp_from_seconds(now)
+        search_date = self.begin_seconds+10*24*60*60+23  #'2014-05-25 8:00:23+00:00'
+        search_stamp = aware_timestamp_from_seconds(search_date)
         with patch('time.time', self.time_mock):
-            temperature = self.forecast.get_temperature_estimate(now_stamp)
+            temperature = self.forecast.get_temperature_estimate(search_stamp)
         expected_temperature = '24.21'
         self.assertEqual(temperature, expected_temperature)
         
     def test_get_temperature_estimate_of_date_with_random_hour(self):
         # case 2: the date is in the next fourteen days. daily accurate.
-        now = self.begin_seconds+10*24*60*60 - 10*60*60  # 2014-05-24 22:00:00+00:00
-        now_stamp = aware_timestamp_from_seconds(now)
+        search_date = self.begin_seconds+10*24*60*60 - 10*60*60  # 2014-05-24 22:00:00+00:00
+        search_stamp = aware_timestamp_from_seconds(search_date)
         with patch('time.time', self.time_mock):
-            temperature = self.forecast.get_temperature_estimate(now_stamp)
+            temperature = self.forecast.get_temperature_estimate(search_stamp)
         expected_temperature = '21.15'
         self.assertEqual(temperature, expected_temperature)
+    
+    def test_update_weather_estimates_called(self):
+        now_stamp = aware_timestamp_from_seconds(self.now_stamp)
+        self.forecast.get_temperature_estimate(now_stamp)
+        self.forecast.update_weather_estimates.assert_called_with()
+
+
         
         
-        
+
         # case 3: the date is in the past. We should know the correct temperature at least accurate for 15 minutes
         # it should return the newest entry
                 # the date has a time which is not saved
@@ -574,7 +576,7 @@ class GetWeatherTest(TestCase):
     get_forecast_temperature_daily
     get_average_outside_temperature
     '''
-    def saveRecords(self):
+    def save_records(self):
         WeatherValue(timestamp='2014-05-15 09:03:14.447479+00:00', target_time='2014-05-15 08:00:00+00:00', temperature=9.45).save()
         WeatherValue(timestamp='2014-05-15 09:03:14.447603+00:00', target_time='2014-05-15 11:00:00+00:00', temperature=12.66).save()
         WeatherValue(timestamp='2014-05-15 09:03:14.447674+00:00', target_time='2014-05-15 14:00:00+00:00', temperature=15).save()

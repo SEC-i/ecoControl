@@ -115,7 +115,8 @@ class WeatherForecast:
                 record.save()
         
     def get_temperature_estimate(self, date):
-        #self.update_weather_estimates()
+        self.update_weather_estimates()
+
         current_date = datetime.datetime.fromtimestamp(self.get_date())\
                       .replace(tzinfo=timezone.utc)
         days_in_future = date.day - current_date.day
