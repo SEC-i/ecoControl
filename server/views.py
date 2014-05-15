@@ -165,7 +165,7 @@ def list_values(request, start, accuracy='hour'):
         start = functions.get_past_time(days=14)
     else:
         # Convert JavaScript timestamp (milliseconds)
-        start = datetime.fromtimestamp(int(start)/1000).replace(tzinfo=utc)
+        start = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
     print "Start " + str(start)
     output = []
     # 10 Queries about 15 ms -> 0.3 sec call
@@ -194,21 +194,22 @@ def list_values(request, start, accuracy='hour'):
                         #})
 
     # -||-              , 0,23 sec call (formated)
-    sensor_values_hourly = SensorValueHourly.objects.filter(timestamp__gte=start).select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
+    sensor_values_hourly = SensorValueHourly.objects.filter(timestamp__gte=start).select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name', 'sensor__in_diagram')
     values = {}
     output = {}
     for value in sensor_values_hourly:
-        if value.sensor.id not in values.keys():
-            values[value.sensor.id] = []
-            output[value.sensor.id] = {
-                        'id': value.sensor.id,
-                        'device': value.sensor.device.name,
-                        'name': value.sensor.name,
-                        'unit': value.sensor.unit,
-                        'key': value.sensor.key,
-                        }
+        if value.sensor.in_diagram:
+            if value.sensor.id not in values.keys():
+                values[value.sensor.id] = []
+                output[value.sensor.id] = {
+                            'id': value.sensor.id,
+                            'device': value.sensor.device.name,
+                            'name': value.sensor.name,
+                            'unit': value.sensor.unit,
+                            'key': value.sensor.key,
+                            }
 
-        values[value.sensor.id].append((value.timestamp, value.value))
+            values[value.sensor.id].append((value.timestamp, value.value))
 
     for sensor_id in output.keys():
         output[sensor_id]['data'] = values[sensor_id]
