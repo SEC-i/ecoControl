@@ -5,6 +5,7 @@ import json
 from datetime import datetime, timedelta
 import calendar
 import dateutil.relativedelta
+import cProfile
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
@@ -111,7 +112,7 @@ def forecast(request):
         simulation = Simulation(initial_time, configurations)
     else:
         simulation = Simulation(initial_time)
-
+    
     simulation.forward(seconds=DEFAULT_FORECAST_INTERVAL, blocking=True)
 
     return create_json_response(request, simulation.measurements.get())

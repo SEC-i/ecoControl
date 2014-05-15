@@ -10,6 +10,7 @@ from systems.code import CodeExecuter
 from systems.producers import CogenerationUnit, PeakLoadBoiler
 from systems.storages import HeatStorage, PowerMeter
 from systems.consumers import ThermalConsumer, ElectricalConsumer
+import cProfile
 
 
 logger = logging.getLogger('simulation')
@@ -93,15 +94,18 @@ class Simulation(object):
         return system_list
 
     def start(self, blocking=False):
-        self.thread = SimulationBackgroundRunner(self.env)
-        self.thread.start()
         self.running = True
         if blocking:
+            self.env.stop_after_forward = True
+            #self.env.run()
+            cProfile.runctx("self.env.run()", globals(), locals())
+        else:
+            self.thread = SimulationBackgroundRunner(self.env)
+            self.thread.start()
             # wait on forwarding to end
             # cant use thread.join() here, because sim will not stop after
             # forward
-            while self.is_forwarding():
-                time.sleep(0.2)
+            # cProfile.runctx("self.thread.run()", globals(), locals()) 
 
     def forward(self, seconds, blocking=False):
         self.env.forward = seconds
