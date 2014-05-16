@@ -7,7 +7,7 @@
     <meta name="description" content="">
     <meta name="author" content="BP2013H1">
 
-    <title>Energy Management System</title>
+    <title>Live Setup - Energy Management System</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="/static/libs/bootstrap/css/bootstrap.min.css">
@@ -41,38 +41,24 @@
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="index.html">Overview</a></li>
-            <li><a href="balances.html">Balances</a></li>
-            <li><a href="balances.html">Daily Load Curves</a></li>
+            <li><a href="index.html">Overview</a></li>
             <li><a href="statistics.html">Statistics</a></li>
             <li><a href="notifications.html">Notifications</a></li>
-            <li><a href="live_setup.html">Live Setup</a></li>
+            <li class="active"><a href="live_setup.html">Live Setup</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
+            <li><a href="thresholds.html">Thresholds</a></li>
             <li><a href="settings.html">Settings</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
     </div>
 
-    <!-- Simulation page -->
+    <!-- Settings page -->
     <div class="container">
       <div class="row">
         <div class="col-sm-12">
-          <div class="panel-group" id="accordion">
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <h4 class="panel-title">
-                  <a data-toggle="collapse" href="#diagram_container">
-                    Overview
-                  </a>
-                </h4>
-              </div>
-              <div class="panel-body">
-                Text
-              </div>
-            </div>
-          </div>
+          <div id="schema_container"></div>
         </div>
       </div>
 
@@ -93,13 +79,6 @@
     <script src="/static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
     <script src="/static/libs/bootstrap/js/bootstrap.min.js"></script>
 
-    <script src="/static/libs/highstock/highstock.js"></script>
-    <script src="/static/libs/highstock/modules/no-data-to-display.js"></script>
-    <script src="/static/libs/highstock/modules/exporting.js"></script>
-
-    <script src="/static/libs/ace/ace.js"></script>
-    <script src="/static/libs/ace/ext-language_tools.js"></script>
-
-    <script src="/static/js/mgmt/overview.js"></script>
+    <script src="/static/js/tech/live_setup.js"></script>
   </body>
 </html>
