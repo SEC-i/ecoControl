@@ -528,11 +528,11 @@ class GetWeatherTest(TestCase):
         '''
         # case 1: the date is in the next five days. three hourly accurate.
         # return the temperature of the nearest target_time
-        search_date = self.now_stamp+2*24*60*60+23 # 2014-07-15 08:00:23+00:00
+        search_date = self.now_stamp+2*24*60*60+23 # 2014-05-17 08:00:23+00:00
         search_stamp = aware_timestamp_from_seconds(search_date)
         with patch('time.time', self.time_mock):
             temperature = self.forecast.get_temperature_estimate(search_stamp)
-        expected_temperature = '11.65'
+        expected_temperature = '36' # search date is the 17th entry -> temperature = 20+(17-1) = 36
         self.assertEqual(temperature, expected_temperature)
        
     def test_get_temperature_estimate_of_14days_date(self):
@@ -541,7 +541,7 @@ class GetWeatherTest(TestCase):
         search_stamp = aware_timestamp_from_seconds(search_date)
         with patch('time.time', self.time_mock):
             temperature = self.forecast.get_temperature_estimate(search_stamp)
-        expected_temperature = '24.21'
+        expected_temperature = '64' # search date is the 45th entry -> temperature = 20+(45-1) = 64
         self.assertEqual(temperature, expected_temperature)
         
     def test_get_temperature_estimate_of_date_with_random_hour(self):
@@ -550,7 +550,7 @@ class GetWeatherTest(TestCase):
         search_stamp = aware_timestamp_from_seconds(search_date)
         with patch('time.time', self.time_mock):
             temperature = self.forecast.get_temperature_estimate(search_stamp)
-        expected_temperature = '21.15'
+        expected_temperature = '63'
         self.assertEqual(temperature, expected_temperature)
     
     def test_update_weather_estimates_called_for_forecast(self):
@@ -564,68 +564,57 @@ class GetWeatherTest(TestCase):
         search_stamp = aware_timestamp_from_seconds(search_date)
         with patch('time.time', self.time_mock):
             temperature = self.forecast.get_temperature_estimate(search_stamp)
-        expected_temperature = '100' # and not 25.28
+        expected_temperature = '67' # and not 100
         self.assertEqual(temperature, expected_temperature)
+
     
     def test_return_newer_temperature_hourly(self):
-        search_date = 1400241600.0  # 2014-05-28 00:00:00+00:00
+        search_date = 1400241600.0  # 2014, 5, 16, 14, 0
         search_stamp = aware_timestamp_from_seconds(search_date)
         with patch('time.time', self.time_mock):
             temperature = self.forecast.get_temperature_estimate(search_stamp)
-        expected_temperature = '17.22' # and not 100.22
+        expected_temperature = '30' # and not 100
         self.assertEqual(temperature, expected_temperature)
     
     def save_records(self):
-        WeatherValue(timestamp='2014-05-15 09:03:14.447479+00:00', target_time='2014-05-15 08:00:00+00:00', temperature=9.45).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.447603+00:00', target_time='2014-05-15 11:00:00+00:00', temperature=12.66).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.447674+00:00', target_time='2014-05-15 14:00:00+00:00', temperature=15).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.447742+00:00', target_time='2014-05-15 17:00:00+00:00', temperature=15.65).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.447809+00:00', target_time='2014-05-15 20:00:00+00:00', temperature=13.24).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.447875+00:00', target_time='2014-05-15 23:00:00+00:00', temperature=10.28).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.447940+00:00', target_time='2014-05-16 02:00:00+00:00', temperature=7.9).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448013+00:00', target_time='2014-05-16 05:00:00+00:00', temperature=6.42).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448078+00:00', target_time='2014-05-16 08:00:00+00:00', temperature=9.89).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448144+00:00', target_time='2014-05-16 11:00:00+00:00', temperature=15.17).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448208+00:00', target_time='2014-05-16 14:00:00+00:00', temperature=100.22).save()
-        WeatherValue(timestamp='2014-05-15 10:03:14.448208+00:00', target_time='2014-05-16 14:00:00+00:00', temperature=17.22).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448273+00:00', target_time='2014-05-16 17:00:00+00:00', temperature=16.89).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448337+00:00', target_time='2014-05-16 20:00:00+00:00', temperature=15.45).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448400+00:00', target_time='2014-05-16 23:00:00+00:00', temperature=11.27).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448471+00:00', target_time='2014-05-17 02:00:00+00:00', temperature=8.26).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448535+00:00', target_time='2014-05-17 05:00:00+00:00', temperature=7.95).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448601+00:00', target_time='2014-05-17 08:00:00+00:00', temperature=11.65).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448665+00:00', target_time='2014-05-17 11:00:00+00:00', temperature=16.71).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448730+00:00', target_time='2014-05-17 14:00:00+00:00', temperature=18.67).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448794+00:00', target_time='2014-05-17 17:00:00+00:00', temperature=19).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448915+00:00', target_time='2014-05-17 20:00:00+00:00', temperature=16.74).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.448998+00:00', target_time='2014-05-17 23:00:00+00:00', temperature=12.63).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.449073+00:00', target_time='2014-05-18 02:00:00+00:00', temperature=10.03).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.449137+00:00', target_time='2014-05-18 05:00:00+00:00', temperature=8.4).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.449200+00:00', target_time='2014-05-18 08:00:00+00:00', temperature=12.45).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.449263+00:00', target_time='2014-05-18 11:00:00+00:00', temperature=18.01).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.449327+00:00', target_time='2014-05-18 14:00:00+00:00', temperature=18.52).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.449391+00:00', target_time='2014-05-18 17:00:00+00:00', temperature=16.58).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.449462+00:00', target_time='2014-05-18 20:00:00+00:00', temperature=13.56).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.449525+00:00', target_time='2014-05-18 23:00:00+00:00', temperature=10.48).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.449590+00:00', target_time='2014-05-19 02:00:00+00:00', temperature=8.07).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.449654+00:00', target_time='2014-05-19 05:00:00+00:00', temperature=7.21).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.449718+00:00', target_time='2014-05-19 08:00:00+00:00', temperature=11.69).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.449781+00:00', target_time='2014-05-19 11:00:00+00:00', temperature=14.35).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.449844+00:00', target_time='2014-05-19 14:00:00+00:00', temperature=16.01).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.449914+00:00', target_time='2014-05-19 17:00:00+00:00', temperature=14.42).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.449978+00:00', target_time='2014-05-19 20:00:00+00:00', temperature=14.28).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.450041+00:00', target_time='2014-05-19 23:00:00+00:00', temperature=12.78).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.450104+00:00', target_time='2014-05-20 02:00:00+00:00', temperature=13.74).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.534157+00:00', target_time='2014-05-20 00:00:00+00:00', temperature=21.05).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.534221+00:00', target_time='2014-05-21 00:00:00+00:00', temperature=23.61).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.534285+00:00', target_time='2014-05-22 00:00:00+00:00', temperature=23.26).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.534348+00:00', target_time='2014-05-23 00:00:00+00:00', temperature=18.25).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.534412+00:00', target_time='2014-05-24 00:00:00+00:00', temperature=21.15).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.534476+00:00', target_time='2014-05-25 00:00:00+00:00', temperature=24.21).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.534539+00:00', target_time='2014-05-26 00:00:00+00:00', temperature=25.93).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.534602+00:00', target_time='2014-05-27 00:00:00+00:00', temperature=27.56).save()
-        WeatherValue(timestamp='2014-05-15 09:03:14.534665+00:00', target_time='2014-05-28 00:00:00+00:00', temperature=25.28).save()
-        WeatherValue(timestamp='2014-05-15 20:03:14.534665+00:00', target_time='2014-05-28 00:00:00+00:00', temperature=100).save()
+        base_timestamp = datetime.datetime.strptime('2014-05-15 09:03:14 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        base_target_time = datetime.datetime.strptime('2014-05-15 08:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        weather_values = []
+        
+        count_hourly_temperatures = 39
+        for i in range(count_hourly_temperatures):
+            timestamp = base_timestamp + datetime.timedelta(0, i) # one second more
+            target_time = base_target_time + datetime.timedelta(
+                                                    0,0,0,0,0,i*3) # 3 hours more
+            weather_values.append(WeatherValue(timestamp=timestamp, 
+                target_time=target_time, temperature=20+i))
+                
+        base_timestamp = base_timestamp + datetime.timedelta(0, 
+                                                count_hourly_temperatures)
+        base_target_time = (base_target_time + datetime.timedelta(5)) # 5 days later
+        base_target_time = base_target_time.replace(hour=0, 
+                                                    minute=0, 
+                                                    second=0, 
+                                                    microsecond=0 )
+        for i in range(9):
+            timestamp = base_timestamp + datetime.timedelta(0, i) # one second more
+            target_time = base_target_time + datetime.timedelta(i) # one day more
+            weather_values.append(
+                WeatherValue(timestamp=timestamp,
+                            target_time=target_time, 
+                            temperature=20+ count_hourly_temperatures + i
+                            ))
+        # create two older duplicate
+        old_timestamp = datetime.datetime.strptime('2014-05-01 09:03:14 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        weather_values.append(WeatherValue(timestamp=old_timestamp,
+                            target_time='2014-05-28 00:00:00+00:00', 
+                            temperature=100
+                            ))  
+        weather_values.append(WeatherValue(timestamp=old_timestamp,
+                            target_time='2014-05-16 14:00:00+00:00', 
+                            temperature=100
+                            ))                    
+        WeatherValue.objects.bulk_create(weather_values)
 
 class GetPassedWeatherTest(TestCase):
     
