@@ -115,8 +115,6 @@ class WeatherForecast:
                 record.save()
         
     def get_temperature_estimate(self, date):
-        
-
         current_date = datetime.datetime.fromtimestamp(self.get_date())\
                       .replace(tzinfo=timezone.utc)
         if current_date > date:
