@@ -145,4 +145,17 @@ def install_devices(**kwargs):
                         FROM server_sensorvaluehourly INNER JOIN server_sensor ON server_sensor.id=server_sensorvaluehourly.sensor_id
                         GROUP BY sensor_id, timestamp;''')
 
+            cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluemonthly AS 
+                         SELECT row_number() OVER (ORDER BY t1.timestamp) AS id,
+                            t1.sensor_id,
+                            t1.timestamp,
+                            sum(t1.value) AS sum
+                           FROM ( SELECT date_trunc('month'::text, server_sensorvalue."timestamp") AS timestamp,
+                                    server_sensorvalue.sensor_id,
+                                    server_sensorvalue.value
+                                   FROM server_sensorvalue) t1
+                          GROUP BY t1.timestamp, t1.sensor_id
+                          ORDER BY t1.timestamp
+                        WITH DATA;''')
+
 post_syncdb.connect(install_devices)

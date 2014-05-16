@@ -89,7 +89,7 @@ class SensorValue(models.Model):
 
 class SensorValueHourly(models.Model):
     sensor = models.ForeignKey('Sensor')
-    timestamp = models.DateTimeField(auto_now=False, db_index=True)
+    timestamp = models.DateTimeField(auto_now=False)
     value = models.FloatField()
 
     class Meta:
@@ -98,8 +98,19 @@ class SensorValueHourly(models.Model):
 
 class SensorValueDaily(models.Model):
     sensor = models.ForeignKey('Sensor')
-    timestamp = models.DateTimeField(auto_now=False, db_index=True)
+    timestamp = models.DateTimeField(auto_now=False)
     value = models.FloatField()
+
+    class Meta:
+        managed = False
+
+    def __unicode__(self):
+        return str(self.pk) + " (" + self.sensor.name + ")"
+
+class SensorValueMonthly(models.Model):
+    sensor = models.ForeignKey('Sensor')
+    timestamp = models.DateTimeField(auto_now=False)
+    sum = models.FloatField()
 
     class Meta:
         managed = False

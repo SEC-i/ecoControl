@@ -4,6 +4,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 import views
+import manager.hooks
 
 urlpatterns = patterns('',
     (r'^$', views.index),
@@ -23,6 +24,13 @@ urlpatterns = patterns('',
     (r'^api/statistics/monthly/(start/(?P<start>\d+)/)?(end/(?P<end>\d+)/)?$', views.get_monthly_statistics),
     (r'^api/status/$', views.status),
     (r'^api/thresholds/$', views.list_thresholds),
+    
+    (r'^api2/balance/totals/$', manager.hooks.get_totals),
+    (r'^api2/balance/infeed/$', manager.hooks.get_infeed),
+    (r'^api2/balance/purchase/$', manager.hooks.get_purchase),
+    (r'^api2/balance/thermal/$', manager.hooks.get_thermal_consumption),
+    (r'^api2/balance/electrical/$', manager.hooks.get_electrical_consumption),
+    (r'^api2/balance/maintenance/$', manager.hooks.get_maintenance_costs),
 
     url(r'^admin/', include(admin.site.urls)),
 )
