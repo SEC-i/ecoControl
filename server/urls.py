@@ -24,13 +24,16 @@ urlpatterns = patterns('',
     (r'^api/statistics/monthly/(start/(?P<start>\d+)/)?(end/(?P<end>\d+)/)?$', views.get_monthly_statistics),
     (r'^api/status/$', views.status),
     (r'^api/thresholds/$', views.list_thresholds),
-    
+
     (r'^api2/balance/totals/$', manager.hooks.get_totals),
     (r'^api2/balance/infeed/$', manager.hooks.get_infeed),
     (r'^api2/balance/purchase/$', manager.hooks.get_purchase),
-    (r'^api2/balance/thermal/$', manager.hooks.get_thermal_consumption),
-    (r'^api2/balance/electrical/$', manager.hooks.get_electrical_consumption),
     (r'^api2/balance/maintenance/$', manager.hooks.get_maintenance_costs),
+    (r'^api2/consumption/thermal/$', manager.hooks.get_thermal_consumption),
+    (r'^api2/consumption/warmwater/$', manager.hooks.get_warmwater_consumption),
+    (r'^api2/consumption/electrical/$', manager.hooks.get_electrical_consumption),
+    (r'^api2/consumption/cu/$', manager.hooks.get_cu_consumption,),
+    (r'^api2/consumption/plb/$', manager.hooks.get_plb_consumption),
 
     url(r'^admin/', include(admin.site.urls)),
 )
