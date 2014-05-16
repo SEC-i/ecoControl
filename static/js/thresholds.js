@@ -61,21 +61,24 @@ function refresh_thresholds() {
             $('#threshold_list tbody').append(
                 '<tr>\
                     <td>' + (index + 1) + '</td>\
-                    <td><a href="#" class="x_editable" data-type="text" data-pk="' + threshold.id + '" data-name="name" data-title="Enter threshold name">' + threshold.name + '</a></td>\
+                    <td><a href="#" class="x_editable_name" data-type="text" data-pk="' + threshold.id + '" data-name="name" data-title="Enter threshold name">' + threshold.name + '</a></td>\
                     <td><a href="#" class="x_editable_sensor_list editable editable-click editable-open" data-type="select" data-pk="' + threshold.id + '" data-name="sensor_id" data-value="' + threshold.sensor_id + '" data-title="Select sensor">' + threshold.sensor_name + '</a></td>\
-                    <td><a href="#" class="x_editable" data-type="text" data-pk="' + threshold.id + '" data-name="min_value" data-title="Enter minimal value">' + threshold.min_value + '</a></td>\
-                    <td><a href="#" class="x_editable" data-type="text" data-pk="' + threshold.id + '" data-name="max_value" data-title="Enter maximal value">' + threshold.max_value + '</a></td>\
+                    <td><a href="#" class="x_editable_values" data-type="text" data-pk="' + threshold.id + '" data-name="min_value" data-title="Enter minimal value">' + threshold.min_value + '</a></td>\
+                    <td><a href="#" class="x_editable_values" data-type="text" data-pk="' + threshold.id + '" data-name="max_value" data-title="Enter maximal value">' + threshold.max_value + '</a></td>\
                     <td><a href="#" class="x_editable_category editable editable-click editable-open" data-type="select" data-pk="' + threshold.id + '" data-name="category" data-value="' + threshold.category + '" data-title="Select type of notification">' + get_label(threshold.category) + '</a></td>\
                     <td class="text-right"><a href="#" class="edit_button"><a href="#" class="delete_button" data-threshold="' + threshold.id + '"><span class="glyphicon glyphicon-remove"></span></a></td>\
                 </tr>'
             );
         });
-        $('.x_editable').editable({
+        $('.x_editable_name').editable({
             url: '/api/manage/thresholds/',
             params: function(params) {
                 var post_data = {'id': params.pk};
                 post_data[params.name] = params.value;
                 return JSON.stringify(post_data);
+            },
+            validate: function(value) {
+               if($.trim(value) == '') return 'This field is required';
             }
         });
         $('.x_editable_sensor_list').editable({
@@ -86,6 +89,17 @@ function refresh_thresholds() {
                 return JSON.stringify(post_data);
             },
             source: x_editable_sensor_list
+        });
+        $('.x_editable_values').editable({
+            url: '/api/manage/thresholds/',
+            params: function(params) {
+                var post_data = {'id': params.pk};
+                post_data[params.name] = params.value;
+                return JSON.stringify(post_data);
+            },
+            validate: function(value) {
+               if(isNaN($.trim(value))) return 'This fields requires a numeric or empty input';
+            }
         });
         $('.x_editable_category').editable({
             url: '/api/manage/thresholds/',
