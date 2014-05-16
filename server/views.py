@@ -15,7 +15,7 @@ from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
 
 import functions
-from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily
+from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, Threshold, Notification
 from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation
 from forecasting import Simulation
 
@@ -211,3 +211,66 @@ def list_sensors(request):
 
 def live_data(request):
     return create_json_response(request, functions.get_live_data())
+
+
+def list_thresholds(request):
+    thresholds = Threshold.objects.extra(select={
+        'sensor_name': 'SELECT name FROM server_sensor WHERE id = sensor_id'
+    }).order_by('id')
+    return create_json_response_from_QuerySet(request, thresholds)
+
+
+@require_POST
+def handle_threshold(request):
+    data = json.loads(request.body)
+    if 'id' in data:
+        threshold = Threshold.objects.get(id=data['id'])
+        if threshold is not None:
+            if 'delete' in data:
+                threshold.delete()
+            else:
+                print data
+                if 'name' in data:
+                    threshold.name = data['name']
+                if 'sensor_id' in data:
+                    threshold.sensor_id = int(data['sensor_id'])
+                if 'min_value' in data:
+                    if data['min_value'] == '':
+                        threshold.min_value = None
+                    else:
+                        try:
+                            threshold.min_value = float(data['min_value'])
+                        except ValueError:
+                            pass
+                if 'max_value' in data and data['max_value'] != '':
+                    if data['max_value'] == '':
+                        threshold.max_value = None
+                    else:
+                        try:
+                            threshold.max_value = float(data['max_value'])
+                        except ValueError:
+                            pass
+                if 'category' in data:
+                    threshold.category = int(data['category'])
+                threshold.save()
+            return create_json_response(request, {"status": "success"})
+    else:
+        if all(x in data for x in ['name', 'sensor_id', 'min_value', 'max_value', 'category']):
+            threshold = Threshold(name=data['name'], sensor_id=int(data['sensor_id']), category=int(data['category']))
+            try:
+                threshold.min_value = float(data['min_value'])
+            except ValueError:
+                pass
+            try:
+                threshold.max_value = float(data['max_value'])
+            except ValueError:
+                pass
+            threshold.save()
+            return create_json_response(request, {"status": "success"})
+
+    return create_json_response(request, {"status": "failed"})
+
+
+def list_notifications(request):
+    notifications = Notification.objects.all().order_by('-timestamp')
+    return create_json_response_from_QuerySet(request, notifications)
