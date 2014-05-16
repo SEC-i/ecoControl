@@ -34,7 +34,11 @@ def install_devices(**kwargs):
         sensors.append(
             Sensor(device=cu, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True))
         sensors.append(
+            Sensor(device=cu, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh'))
+        sensors.append(
             Sensor(device=plb, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True))
+        sensors.append(
+            Sensor(device=plb, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh'))
         sensors.append(Sensor(device=tc, name='Thermal Consumption',
                        key='get_consumption_power', unit='kWh', in_diagram=True))
         sensors.append(Sensor(device=tc, name='Warm Water Consumption',
