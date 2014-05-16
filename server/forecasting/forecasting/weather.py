@@ -115,17 +115,43 @@ class WeatherForecast:
                 record.save()
         
     def get_temperature_estimate(self, date):
-        self.update_weather_estimates()
+        
 
         current_date = datetime.datetime.fromtimestamp(self.get_date())\
                       .replace(tzinfo=timezone.utc)
+        if current_date > date:
+            return self.get_temperature_of_passed_date(date)
         days_in_future = date.day - current_date.day
-        
+        self.update_weather_estimates()
         if days_in_future <=5:
             return self.get_forecast_temperature_hourly(date)           
         else:
             return self.get_forecast_temperature_daily(date)
             
+    def get_temperature_of_passed_date(self, date): 
+        d = datetime.timedelta(0,60*15)
+        earlier_stamp = date - d
+        later_stamp = date + d
+
+        entries = WeatherValue.objects.filter(
+            target_time__gte = earlier_stamp,
+            target_time__lte=later_stamp
+            )
+        if len(entries) > 1:
+            diff_1 = abs(date - entries[0].target_time)
+            diff_2 = abs(date - entries[1].target_time)
+            if diff_1 > diff_2:
+                result_value = entries[1]
+            elif diff_1 < diff_2:
+                result_value = entries[0]
+            else:
+                sorted_list = sorted(entries, key=lambda x: x.timestamp)
+                result_value = sorted_list[1]
+            return result_value.temperature
+        else:
+            return entries[0].temperature
+        
+        
     def get_nearest_and_newest_weather_value(self, entry1, entry2, target_time):
         diff_1 = abs(target_time - entry1.target_time.hour)
         diff_2 = abs(target_time - entry2.target_time.hour)
@@ -136,6 +162,15 @@ class WeatherForecast:
         else:
             sorted_list = sorted([entry1, entry2], key=lambda x: x.timestamp)
             return sorted_list[1]
+        #diff_1 = abs(target_time - entry1.target_time.hour)
+        #diff_2 = abs(target_time - entry2.target_time.hour)
+        #if diff_1 > diff_2:
+            #return entry2
+        #elif diff_1 < diff_2:
+            #return entry1
+        #else:
+            #sorted_list = sorted([entry1, entry2], key=lambda x: x.timestamp)
+            #return sorted_list[1]
             
     def get_forecast_temperature_hourly(self, date):
         if date.minute > 30:
