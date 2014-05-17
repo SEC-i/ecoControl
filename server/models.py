@@ -73,6 +73,8 @@ class Sensor(models.Model):
     setter = models.CharField(max_length=100)
     unit = models.CharField(max_length=50)
     in_diagram = models.BooleanField(default=False)
+    aggregate_sum = models.BooleanField(default=False)
+    aggregate_avg = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.name + " (#" + str(self.pk) + ")"
@@ -107,10 +109,23 @@ class SensorValueDaily(models.Model):
     def __unicode__(self):
         return str(self.pk) + " (" + self.sensor.name + ")"
 
-class SensorValueMonthly(models.Model):
+
+class SensorValueMonthlySum(models.Model):
     sensor = models.ForeignKey('Sensor')
     date = models.DateField(auto_now=False)
     sum = models.FloatField()
+
+    class Meta:
+        managed = False
+
+    def __unicode__(self):
+        return str(self.pk) + " (" + self.sensor.name + ")"
+
+
+class SensorValueMonthlyAvg(models.Model):
+    sensor = models.ForeignKey('Sensor')
+    date = models.DateField(auto_now=False)
+    avg = models.FloatField()
 
     class Meta:
         managed = False

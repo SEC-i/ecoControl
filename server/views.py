@@ -200,10 +200,10 @@ def list_values(request, start, accuracy='hour'):
 
 def list_sensors(request):
     sensors = Sensor.objects.filter(in_diagram=True).values(
-        'id', 'name', 'unit', 'device__name')
+        'id', 'name', 'unit', 'device__name', 'aggregate_sum', 'aggregate_avg')
 
     # rename device__name to device for convenience
-    output = [{'id': x['id'], 'name': x['name'], 'unit': x['unit'], 'device': x['device__name']}
+    output = [{'id': x['id'], 'name': x['name'], 'unit': x['unit'], 'device': x['device__name'], 'sum': x['aggregate_sum'], 'avg': x['aggregate_avg']}
               for x in sensors]
 
     return create_json_response(request, output)

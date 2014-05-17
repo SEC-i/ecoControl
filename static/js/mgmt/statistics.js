@@ -4,16 +4,28 @@ $(function() {
     $.getJSON('/api/sensors/', function(data) {
         sensor_list = data;
         $.each(sensor_list, function(index, sensor) {
-            $('.series_list').append(
-                '<option value="' + sensor.id + '">' + sensor.name + ' (' + sensor.device + ')</option>'
-            );
+            if (sensor.sum) {
+                $('.series_list').append(
+                    '<option value="' + sensor.id + '" data-aggregation="sum">SUM ' + sensor.name + ' (' + sensor.device + ')</option>'
+                );
+            }
+            if (sensor.avg) {
+                $('.series_list').append(
+                    '<option value="' + sensor.id + '" data-aggregation="avg">AVG ' + sensor.name + ' (' + sensor.device + ')</option>'
+                );
+            }
         });
         initialize_diagram();
         $('.series_list').change(function () {
             var sensor_id = $(this).val();
             var sensor = get_sensor(sensor_id);
             var target = $(this).attr('data-target');
-            $.getJSON('/api2/sums/' + sensor_id + '/', function(data) {
+            var url = '/api2/avgs/' + sensor_id + '/';
+            if ($(this).find(":selected").attr('data-aggregation') == 'sum') {
+                var url = '/api2/sums/' + sensor_id + '/';
+            }
+
+            $.getJSON(url, function(data) {
                 var chart = $('#diagram_container').highcharts();
                 var series_id = 0;
                 if (target == 'right') {
@@ -69,20 +81,18 @@ function initialize_diagram() {
         },
         yAxis: [{
             labels: {
-                format: '{value}kWh',
                 style: { color: Highcharts.getOptions().colors[1] }
             },
             title: {
-                text: 'Gas Consumption in kWh',
+                text: '',
                 style: { color: Highcharts.getOptions().colors[1] }
             },
         }, {
             labels: {
-                format: '{value} hours',
                 style: { color: Highcharts.getOptions().colors[0] }
             },
             title: {
-                text: 'Hours of Operations in %',
+                text: '',
                 style: { color: Highcharts.getOptions().colors[0] }
             },
             opposite: true
@@ -92,12 +102,10 @@ function initialize_diagram() {
         },
         series: [{
             type: 'column',
-            name: 'A',
             yAxis: 0,
             data: [],
         }, {
             type: 'column',
-            name: 'B',
             yAxis: 1,
             data: [],
         }],

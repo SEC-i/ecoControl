@@ -35,6 +35,7 @@ urlpatterns = patterns('',
     (r'^api2/consumption/cu/$', manager.hooks.get_cu_consumption,),
     (r'^api2/consumption/plb/$', manager.hooks.get_plb_consumption),
     (r'^api2/sums/((?P<sensor_id>\d+)/)?$', manager.hooks.get_sums),
+    (r'^api2/avgs/((?P<sensor_id>\d+)/)?$', manager.hooks.get_avgs),
 
     url(r'^admin/', include(admin.site.urls)),
 )

@@ -26,27 +26,27 @@ def install_devices(**kwargs):
 
         sensors = []
         sensors.append(
-            Sensor(device=hs, name='Temperature', key='get_temperature', setter='set_temperature', unit='°C', in_diagram=True))
+            Sensor(device=hs, name='Temperature', key='get_temperature', setter='set_temperature', unit='°C', in_diagram=True, aggregate_avg=True))
         sensors.append(
-            Sensor(device=pm, name='Purchased', key='purchased', unit='kWh'))
+            Sensor(device=pm, name='Purchased', key='purchased', unit='kWh', aggregate_sum=True))
         sensors.append(
-            Sensor(device=pm, name='Fed in Electricity', key='fed_in_electricity', unit='kWh'))
+            Sensor(device=pm, name='Fed in Electricity', key='fed_in_electricity', unit='kWh', aggregate_sum=True))
         sensors.append(
-            Sensor(device=cu, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True))
+            Sensor(device=cu, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True, aggregate_avg=True))
         sensors.append(
-            Sensor(device=cu, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh'))
+            Sensor(device=cu, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh', aggregate_sum=True))
         sensors.append(
-            Sensor(device=plb, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True))
+            Sensor(device=plb, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True, aggregate_avg=True))
         sensors.append(
-            Sensor(device=plb, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh'))
+            Sensor(device=plb, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh', aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Thermal Consumption',
-                       key='get_consumption_power', unit='kWh', in_diagram=True))
+                       key='get_consumption_power', unit='kWh', in_diagram=True, aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Warm Water Consumption',
-                       key='get_warmwater_consumption_power', unit='kWh', in_diagram=True))
+                       key='get_warmwater_consumption_power', unit='kWh', in_diagram=True, aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Outside Temperature',
-                       key='get_outside_temperature', unit='°C', in_diagram=True))
+                       key='get_outside_temperature', unit='°C', in_diagram=True, aggregate_avg=True))
         sensors.append(Sensor(device=ec, name='Electrical Consumption',
-                       key='get_consumption_power', unit='kWh', in_diagram=True))
+                       key='get_consumption_power', unit='kWh', in_diagram=True, aggregate_sum=True))
 
         Sensor.objects.bulk_create(sensors)
         print "Default sensors initialized"
@@ -149,7 +149,7 @@ def install_devices(**kwargs):
                         FROM server_sensorvaluehourly INNER JOIN server_sensor ON server_sensor.id=server_sensorvaluehourly.sensor_id
                         GROUP BY sensor_id, timestamp;''')
 
-            cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluemonthly AS 
+            cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluemonthlysum AS 
                          SELECT row_number() OVER (ORDER BY t1.date) AS id,
                             t1.sensor_id,
                             t1.date,
@@ -157,7 +157,22 @@ def install_devices(**kwargs):
                            FROM ( SELECT date_trunc('month'::text, server_sensorvalue."timestamp")::timestamp::date AS date,
                                     server_sensorvalue.sensor_id,
                                     server_sensorvalue.value
-                                   FROM server_sensorvalue) t1
+                                   FROM server_sensorvalue INNER JOIN server_sensor ON server_sensor.id=server_sensorvalue.sensor_id
+                                   WHERE server_sensor.aggregate_sum=TRUE) t1
+                          GROUP BY t1.date, t1.sensor_id
+                          ORDER BY t1.date
+                        WITH DATA;''')
+
+            cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluemonthlyavg AS 
+                         SELECT row_number() OVER (ORDER BY t1.date) AS id,
+                            t1.sensor_id,
+                            t1.date,
+                            avg(t1.value) AS avg
+                           FROM ( SELECT date_trunc('month'::text, server_sensorvalue."timestamp")::timestamp::date AS date,
+                                    server_sensorvalue.sensor_id,
+                                    server_sensorvalue.value
+                                   FROM server_sensorvalue INNER JOIN server_sensor ON server_sensor.id=server_sensorvalue.sensor_id
+                                   WHERE server_sensor.aggregate_avg=TRUE) t1
                           GROUP BY t1.date, t1.sensor_id
                           ORDER BY t1.date
                         WITH DATA;''')

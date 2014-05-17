@@ -11,7 +11,7 @@ from django.utils.timezone import utc
 from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
 
-from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthly, Threshold, Notification
+from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, SensorValueMonthlyAvg, Threshold, Notification
 from server.functions import get_configuration
 from server.helpers import create_json_response, create_json_response_from_QuerySet
 
@@ -77,10 +77,23 @@ def get_sums(request, sensor_id=None):
     if sensor_id is None:
         output = {}
         for sensor in Sensor.objects.all().values_list('id', flat=True):
-            output[sensor] = list(SensorValueMonthly.objects.filter(
+            output[sensor] = list(SensorValueMonthlySum.objects.filter(
                 sensor_id=sensor).values('date').annotate(total=Sum('sum')))
     else:
-        output = list(SensorValueMonthly.objects.filter(
-                sensor_id=sensor_id).values('date').annotate(total=Sum('sum')))
+        output = list(SensorValueMonthlySum.objects.filter(
+            sensor_id=sensor_id).values('date').annotate(total=Sum('sum')))
+
+    return create_json_response(request, output)
+
+
+def get_avgs(request, sensor_id=None):
+    if sensor_id is None:
+        output = {}
+        for sensor in Sensor.objects.all().values_list('id', flat=True):
+            output[sensor] = list(SensorValueMonthlyAvg.objects.filter(
+                sensor_id=sensor).values('date').annotate(total=Avg('avg')))
+    else:
+        output = list(SensorValueMonthlyAvg.objects.filter(
+            sensor_id=sensor_id).values('date').annotate(total=Avg('avg')))
 
     return create_json_response(request, output)
