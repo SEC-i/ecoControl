@@ -7,7 +7,7 @@
     <meta name="description" content="">
     <meta name="author" content="BP2013H1">
 
-    <title>Energy Management System</title>
+    <title>Settings - Energy Management System</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="/static/libs/bootstrap/css/bootstrap.min.css">
@@ -55,26 +55,30 @@
       </div>
     </div>
 
-    <!-- Simulation page -->
-    <div class="container">
-      <div class="row">
-        <div class="col-sm-12">
-          <div class="panel-group" id="accordion">
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <h4 class="panel-title">
-                  <a data-toggle="collapse" href="#diagram_container">
-                    Overview
-                  </a>
-                </h4>
-              </div>
-              <div class="panel-body">
-                Text
-              </div>
+    <!-- Settings page -->
+    <div class="container" id="container">
+      <form role="form">
+        <div class="row">
+          <div class="col-sm-12" id="panels">
+            <div class="panel panel-default" id="general_panel">
+              <div class="panel-heading">General</div>
+              <div class="panel-body"></div>
+            </div>
+            <div class="panel panel-default" id="hs_panel">
+              <div class="panel-heading">Heat Storage</div>
+              <div class="panel-body"></div>
+            </div>
+            <div class="panel panel-default" id="cu_panel">
+              <div class="panel-heading">Cogeneration Unit</div>
+              <div class="panel-body"></div>
+            </div>
+            <div class="panel panel-default" id="plb_panel">
+              <div class="panel-heading">Peak Load Boiler</div>
+              <div class="panel-body"></div>
             </div>
           </div>
         </div>
-      </div>
+      </form>
 
       <hr>
       <footer>
@@ -93,6 +97,8 @@
     <script src="/static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
     <script src="/static/libs/bootstrap/js/bootstrap.min.js"></script>
 
+    <script src="/static/js/lang.js"></script>
     <script src="/static/js/mgmt/settings.js"></script>
+
   </body>
 </html>
