@@ -61,13 +61,26 @@ def get_sum_response(request, device_type, key, multiply_by=1):
     sensors = Sensor.objects.filter(
         device__device_type=device_type, key=key).values_list('id', flat=True)
     totals = list(SensorValueMonthly.objects.filter(sensor_id__in=sensors)
-                  .values('timestamp').annotate(total_sum=Sum('sum')))
+                  .values('date').annotate(total_sum=Sum('sum')))
     if len(totals) > 0:
         output = []
         for total in totals:
             output.append({
-                'timestamp': total['timestamp'],
+                'date': total['date'],
                 'total': round(total['total_sum'] * multiply_by, 2)
             })
         return create_json_response(request, output)
     return create_json_response(request, {"status": "failed"})
+
+
+def get_sums(request, sensor_id=None):
+    if sensor_id is None:
+        output = {}
+        for sensor in Sensor.objects.all().values_list('id', flat=True):
+            output[sensor] = list(SensorValueMonthly.objects.filter(
+                sensor_id=sensor).values('date').annotate(total=Sum('sum')))
+    else:
+        output = list(SensorValueMonthly.objects.filter(
+                sensor_id=sensor_id).values('date').annotate(total=Sum('sum')))
+
+    return create_json_response(request, output)
