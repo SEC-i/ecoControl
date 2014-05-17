@@ -56,22 +56,20 @@
 
     <!-- Index page -->
     <div class="container">
-      <div class="row">
-        <div class="col-sm-12">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">Login</h4>
+      <form id="login_form" role="form">
+        <div class="row">
+          <div class="col-sm-offset-4 col-sm-4">
+            <h2>Please sign in</h2>
+            <div class="form-group">
+              <input type="text" class="form-control" id="login_username" placeholder="Username">
             </div>
-            <div class="panel-body">
-              <div class="row">
-                <div class="col-md-12">
-                  Text
-                </div>
-              </div>
+            <div class="form-group">
+              <input type="password" class="form-control" id="login_password" placeholder="Password">
             </div>
+            <button type="submit" class="btn btn-primary btn-block">Login</button>
           </div>
         </div>
-      </div>
+      </form>
 
       <hr>
       <footer>
@@ -89,6 +87,8 @@
     <script src="/static/libs/jquery-ui/js/jquery.ui.slider.min.js"></script>
     <script src="/static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
     <script src="/static/libs/bootstrap/js/bootstrap.min.js"></script>
+
+    <script src="/static/js/index.js"></script>
     
   </body>
 </html>

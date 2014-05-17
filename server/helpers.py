@@ -53,6 +53,10 @@ def create_json_response_from_QuerySet(request, data):
     return create_json_response(request, list(data.values()))
 
 
+def is_member(user, group_name):
+    return True if user.groups.filter(name=group_name) else False
+
+
 def start_worker():
     if not write_pidfile_or_fail("/tmp/worker.pid"):
         print 'Starting working...'
@@ -74,7 +78,7 @@ def start_demo_simulation(print_visible=False):
                 print 'Starting demo simulation...'
             else:
                 logger.debug('Starting demo simulation...')
-                
+
             simulation = Simulation(get_initial_time(), demo=True)
             simulation.start()
 

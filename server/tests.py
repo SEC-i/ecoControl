@@ -35,8 +35,8 @@ class APITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Check that the response equals {"login": "inactive"}
-        self.assertEqual(json.loads(response.content), {
-                         "login": "active", "user": "test_fn test_ln", "system_status": "init"})
+        self.assertDictContainsSubset(
+            {"login": "active", "user": "test_fn test_ln", "system_status": "init"}, json.loads(response.content))
 
         # Issue a request to logout
         response = self.client.get('/api/logout/')

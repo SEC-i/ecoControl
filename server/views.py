@@ -16,7 +16,7 @@ from django.db import connection
 
 import functions
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, Threshold, Notification
-from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation
+from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation, is_member
 from forecasting import Simulation
 
 
@@ -61,6 +61,8 @@ def status(request):
     if request.user.is_authenticated():
         output.append(("login", "active"))
         output.append(("user", request.user.get_full_name()))
+        output.append(("technician", is_member(request.user, 'Technician')))
+        output.append(("manager", is_member(request.user, 'Manager')))
     else:
         output.append(("login", "inactive"))
 

@@ -3,10 +3,29 @@ import sys
 
 from django.db.models.signals import post_syncdb
 from django.db import connection
+from django.contrib.auth.models import User, Group
 
 from server.models import Device, Sensor, Configuration, DeviceConfiguration
 
 def install_devices(**kwargs):
+    if len(User.objects.all()) == 0:
+        technician_group = Group(name="Technician")
+        technician_group.save()
+        manager_group = Group(name="Manager")
+        manager_group.save()
+
+        technician = User(username='bp2013h1', email='bp2013h1@lists.myhpi.de')
+        technician.set_password('hirsch')
+        technician.save()
+        technician.groups.add(technician_group)
+        technician.save()
+
+        manager = User(username='witt', password='demo')
+        manager.set_password('demo')
+        manager.save()
+        manager.groups.add(manager_group)
+        manager.save()
+
     if len(Device.objects.all()) == 0:
         hs = Device(name='Heat Storage', device_type=Device.HS)
         hs.save()
