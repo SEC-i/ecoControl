@@ -72,6 +72,7 @@
                     <th>Min</th>
                     <th>Max</th>
                     <th>Type</th>
+                    <th>Show Managers</th>
                     <th class="text-right">Delete</th>
                   </tr>
                 </thead>
@@ -86,12 +87,12 @@
 
               <form id="add_threshold_form" class="form" role="form">
                 <div class="row">
-                  <div class="col-sm-4">
+                  <div class="col-sm-3">
                     <div class="form-group">
                         <input type="text" class="form-control" name="threshold_name" placeholder="Enter name for Threshold" required="required">
                     </div>
                   </div>
-                  <div class="col-sm-3">
+                  <div class="col-sm-2">
                     <div class="form-group">
                         <select id="sensor_list" name="sensor_id" class="form-control" required="required"></select>
                     </div>
@@ -116,6 +117,14 @@
                           <option value="3">Info</option>
                           <option value="4">Warning</option>
                           <option value="5">Danger</option>
+                        </select>
+                    </div>
+                  </div>
+                  <div class="col-sm-2">
+                    <div class="form-group">
+                        <select name="show_manager" class="form-control">
+                          <option value="0">Technicians only</option>
+                          <option value="1">Technicians and Managers</option>
                         </select>
                     </div>
                   </div>

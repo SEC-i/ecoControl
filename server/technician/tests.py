@@ -44,7 +44,7 @@ class TechnicianHooksTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(json.loads(response.content)), 0)
 
-        notification = Notification(threshold=threshold, category=Notification.Danger)
+        notification = Notification(threshold=threshold, category=Notification.Danger, show_manager=True)
         notification.save()
 
         response = self.client.get('/api/notifications/')

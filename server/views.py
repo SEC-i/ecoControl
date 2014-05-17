@@ -219,6 +219,7 @@ def list_thresholds(request):
     thresholds = Threshold.objects.extra(select={
         'sensor_name': 'SELECT name FROM server_sensor WHERE id = sensor_id'
     }).order_by('id')
+
     return create_json_response_from_QuerySet(request, thresholds)
 
 
@@ -226,6 +227,9 @@ def list_thresholds(request):
 def handle_threshold(request):
     data = json.loads(request.body)
     if 'id' in data:
+        if not is_member(request.user, 'Technician'):
+            return create_json_response(request, {"status": "not a technician"})
+            
         threshold = Threshold.objects.get(id=data['id'])
         if threshold is not None:
             if 'delete' in data:
@@ -254,6 +258,8 @@ def handle_threshold(request):
                             pass
                 if 'category' in data:
                     threshold.category = int(data['category'])
+                if 'show_manager' in data:
+                    threshold.show_manager = True if data['show_manager'] == '1' else False
                 threshold.save()
             return create_json_response(request, {"status": "success"})
     else:
@@ -274,5 +280,9 @@ def handle_threshold(request):
 
 
 def list_notifications(request):
-    notifications = Notification.objects.all().order_by('-timestamp')
-    return create_json_response_from_QuerySet(request, notifications)
+    if is_member(request.user, 'Technician'):
+        notifications = Notification.objects.all()
+    else:
+        notifications = Notification.objects.filter(show_manager=True)
+
+    return create_json_response_from_QuerySet(request, notifications.order_by('-timestamp'))

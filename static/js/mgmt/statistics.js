@@ -98,7 +98,8 @@ function initialize_diagram() {
             opposite: true
         }],
         tooltip: {
-            shared: true
+            shared: true,
+            valueDecimals: 2
         },
         series: [{
             type: 'column',

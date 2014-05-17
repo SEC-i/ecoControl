@@ -17,6 +17,7 @@ $(function() {
                 'min_value': $('#add_threshold_form input[name=min_value]').val(),
                 'max_value': $('#add_threshold_form input[name=max_value]').val(),
                 'category': $('#add_threshold_form select[name=category]').val(),
+                'show_manager': $('#add_threshold_form select[name=show_manager]').val(),
             };
             $.ajax({
                 type: 'POST',
@@ -66,6 +67,7 @@ function refresh_thresholds() {
                     <td><a href="#" class="x_editable_values" data-type="text" data-pk="' + threshold.id + '" data-name="min_value" data-title="Enter minimal value">' + threshold.min_value + '</a></td>\
                     <td><a href="#" class="x_editable_values" data-type="text" data-pk="' + threshold.id + '" data-name="max_value" data-title="Enter maximal value">' + threshold.max_value + '</a></td>\
                     <td><a href="#" class="x_editable_category editable editable-click editable-open" data-type="select" data-pk="' + threshold.id + '" data-name="category" data-value="' + threshold.category + '" data-title="Select type of notification">' + get_label(threshold.category) + '</a></td>\
+                    <td><a href="#" class="x_editable_show_manager editable editable-click editable-open" data-type="select" data-pk="' + threshold.id + '" data-name="show_manager" data-value="' + (threshold.show_manager == true ? '1' : '0') + '" data-title="Show Managers?">' + (threshold.show_manager == true ? 'Yes' : 'No') + '</a></td>\
                     <td class="text-right"><a href="#" class="edit_button"><a href="#" class="delete_button" data-threshold="' + threshold.id + '"><span class="glyphicon glyphicon-remove"></span></a></td>\
                 </tr>'
             );
@@ -115,6 +117,18 @@ function refresh_thresholds() {
                 {value: 3, text: 'Info'},
                 {value: 4, text: 'Warning'},
                 {value: 5, text: 'Danger'}
+            ]
+        });
+        $('.x_editable_show_manager').editable({
+            url: '/api/manage/thresholds/',
+            params: function(params) {
+                var post_data = {'id': params.pk};
+                post_data[params.name] = params.value;
+                return JSON.stringify(post_data);
+            },
+            source: [
+                {value: 0, text: 'No'},
+                {value: 1, text: 'Yes'},
             ]
         });
         $('.delete_button').click( function () {

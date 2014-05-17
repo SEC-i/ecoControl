@@ -154,6 +154,7 @@ class Threshold(models.Model):
     sensor = models.ForeignKey('Sensor')
     name = models.CharField(max_length=100)
     category = models.PositiveSmallIntegerField(choices=TYPES, default=Default)
+    show_manager = models.BooleanField(default=False)
     min_value = models.FloatField(null=True, blank=True)
     max_value = models.FloatField(null=True, blank=True)
 
@@ -182,6 +183,7 @@ class Notification(models.Model):
     message = models.CharField(max_length=200)
     timestamp = models.DateTimeField(auto_now=True)
     category = models.PositiveSmallIntegerField(choices=TYPES, default=Default)
+    show_manager = models.BooleanField(default=False)
     read = models.BooleanField(default=False)
 
     def __unicode__(self):
