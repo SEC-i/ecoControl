@@ -173,7 +173,7 @@ def list_values(request, start, accuracy='hour'):
             select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
     elif accuracy=='day':
         sensor_values = SensorValueDaily.objects.\
-            filter(timestamp__gte=start, sensor__in_diagram=True).\
+            filter(date__gte=datetime.date(start), sensor__in_diagram=True).\
             select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
 
     values = {}

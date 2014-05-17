@@ -145,21 +145,21 @@ def install_devices(**kwargs):
             cursor.execute('''CREATE VIEW server_sensorvaluedaily AS
                         SELECT row_number() OVER (ORDER BY timestamp) AS id,
                             sensor_id, AVG(value) AS value,
-                            date_trunc('day', server_sensorvaluehourly.timestamp) AS timestamp
+                            date_trunc('day', server_sensorvaluehourly.timestamp)::timestamp::date AS date
                         FROM server_sensorvaluehourly INNER JOIN server_sensor ON server_sensor.id=server_sensorvaluehourly.sensor_id
                         GROUP BY sensor_id, timestamp;''')
 
             cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluemonthly AS 
-                         SELECT row_number() OVER (ORDER BY t1.timestamp) AS id,
+                         SELECT row_number() OVER (ORDER BY t1.date) AS id,
                             t1.sensor_id,
-                            t1.timestamp,
+                            t1.date,
                             sum(t1.value) AS sum
-                           FROM ( SELECT date_trunc('month'::text, server_sensorvalue."timestamp") AS timestamp,
+                           FROM ( SELECT date_trunc('month'::text, server_sensorvalue."timestamp")::timestamp::date AS date,
                                     server_sensorvalue.sensor_id,
                                     server_sensorvalue.value
                                    FROM server_sensorvalue) t1
-                          GROUP BY t1.timestamp, t1.sensor_id
-                          ORDER BY t1.timestamp
+                          GROUP BY t1.date, t1.sensor_id
+                          ORDER BY t1.date
                         WITH DATA;''')
 
 post_syncdb.connect(install_devices)

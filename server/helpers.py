@@ -23,10 +23,15 @@ class WebAPIEncoder(json.JSONEncoder):
             if obj.utcoffset() is not None:
                 obj = obj - obj.utcoffset()
             obj.replace(tzinfo=pytz.timezone('CET'))
-            milliseconds = int(
+            timestamp = int(
                 calendar.timegm(obj.timetuple())
             )
-            return milliseconds
+            return timestamp
+        if isinstance(obj, datetime.date):
+            timestamp = int(
+                calendar.timegm(obj.timetuple())
+            )
+            return timestamp
 
         return json.JSONEncoder.default(self, obj)
 
