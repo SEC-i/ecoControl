@@ -42,7 +42,9 @@ class TechnicianHooksTestCase(TestCase):
 
         response = self.client.get('/api/notifications/')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(json.loads(response.content)), 0)
+        data = json.loads(response.content)
+        self.assertEqual(data['total'], 0)
+        self.assertEqual(len(data['notifications']), 0)
 
         notification = Notification(threshold=threshold, category=Notification.Danger, show_manager=True)
         notification.save()
@@ -50,6 +52,7 @@ class TechnicianHooksTestCase(TestCase):
         response = self.client.get('/api/notifications/')
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]['threshold_id'], threshold.id)
-        self.assertEqual(data[0]['category'], Notification.Danger)
+        self.assertEqual(data['total'], 1)
+        self.assertEqual(len(data['notifications']), 1)
+        self.assertEqual(data['notifications'][0]['threshold_id'], threshold.id)
+        self.assertEqual(data['notifications'][0]['category'], Notification.Danger)

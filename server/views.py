@@ -279,10 +279,18 @@ def handle_threshold(request):
     return create_json_response(request, {"status": "failed"})
 
 
-def list_notifications(request):
+def list_notifications(request, start, end):
+    start = 0 if start is None else start
+    end = 25 if end is None else end
+
     if is_member(request.user, 'Technician'):
         notifications = Notification.objects.all()
     else:
         notifications = Notification.objects.filter(show_manager=True)
 
-    return create_json_response_from_QuerySet(request, notifications.order_by('-timestamp'))
+    output = {
+        'total': len(notifications),
+        'notifications': list(notifications.order_by('-timestamp')[int(start):int(end)].values())
+    }
+
+    return create_json_response(request, output)

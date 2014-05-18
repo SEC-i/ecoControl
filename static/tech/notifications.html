@@ -47,8 +47,9 @@
             <li><a href="live_setup.html">Live Setup</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="thresholds.html">Thresholds</a></li>
-            <li><a href="settings.html">Settings</a></li>
+            <li><a href="thresholds.html"><span class="glyphicon glyphicon-tasks" title="Thresholds"></span></a></li>
+            <li><a href="settings.html"><span class="glyphicon glyphicon-cog" title="Settings"></span></a></li>
+            <li><a href="#" id="logout_button"><span class="glyphicon glyphicon-log-out" title="Logout"></span></a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -64,12 +65,16 @@
               <table class="table" id="notification_list">
                 <thead>
                   <tr>
+                    <th>ID</th>
                     <th>Time</th>
                     <th>Message</th>
                   </tr>
                 </thead>
                 <tbody></tbody>
               </table>
+              <div class="row text-center">
+                <div class="col-sm-12" id="notification_pagination"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -92,6 +97,7 @@
     <script src="/static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
     <script src="/static/libs/bootstrap/js/bootstrap.min.js"></script>
 
+    <script src="/static/js/global.js"></script>
     <script src="/static/js/tech/notifications.js"></script>
 
   </body>
