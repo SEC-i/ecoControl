@@ -432,7 +432,7 @@ class GetWeatherForecastURLErrorTest(unittest.TestCase):
         for entry in result:
             self.assertLess(float(entry.temperature), absolute_zero_point)
             
-class ApiWorksAsExpectedTest(TestCase):
+'''class ApiWorksAsExpectedTest(TestCase):
     def setUp(self):
         self.forecast = WeatherForecast()
         try:
@@ -478,10 +478,9 @@ class ApiWorksAsExpectedTest(TestCase):
                 
     def test_hourly_values(self):
         pass
-        '''We expect from the hour which is nearest to the current time
+        \'''We expect from the hour which is nearest to the current time
         every three hours a value.
-        '''
-        '''
+        \'''
         if not self.three_valid:
             return
         records = self.forecast.set_up_records_out_of_json(self.hourly_data, daily=False)
@@ -502,8 +501,6 @@ class ApiWorksAsExpectedTest(TestCase):
          
         # the full days have per d  
         '''      
-        
-            
 
 class GetWeatherTest(TestCase):
     
@@ -644,6 +641,7 @@ class GetPassedWeatherTest(TestCase):
                 target_time=target_time, temperature=20+i))     
         
         WeatherValue.objects.bulk_create(weather_values)
+        
 
 def aware_timestamp_from_seconds(seconds):
     naive = datetime.datetime.fromtimestamp(seconds)
