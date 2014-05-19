@@ -51,17 +51,9 @@ $(function() {
             });
         });
     }).done(function() {
-        // Randomly choose two series to compair
-        var size = $('#series_left option').size();
-        
-        var select_random = Math.floor(Math.random() * size);
-        $("#series_left option:nth-child(" + select_random + ")").prop("selected", true);
-
-        var select_random2 = Math.floor(Math.random() * size);
-        while (select_random == select_random2) {
-            select_random2 = Math.floor(Math.random() * size);
-        };
-        $("#series_right option:nth-child(" + select_random2 + ")").prop("selected", true);
+        if ($('#series_left option').size() >= 2) {
+            $("#series_right option:nth-child(2)").prop("selected", true);
+        }
 
         $('.series_list').change();
     });
