@@ -1,6 +1,7 @@
 from helpers import BaseSystem
 
 
+
 class HeatStorage(BaseSystem):
 
     def __init__(self, system_id, env, capacity=2500, min_temperature=55.0, target_temperature=70.0, critical_temperature=90.0):

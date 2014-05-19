@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import calendar
 import dateutil.relativedelta
 
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.http import require_POST
@@ -164,7 +165,7 @@ def list_values(request, start, accuracy='hour'):
     if start is None:
         start = functions.get_past_time(days=14)
     else:
-        start = datetime.fromtimestamp(start).replace(tzinfo=utc)
+        start = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
     output = []
   
     if accuracy=='hour':

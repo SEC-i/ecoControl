@@ -137,6 +137,12 @@ LOGGING = {
             'backupCount': 5,
             'formatter': 'verbose'
         },
+        'console':{
+            'level': 'WARNING',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+
+        },
         'simulation': {
             'level': 'WARNING',
             'class': 'logging.handlers.RotatingFileHandler',
@@ -162,6 +168,7 @@ LOGGING = {
         },
         'simulation': {
             'handlers': ['simulation'],
+
             'propagate': True,
             'level': 'WARNING',
         },
