@@ -1,5 +1,5 @@
 // READY
-var notifications_per_page = 20;
+var notifications_per_page = 15;
 
 $(function() {
     $.getJSON("/api/status/", function(data) {
