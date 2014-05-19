@@ -3,6 +3,8 @@ from holt_winters import multiplicative, additive
 import numpy as np
 from multiprocessing import Pool
 import time
+from multiprocessing.process import Process
+import multiprocessing
 
 
 class Forecast:
@@ -58,7 +60,7 @@ class Forecast:
         
 
 
-    def forecast_demand(self, demand):
+    def forecast_demand(self, demand, index, result_queue):
         #seasonality length -- one day
         m = 24
         #forecast_length
@@ -94,28 +96,40 @@ class Forecast:
                 "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_manual}
             #print "use manual HW with RMSE", rmse_manual, " and MASE ", mase_manual
 
-        return (forecast_values, calculated_parameters)
+        result_queue.put((forecast_values, calculated_parameters, index))
 
     def forecast_demands(self):
+        split_results = [[] for i in range(7)]
+        unordered_forecasts = []
+
+        #share results in a multiaccess queue
+        result_queue = multiprocessing.Queue()
+        # use multiple processes instead of pool.map to circumvent a hangup caused
+        # by a multiprocessing/django incompabatility
+        #call class as Functor because class methods are not pickeable
+        jobs = [Process(target=self, args=(demand,index,result_queue)) for index, demand in enumerate(self.demands)]
+        for job in jobs: job.start()
+        for job in jobs: job.join()
+        
+        while not result_queue.empty():
+            unordered_forecasts.append(result_queue.get())
+        for fc_triple in unordered_forecasts:
+            split_results[fc_triple[2]] = (fc_triple[0],fc_triple[1])
+
         forecasted_demands = []
-        forecasts = []
-
-        # multiprocessing with processes, to use multiple processors
-        pool = Pool(processes=len(self.demands))
-        # pass class instance, which will call the __call__ method. This is done, because instance methods are not
-        # pickeable and cant be used with with processes
-        forecasts = pool.map(self, self.demands) #[self.forecast_demand(demand) for demand in  self.demands]#pool.map(self, self.demands) #
-
         self.calculated_parameters = []
-        for fc_tuple in forecasts:
+        for fc_tuple in split_results:
+            #print fc_tuple
             forecasted_demands.append(list(fc_tuple[0]))
             self.calculated_parameters.append(fc_tuple[1])
 
         return forecasted_demands
+    
+
 
     # callable class
-    def __call__(self, demand):
-        return self.forecast_demand(demand)
+    def __call__(self, demand, index, result_queue):
+        self.forecast_demand(demand, index, result_queue)
 
     @classmethod
     def split_weekdata(cls, data, samples_per_hour, start_date=None):
