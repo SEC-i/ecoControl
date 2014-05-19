@@ -5,7 +5,6 @@ import os
 from server.forecasting.forecasting import Forecast
 from server.forecasting.forecasting.dataloader import DataLoader
 from server.forecasting.environment import ForwardableRealtimeEnvironment
-from server.forecasting.tools.plotting import Plotting
 from server.forecasting.forecasting.helpers import approximate_index
 
 
