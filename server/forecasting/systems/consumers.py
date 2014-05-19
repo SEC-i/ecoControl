@@ -251,7 +251,6 @@ class ElectricalConsumer(BaseSystem):
     def get_data_until(self, timestamp, start_timestamp=None):
         #! TODO: reading data from csv will have to be replaced by live/fake data from database
         date = datetime.fromtimestamp(timestamp)
-        print os.path.realpath('..')
         path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_2013.csv")
         raw_dataset = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
         dates = DataLoader.load_from_file(path, "Datum", "\t")
