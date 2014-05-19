@@ -52,7 +52,7 @@ $(function() {
 
             if (system_status != 'init') {
                 $.each(namespaces, function(index, value) {
-                    $('#' + value + '_panel .panel-heading').append('<a href="#" class="edit_button" data-namespace=' + value + '><span class="glyphicon glyphicon-pencil pull-right"></span></a>');
+                    $('#' + value + '_panel .panel-heading').append('<a href="#" class="edit_button" data-namespace="' + value + '"><span class="glyphicon glyphicon-pencil pull-right"></span></a>');
                 });
 
                 $('.edit_button').click(function() {

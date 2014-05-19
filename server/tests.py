@@ -3,7 +3,7 @@ import json
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 
-from models import DeviceConfiguration
+from models import DeviceConfiguration, Notification, Threshold
 
 
 class APITestCase(TestCase):
@@ -68,3 +68,21 @@ class APITestCase(TestCase):
     def test_forecast(self):
         response = self.client.get('/api/forecast/')
         self.assertEqual(response.status_code, 200)
+
+    def test_notifications_hook(self):
+        threshold = Threshold(sensor_id=1)
+        threshold.save()
+
+        response = self.client.get('/api/notifications/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(json.loads(response.content)), 0)
+
+        notification = Notification(threshold=threshold, category=Notification.Danger)
+        notification.save()
+
+        response = self.client.get('/api/notifications/')
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]['threshold_id'], threshold.id)
+        self.assertEqual(data[0]['category'], Notification.Danger)

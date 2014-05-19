@@ -7,7 +7,7 @@
     <meta name="description" content="">
     <meta name="author" content="BP2013H1">
 
-    <title>Live Setup - Energy Management System</title>
+    <title>Notifications - Energy Management System</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="/static/libs/bootstrap/css/bootstrap.min.css">
@@ -43,8 +43,8 @@
           <ul class="nav navbar-nav">
             <li><a href="index.html">Overview</a></li>
             <li><a href="statistics.html">Statistics</a></li>
-            <li><a href="notifications.html">Notifications</a></li>
-            <li class="active"><a href="live_setup.html">Live Setup</a></li>
+            <li class="active"><a href="notifications.html">Notifications</a></li>
+            <li><a href="live_setup.html">Live Setup</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li><a href="thresholds.html">Thresholds</a></li>
@@ -54,11 +54,24 @@
       </div>
     </div>
 
-    <!-- Settings page -->
+    <!-- Notification page -->
     <div class="container">
       <div class="row">
         <div class="col-sm-12">
-          <div id="schema_container"></div>
+          <div class="panel panel-default">
+            <div class="panel-heading">Notification History</div>
+            <div class="panel-body">
+              <table class="table" id="notification_list">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Message</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -79,6 +92,7 @@
     <script src="/static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
     <script src="/static/libs/bootstrap/js/bootstrap.min.js"></script>
 
-    <script src="/static/js/live_setup.js"></script>
+    <script src="/static/js/notifications.js"></script>
+
   </body>
 </html>

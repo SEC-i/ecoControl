@@ -7,6 +7,7 @@ import calendar
 from django.http import HttpResponse
 
 from server.forecasting import Simulation
+from server.worker import Worker
 from server.models import Configuration, DeviceConfiguration, SensorValue
 
 logger = logging.getLogger('django')
@@ -23,8 +24,7 @@ class WebAPIEncoder(json.JSONEncoder):
                 obj = obj - obj.utcoffset()
             obj.replace(tzinfo=pytz.timezone('CET'))
             milliseconds = int(
-                calendar.timegm(obj.timetuple()) * 1000 +
-                obj.microsecond / 1000
+                calendar.timegm(obj.timetuple())
             )
             return milliseconds
 
@@ -46,6 +46,13 @@ def create_json_response(request, data):
 
 def create_json_response_from_QuerySet(request, data):
     return create_json_response(request, list(data.values()))
+
+
+def start_worker():
+    if not write_pidfile_or_fail("/tmp/worker.pid"):
+        print 'Starting working...'
+        worker = Worker()
+        worker.start()
 
 
 def start_demo_simulation(print_visible=False):

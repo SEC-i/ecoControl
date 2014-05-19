@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-import logging
+import sys
 
 from django.db.models.signals import post_syncdb
+from django.db import connection
+
 from server.models import Device, Sensor, Configuration, DeviceConfiguration
 
 def install_devices(**kwargs):
@@ -118,5 +120,29 @@ def install_devices(**kwargs):
 
         DeviceConfiguration.objects.bulk_create(device_configurations)
         print "Default device configurations initialized"
+
+
+        if 'test' not in sys.argv:
+
+            cursor = connection.cursor()
+            cursor.execute('''CREATE MATERIALIZED VIEW public.server_sensorvaluehourly AS
+                SELECT row_number() OVER (ORDER BY t1.timestamp) AS id,
+                    t1.sensor_id,
+                    t1.timestamp,
+                    avg(t1.value) AS value
+                   FROM ( SELECT             server_sensorvalue.sensor_id,
+                            '1970-01-01 00:00:00'::timestamp without time zone + '01:00:00'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 3600)::double precision AS timestamp,
+                            server_sensorvalue.value
+                           FROM server_sensorvalue) t1
+                  GROUP BY  t1.timestamp, t1.sensor_id
+                  ORDER BY t1.timestamp
+                 WITH DATA;''')
+
+            cursor.execute('''CREATE VIEW server_sensorvaluedaily AS
+                        SELECT row_number() OVER (ORDER BY timestamp) AS id,
+                            sensor_id, AVG(value) AS value,
+                            date_trunc('day', server_sensorvaluehourly.timestamp) AS timestamp
+                        FROM server_sensorvaluehourly INNER JOIN server_sensor ON server_sensor.id=server_sensorvaluehourly.sensor_id
+                        GROUP BY sensor_id, timestamp;''')
 
 post_syncdb.connect(install_devices)
