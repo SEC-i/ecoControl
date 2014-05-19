@@ -120,7 +120,7 @@ def get_avgs(request, sensor_id=None, year=None):
 
 def get_sensorvalue_history_list(request):
     cursor = connection.cursor()
-    cursor.execute('''SELECT DISTINCT date_part('year', server_sensorvaluemonthlysum.date) as year FROM server_sensorvaluemonthlysum''')
+    cursor.execute('''SELECT DISTINCT date_part('year', server_sensorvaluemonthlysum.date) as year FROM server_sensorvaluemonthlysum ORDER BY year DESC''')
     
     output = [int(x[0]) for x in cursor.fetchall()]
     return create_json_response(request, output)
