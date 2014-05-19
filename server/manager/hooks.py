@@ -78,10 +78,10 @@ def get_sums(request, sensor_id=None):
         output = {}
         for sensor in Sensor.objects.all().values_list('id', flat=True):
             output[sensor] = list(SensorValueMonthlySum.objects.filter(
-                sensor_id=sensor).values('date').annotate(total=Sum('sum')))
+                sensor_id=sensor).values('date').annotate(total=Sum('sum')).order_by('date'))
     else:
         output = list(SensorValueMonthlySum.objects.filter(
-            sensor_id=sensor_id).values('date').annotate(total=Sum('sum')))
+            sensor_id=sensor_id).values('date').annotate(total=Sum('sum')).order_by('date'))
 
     return create_json_response(request, output)
 
@@ -91,9 +91,9 @@ def get_avgs(request, sensor_id=None):
         output = {}
         for sensor in Sensor.objects.all().values_list('id', flat=True):
             output[sensor] = list(SensorValueMonthlyAvg.objects.filter(
-                sensor_id=sensor).values('date').annotate(total=Avg('avg')))
+                sensor_id=sensor).values('date').annotate(total=Avg('avg')).order_by('date'))
     else:
         output = list(SensorValueMonthlyAvg.objects.filter(
-            sensor_id=sensor_id).values('date').annotate(total=Avg('avg')))
+            sensor_id=sensor_id).values('date').annotate(total=Avg('avg')).order_by('date'))
 
     return create_json_response(request, output)
