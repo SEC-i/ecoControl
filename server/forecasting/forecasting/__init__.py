@@ -101,10 +101,10 @@ class Forecast:
         forecasts = []
 
         # multiprocessing with processes, to use multiple processors
-        pool = Pool(processes=len(self.demands))
+        # pool = Pool(processes=len(self.demands))
         # pass class instance, which will call the __call__ method. This is done, because instance methods are not
         # pickeable and cant be used with with processes
-        forecasts = pool.map(self, self.demands) #[self.forecast_demand(demand) for demand in  self.demands]#pool.map(self, self.demands) #
+        forecasts = [self.forecast_demand(demand) for demand in  self.demands]#pool.map(self, self.demands) #
 
         self.calculated_parameters = []
         for fc_tuple in forecasts:
