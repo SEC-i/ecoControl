@@ -34,8 +34,9 @@ urlpatterns = patterns('',
     (r'^api2/consumption/electrical/$', manager.hooks.get_electrical_consumption),
     (r'^api2/consumption/cu/$', manager.hooks.get_cu_consumption,),
     (r'^api2/consumption/plb/$', manager.hooks.get_plb_consumption),
-    (r'^api2/sums/((?P<sensor_id>\d+)/)?$', manager.hooks.get_sums),
-    (r'^api2/avgs/((?P<sensor_id>\d+)/)?$', manager.hooks.get_avgs),
+    (r'^api2/sums/(sensor/(?P<sensor_id>[0-9]+)/)?(year/(?P<year>[0-9]+)/)?$', manager.hooks.get_sums),
+    (r'^api2/avgs/(sensor/(?P<sensor_id>[0-9]+)/)?(year/(?P<year>[0-9]+)/)?$', manager.hooks.get_avgs),
+    (r'^api2/history/$', manager.hooks.get_sensorvalue_history_list),
 
     url(r'^admin/', include(admin.site.urls)),
 )

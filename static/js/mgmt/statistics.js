@@ -15,47 +15,62 @@ $(function() {
                 );
             }
         });
-        initialize_diagram();
-        $('.series_list').change(function () {
-            var sensor_id = $(this).val();
-            var sensor = get_sensor(sensor_id);
-            var target = $(this).attr('data-target');
-            var url = '/api2/avgs/' + sensor_id + '/';
-            if ($(this).find(":selected").attr('data-aggregation') == 'sum') {
-                var url = '/api2/sums/' + sensor_id + '/';
-            }
 
-            $.getJSON(url, function(data) {
-                var chart = $('#diagram_container').highcharts();
-                var series_id = 0;
-                if (target == 'right') {
-                    series_id = 1;
+        $.getJSON('/api2/history/', function(history_data) {
+            $.each(history_data, function(index, year) {
+                $('.years_list').append(
+                    '<option value="' + year + '">' + year + '</option>'
+                );
+            });
+        }).done(function() {
+            initialize_diagram();
+            $('.series_list').change(function () {
+                var sensor_id = $(this).val();
+                var sensor = get_sensor(sensor_id);
+                var target = $(this).attr('data-target');
+                var year = $('#years_' + target).val();
+
+                var url = '/api2/avgs/sensor/' + sensor_id + '/year/' + year + '/';
+                if ($(this).find(":selected").attr('data-aggregation') == 'sum') {
+                    var url = '/api2/sums/sensor/' + sensor_id + '/year/' + year + '/';
                 }
 
-                var series_data = [];
-                $.each(data, function(index, value) {
-                    series_data.push([parseInt(value.date) * 1000, value.total]);
-                });
-                chart.series[series_id].update({
-                    name: sensor.name
-                }, false);
-                chart.yAxis[series_id].update({
-                    labels: {
-                        format: '{value}' + sensor.unit
-                    },
-                    title: {
-                        text: sensor.name + ' in ' + sensor.unit
+                $.getJSON(url, function(data) {
+                    var chart = $('#diagram_container').highcharts();
+                    var series_id = 0;
+                    if (target == 'right') {
+                        series_id = 1;
                     }
-                }, false);
-                chart.series[series_id].setData(series_data,true);
-            });
-        });
-    }).done(function() {
-        if ($('#series_left option').size() >= 2) {
-            $("#series_right option:nth-child(2)").prop("selected", true);
-        }
 
-        $('.series_list').change();
+                    var series_data = [];
+                    $.each(data, function(index, value) {
+                        series_data.push([index, value.total]);
+                    });
+                    chart.series[series_id].update({
+                        name: sensor.name + ' (' + year + ')'
+                    }, false);
+                    chart.yAxis[series_id].update({
+                        labels: {
+                            format: '{value}' + sensor.unit
+                        },
+                        title: {
+                            text: sensor.name + ' in ' + sensor.unit
+                        }
+                    }, false);
+                    chart.series[series_id].setData(series_data,true);
+                });
+            });
+
+            $('.years_list').change(function () {
+                $('.series_list').change();
+            });
+
+            if ($('#series_left option').size() >= 2) {
+                $("#series_right option:nth-child(2)").prop("selected", true);
+            }
+
+            $('.series_list').change();
+        });
     });
 });
 
@@ -83,7 +98,7 @@ function initialize_diagram() {
             text: ''
         },
         xAxis: {
-            type: 'datetime',
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
         },
         yAxis: [{
             labels: {
