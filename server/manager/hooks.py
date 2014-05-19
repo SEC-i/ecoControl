@@ -82,7 +82,8 @@ def get_sums(request, sensor_id=None, year=None):
         start = date(int(year), 1, 1)
         end = date(int(year), 12, 31)
 
-    sensorvaluemonthlysum = SensorValueMonthlySum.objects.filter(date__gte=start, date__lte=end)
+    sensorvaluemonthlysum = SensorValueMonthlySum.objects.filter(
+        date__gte=start, date__lte=end)
 
     if sensor_id is None:
         output = {}
@@ -104,7 +105,8 @@ def get_avgs(request, sensor_id=None, year=None):
         start = date(int(year), 1, 1)
         end = date(int(year), 12, 31)
 
-    sensorvaluemonthlyavg = SensorValueMonthlyAvg.objects.filter(date__gte=start, date__lte=end)
+    sensorvaluemonthlyavg = SensorValueMonthlyAvg.objects.filter(
+        date__gte=start, date__lte=end)
 
     if sensor_id is None:
         output = {}
@@ -120,7 +122,38 @@ def get_avgs(request, sensor_id=None, year=None):
 
 def get_sensorvalue_history_list(request):
     cursor = connection.cursor()
-    cursor.execute('''SELECT DISTINCT date_part('year', server_sensorvaluemonthlysum.date) as year FROM server_sensorvaluemonthlysum ORDER BY year DESC''')
-    
+    cursor.execute(
+        '''SELECT DISTINCT date_part('year', server_sensorvaluemonthlysum.date) as year FROM server_sensorvaluemonthlysum ORDER BY year DESC''')
+
     output = [int(x[0]) for x in cursor.fetchall()]
+    return create_json_response(request, output)
+
+
+def get_detailed_sensor_values(request, sensor_id):
+    start = get_past_time(days=1)
+    output = list(SensorValue.objects.filter(
+        sensor_id=sensor_id, timestamp__gte=start).values_list('timestamp', 'value'))
+
+    return create_json_response(request, output)
+
+def get_daily_loads(request):
+    start = get_past_time(days=1)
+    sensors = Sensor.objects.filter(device__device_type=Device.TC, key='get_consumption_power').values_list('id', flat=True)
+
+    output = {
+        'thermal': {},
+        'warmwater': {},
+        'electrical': {},
+    }
+    for sensor_id in sensors:
+        output['thermal'][sensor_id] = list(SensorValue.objects.filter(sensor__id=sensor_id, timestamp__gte=start).values_list('timestamp', 'value'))
+
+    sensors = Sensor.objects.filter(device__device_type=Device.TC, key='get_warmwater_consumption_power').values_list('id', flat=True)
+    for sensor_id in sensors:
+        output['warmwater'][sensor_id] = list(SensorValue.objects.filter(sensor__id=sensor_id, timestamp__gte=start).values_list('timestamp', 'value'))
+
+    sensors = Sensor.objects.filter(device__device_type=Device.EC, key='get_consumption_power').values_list('id', flat=True)
+    for sensor_id in sensors:
+        output['electrical'][sensor_id] = list(SensorValue.objects.filter(sensor__id=sensor_id, timestamp__gte=start).values_list('timestamp', 'value'))
+
     return create_json_response(request, output)

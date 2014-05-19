@@ -37,6 +37,8 @@ urlpatterns = patterns('',
     (r'^api2/sums/(sensor/(?P<sensor_id>[0-9]+)/)?(year/(?P<year>[0-9]+)/)?$', manager.hooks.get_sums),
     (r'^api2/avgs/(sensor/(?P<sensor_id>[0-9]+)/)?(year/(?P<year>[0-9]+)/)?$', manager.hooks.get_avgs),
     (r'^api2/history/$', manager.hooks.get_sensorvalue_history_list),
+    (r'^api2/sensor/((?P<sensor_id>\d+)/)?$', manager.hooks.get_detailed_sensor_values),
+    (r'^api2/loads/$', manager.hooks.get_daily_loads),
 
     url(r'^admin/', include(admin.site.urls)),
 )
