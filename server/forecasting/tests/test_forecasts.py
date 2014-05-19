@@ -13,8 +13,10 @@ class ForecastTests(unittest.TestCase):
 
     def setUp(self):
         # dataset containing one year of data, sampled in 10 minute intervals
+        DataLoader.cached_csv = {} #really important to reset, because other systems could have added data which is unwanted
         path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_2013.csv")
         raw_dataset = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
+        print len(raw_dataset)
         #cast to float and convert to kW
         self.dataset = [float(val) / 1000.0 for val in raw_dataset]
         pass
@@ -36,7 +38,7 @@ class ForecastTests(unittest.TestCase):
             if index < len(date_dataset) - 1:
                 diff = int(date_dataset[index + 1]) - int(date_dataset[index])
                 if abs(diff - ten_min) > 1000:
-                    print diff
+                    print index, diff
                 self.assertTrue(abs(diff - ten_min) < epsilon, "a jump of " + str(
                     diff - ten_min) + " seconds at index " + str(index))
 
@@ -52,7 +54,7 @@ class ForecastTests(unittest.TestCase):
         self.assertEqual(hourly_data[0], average, 
                          "calculated average not the same as function average")
         self.assertAlmostEqual(len(hourly_data), 24 * 365, delta=23,
-                               msg="only data for " + str(len(hourly_data) / 24) + " days")
+                               msg="data for " + str(len(hourly_data) / 24) + " days")
 
     def test_split_week_data(self):
         print "--------- test split_week_data ------------------"
@@ -91,7 +93,7 @@ class ForecastTests(unittest.TestCase):
     def test_append_data(self):
         print "--------- test append_values ------------------"
         self.setup_forecast()
-        path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_until_may_2014.csv") 
+        path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_until_may_2014.csv")
         raw_dataset_2014 = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
 
         #cast to float and convert to kW
@@ -119,10 +121,3 @@ class ForecastTests(unittest.TestCase):
         self.assertTrue( approximate_index(data, 0) == -1)
         
         
-        
-        
-
-if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
-    #import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

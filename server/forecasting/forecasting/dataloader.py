@@ -2,6 +2,7 @@ import csv
 import string
 from datetime import timedelta, date, datetime
 from helpers import perdelta
+import os
 
 class DataLoader(object):
     cached_csv = {}
@@ -42,7 +43,7 @@ class DataLoader(object):
     @classmethod
     def evenly_sampled(cls, data, date_name="Datum", sampling_interval=600):
         samples_per_hour = (60 * 60) / sampling_interval
-        epsilon = 59 # maximal 59 seconds deviatiation from samplinginterval
+        epsilon = 59  # maximal 59 seconds deviatiation from samplinginterval
         dates = data[date_name]
         
         #empty copy
@@ -78,9 +79,3 @@ class DataLoader(object):
                             else:
                                 output_data[key].append(data[key][adjusted_index])
         return output_data
-
-                        
-                    
-                    
-                    
-            
