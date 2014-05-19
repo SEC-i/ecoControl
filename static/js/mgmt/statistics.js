@@ -1,4 +1,5 @@
 var sensor_list = null;
+
 // READY
 $(function() {
     $.getJSON('/api/sensors/', function(data) {

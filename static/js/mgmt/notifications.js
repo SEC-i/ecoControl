@@ -1,19 +1,9 @@
-// READY
 var notifications_per_page = 15;
 
+// READY
 $(function() {
-    $.getJSON("/api/status/", function(data) {
-        if (data['system_status'] == 'init') {
-            redirect_to_settings();
-        }
-    }).done(function() {
         update_notifications(0);
-    });
 });
-
-function redirect_to_settings(show) {
-    window.location.href = 'settings.html';    
-}
 
 function get_label(category_id) {
     var categories = ['default', 'primary', 'success', 'info', 'warning', 'danger'];
