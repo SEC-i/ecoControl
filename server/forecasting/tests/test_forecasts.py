@@ -35,6 +35,8 @@ class ForecastTests(unittest.TestCase):
         for index, date in enumerate(date_dataset):
             if index < len(date_dataset) - 1:
                 diff = int(date_dataset[index + 1]) - int(date_dataset[index])
+                if abs(diff - ten_min) > 1000:
+                    print diff
                 self.assertTrue(abs(diff - ten_min) < epsilon, "a jump of " + str(
                     diff - ten_min) + " seconds at index " + str(index))
 
