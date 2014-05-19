@@ -65,9 +65,6 @@ class SensorValue(models.Model):
 
     def __unicode__(self):
         return str(self.pk) + " (" + self.sensor.name + ")"
-        
-class WeatherSource(models.Model):
-    location = models.CharField(max_length = 200)
 
 class WeatherValue(models.Model):
     temperature = models.CharField(max_length = 20) # in degree celsius

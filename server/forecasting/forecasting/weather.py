@@ -7,7 +7,7 @@ from django.utils import timezone
 import logging
 
 from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
-from server.models import WeatherSource, WeatherValue
+from server.models import WeatherValue
 
 logger = logging.getLogger('django')
 

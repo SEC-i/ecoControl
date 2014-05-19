@@ -1,5 +1,5 @@
 from django.db.models.signals import post_syncdb
-from server.models import Device, Sensor, WeatherSource
+from server.models import Device, Sensor
 
 
 def install_devices(**kwargs):
@@ -37,10 +37,5 @@ def install_devices(**kwargs):
         Sensor.objects.bulk_create(sensors)
         print "Default power systems initialized"
         
-def save_weather_source(**kwargs):
-    if len(WeatherSource.objects.all()) == 0:
-        w = WeatherSource(location='http://openweathermap.org')
-        w.save()
 
 post_syncdb.connect(install_devices)
-post_syncdb.connect(save_weather_source)

@@ -11,7 +11,7 @@ from mock import Mock
 
 from server.forecasting.forecasting.weather import WeatherForecast
 import server.forecasting.forecasting.weather as weather
-from server.models import Sensor, Device, SensorValue, WeatherSource, WeatherValue
+from server.models import  WeatherValue
 
 absolute_zero_point = -273.15
 
@@ -193,11 +193,6 @@ class ForecastingDBTest(TestCase):
         #    timestamp = expected_timestamp, target_time = target_time)
         
         WeatherValue.objects.all().delete()
-            
-    def test_if_weather_sources_in_db(self):
-        '''In the database should at least exist one weather source.'''
-        source = WeatherSource.objects.all()[0]
-        self.assertTrue(source.location)
     
     def test_save_weather_forecast_three_hourly(self):
         with patch('urllib2.urlopen', self.api_answer_mock):
