@@ -2,7 +2,6 @@ branches:
   only:
     - master
     - dev
-    - dev-startup-changes
 notifications:
   email:
     - bp2013h1@lists.myhpi.de
@@ -16,7 +15,7 @@ virtualenv:
 before_install:
  - sudo apt-get install -qq python-numpy python-scipy
 install: 
-  - pip install -r requirements.txt --use-mirrors
+  - pip install -r requirements_travis.txt --use-mirrors
 # before_script:
 #   - psql -U postgres -c 'create database bp2013h1;' -U postgres
 script:
