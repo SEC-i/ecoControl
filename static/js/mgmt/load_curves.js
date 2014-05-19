@@ -13,9 +13,10 @@ $(function() {
 function initialize_diagram(loads_data) {
     var types = ['thermal', 'warmwater', 'electrical'];
     $.each(types, function (index, type) {
+        var diagram_data = get_diagram_data(type, loads_data[type])
         $('#' + type + '_container').highcharts({
             chart: {
-                zoomType: 'xy'
+                type: 'spline'
             },
             title: {
                 text: ''
@@ -23,32 +24,38 @@ function initialize_diagram(loads_data) {
             xAxis: {
                 type: 'datetime'
             },
-            yAxis: [{
-                min: 0,
-                labels: {
-                    style: { color: Highcharts.getOptions().colors[1] }
-                },
-                title: {
-                    text: '',
-                    style: { color: Highcharts.getOptions().colors[1] }
-                },
-            }],
+            plotOptions: {
+
+                spline: {
+                    lineWidth: 2,
+                    states: {
+                        hover: {
+                            lineWidth: 4
+                        }
+                    },
+                    marker: {
+                        enabled: false
+                    },
+                }
+            },
+            yAxis: diagram_data.yaxis,
             tooltip: {
-                shared: true,
                 valueDecimals: 2
             },
-            series: [],
+            series: diagram_data.series,
             credits: {
                 enabled: false
             }
         });
-        update_diagram(type, loads_data);
     });
 }
 
-function update_diagram(type, loads_data) {
-    var chart = $('#' + type + '_container').highcharts();
-    $.each(loads_data[type], function (sensor_id, data){
+function get_diagram_data(type, input_data) {
+    output = {
+        'series' : [],
+        'yaxis' : []
+    };
+    $.each(input_data, function (sensor_id, data){
         var sensor = get_sensor(sensor_id);
 
         var series_data = [];
@@ -56,21 +63,23 @@ function update_diagram(type, loads_data) {
             series_data.push([value[0] * 1000, value[1]]);
         });
         
-        chart.addSeries({
+        output['series'].push({
             name: sensor.name + ' #' + sensor.id,
-            data: series_data
-        }, false);
+            data: series_data,
+        });
 
-        chart.yAxis[0].update({
+        output['yaxis'].push({
+            min: 0,
             labels: {
                 format: '{value}' + sensor.unit
             },
             title: {
                 text: sensor.name + ' in ' + sensor.unit
             }
-        }, false);
+        });
     });
-    chart.redraw();
+    
+    return output;
 }
 
 function get_sensor(sensor_id) {
