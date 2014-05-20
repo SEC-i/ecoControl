@@ -19,6 +19,7 @@ install:
 before_script:
   - psql -c "CREATE ROLE BP2013H1 LOGIN PASSWORD 'hirsch' SUPERUSER CREATEDB CREATEROLE;" -U postgres
   - createdb bp2013h1
+  - python manage.py syncdb --noinput
 script:
   - coverage run --source='.' manage.py test
   - coverage report
