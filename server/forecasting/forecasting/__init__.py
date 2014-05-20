@@ -7,6 +7,7 @@ from multiprocessing.process import Process
 import multiprocessing
 from server.forecasting.tools.plotting import Plotting
 from sys import platform as _platform
+import cPickle as pickle
 
 
 
@@ -50,8 +51,8 @@ class Forecast:
         # ending time of input data
         self.time_series_end = datetime.fromtimestamp(env.now)
         
-        # wait at least one day before making a new forecast
-        self.forecast_update_interval = 24 * 60 * 60
+        # wait one week before making a new forecast
+        self.forecast_update_interval = 7 * 24 * 60 * 60
 
         # demands split into weekdays
         self.demands = Forecast.split_weekdata(input_data, samples_per_hour, start)
@@ -97,16 +98,33 @@ class Forecast:
         
         result_queue.put((forecast_values, calculated_parameters, index))
 
-    def forecast_demands(self):
+    def forecast_demands(self, try_cache=True):
         split_results = [[] for i in range(7)]
         unordered_forecasts = []
+        
+        if try_cache:
+            try:
+                values = pickle.load(open( "cached_forecasts.p", "rb" ))
+                diff_time = datetime.fromtimestamp(values["date"]) - self.time_series_end
+                if diff_time.total_seconds() < 24 * 60 * 60: #12 hours epsilon
+                    forecasted_demands = values["forecasts"]
+                    self.calculated_parameters = values["parameters"] 
+                    print "reading forecastings from cache"
+                    
+                    return forecasted_demands
+            except IOError as e:
+                print e
 
+        #[self.forecast_demand(d, i, result_queue) for i,d in enumerate(self.demands)]
+        
         #share results in a multiaccess queue
         #note: this queue can not hold unlimited elements and will hang up with no warning if there are too many elements
+        #12 weeks 1hourly will work, 20 not
         result_queue = multiprocessing.Queue()
         # use multiple processes instead of pool.map to circumvent a hangup caused
         # by a multiprocessing/django incompabatility
         #call class as Functor because class methods are not pickeable
+
         jobs = [Process(target=self, args=(demand,index,result_queue)) for index, demand in enumerate(self.demands)]
         for job in jobs: job.start()
         for job in jobs: job.join()
@@ -119,9 +137,12 @@ class Forecast:
         forecasted_demands = []
         self.calculated_parameters = []
         for fc_tuple in split_results:
-            Plotting.plot_dataset({"forecasted": fc_tuple[0], "measured": self.demands[i]} , len(self.demands[i]), True)
+            #Plotting.plot_dataset({"forecasted": fc_tuple[0], "measured": self.demands[i]} , len(self.demands[i]), True)
             forecasted_demands.append(list(fc_tuple[0]))
             self.calculated_parameters.append(fc_tuple[1])
+            
+        pickle.dump( {"forecasts" :forecasted_demands, "parameters" : self.calculated_parameters, "date": self.env.now },
+                      open( "cached_forecasts.p", "wb" ) ) 
 
         return forecasted_demands
     
@@ -170,7 +191,7 @@ class Forecast:
         now = datetime.fromtimestamp(self.env.now) 
         delta = (now - self.time_series_end).total_seconds()
         if delta > self.forecast_update_interval:
-            self.forecasted_demands = self.forecast_demands()
+            self.forecasted_demands = self.forecast_demands(try_cache=False)
             self.time_series_end = datetime.fromtimestamp(self.env.now)
 
     def _forecast_at(self, timestamp):

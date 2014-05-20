@@ -67,7 +67,6 @@ class ForecastTests(unittest.TestCase):
             len(fc.demands[0]) / 24) + " days, not " + str(fc.input_weeks) + " (or at least more than 50)")
         
         for i in range(7):
-            #Plotting.plot_dataset({'measured': fc.demands[i], 'forecasted': fc.forecasted_demands[i]})
             self.assertTrue(fc.calculated_parameters[i]["rmse"] < 10.0, "RMSE of " + str(
                 fc.calculated_parameters[i]["rmse"]) + "for day" + str(i) + " is way too high")
             
