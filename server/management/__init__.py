@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import sys
 
+from django.db import connection, ProgrammingError
 from django.db.models.signals import post_syncdb
-from django.db import connection
 from django.contrib.auth.models import User, Group
 
-from server.models import Device, Sensor, Configuration, DeviceConfiguration
+from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum
 
 def install_devices(**kwargs):
     if len(User.objects.all()) == 0:
@@ -144,10 +144,11 @@ def install_devices(**kwargs):
         DeviceConfiguration.objects.bulk_create(device_configurations)
         print "Default device configurations initialized"
 
+        cursor = connection.cursor()
 
-        if 'test' not in sys.argv:
-
-            cursor = connection.cursor()
+        try:
+            len(SensorValueHourly.objects.all())
+        except ProgrammingError:
             cursor.execute('''CREATE MATERIALIZED VIEW public.server_sensorvaluehourly AS
                 SELECT row_number() OVER (ORDER BY t1.timestamp) AS id,
                     t1.sensor_id,
@@ -161,6 +162,9 @@ def install_devices(**kwargs):
                   ORDER BY t1.timestamp
                  WITH DATA;''')
 
+        try:
+            len(SensorValueDaily.objects.all())
+        except ProgrammingError:
             cursor.execute('''CREATE VIEW server_sensorvaluedaily AS
                         SELECT row_number() OVER (ORDER BY timestamp) AS id,
                             sensor_id, AVG(value) AS value,
@@ -168,6 +172,9 @@ def install_devices(**kwargs):
                         FROM server_sensorvaluehourly INNER JOIN server_sensor ON server_sensor.id=server_sensorvaluehourly.sensor_id
                         GROUP BY sensor_id, timestamp;''')
 
+        try:
+            len(SensorValueMonthlySum.objects.all())
+        except ProgrammingError:
             cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluemonthlysum AS 
                          SELECT row_number() OVER (ORDER BY t1.date) AS id,
                             t1.sensor_id,
@@ -182,6 +189,9 @@ def install_devices(**kwargs):
                           ORDER BY t1.date
                         WITH DATA;''')
 
+        try:
+            len(SensorValueMonthlyAvg.objects.all())
+        except ProgrammingError:
             # could be derived from server_sensorvaluehourly
             cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluemonthlyavg AS 
                          SELECT row_number() OVER (ORDER BY t1.date) AS id,

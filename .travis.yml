@@ -13,8 +13,8 @@ env:
   - DJANGO_VERSION=1.6
 install: 
   - pip install -r requirements.txt --use-mirrors
-# before_script:
-#   - psql -U postgres -c 'create database bp2013h1;' -U postgres
+before_script:
+  - psql -U postgres -c 'CREATE USER bp2013h1 WITH PASSWORD 'hirsch' SUPERUSER CREATEDB CREATEROLE;'
 script:
   - coverage run --source='.' manage.py test
   - coverage report

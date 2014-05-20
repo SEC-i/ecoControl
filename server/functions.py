@@ -454,5 +454,5 @@ def get_past_time(years=0, months=0, days=0):
         return latest_value.timestamp + \
             dateutil.relativedelta.relativedelta(
                 years=-years, months=-months, days=-days)
-    except SensorValue.DoesNotExist:
+    except SensorValueHourly.DoesNotExist:
         return None
