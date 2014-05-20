@@ -146,7 +146,7 @@ LOGGING = {
             'formatter': 'verbose'
         },
         'worker': {
-            'level': 'WARNING',
+            'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(os.path.dirname(__file__), '../logs/worker.log'),
             'maxBytes': 1024 * 1024 * 4,
@@ -168,7 +168,7 @@ LOGGING = {
         'worker': {
             'handlers': ['worker'],
             'propagate': True,
-            'level': 'WARNING',
+            'level': 'DEBUG',
         },
     }
 }

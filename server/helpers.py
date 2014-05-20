@@ -59,7 +59,7 @@ def is_member(user, group_name):
 
 def start_worker():
     if not write_pidfile_or_fail("/tmp/worker.pid"):
-        print 'Starting working...'
+        print 'Starting worker...'
         worker = Worker()
         worker.start()
 

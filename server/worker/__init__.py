@@ -3,8 +3,6 @@ from threading import Thread
 
 import functions
 
-WORKER_INTERVAL = 60
-
 
 class Worker(Thread):
 
@@ -13,7 +11,16 @@ class Worker(Thread):
         self.daemon = True
 
     def run(self):
+        step = 0
         while True:
+            # every minute
             functions.check_thresholds()
 
-            time.sleep(WORKER_INTERVAL)
+            # every 5 minutes
+            if step % 5 == 0:
+                functions.refresh_views()
+
+            # make sure step is within a day
+            step = (step + 1) % (60 * 60 * 24)
+
+            time.sleep(60)  # wait a minute

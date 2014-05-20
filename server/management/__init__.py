@@ -182,6 +182,7 @@ def install_devices(**kwargs):
                           ORDER BY t1.date
                         WITH DATA;''')
 
+            # could be derived from server_sensorvaluehourly
             cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluemonthlyavg AS 
                          SELECT row_number() OVER (ORDER BY t1.date) AS id,
                             t1.sensor_id,

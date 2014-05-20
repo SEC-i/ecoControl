@@ -1,12 +1,10 @@
 from django.core.management.base import BaseCommand
 from django.db import connection
 
+from server.worker.functions import refresh_views
+
 class Command(BaseCommand):
     help = 'Refresh materialized views for aggregated sensorvalues in the database'
 
     def handle(self, *args, **options):
-        cursor = connection.cursor()
-        cursor.execute('''REFRESH MATERIALIZED VIEW server_sensorvaluehourly;''')
-        cursor.execute('''REFRESH MATERIALIZED VIEW server_sensorvaluemonthlysum;''')
-        cursor.execute('''REFRESH MATERIALIZED VIEW server_sensorvaluemonthlyavg;''')
-        self.stdout.write('Successfully refreshed views')
+        refresh_views()
