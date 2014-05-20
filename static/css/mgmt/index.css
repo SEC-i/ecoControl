@@ -1,0 +1,21 @@
+.table_custom {
+    height: 148px;
+}
+
+.td_rewards {
+    color: green;
+}
+
+.td_costs {
+    color: red;
+}
+
+.td_balance {
+    border-top: 1px;
+    color:green;
+    font-size:35px;
+}
+
+#left_img {
+    margin-top: 60px;
+}
