@@ -1,6 +1,7 @@
 import time
 from datetime import datetime
 import os
+from django.utils.timezone import utc
 
 from helpers import BaseSystem, interpolate_year
 from data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_workday, warm_water_demand_weekend
@@ -173,7 +174,9 @@ class ThermalConsumer(BaseSystem):
         return (heat_flow_wall + heat_flow_window) / 1000.0 # kW
 
     def get_outside_temperature(self, offset_days=0):
-        return self.weather_forecast.get_temperature_estimate(self.env.now)
+        date = datetime.datetime.fromtimestamp(self.env.now)
+        date_aware = date.replace(tzinfo=utc)
+        return self.weather_forecast.get_temperature_estimate(date_aware)
 
     def linear_interpolation(self, a, b, x):
         return a * (1 - x) + b * x
