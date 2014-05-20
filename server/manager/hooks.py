@@ -162,12 +162,44 @@ def get_daily_loads(request):
 def get_total_balance(request, year=None, month=None):
     try:
         year = int(year)
-        month = int(month)
     except (TypeError, ValueError):
         current = get_past_time()
         year = current.year
-        month = current.month
 
+    if month is None:
+        months = [x for x in range(1, 13)]
+    else:
+        try:
+            month = int(month)
+        except (TypeError, ValueError):
+            months = [current.month]
+
+    output = {}
+    for month in months:
+        start = date(year, month, 1)
+        end = date(year, month, calendar.mdays[month])
+
+        key = str(month) + '-' + str(year)
+        if month < 10:
+            key = '0' + key
+
+        output[key] = get_total_balance_by_date(month, year)
+
+    return create_json_response(request, output)
+
+def get_latest_total_balance(request):
+    current = get_past_time()
+    year = current.year
+    month = current.month
+
+
+    output = dict([('month', month), ('year', year)]
+         + get_total_balance_by_date(month, year).items())
+
+    return create_json_response(request, output)
+
+def get_total_balance_by_date(month, year):
+    
     start = date(year, month, 1)
     end = date(year, month, calendar.mdays[month])
 
@@ -232,12 +264,8 @@ def get_total_balance(request, year=None, month=None):
 
     rewards += total_electrical_infeed * get_configuration('feed_in_reward')
 
-    output = {
-        'month': month,
-        'year': year,
+    return {
         'costs': round(costs, 2),
         'rewards': round(rewards, 2),
-        'balance': round(rewards-costs)
+        'balance': round(rewards-costs, 2)
     }
-
-    return create_json_response(request, output)
