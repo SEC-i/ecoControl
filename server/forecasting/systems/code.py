@@ -1,7 +1,9 @@
-import traceback
 import os
+import logging
 
 from helpers import BaseSystem
+
+logger = logging.getLogger('simulation')
 
 class CodeExecuter(BaseSystem):
 
@@ -30,6 +32,9 @@ class CodeExecuter(BaseSystem):
 
         self.create_function(self.code)
 
+    def find_dependent_devices_in(self, system_list):
+        self.register_local_variables(system_list)
+
     def connected(self):
         return not (self.local_names is None and self.local_references is None)
 
@@ -55,8 +60,7 @@ class CodeExecuter(BaseSystem):
             self._user_function(*self.local_references)
             self.execution_successful = True
         except:
-            if self.env.now % self.env.measurement_interval == 0:
-                traceback.print_exc()
+            logger.error("CodeExecuter: Could not execute user code")
             self.execution_successful = False
 
     def snippets_list(self):
@@ -70,6 +74,7 @@ class CodeExecuter(BaseSystem):
         if snippet in self.snippets_list():
             with open(self.snippet_folder + "/" + snippet, "r") as snippet_file:
                 return snippet_file.read()
+            logger.error("CodeExecuter: Could not read snippet '" + snippet + "'")
         return ""
 
     def save_snippet(self, snippet, code):

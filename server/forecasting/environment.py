@@ -1,24 +1,23 @@
 import time
+import logging
 
 from simpy.core import Environment, EmptySchedule
 from simpy.rt import RealtimeEnvironment
 
+logger = logging.getLogger('simulation')
 
 class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
-    def __init__(self, initial_time=1356998400, measurement_interval=3600, strict=False):
+
+    def __init__(self, initial_time=1356998400, interval=120, strict=False, demo=False):
+
         RealtimeEnvironment.__init__(
-            self, initial_time, 1.0 / measurement_interval, strict)
+            self, initial_time, 1.0 / 3600, strict)
 
         # time to forward
         self.forward = 0
         self.initial_time = initial_time
-
-        # timings
-        self.measurement_interval = measurement_interval
-        self.steps_per_measurement = 30.0  # every 2min
-        self.step_size = self.measurement_interval / \
-            self.steps_per_measurement  # in seconds
+        self.step_size = interval
 
         # function which gets called every step
         self.step_function = None
@@ -27,9 +26,11 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         self.last_step = self.now
         self.stop_simulation = False
         self.stop_after_forward = False
+        self.demo = demo
 
     def step(self):
         if self.stop_simulation:
+            logger.info("Environment: Stop stepping")
             raise EmptySchedule()
 
         if self.forward > 0:
@@ -43,6 +44,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
             self.env_start += self.forward
             self.forward = 0
             if self.stop_after_forward:
+                logger.info("Environment: Stop stepping")
                 raise EmptySchedule()
         else:
             self.handle_step_function()
@@ -65,6 +67,6 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
     def register_step_function(self, function, kwargs={}):
         if self.step_function != None:
-            print "overwriting existing step_function ", self.step_function, " !"
+            logger.warning("Environment: Overwriting existing step_function " + self.step_function)
         self.step_function = function
         self.step_function_kwarguments = kwargs

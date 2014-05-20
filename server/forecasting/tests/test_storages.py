@@ -130,14 +130,12 @@ class HeatStorageTests(unittest.TestCase):
         self.hs.temperature_loss = 3.0 / 24.0   # per hour
         self.hs.capacity = 2500
         self.hs.specific_heat_capacity = 0.002
-        self.env.measurement_interval = 3600.0  # intervall is one hour
-        self.env.step_size = 3600.0 / 20.0  # 20 measurements per hour
+        self.env.step_size = 120  # 20 measurements per hour
         self.hs.output_energy = 0
 
         # capacity * temperature_loss
         energy_loss_per_hour = (2500 * 0.002) * (3.0 / 24.0)
-        energy_loss_per_step = energy_loss_per_hour * \
-            ((3600.0 / 20.0) / 3600.0)  # divide steps
+        energy_loss_per_step = energy_loss_per_hour * (self.env.step_size / 3600.0)  # divide steps
 
         self.hs.step()
 

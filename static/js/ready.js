@@ -1,22 +1,21 @@
 var refresh_gui = true;
+var series_data = [];
 var editor = null;
 
 // READY
 $(function() {
     initialize_editor();
-    initialize_svg();
     initialize_hourly_demands();
-    $.getJSON("/api/settings/", function(data) {
-        update_setting(data);
-        if (data['simulation_running'] == '1') {
-            initialize_diagram();
+    $.getJSON("/api/status/", function(data) {
+        if (data['system_status'] == 'init') {
+            redirect_to_settings();
         } else {
-            initialize_wizard();
+            initialize_diagram();
         }
     }).done(function() {
-        $.getJSON("/api/code/", function(data) {
-            editor.setValue(data['editor_code'], 1);
-        });
+        // $.getJSON("/api/code/", function(data) {
+        //     editor.setValue(data['editor_code'], 1);
+        // });
     });
 
     initialize_event_handlers();
@@ -41,13 +40,6 @@ function initialize_editor() {
             }
         });
     });
-}
-
-function initialize_svg() {
-    $.get("/static/img/simulation.svg", function(data) {
-        var svg_item = document.importNode(data.documentElement, true);
-        $("#simulation_setup").append(svg_item);
-    }, "xml");
 }
 
 function initialize_hourly_demands() {
@@ -120,14 +112,6 @@ function initialize_event_handlers() {
         immediate_feedback();
     });
 
-    
-
-    $(".fast_forward_button").click(function(event) {
-        $.post("/api/simulation/", {
-            forward: $(this).val()
-        });
-    });
-
     $("#editor_button").click(function() {
         $.post("/api/settings/", {
             code: editor.getValue(),
@@ -147,26 +131,6 @@ function initialize_event_handlers() {
         }, function(data) {
             update_forecast(data, true);
         });
-    });
-
-    $("#pause_refresh").click(function(event) {
-        refresh_gui = !refresh_gui;
-        if (refresh_gui) {
-            $("#pause_refresh span").removeClass('glyphicon-pause');
-            $("#pause_refresh span").addClass('glyphicon-refresh');
-        } else {
-            $("#pause_refresh span").removeClass('glyphicon-refresh');
-            $("#pause_refresh span").addClass('glyphicon-pause');
-
-        }
-        event.preventDefault();
-    });
-
-    $("#reset_simulation").click(function(event) {
-        $.post("/api/simulation/", {
-            reset: 1
-        });
-        // location.reload(true);
     });
 
     $("#save_snippet").submit(function(event) {
@@ -211,141 +175,129 @@ function initialize_diagram() {
         }
     });
 
-    // Create the chart
-    $('#simulation_diagram').highcharts('StockChart', {
-        chart: {
-            height: 400,
-            zoomType: 'xy',
-            events: {
-                load: refresh
-            }
-        },
-        rangeSelector: {
-            buttons: [{
-                count: 6,
-                type: 'hour',
-                text: '6H'
-            }, {
-                count: 12,
-                type: 'hour',
-                text: '12H'
-            }, {
-                count: 1,
-                type: 'day',
-                text: '1D'
-            }, {
-                count: 1,
-                type: 'week',
-                text: '1W'
-            }, {
-                count: 2,
-                type: 'week',
-                text: '2W'
-            }, {
-                count: 1,
-                type: 'month',
-                text: '1M'
-            }, {
-                count: 2,
-                type: 'month',
-                text: '2M'
-            }, {
-                count: 3,
-                type: 'month',
-                text: '3M'
-            }, {
-                count: 6,
-                type: 'month',
-                text: '6M'
-            }, {
-                count: 9,
-                type: 'month',
-                text: '9M'
-            }, {
-                type: 'all',
-                text: 'All'
-            }],
-            selected: 6,
-            inputEnabled: false
-        },
-        xAxis: {
-            plotLines: [{
-                value: 0,
-                width: 2,
-                color: 'red',
-                label: {
-                    text: 'Now',
-                    align: 'right',
-                    y: 32,
-                    x: 6
+    $.getJSON('/api/sensors/', function(data) {
+        $.each(data, function(index, value) {
+            series_data.push({
+                name: value.name + ' (' + value.device + ')',
+                data: [],
+                color: colors_past[index],
+                tooltip: {
+                    valueSuffix: ' ' + value.unit
                 }
-            }]
-        },
-        tooltip: {
-            valueDecimals: 2
-        },
-        lang: {
-            noData: "Loading data..."
-        },
-        plotOptions: {
-            series: {
-                marker: {
-                    enabled: false
-                },
-                lineWidth: 1.5,
+            });
+            series_data.push({
+                name: value.name + ' (' + value.device + ' predicted)',
+                data: [],
+                color: colors_future[index],
+                dashStyle: 'shortdot',
+                tooltip: {
+                    valueSuffix: ' ' + value.unit
+                }
+            });
+        });
+
+        // Create the chart
+        $('#simulation_diagram').highcharts('StockChart', {
+            chart: {
+                height: 400,
+                zoomType: 'xy',
+                events: {
+                    load: refresh
+                }
+            },
+            rangeSelector: {
+                buttons: [{
+                    count: 6,
+                    type: 'hour',
+                    text: '6H'
+                }, {
+                    count: 12,
+                    type: 'hour',
+                    text: '12H'
+                }, {
+                    count: 1,
+                    type: 'day',
+                    text: '1D'
+                }, {
+                    count: 1,
+                    type: 'week',
+                    text: '1W'
+                }, {
+                    count: 2,
+                    type: 'week',
+                    text: '2W'
+                }, {
+                    count: 1,
+                    type: 'month',
+                    text: '1M'
+                }, {
+                    count: 2,
+                    type: 'month',
+                    text: '2M'
+                }, {
+                    count: 3,
+                    type: 'month',
+                    text: '3M'
+                }, {
+                    count: 6,
+                    type: 'month',
+                    text: '6M'
+                }, {
+                    count: 9,
+                    type: 'month',
+                    text: '9M'
+                }, {
+                    type: 'all',
+                    text: 'All'
+                }],
+                selected: 5,
+                inputEnabled: false
+            },
+            xAxis: {
+                plotLines: [{
+                    value: 0,
+                    width: 2,
+                    color: 'red',
+                    label: {
+                        text: 'Now',
+                        align: 'right',
+                        y: 32,
+                        x: 6
+                    }
+                }]
+            },
+            tooltip: {
+                valueDecimals: 2
+            },
+            lang: {
+                noData: "Loading data..."
+            },
+            plotOptions: {
+                series: {
+                    marker: {
+                        enabled: false
+                    },
+                    lineWidth: 1.5,
+                }
+            },
+            series: series_data,
+            credits: {
+                enabled: false
             }
-        },
-        series: series_data,
-        credits: {
-            enabled: false
-        }
+        });
+        initialize_diagram_filters(data);
     });
 
-    initialize_diagram_filters();
 }
 
-function initialize_diagram_filters() {
-    for (var i = 0; i < 7; i++) {
-        series = series_data[i];
-        $('#diagram_filters').append('<label class="btn btn-default" style="color: ' + series.color + ';"><input class="btn diagram_filter" type="checkbox" value="' + i + '">' + series.name + '</label>');
-    };
+function initialize_diagram_filters(data) {
+    $.each(data, function(index, sensor) {
+        $('#diagram_filters').append('<label class="btn btn-default" style="color: ' + colors_past[index] + ';"><input class="btn diagram_filter" type="checkbox" value="' + index + '">' + sensor.name + ' (' + sensor.device + ')</label>');
+    });
 
     $('.diagram_filter').change(filter_series);
-
 }
 
-function initialize_wizard(show) {
-    $.fn.wizard.logging = true;
-    var options = {
-        submitUrl: '/api/start/',
-        contentWidth: 1000,
-        contentHeight: 500,
-        showCancel: false,
-        showClose: false,
-        buttons: {
-            submitText: 'Configure',
-            submittingText: "Configuring..."
-        }
-    };
-    var wizard = $("#startup").wizard(options);
-    wizard.show();
-
-    wizard.on('submit', function(wizard) {
-        $.ajax({
-            type: "POST",
-            url: wizard.args.submitUrl,
-            data: wizard.serialize(),
-            dataType: "json"
-        }).done(function(response) {
-            initialize_diagram();
-            wizard.submitSuccess();
-            wizard.close();
-        }).fail(function() {
-            wizard.submitFailure();
-            wizard.hideButtons();
-        });
-        $.getJSON("/api/settings/", function(data) {
-            update_setting(data);
-        });
-    });
+function redirect_to_settings(show) {
+    window.location.href = 'settings.html';    
 }

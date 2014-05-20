@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="BP2013H1">
+
+    <title>Notifications - Energy Management System</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="/static/libs/bootstrap/css/bootstrap.min.css">
+     <!-- jQuery UI CSS core CSS -->
+    <link rel="stylesheet" href="/static/libs/jquery-ui/css/jquery-ui.min.css">
+    <link rel="stylesheet" href="/static/libs/jquery-ui/css/jquery.ui.slider.min.css">
+
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="/static/css/basic.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body>
+    <!-- Navbar -->
+    <div class="navbar navbar-default" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">BP2013H1</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="index.html">Overview</a></li>
+            <li><a href="statistics.html">Statistics</a></li>
+            <li class="active"><a href="notifications.html">Notifications</a></li>
+            <li><a href="live_setup.html">Live Setup</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="thresholds.html">Thresholds</a></li>
+            <li><a href="settings.html">Settings</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <!-- Notification page -->
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="panel panel-default">
+            <div class="panel-heading">Notification History</div>
+            <div class="panel-body">
+              <table class="table" id="notification_list">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Message</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+      <footer>
+        <p>&copy; BP2013H1 2013-2014</p>
+      </footer>
+    </div> <!-- /container -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/static/libs/jquery/jquery.min.js"></script>
+    <script src="/static/libs/jquery-ui/js/jquery.ui.core.min.js"></script>
+    <script src="/static/libs/jquery-ui/js/jquery.ui.widget.min.js"></script>
+    <script src="/static/libs/jquery-ui/js/jquery.ui.mouse.min.js"></script>
+    <script src="/static/libs/jquery-ui/js/jquery.ui.slider.min.js"></script>
+    <script src="/static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
+    <script src="/static/libs/bootstrap/js/bootstrap.min.js"></script>
+
+    <script src="/static/js/notifications.js"></script>
+
+  </body>
+</html>

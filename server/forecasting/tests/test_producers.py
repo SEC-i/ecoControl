@@ -69,8 +69,8 @@ class GasPoweredGeneratorTests(unittest.TestCase):
         
         self.g_generator.consume_gas()
         
-        expected_total_gas_consumption = 5 / self.env.steps_per_measurement
-        expected_total_thermal_production = 4 / self.env.steps_per_measurement
+        expected_total_gas_consumption = 5 * (self.env.step_size / 3600.0)
+        expected_total_thermal_production = 4 * (self.env.step_size / 3600.0)
         
         self.assertEqual(self.g_generator.total_gas_consumption,
             expected_total_gas_consumption, 
@@ -119,8 +119,7 @@ class CogenerationUnitTest(unittest.TestCase):
     def test_get_electrical_energy_production(self):
         # the method should return the energy produced in one time intervall
         self.cu.current_electrical_production = 20.0 # Energy per hour
-        self.env.steps_per_measurement = 2.0 # twice per hour
-        expected_energy = 20.0/2.0
+        expected_energy = self.cu.current_electrical_production * self.env.step_size / 3600.0
         
         result_energy = self.cu.get_electrical_energy_production()
             
@@ -129,8 +128,7 @@ class CogenerationUnitTest(unittest.TestCase):
     def test_get_thermal_energy_production(self):
         # the method should return the energy produced in one time intervall
         self.cu.current_thermal_production = 20.0 # Energy per hour
-        self.env.steps_per_measurement = 2.0 # twice per hour
-        expected_energy = 20.0/2.0
+        expected_energy = self.cu.current_thermal_production * self.env.step_size / 3600.0
         result_energy = self.cu.get_thermal_energy_production()
             
         self.assertEqual(expected_energy, result_energy)
@@ -470,9 +468,9 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         
         self.cu.consume_gas()
         
-        expected_total_gas_consumption = 5 / self.env.steps_per_measurement
-        expected_total_thermal_production = 4 / self.env.steps_per_measurement
-        expected_total_electrical_production = 1 / self.env.steps_per_measurement
+        expected_total_gas_consumption = 5 * (self.env.step_size / 3600.0)
+        expected_total_thermal_production = 4 * (self.env.step_size / 3600.0)
+        expected_total_electrical_production = 1 * (self.env.step_size / 3600.0)
         
         self.assertEqual(self.cu.total_gas_consumption,
             expected_total_gas_consumption,

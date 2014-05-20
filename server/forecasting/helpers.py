@@ -1,8 +1,15 @@
 from threading import Thread
-from collections import deque
 import itertools
+from datetime import datetime
+import pytz
+import logging
 
-from server.models import Sensor, SensorValue
+from django.db import connection
+
+from server.models import Sensor, SensorValue, DeviceConfiguration
+
+logger = logging.getLogger('simulation')
+
 
 class BulkProcessor(object):
 
@@ -31,19 +38,25 @@ class SimulationBackgroundRunner(Thread):
 
 class MeasurementStorage():
 
-    def __init__(self, env, devices, cache_limit=24 * 365, in_memory=True):
+
+    def __init__(self, env, devices, demo=False):
         self.env = env
         self.devices = devices
-        self.sensors = Sensor.objects.filter(device_id__in=[x.id for x in devices])
-        self.in_memory = in_memory
+        self.sensors = Sensor.objects.filter(
+            device_id__in=[x.id for x in devices])
+        self.demo = demo
 
         # initialize empty deques
         self.data = []
         for i in self.sensors:
-            self.data.append(deque(maxlen=cache_limit))
+            self.data.append([])
 
-    def take(self):
-        if self.env.now % self.env.measurement_interval == 0:
+    def take_demo(self):
+            # save demo values every 15mins
+            if self.env.now % 60 * 60 != 0:
+                return
+            sensor_values = []
+            timestamp = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=pytz.utc)
             for device in self.devices:
                 for sensor in Sensor.objects.filter(device_id=device.id):
                     value = getattr(device, sensor.key, None)
@@ -51,38 +64,72 @@ class MeasurementStorage():
                         # in case value is a function, call that function
                         if hasattr(value, '__call__'):
                             value = value()
-
-                        self.data[sensor.id - 1].append(value)
-
-    def get(self, start=None):
-        if start is not None:
-            i = 0
-            while i < len(self.data[0]) and start + 1 > self.data[0][i]:
-                i += 1
-
+                        
+                        sensor_values.append((sensor.id, value, timestamp))
+            
+            if len(sensor_values) > 0:
+                cursor = connection.cursor()
+                cursor.executemany(
+                    """INSERT INTO "server_sensorvalue" ("sensor_id", "value", "timestamp") VALUES (%s, %s, %s)""", sensor_values)
+                
+    def take_forecast(self):
+        if self.env.now % 3600 != 0:
+            return
+        
+        for index, sensor in enumerate(self.sensors):
+            for device in self.devices:
+                if device.id == sensor.device.id and sensor.in_diagram:
+                    value = getattr(device, sensor.key, None)
+                    if value is not None:
+                        # in case value is a function, call that function
+                        if hasattr(value, '__call__'):
+                            value = value()
+                        
+                        self.data[index].append([self.env.now, round(float(value), 2)])
+                        
+    
+    def take(self):
+        if self.demo:
+            self.take_demo()
+        else:
+            self.take_forecast()        
+            
+        
+    
+    
+    def get(self):
         output = []
         for index, sensor in enumerate(self.sensors):
-            if start is not None:
-                output.append((sensor.id, list(itertools.islice(self.data[index], i, None))))
-            else:
-                output.append((sensor.id, list(self.data[index])))
+            if sensor.in_diagram:
+                output.append({
+                    'id': sensor.id,
+                    'device_id': sensor.device_id,
+                    'name': sensor.name,
+                    'unit': sensor.unit,
+                    'key': sensor.key,
+                    'data': list(self.data[index])
+                })
         return output
 
     def get_last(self, value):
         index = self.sensors.index(value)
         if len(self.data[index]) > 0:
             return self.data[index][-1]  # return newest item
+        return None
+
+
+def parse_value(config):
+    try:
+        if config.value_type == DeviceConfiguration.STR:
+            return str(config.value)
+        elif config.value_type == DeviceConfiguration.INT:
+            return int(config.value)
+        elif config.value_type == DeviceConfiguration.FLOAT:
+            return float(config.value)
         else:
-            return None
-
-    def clear(self):
-        for i in self.data:
-            self.data[i].clear()
-
-def parse_hourly_demand_values(namespace, data):
-    output = []
-    for i in range(24):
-        key = namespace + '_' + str(i)
-        if key in data:
-            output.append(float(data[key]))
-    return output
+            logger.warning(
+                "Couldn't determine type of %s (%s)" % (config.value, config.value_type))
+    except ValueError:
+        logger.warning("ValueError parsing %s to %s" %
+                       (config.value, config.value_type))
+    return str(config.value)

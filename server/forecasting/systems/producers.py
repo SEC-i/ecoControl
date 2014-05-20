@@ -1,11 +1,13 @@
 from helpers import BaseSystem
 
 
+
 class GasPoweredGenerator(BaseSystem):
 
     def __init__(self, system_id, env):
         super(GasPoweredGenerator, self).__init__(system_id, env)
 
+        self.heat_storage = None
         self.running = True
 
         self.workload = 0
@@ -26,10 +28,10 @@ class GasPoweredGenerator(BaseSystem):
         self.running = False
 
     def consume_gas(self):
-        self.total_gas_consumption += self.current_gas_consumption / \
-            self.env.steps_per_measurement
-        self.total_thermal_production += self.current_thermal_production / \
-            self.env.steps_per_measurement
+        self.total_gas_consumption += self.current_gas_consumption * \
+            (self.env.step_size / 3600.0)
+        self.total_thermal_production += self.current_thermal_production * \
+            (self.env.step_size / 3600.0)
 
     def get_operating_costs(self):
         return self.total_gas_consumption * self.gas_costs
@@ -40,7 +42,6 @@ class CogenerationUnit(GasPoweredGenerator):
     def __init__(self, system_id, env, max_gas_input=19.0, electrical_efficiency=24.7, thermal_efficiency=65, maintenance_interval=4000, minimal_workload=40.0):
 
         GasPoweredGenerator.__init__(self, system_id, env)
-        self.heat_storage = None
         self.power_meter = None
 
         # vaillant ecopower 4.7
@@ -63,8 +64,12 @@ class CogenerationUnit(GasPoweredGenerator):
 
         self.overwrite_workload = None
 
+    def find_dependent_devices_in(self, system_list):
+        for system in system_list:
+            system.attach_to_cogeneration_unit(self)
+
     def connected(self):
-        return not (self.power_meter is None and self.heat_storage is None)
+        return self.power_meter is not None and self.heat_storage is not None
 
     def step(self):
         if self.running:
@@ -89,10 +94,10 @@ class CogenerationUnit(GasPoweredGenerator):
         return calculated_workload
 
     def get_electrical_energy_production(self):
-        return self.current_electrical_production / self.env.steps_per_measurement
+        return self.current_electrical_production * (self.env.step_size / 3600.0)
 
     def get_thermal_energy_production(self):
-        return self.current_thermal_production / self.env.steps_per_measurement
+        return self.current_thermal_production * (self.env.step_size / 3600.0)
 
     def get_operating_costs(self):
         gas_costs = GasPoweredGenerator.get_operating_costs(self)
@@ -135,8 +140,7 @@ class CogenerationUnit(GasPoweredGenerator):
             if old_workload == 0:
                 self.power_on_count += 1
 
-            self.total_hours_of_operation += self.env.step_size / \
-                self.env.measurement_interval
+            self.total_hours_of_operation += self.env.step_size / 3600.0
             self.workload = min(calculated_workload, 99.0)
         else:
             self.workload = 0.0
@@ -161,26 +165,21 @@ class CogenerationUnit(GasPoweredGenerator):
 
 class PeakLoadBoiler(GasPoweredGenerator):
 
-    def __init__(self, system_id, env, max_gas_input=50.0, thermal_efficiency=80.0):
+    def __init__(self, system_id, env, max_gas_input=45.0, thermal_efficiency=80.0):
         GasPoweredGenerator.__init__(self, system_id, env)
-        self.heat_storage = None
-
+        
         self.max_gas_input = max_gas_input  # kW
         self.thermal_efficiency = thermal_efficiency  # %
         self.off_time = self.env.now
 
         self.overwrite_workload = None
 
+    def find_dependent_devices_in(self, system_list):
+        for system in system_list:
+            system.attach_to_peak_load_boiler(self)
+
     def connected(self):
         return self.heat_storage is not None
-
-    @classmethod
-    def copyconstruct(cls, env, other_plb, heat_storage):
-        plb = PeakLoadBoiler(env, heat_storage)
-        plb.__dict__ = other_plb.__dict__.copy()
-        plb.heat_storage = heat_storage
-        plb.env = env
-        return plb
 
     def step(self):
         if self.running:
@@ -191,7 +190,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
             self.workload = 0.0
 
     def get_thermal_energy_production(self):
-        return self.current_thermal_production / self.env.steps_per_measurement
+        return self.current_thermal_production * (self.env.step_size / 3600.0)
 
     def calculate_state(self):
         if self.overwrite_workload is not None:
@@ -202,8 +201,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
                 if self.workload == 0.0:
                     self.power_on_count += 1
 
-                self.total_hours_of_operation += self.env.step_size / \
-                    self.env.measurement_interval
+                self.total_hours_of_operation += self.env.step_size / 3600.0
                 self.workload = 99.0
             # turn off if heat storage's target energy is almost reached
             elif self.current_thermal_production >= \
@@ -214,7 +212,7 @@ class PeakLoadBoiler(GasPoweredGenerator):
                     self.off_time = self.env.now + 3 * 60.0  # 3 min
 
         # calulate current consumption and production values
-        self.current_gas_consumption = self.workload / \
+        self.current_gas_consumption = float(self.workload) / \
             99.0 * self.max_gas_input
         self.current_thermal_production = self.current_gas_consumption * \
             self.thermal_efficiency / 100.0

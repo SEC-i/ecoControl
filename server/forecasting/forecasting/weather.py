@@ -9,7 +9,11 @@ import logging
 #from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
 from server.models import WeatherValue
 
-logger = logging.getLogger('django')
+logger = logging.getLogger('simulation')
+
+
+from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
+from server.forecasting.forecasting.helpers import cached_data
 
 class WeatherForecast:
 
@@ -42,8 +46,10 @@ class WeatherForecast:
         if daily:
             url = self.daily_url
         else:
-            url = self.three_hourly_url      
+            url = self.three_hourly_url
+            
         try:
+            #jsondata = cached_data('openweathermap', data_function=self.get_openweathermapdata, max_age=0)
             result = urllib2.urlopen(url)
             jsondata = result.read()
             data = json.loads(jsondata)
@@ -56,10 +62,12 @@ class WeatherForecast:
             for i in range(0, 40):
                 results.append(
                     WeatherValue(temperature=-300, timestamp=timestamp))
-            return results
-        return results
+        return results        
         
     def set_up_records_out_of_json(self, data, daily=True):
+        # logger.warning("WeatherForecast: Problems while json parsing.")
+        # logger.error("WeatherForecast: Fetched %d temperature values") % len(forecast_temperatures))
+        # logger.error("WeatherForecast: URLError during API call")
         results = []
         for data_set in data["list"]:
             try:
@@ -123,7 +131,7 @@ class WeatherForecast:
         days_in_future = date.day - current_date.day
         self.update_weather_estimates()
         if days_in_future <=5:
-            return self.get_forecast_temperature_hourly(date)           
+            return self.get_forecast_temperature_hourly(date)
         else:
             return self.get_forecast_temperature_daily(date)
             

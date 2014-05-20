@@ -230,11 +230,12 @@ class ForecastingDBTest(TestCase):
         response_mock = get_http_response_mock(data_with_dates)
         today = 1399334400 #2014/5/6
         time_mock = MagicMock(return_value = today)
-        timestamp_day_six = aware_timestamp_from_seconds(1399784460).\
-                                replace(tzinfo=utc, 
-                                    hour=0, minute=0, second=0, 
-                                    microsecond=0)
         
+        timestamp_day_six = aware_timestamp_from_seconds(1399784460)\
+                                .replace(hour = 0, 
+                                        minute=0,
+                                        second=0, 
+                                        microsecond=0) 
         with patch('urllib2.urlopen', response_mock):
             with patch('time.time', time_mock):
                 self.forecast.save_weather_forecast_daily_from_day_six()

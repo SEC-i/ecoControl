@@ -1,4 +1,4 @@
-import math
+from math import cos, pi
 
 
 class BaseSystem(object):
@@ -7,8 +7,32 @@ class BaseSystem(object):
         self.id = system_id
         self.env = env
 
+    def calculate(self):
+        pass
+
+    def find_dependent_devices_in(self, system_list):
+        pass
+
+    def attach_to_cogeneration_unit(self, system):
+        pass
+
+    def attach_to_peak_load_boiler(self, system):
+        pass
+
+    def attach_to_thermal_consumer(self, system):
+        pass
+
+    def attach_to_electrical_consumer(self, system):
+        pass
+
     def connected(self):
-        raise NotImplemented
+        hs = getattr(self, 'heat_storage', None)
+        if hs is not None:
+            print hs
+        pc = getattr(self, 'power_meter', None)
+        if pc is not None:
+            print pc
+        return True
 
 
 def interpolate_year(day):
@@ -22,8 +46,6 @@ def interpolate_year(day):
     day_shift = day + 90
     day_shift %= 365
     day_float = float(day) / 365.0
-    interpolation = math.cos(day_float * math.pi * 2)
+    interpolation = cos(day_float * pi * 2)
     # shift to 0-1
-    interpolation /= 2
-    interpolation += 0.5
-    return interpolation
+    return (interpolation / 2) + 0.5

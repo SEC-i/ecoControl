@@ -1,9 +1,10 @@
 from helpers import BaseSystem
 
 
+
 class HeatStorage(BaseSystem):
 
-    def __init__(self, system_id, env, capacity=25000, min_temperature=55.0, target_temperature=70.0, critical_temperature=90.0):
+    def __init__(self, system_id, env, capacity=2500, min_temperature=55.0, target_temperature=70.0, critical_temperature=90.0):
         super(HeatStorage, self).__init__(system_id, env)
 
         # default data from pamiru48
@@ -13,7 +14,7 @@ class HeatStorage(BaseSystem):
         self.target_temperature = target_temperature  # degree Celsius
         self.critical_temperature = critical_temperature  # degree Celsius
 
-        self.specific_heat_capacity = 4.19 * 1 / 3600.0  # kWh/(kg*K)
+        self.specific_heat_capacity = 4.19 / 3600.0  # kWh/(kg*K)
 
         self.input_energy = 0.0  # kWh
         self.output_energy = 0.0  # kWh
@@ -42,6 +43,11 @@ class HeatStorage(BaseSystem):
     def get_temperature(self):
         return self.base_temperature + self.energy_stored() / (self.capacity * self.specific_heat_capacity)
 
+    def set_temperature(self, value):
+        self.output_energy = 0
+        self.input_energy = (float(value) - self.base_temperature) * \
+            (self.capacity * self.specific_heat_capacity)
+
     def get_energy_capacity(self):
         return self.capacity * \
             (self.critical_temperature - self.base_temperature) * \
@@ -57,19 +63,26 @@ class HeatStorage(BaseSystem):
         self.running = False
 
     def step(self):
-        energy_loss = (self.capacity * self.specific_heat_capacity) * \
-            self.temperature_loss  # per hour
-        self.output_energy += energy_loss * (self.env.step_size / 3600.0)
+        hourly_energy_loss = (self.capacity * self.specific_heat_capacity) * \
+            self.temperature_loss
+        self.output_energy += hourly_energy_loss * (self.env.step_size / 3600.0)
 
-    def connected(self):
-        return True
+    def attach_to_cogeneration_unit(self, system):
+        system.heat_storage = self
 
+    def attach_to_peak_load_boiler(self, system):
+        system.heat_storage = self
+
+    def attach_to_thermal_consumer(self, system):
+        system.heat_storage = self
 
 class PowerMeter(BaseSystem):
 
     def __init__(self, system_id, env, electrical_costs=0.283, feed_in_reward=0.0917):
         super(PowerMeter, self).__init__(system_id, env)
 
+        self.fed_in_electricity = 0.0  # kWh
+        self.purchased = 0  # kWh
         self.total_fed_in_electricity = 0.0  # kWh
         self.total_purchased = 0  # kWh
 
@@ -98,11 +111,16 @@ class PowerMeter(BaseSystem):
         balance = (self.energy_produced - self.energy_consumed)
         # purchase electrical energy if more energy needed than produced
         if balance < 0:
+            self.purchased = -balance
             self.total_purchased -= balance
         else:
+            self.fed_in_electricity = balance
             self.total_fed_in_electricity += balance
         self.energy_produced = 0
         self.energy_consumed = 0
 
-    def connected(self):
-        return True
+    def attach_to_cogeneration_unit(self, system):
+        system.power_meter = self
+
+    def attach_to_electrical_consumer(self, system):
+        system.power_meter = self
