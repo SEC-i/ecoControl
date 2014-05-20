@@ -18,7 +18,8 @@ class Worker(Thread):
 
             # every 10 minutes
             if step % 10 == 0:
-                functions.refresh_views()
+                # functions.refresh_views()
+                pass
 
             # make sure step is within a day
             step = (step + 1) % (60 * 60 * 24)
