@@ -202,7 +202,8 @@ class ElectricalConsumer(BaseSystem):
             raw_dataset = self.get_data_until(self.env.now)
             #cast to float and convert to kW
             dataset = [float(val) / 1000.0 for val in raw_dataset]
-            electrical_forecast = Forecast(self.env, dataset, samples_per_hour=1)
+            hourly_data = Forecast.make_hourly(dataset, 6)
+            electrical_forecast = Forecast(self.env, hourly_data, samples_per_hour=1)
         self.electrical_forecast = electrical_forecast
 
         # list of 24 values representing relative demand per hour

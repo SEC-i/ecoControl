@@ -15,15 +15,13 @@ class ForecastTests(unittest.TestCase):
         DataLoader.cached_csv = {} #really important to reset, because other systems could have added data which is unwanted
         path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_2013.csv")
         raw_dataset = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
-        print len(raw_dataset)
         #cast to float and convert to kW
         self.dataset = [float(val) / 1000.0 for val in raw_dataset]
-        pass
     
     def setup_forecast(self):
         hourly_data = Forecast.make_hourly(self.dataset, 6)
         self.env = ForwardableRealtimeEnvironment()
-        self.forecast = Forecast(self.env, hourly_data, 1, None, (0.0000000, 0.0,1.0), hw_optimization="None")
+        self.forecast = Forecast(self.env, hourly_data, 1, None, (0.0000000, 0.0,1.0), hw_optimization="RMSE")
         
 
     def test_data(self):

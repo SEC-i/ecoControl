@@ -5,6 +5,9 @@ from multiprocessing import Pool
 import time
 from multiprocessing.process import Process
 import multiprocessing
+from server.forecasting.tools.plotting import Plotting
+from sys import platform as _platform
+
 
 
 class Forecast:
@@ -43,6 +46,12 @@ class Forecast:
         self.input_hours = self.input_weeks*24*self.samples_per_hour
         #the forecast will cover 8 weeks of future data
         self.output_weeks = 8
+               
+        # ending time of input data
+        self.time_series_end = datetime.fromtimestamp(env.now)
+        
+        # wait at least one day before making a new forecast
+        self.forecast_update_interval = 24 * 60 * 60
 
         # demands split into weekdays
         self.demands = Forecast.split_weekdata(input_data, samples_per_hour, start)
@@ -51,15 +60,6 @@ class Forecast:
         #forecast all demands.. might take long
         self.forecasted_demands = self.forecast_demands()
         
-       
-        # ending time of input data
-        self.time_series_end = datetime.fromtimestamp(env.now)
-        
-        # wait at least one day before making a new forecast
-        self.forecast_update_interval = 24 * 60 * 60
-        
-
-
     def forecast_demand(self, demand, index, result_queue):
         #seasonality length -- one day
         m = 24
@@ -68,7 +68,7 @@ class Forecast:
         # alpha, beta, gamma. if any is None, holt.winters determines them automatically
         # cost-expensive, so only do this once..
         (alpha, beta, gamma) = self.hw_parameters
-        print "find holt winter parameters for day: ", self.demands.index(demand)
+        print "find holt winter parameters for day: ", index
         (forecast_values_manual, alpha, beta, gamma, rmse_manual) = multiplicative(
             demand, m, fc, alpha, beta, gamma)
 
@@ -78,10 +78,9 @@ class Forecast:
         if self.hw_optimization != "None" and (rmse_manual > 6 or mase_manual > 3):
             # find values automatically
             # check with MASE error measure
-            
             (forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(
-                demand, m, fc, optimization_type=self.hw_optimization)
-            
+                demand, m, fc, optimization_type="MASE")
+             
             mase_auto = Forecast.MASE(demand, demand,  forecast_values_auto)
             
             
@@ -89,13 +88,13 @@ class Forecast:
             forecast_values = forecast_values_auto
             calculated_parameters = {
                 "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_auto}
-            #print "use auto HW with RMSE", rmse_auto, " and MASE ", mase_auto
+            print "use auto HW with RMSE", rmse_auto, " and MASE ", mase_auto , " with index: " , index
         else:
             forecast_values = forecast_values_manual
             calculated_parameters = {
                 "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_manual}
-            #print "use manual HW with RMSE", rmse_manual, " and MASE ", mase_manual
-
+            print "use manual HW with RMSE", rmse_manual, " and MASE ", mase_manual, " with index: " , index
+        
         result_queue.put((forecast_values, calculated_parameters, index))
 
     def forecast_demands(self):
@@ -103,6 +102,7 @@ class Forecast:
         unordered_forecasts = []
 
         #share results in a multiaccess queue
+        #note: this queue can not hold unlimited elements and will hang up with no warning if there are too many elements
         result_queue = multiprocessing.Queue()
         # use multiple processes instead of pool.map to circumvent a hangup caused
         # by a multiprocessing/django incompabatility
@@ -110,16 +110,16 @@ class Forecast:
         jobs = [Process(target=self, args=(demand,index,result_queue)) for index, demand in enumerate(self.demands)]
         for job in jobs: job.start()
         for job in jobs: job.join()
-        
+         
         while not result_queue.empty():
             unordered_forecasts.append(result_queue.get())
         for fc_triple in unordered_forecasts:
             split_results[fc_triple[2]] = (fc_triple[0],fc_triple[1])
-
+            
         forecasted_demands = []
         self.calculated_parameters = []
         for fc_tuple in split_results:
-            #print fc_tuple
+            Plotting.plot_dataset({"forecasted": fc_tuple[0], "measured": self.demands[i]} , len(self.demands[i]), True)
             forecasted_demands.append(list(fc_tuple[0]))
             self.calculated_parameters.append(fc_tuple[1])
 
@@ -162,6 +162,7 @@ class Forecast:
             self.demands[index] += demand
         if len(self.demands[index]) > self.input_hours:
             #only keep number of input_weeks
+            print "appending"
             start_index = len(self.demands[index]) - self.input_hours
             self.demands[index] = self.demands[index][start_index:]
             pass

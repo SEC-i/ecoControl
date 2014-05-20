@@ -168,7 +168,7 @@ def additive(x, m, forecast, alpha = None, beta = None, gamma = None,alpha_bound
  
     return Y[-forecast:], alpha, beta, gamma, rmse
  
-def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, initial_values_optimization=[0.0,1.0,0.0], optimization_type="RMSE"):
+def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, initial_values_optimization=[0.3,1.0,0.0], optimization_type="RMSE"):
  
     Y = x[:]
  
