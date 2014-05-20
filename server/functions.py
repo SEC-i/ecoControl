@@ -4,7 +4,7 @@ import dateutil.relativedelta
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue
+from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly
 
 from forecasting.environment import ForwardableRealtimeEnvironment
 from forecasting.systems.code import CodeExecuter
@@ -450,7 +450,7 @@ def get_operating_costs(system, start):
 
 def get_past_time(years=0, months=0, days=0):
     try:
-        latest_value = SensorValue.objects.latest('timestamp')
+        latest_value = SensorValueHourly.objects.latest('timestamp')
         return latest_value.timestamp + \
             dateutil.relativedelta.relativedelta(
                 years=-years, months=-months, days=-days)
