@@ -21,21 +21,22 @@ class WeatherForecast:
         
     def update_weather_estimates(self):
     # only permit forecast queries every 30min, to save some api requests
-        values = WeatherValue.objects.order_by('-timestamp')
-        last_time = self.get_latest_valid_time(values)
-        if last_time:
+        try:
+            value = WeatherValue.objects.latest('timestamp')
+            if float(value.temperature) < -273.15:
+                raise WeatherValue.DoesNotExist
+            last_time = value.timestamp
+            
             time_naive = datetime.datetime.fromtimestamp(self.get_date())
             current_time = time_naive.replace(tzinfo=timezone.utc)
             seconds_passed = (current_time - last_time).total_seconds()
             if seconds_passed < 1800: # 30 minutes 
                 return
+        except WeatherValue.DoesNotExist:
+            pass
+        
         self.save_weather_forecast_three_hourly()
         self.save_weather_forecast_daily_from_day_six()
-        
-    def get_latest_valid_time(self, values):
-        for value in values:
-            if float(value.temperature) > -273.15:
-                return value.timestamp
         
     def get_weather_forecast(self, daily = True):
         if daily:

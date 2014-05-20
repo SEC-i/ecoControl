@@ -349,13 +349,13 @@ class UpdateWeatherEstimatesTest(TestCase):
         ''' the update function should save new forecasts 
         if there are only invalid records in the database.
         '''
-        WeatherValue(timestamp = self.early_new_stamp, temperature= -274, 
+        WeatherValue(timestamp = self.now_timestamp, temperature= -274, 
             target_time=self.early_new_stamp).save()
         
         with patch('urllib2.urlopen', self.response_mock):
             with patch('time.time', self.time_mock):
                     self.forecast.update_weather_estimates()
-    
+        
         results = WeatherValue.objects.exclude(temperature= -274)
         self.assertTrue(results)  
     
@@ -378,30 +378,30 @@ class UpdateWeatherEstimatesTest(TestCase):
         self.assertLess(len(results),3)
 
     
-    def test_get_latest_valid_time(self):
-        ''' Gets an list of WeatherValues ordered by their timestamp.
-        Should return the timestamp of a valid value with the latest
-        timestamp.'''
-        values = []
-        old_time = aware_timestamp_from_seconds(0)
-        values.append(WeatherValue(temperature = 30, timestamp=old_time))
-        latest_time = aware_timestamp_from_seconds(60)
-        values.append(WeatherValue(temperature = -280, 
-            timestamp=latest_time))
-        timestamp = self.forecast.get_latest_valid_time(values)
-        self.assertEqual(timestamp, old_time)
+    #def test_get_latest_valid_time(self):
+        #''' Gets an list of WeatherValues ordered by their timestamp.
+        #Should return the timestamp of a valid value with the latest
+        #timestamp.'''
+        #values = []
+        #old_time = aware_timestamp_from_seconds(0)
+        #values.append(WeatherValue(temperature = 30, timestamp=old_time))
+        #latest_time = aware_timestamp_from_seconds(60)
+        #values.append(WeatherValue(temperature = -280, 
+            #timestamp=latest_time))
+        #timestamp = self.forecast.get_latest_valid_time(values)
+        #self.assertEqual(timestamp, old_time)
         
-    def test_get_latest_valid_time_only_invalid(self):
-        ''' Gets an list of WeatherValues ordered by their timestamp.
-        Should return the timestamp of a valid value with the latest
-        timestamp.'''
-        latest_time = aware_timestamp_from_seconds(60)
-        WeatherValue(temperature = -274, 
-            timestamp=latest_time, 
-            target_time=aware_timestamp_from_seconds(0)).save()
-        values = WeatherValue.objects.all()
-        timestamp = self.forecast.get_latest_valid_time(values)
-        self.assertFalse(timestamp)
+    #def test_get_latest_valid_time_only_invalid(self):
+        #''' Gets an list of WeatherValues ordered by their timestamp.
+        #Should return the timestamp of a valid value with the latest
+        #timestamp.'''
+        #latest_time = aware_timestamp_from_seconds(60)
+        #WeatherValue(temperature = -274, 
+            #timestamp=latest_time, 
+            #target_time=aware_timestamp_from_seconds(0)).save()
+        #values = WeatherValue.objects.all()
+        #timestamp = self.forecast.get_latest_valid_time(values)
+        #self.assertFalse(timestamp)
  
 class GetWeatherForecastURLErrorTest(unittest.TestCase):
     def setUp(self):
