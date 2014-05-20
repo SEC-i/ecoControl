@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import sys
 
 from django.db.models.signals import post_syncdb

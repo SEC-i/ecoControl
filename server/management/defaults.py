@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.db import connection, ProgrammingError
 from django.contrib.auth.models import User, Group
 
