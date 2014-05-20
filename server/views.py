@@ -17,7 +17,7 @@ from django.db import connection
 
 import functions
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, Threshold, Notification
-from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation
+from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation, is_member
 from forecasting import Simulation
 
 
@@ -62,6 +62,8 @@ def status(request):
     if request.user.is_authenticated():
         output.append(("login", "active"))
         output.append(("user", request.user.get_full_name()))
+        output.append(("technician", is_member(request.user, 'Technician')))
+        output.append(("manager", is_member(request.user, 'Manager')))
     else:
         output.append(("login", "inactive"))
 
@@ -174,7 +176,7 @@ def list_values(request, start, accuracy='hour'):
             select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
     elif accuracy=='day':
         sensor_values = SensorValueDaily.objects.\
-            filter(timestamp__gte=start, sensor__in_diagram=True).\
+            filter(date__gte=datetime.date(start), sensor__in_diagram=True).\
             select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
 
     values = {}
@@ -201,10 +203,10 @@ def list_values(request, start, accuracy='hour'):
 
 def list_sensors(request):
     sensors = Sensor.objects.filter(in_diagram=True).values(
-        'id', 'name', 'unit', 'device__name')
+        'id', 'name', 'unit', 'device__name', 'aggregate_sum', 'aggregate_avg')
 
     # rename device__name to device for convenience
-    output = [{'id': x['id'], 'name': x['name'], 'unit': x['unit'], 'device': x['device__name']}
+    output = [{'id': x['id'], 'name': x['name'], 'unit': x['unit'], 'device': x['device__name'], 'sum': x['aggregate_sum'], 'avg': x['aggregate_avg']}
               for x in sensors]
 
     return create_json_response(request, output)
@@ -218,6 +220,7 @@ def list_thresholds(request):
     thresholds = Threshold.objects.extra(select={
         'sensor_name': 'SELECT name FROM server_sensor WHERE id = sensor_id'
     }).order_by('id')
+
     return create_json_response_from_QuerySet(request, thresholds)
 
 
@@ -225,6 +228,9 @@ def list_thresholds(request):
 def handle_threshold(request):
     data = json.loads(request.body)
     if 'id' in data:
+        if not is_member(request.user, 'Technician'):
+            return create_json_response(request, {"status": "not a technician"})
+            
         threshold = Threshold.objects.get(id=data['id'])
         if threshold is not None:
             if 'delete' in data:
@@ -253,6 +259,8 @@ def handle_threshold(request):
                             pass
                 if 'category' in data:
                     threshold.category = int(data['category'])
+                if 'show_manager' in data:
+                    threshold.show_manager = True if data['show_manager'] == '1' else False
                 threshold.save()
             return create_json_response(request, {"status": "success"})
     else:
@@ -272,6 +280,18 @@ def handle_threshold(request):
     return create_json_response(request, {"status": "failed"})
 
 
-def list_notifications(request):
-    notifications = Notification.objects.all().order_by('-timestamp')
-    return create_json_response_from_QuerySet(request, notifications)
+def list_notifications(request, start, end):
+    start = 0 if start is None else start
+    end = 25 if end is None else end
+
+    if is_member(request.user, 'Technician'):
+        notifications = Notification.objects.all()
+    else:
+        notifications = Notification.objects.filter(show_manager=True)
+
+    output = {
+        'total': len(notifications),
+        'notifications': list(notifications.order_by('-timestamp')[int(start):int(end)].values())
+    }
+
+    return create_json_response(request, output)
