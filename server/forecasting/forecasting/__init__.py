@@ -5,7 +5,6 @@ from multiprocessing import Pool
 import time
 from multiprocessing.process import Process
 import multiprocessing
-from server.forecasting.tools.plotting import Plotting
 from sys import platform as _platform
 import cPickle as pickle
 
