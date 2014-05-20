@@ -103,6 +103,12 @@ def initialize_default_scenario():
             key='feed_in_reward', value='0.0917', value_type=Configuration.FLOAT, unit='€'))
         configurations.append(Configuration(
             key='electrical_costs', value='0.283', value_type=Configuration.FLOAT, unit='€'))
+        configurations.append(Configuration(
+            key='thermal_revenues', value='0.075', value_type=Configuration.FLOAT, unit='€'))
+        configurations.append(Configuration(
+            key='warmwater_revenues', value='0.065', value_type=Configuration.FLOAT, unit='€'))
+        configurations.append(Configuration(
+            key='electrical_revenues', value='0.268', value_type=Configuration.FLOAT, unit='€'))
 
         Configuration.objects.bulk_create(configurations)
         print "Default configurations initialized"

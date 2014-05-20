@@ -1,6 +1,7 @@
 import sys
 import logging
 from time import time
+import calendar
 from datetime import date
 import json
 
@@ -155,5 +156,88 @@ def get_daily_loads(request):
     sensors = Sensor.objects.filter(device__device_type=Device.EC, key='get_consumption_power').values_list('id', flat=True)
     for sensor_id in sensors:
         output['electrical'][sensor_id] = list(SensorValue.objects.filter(sensor__id=sensor_id, timestamp__gte=start).values_list('timestamp', 'value'))
+
+    return create_json_response(request, output)
+
+def get_total_balance(request, year=None, month=None):
+    try:
+        year = int(year)
+        month = int(month)
+    except (TypeError, ValueError):
+        current = get_past_time()
+        year = current.year
+        month = current.month
+
+    start = date(year, month, 1)
+    end = date(year, month, calendar.mdays[month])
+
+    # calculate costs
+    sensor_ids = Sensor.objects.filter(device__device_type__in=[Device.CU, Device.PLB]).values_list('id', flat=True)
+    sensor_values = SensorValueMonthlySum.objects.filter(date__gte=start, date__lte=end, sensor_id__in=sensor_ids, sensor__key='current_gas_consumption')
+
+    total_gas_consumption = 0
+    for sensor_value in sensor_values:
+        total_gas_consumption += sensor_value.sum
+
+    costs = total_gas_consumption * get_configuration('gas_costs')
+
+    # Calculate electrical purchase
+    sensor_ids = Sensor.objects.filter(device__device_type=Device.PM).values_list('id', flat=True)
+    sensor_values = SensorValueMonthlySum.objects.filter(date__gte=start, date__lte=end, sensor_id__in=sensor_ids, sensor__key='purchased')
+
+    total_electrical_purchase = 0
+    for sensor_value in sensor_values:
+        total_electrical_purchase += sensor_value.sum
+
+    costs += total_electrical_purchase * get_configuration('electrical_costs')
+
+    # calculate rewards
+
+    # thermal consumption
+    sensor_ids = Sensor.objects.filter(device__device_type=Device.TC).values_list('id', flat=True)
+    sensor_values = SensorValueMonthlySum.objects.filter(date__gte=start, date__lte=end, sensor_id__in=sensor_ids, sensor__key='get_consumption_power')
+
+    total_thermal_consumption = 0
+    for sensor_value in sensor_values:
+        total_thermal_consumption += sensor_value.sum
+
+    rewards = total_thermal_consumption * get_configuration('thermal_revenues')
+    
+    # warmwater consumption
+    sensor_values = SensorValueMonthlySum.objects.filter(date__gte=start, date__lte=end, sensor_id__in=sensor_ids, sensor__key='get_warmwater_consumption_power')
+
+    total_warmwater_consumption = 0
+    for sensor_value in sensor_values:
+        total_warmwater_consumption += sensor_value.sum
+
+    rewards += total_warmwater_consumption * get_configuration('warmwater_revenues')
+
+    # electrical consumption
+    sensor_ids = Sensor.objects.filter(device__device_type=Device.EC).values_list('id', flat=True)
+    sensor_values = SensorValueMonthlySum.objects.filter(date__gte=start, date__lte=end, sensor_id__in=sensor_ids, sensor__key='get_consumption_power')
+
+    total_electrical_consumption = 0
+    for sensor_value in sensor_values:
+        total_electrical_consumption += sensor_value.sum
+
+    rewards += total_electrical_consumption * get_configuration('electrical_revenues')
+
+    # electrical infeed
+    sensor_ids = Sensor.objects.filter(device__device_type=Device.PM).values_list('id', flat=True)
+    sensor_values = SensorValueMonthlySum.objects.filter(date__gte=start, date__lte=end, sensor_id__in=sensor_ids, sensor__key='fed_in_electricity')
+
+    total_electrical_infeed = 0
+    for sensor_value in sensor_values:
+        total_electrical_infeed += sensor_value.sum
+
+    rewards += total_electrical_infeed * get_configuration('feed_in_reward')
+
+    output = {
+        'month': month,
+        'year': year,
+        'costs': round(costs, 2),
+        'rewards': round(rewards, 2),
+        'balance': round(rewards-costs)
+    }
 
     return create_json_response(request, output)
