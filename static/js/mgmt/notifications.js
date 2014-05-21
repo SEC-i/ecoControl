@@ -19,7 +19,7 @@ function update_notifications(start) {
             $('#notification_list tbody').append(
                 '<tr>\
                     <td>' + notification['id'] + '</td>\
-                    <td>' + $.format.date(new Date(parseFloat(notification['timestamp'] * 1000)), "HH:MM dd.MM.yyyy") + '</td>\
+                    <td>' + $.format.date(new Date(parseFloat(notification['timestamp'])), "HH:MM dd.MM.yyyy") + '</td>\
                     <td>' + get_label(notification['category']) + ' ' + notification['message'] + '</td>\
                 </tr>'
             );

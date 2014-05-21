@@ -55,17 +55,12 @@ function get_diagram_data(type, input_data) {
         'series' : [],
         'yaxis' : []
     };
-    $.each(input_data, function (sensor_id, data){
+    $.each(input_data, function (sensor_id, sensor_data){
         var sensor = get_sensor(sensor_id);
-
-        var series_data = [];
-        $.each(data, function(index, value) {
-            series_data.push([value[0] * 1000, value[1]]);
-        });
         
         output['series'].push({
             name: sensor.name + ' #' + sensor.id,
-            data: series_data,
+            data: sensor_data,
         });
 
         output['yaxis'].push({
