@@ -59,25 +59,32 @@
     <div class="container">
       <div class="row">
         <div class="col-sm-12">
-          <div class="panel-group" id="accordion">
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <h4 class="panel-title">Balances</h4>
-              </div>
-              <div class="panel-body">
-                <div class="row">
-                  <div class="col-sm-12">
-                    <div class="row">
-                      <div class="col-md-12 text-right">
-                        <div id="diagram_filters" class="btn-group btn-group-sm" data-toggle="buttons"></div>
-                      </div>
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">Balances</h4>
+            </div>
+            <div class="panel-body">
+              <div class="row">
+                <div class="col-sm-12">
+                  <div class="row">
+                    <div class="col-md-12 text-right">
+                      <div id="diagram_filters" class="btn-group btn-group-sm" data-toggle="buttons"></div>
                     </div>
-                    <div id="balances_container"></div>
-                    <hr>
-                    <div id="rewards_container"></div>
-                    <hr>
-                    <div id="costs_container"></div>
                   </div>
+                  <!-- Nav tabs -->
+                  <ul class="nav nav-tabs">
+                    <li class="active"><a href="#balances_container" data-toggle="tab">Monthly Balance</a></li>
+                    <li><a href="#rewards_container" data-toggle="tab">Monthly Rewards</a></li>
+                    <li><a href="#costs_container" data-toggle="tab">Monthly Costs</a></li>
+                  </ul>
+
+                  <!-- Tab panes -->
+                  <div class="tab-content">
+                    <div class="tab-pane active" id="balances_container"></div>
+                    <div class="tab-pane" id="rewards_container"></div>
+                    <div class="tab-pane" id="costs_container"></div>
+                  </div>
+                  <div id="details_container"></div>
                 </div>
               </div>
             </div>
@@ -106,6 +113,7 @@
     <script src="/static/libs/highcharts/modules/exporting.js"></script>
 
     <script src="/static/js/global.js"></script>
+    <script src="/static/js/lang.js"></script>
     <script src="/static/js/mgmt/balances.js"></script>
   </body>
 </html>

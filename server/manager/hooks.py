@@ -177,15 +177,12 @@ def get_total_balance(request, year=None, month=None):
         except (TypeError, ValueError):
             months = [current.month]
 
-    output = {}
+    output = []
     for month in months:
         start = date(year, month, 1)
         end = date(year, month, calendar.mdays[month])
 
-        key = str(month)
-        if month < 10:
-            key = '0' + key
-        output[key] = get_total_balance_by_date(month, year)
+        output.append(get_total_balance_by_date(month, year))
 
     return create_json_response(request, output)
 
@@ -212,7 +209,8 @@ def get_total_balance_by_date(month, year):
     for sensor_value in sensor_values:
         total_gas_consumption += sensor_value.sum
 
-    costs = total_gas_consumption * get_configuration('gas_costs')
+    gas_costs = get_configuration('gas_costs')
+    costs = total_gas_consumption * gas_costs
 
     # Calculate electrical purchase
     sensor_ids = Sensor.objects.filter(device__device_type=Device.PM).values_list('id', flat=True)
@@ -222,7 +220,8 @@ def get_total_balance_by_date(month, year):
     for sensor_value in sensor_values:
         total_electrical_purchase += sensor_value.sum
 
-    costs += total_electrical_purchase * get_configuration('electrical_costs')
+    electrical_costs = get_configuration('electrical_costs')
+    costs += total_electrical_purchase * electrical_costs
 
     # calculate rewards
 
@@ -234,7 +233,8 @@ def get_total_balance_by_date(month, year):
     for sensor_value in sensor_values:
         total_thermal_consumption += sensor_value.sum
 
-    rewards = total_thermal_consumption * get_configuration('thermal_revenues')
+    thermal_revenues = get_configuration('thermal_revenues')
+    rewards = total_thermal_consumption * thermal_revenues
     
     # warmwater consumption
     sensor_values = SensorValueMonthlySum.objects.filter(date__gte=start, date__lte=end, sensor_id__in=sensor_ids, sensor__key='get_warmwater_consumption_power')
@@ -243,6 +243,7 @@ def get_total_balance_by_date(month, year):
     for sensor_value in sensor_values:
         total_warmwater_consumption += sensor_value.sum
 
+    warmwater_revenues = get_configuration('warmwater_revenues')
     rewards += total_warmwater_consumption * get_configuration('warmwater_revenues')
 
     # electrical consumption
@@ -253,7 +254,8 @@ def get_total_balance_by_date(month, year):
     for sensor_value in sensor_values:
         total_electrical_consumption += sensor_value.sum
 
-    rewards += total_electrical_consumption * get_configuration('electrical_revenues')
+    electrical_revenues = get_configuration('electrical_revenues')
+    rewards += total_electrical_consumption * electrical_revenues
 
     # electrical infeed
     sensor_ids = Sensor.objects.filter(device__device_type=Device.PM).values_list('id', flat=True)
@@ -263,16 +265,27 @@ def get_total_balance_by_date(month, year):
     for sensor_value in sensor_values:
         total_electrical_infeed += sensor_value.sum
 
-    rewards += total_electrical_infeed * get_configuration('feed_in_reward')
+    feed_in_reward = get_configuration('feed_in_reward')
+    rewards += total_electrical_infeed * feed_in_reward
 
     return {
         'costs': round(-costs, 2),
         'rewards': round(rewards, 2),
         'balance': round(rewards-costs, 2),
-        'gas_consumption': round(total_gas_consumption, 2),
-        'electrical_purchase': round(total_electrical_purchase, 2),
-        'thermal_consumption': round(total_thermal_consumption, 2),
-        'warmwater_consumption': round(total_warmwater_consumption, 2),
-        'electrical_consumption': round(total_electrical_consumption, 2),
-        'electrical_infeed': round(total_electrical_infeed, 2)
+        'prices': {
+            'gas_costs': -gas_costs,
+            'electrical_costs': -electrical_costs,
+            'thermal_revenues': thermal_revenues,
+            'warmwater_revenues': warmwater_revenues,
+            'electrical_revenues': electrical_revenues,
+            'feed_in_reward': feed_in_reward
+        },
+        'kwh': {
+            'gas_consumption': round(total_gas_consumption, 2),
+            'electrical_purchase': round(total_electrical_purchase, 2),
+            'thermal_consumption': round(total_thermal_consumption, 2),
+            'warmwater_consumption': round(total_warmwater_consumption, 2),
+            'electrical_consumption': round(total_electrical_consumption, 2),
+            'electrical_infeed': round(total_electrical_infeed, 2)
+        }
     }

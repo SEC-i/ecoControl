@@ -1,9 +1,18 @@
 var diagram_types = ['balances', 'rewards', 'costs'];
+var month_list = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+var cached_data = {};
 
 // READY
 $(function() {
     initialize_diagram();
     initialize_diagram_filters();
+
+    // resize charts in tabs
+    $.each(diagram_types, function(index, type) {
+        var container = $('#' + type + '_container');
+        var chart = container.highcharts();
+        chart.setSize(container.parent().width(), container.parent().height(), false);
+    });
 });
 
 function initialize_diagram() {
@@ -13,10 +22,10 @@ function initialize_diagram() {
                 zoomType: 'xy'
             },
             title: {
-                text: 'Monthly ' + type.charAt(0).toUpperCase() + type.slice(1)
+                text: ''
             },
             xAxis: {
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                categories: month_list
             },
             yAxis: [{
                 labels: {
@@ -28,6 +37,23 @@ function initialize_diagram() {
                     style: { color: Highcharts.getOptions().colors[1] }
                 },
             }],
+            plotOptions: {
+                series: {
+                    cursor: 'pointer',
+                    point: {
+                        events: {
+                            click: function (e) {
+                                var month = month_list.indexOf(e.currentTarget.category);
+                                var year = get_year_from_string(this.series.name);
+                                show_month_details(year, month);
+                            }
+                        }
+                    },
+                    marker: {
+                        lineWidth: 1
+                    }
+                }
+            },
             tooltip: {
                 valueDecimals: 2
             },
@@ -51,7 +77,7 @@ function initialize_diagram_filters() {
 
             charts = [];
             $.each(diagram_types, function(index, type) {
-                charts.push($('#' +type + '_container').highcharts());
+                charts.push($('#' + type + '_container').highcharts());
             });
             var year = parseInt($(this).val());
             if ($(this).is(":checked")) {
@@ -66,6 +92,7 @@ function initialize_diagram_filters() {
                 });
                 if (!found) {
                     $.getJSON("/api2/balance/total/" + year + "/", function(data) {
+                        cached_data[year] = data;
                         var balances = {
                             name: 'Total Balances in ' + year,
                             type: 'column',
@@ -79,9 +106,9 @@ function initialize_diagram_filters() {
                         var costs = {
                             name: 'Total Costs in ' + year,
                             type: 'column',
-                            data: []
+                            data: [],
                         };
-                        $.each(data, function(date, monthly_data) {
+                        $.each(data, function(index, monthly_data) {
                             balances['data'].push(monthly_data.balance);
                             rewards['data'].push(monthly_data.rewards);
                             costs['data'].push(monthly_data.costs);
@@ -89,12 +116,17 @@ function initialize_diagram_filters() {
                         charts[0].addSeries(balances);
                         charts[1].addSeries(rewards);
                         charts[2].addSeries(costs);
+
+                        // preselect tables details
+                        if ($('#details_container').is(':empty')) {
+                            show_month_details(year, data.length - 1);
+                        }
                     });
                 }
             } else {
                 $.each(charts, function(index, chart) {
                     $.each(chart.series, function(index, series) {
-                        if (series['name'].substr(series['name'].length - 4) == year) {
+                        if (get_year_from_string(series['name']) == year) {
                             series.hide(false);
                         }
                     });
@@ -127,4 +159,84 @@ function initialize_diagram_filters() {
     });
 }
 
+function show_month_details(year, month) {
+    $.each(cached_data[year], function(index, monthly_data) {
+        if (month == index) {
+            update_table(monthly_data, year, month);
+        }
+    });
+}
 
+function update_table(data, year, month) {
+    var container = $('#details_container');
+    container.html(
+        '<div class="page-header">\
+          <h1>' + $.format.date(new Date(year, month, 1), "MMMM yyyy") + '</h1>\
+        </div>\
+        <table class="table table-striped">\
+          <thead>\
+            <tr>\
+              <th></th>\
+              <th>Description</th>\
+              <th>Price per Unit</th>\
+              <th>Amount</th>\
+              <th>Price</th>\
+            </tr>\
+          </thead>\
+          <tbody>\
+            <tr>\
+              <td rowspan="4" class="text-center" style="vertical-align: middle;"><b>Revenues</b><br>' + data['rewards'] + ' €</td>\
+              <td style="padding-left: 20px">' + get_text('thermal_consumption') + '</td>\
+              <td>' + data['prices']['thermal_revenues'] + ' €</td>\
+              <td>' + data['kwh']['thermal_consumption'] + ' kWh</td>\
+              <td>' + Math.round(data['kwh']['thermal_consumption'] * data['prices']['thermal_revenues'] * 100)/100 + ' €</td>\
+            </tr>\
+            <tr>\
+              <td style="padding-left: 20px">' + get_text('warmwater_consumption') + '</td>\
+              <td>' + data['prices']['warmwater_revenues'] + ' €</td>\
+              <td>' + data['kwh']['warmwater_consumption'] + ' kWh</td>\
+              <td>' + Math.round(data['kwh']['warmwater_consumption'] * data['prices']['warmwater_revenues'] * 100)/100 + ' €</td>\
+            </tr>\
+            <tr>\
+              <td style="padding-left: 20px">' + get_text('electrical_consumption') + '</td>\
+              <td>' + data['prices']['electrical_revenues'] + ' €</td>\
+              <td>' + data['kwh']['electrical_consumption'] + ' kWh</td>\
+              <td>' + Math.round(data['kwh']['electrical_consumption'] * data['prices']['electrical_revenues'] * 100)/100 + ' €</td>\
+            </tr>\
+            <tr>\
+              <td style="padding-left: 20px">' + get_text('electrical_infeed') + '</td>\
+              <td>' + data['prices']['feed_in_reward'] + ' €</td>\
+              <td>' + data['kwh']['electrical_infeed'] + ' kWh</td>\
+              <td>' + Math.round(data['kwh']['electrical_infeed'] * data['prices']['feed_in_reward'] * 100)/100 + ' €</td>\
+            </tr>\
+            <tr>\
+              <td rowspan="2" class="text-center" style="vertical-align: middle;"><b>Costs</b><br>' + data['costs'] + ' €</td>\
+              <td style="padding-left: 20px">' + get_text('gas_consumption') + '</td>\
+              <td>' + data['prices']['gas_costs'] + ' €</td>\
+              <td>' + data['kwh']['gas_consumption'] + ' kWh</td>\
+              <td>' + Math.round(data['kwh']['gas_consumption'] * data['prices']['gas_costs'] * 100)/100 + ' €</td>\
+            </tr>\
+            <tr>\
+              <td style="padding-left: 20px">' + get_text('electrical_purchase') + '</td>\
+              <td>' + data['prices']['electrical_costs'] + ' €</td>\
+              <td>' + data['kwh']['electrical_purchase'] + ' kWh</td>\
+              <td>' + Math.round(data['kwh']['electrical_purchase'] * data['prices']['electrical_costs'] * 100)/100 + ' €</td>\
+            </tr>\
+            <tr>\
+              <td colspan="5"></td>\
+            </tr>\
+            <tr>\
+              <td></td>\
+              <td></td>\
+              <td></td>\
+              <td><b>' + get_text('total_balance') + '</b></td>\
+              <td><b>' + data['balance'] + ' €</b></td>\
+            </tr>\
+          </tbody>\
+        </table>'
+    );
+}
+
+function get_year_from_string(string) {
+    return string.substr(string.length - 4);
+}
