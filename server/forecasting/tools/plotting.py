@@ -61,11 +61,10 @@ class Plotting(object):
                 data[value].append(measurements.get_mapped_value(value))
     
     @classmethod
-    def plot_dataset(cls,sensordata):
+    def plot_dataset(cls, sensordata,forecast_start=0,block=True):
         fig, ax = plt.subplots()
-        for name, sensorvals in sensordata.items():
-            if name != "time":
-                ax.plot(range(len(sensorvals)), sensorvals, label=name)
+        forecast_plot, = ax.plot(range(forecast_start,len(sensordata["forecasted"])+forecast_start), sensordata["forecasted"], label="forecasted")
+        sim_plot, = ax.plot(range(len(sensordata["measured"])), sensordata["measured"], label="measured")
         
         # Now add the legend with some customizations.
         legend = ax.legend(loc='upper center', shadow=True)
@@ -85,7 +84,7 @@ class Plotting(object):
         plt.xlabel('Simulated time in seconds')
         plt.xticks(rotation=90)
         plt.grid(True)
-        plt.show(block=True)
+        plt.show()
         
 
 
