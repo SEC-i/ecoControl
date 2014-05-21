@@ -59,9 +59,11 @@ def install_devices(**kwargs):
         sensors.append(
             Sensor(device=plb, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh', aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Thermal Consumption',
-                       key='get_consumption_power', unit='kWh', in_diagram=True, aggregate_sum=True))
+                       key='current_power', setter='current_power', unit='kWh', in_diagram=True, aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Warm Water Consumption',
                        key='get_warmwater_consumption_power', unit='kWh', in_diagram=True, aggregate_sum=True))
+        sensors.append(Sensor(device=tc, name='Room Temperature',
+                       key='temperature_room', setter='temperature_room', unit='°C', aggregate_avg=True))
         sensors.append(Sensor(device=tc, name='Outside Temperature',
                        key='get_outside_temperature', unit='°C', in_diagram=True, aggregate_avg=True))
         sensors.append(Sensor(device=ec, name='Electrical Consumption',
