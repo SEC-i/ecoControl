@@ -8,7 +8,9 @@ logger = logging.getLogger('simulation')
 
 class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
-    def __init__(self, initial_time=1356998400, interval=120, strict=False):
+
+    def __init__(self, initial_time=1356998400, interval=120, strict=False, demo=False):
+
         RealtimeEnvironment.__init__(
             self, initial_time, 1.0 / 3600, strict)
 
@@ -24,6 +26,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         self.last_step = self.now
         self.stop_simulation = False
         self.stop_after_forward = False
+        self.demo = demo
 
     def step(self):
         if self.stop_simulation:

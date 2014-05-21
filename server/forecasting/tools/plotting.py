@@ -2,11 +2,8 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as md
 import numpy as np
 import time
-from core import SimulationManager
 import datetime
 
-from helpers import SimulationBackgroundRunner, MeasurementCache
-from rulestrategy import RuleStrategy
 
 SIMULATED_TIME_MAIN = 60 * 60 * 24 * 10
 SIMULATED_TIME_FORECAST = 60 * 60 * 24 * 100
@@ -19,8 +16,8 @@ class Plotting(object):
             'time', 'cu_workload', 'plb_workload', 'hs_temperature',
             'thermal_consumption', 'outside_temperature', 'electrical_consumption']
 
-        self.simulation_manager = SimulationManager(
-            initial_time=1396915200)  # 8.4.2014
+#         self.simulation_manager = SimulationManager(
+#             initial_time=1396915200)  # 8.4.2014
         self.plot_new_simulation(SIMULATED_TIME_FORECAST, 60, "Forecast1")
 
     def plot_new_simulation(self, simulated_time, title,  datasheet=None):
@@ -45,7 +42,7 @@ class Plotting(object):
         for value in data["time"]:
             t.append(datetime.datetime.fromtimestamp(value))
 
-        self.plot_dataset(t, data, "Energy Conversion")
+        Plotting.plot_dataset(t, data, "Energy Conversion")
         plt.show(block=True)
 
     def step_function(self, kwargs):
@@ -62,42 +59,33 @@ class Plotting(object):
             data = kwargs["data"]
             for value in self.measure_values:
                 data[value].append(measurements.get_mapped_value(value))
-
-    def plot_dataset(self, timedata, sensordata, title):
-
+    
+    @classmethod
+    def plot_dataset(cls, sensordata,forecast_start=0,block=True):
         fig, ax = plt.subplots()
-        # format datetime for matplot
-        datenums = md.date2num(timedata)
-
-        xfmt = md.DateFormatter('%Y-%m-%d %H:%M:%S')
-        ax.xaxis.set_major_formatter(xfmt)
-
-        ax.xaxis_date()
-
-        for name, sensorvals in sensordata.items():
-            if name != "time":
-                ax.plot(datenums, sensorvals, label=name)
-
+        forecast_plot, = ax.plot(range(forecast_start,len(sensordata["forecasted"])+forecast_start), sensordata["forecasted"], label="forecasted")
+        sim_plot, = ax.plot(range(len(sensordata["measured"])), sensordata["measured"], label="measured")
+        
         # Now add the legend with some customizations.
         legend = ax.legend(loc='upper center', shadow=True)
-
-        # The frame is matplotlib.patches.Rectangle instance surrounding the
-        # legend.
+        
+        # The frame is matplotlib.patches.Rectangle instance surrounding the legend.
         frame = legend.get_frame()
         frame.set_facecolor('0.90')
-
+        
         # Set the fontsize
         for label in legend.get_texts():
             label.set_fontsize('medium')
-
+        
         for label in legend.get_lines():
-            label.set_linewidth(1.5)  # the legend line widt
-
+            label.set_linewidth(1.5)
+        
         plt.subplots_adjust(bottom=0.2)
         plt.xlabel('Simulated time in seconds')
-        plt.title(title)
         plt.xticks(rotation=90)
         plt.grid(True)
+        plt.show()
+        
 
 
 if __name__ == "__main__":

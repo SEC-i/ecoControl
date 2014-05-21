@@ -10,10 +10,18 @@ python:
   - "2.7"
 env:
   - DJANGO_VERSION=1.6
+addons:
+  postgresql: "9.3"
+virtualenv:
+  system_site_packages: true
+before_install:
+ - sudo apt-get install -qq python-dateutil python-numpy python-psycopg2 python-scipy
 install: 
-  - pip install -r requirements.txt --use-mirrors
-# before_script:
-#   - psql -U postgres -c 'create database bp2013h1;' -U postgres
+  - pip install -r requirements_travis.txt
+before_script:
+  - psql -c "CREATE ROLE BP2013H1 LOGIN PASSWORD 'hirsch' SUPERUSER CREATEDB CREATEROLE;" -U postgres
+  - createdb bp2013h1
+  - python manage.py syncdb --noinput
 script:
   - coverage run --source='.' manage.py test
   - coverage report

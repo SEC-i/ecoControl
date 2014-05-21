@@ -38,6 +38,7 @@ class SimulationBackgroundRunner(Thread):
 
 class MeasurementStorage():
 
+
     def __init__(self, env, devices, demo=False):
         self.env = env
         self.devices = devices
@@ -50,42 +51,52 @@ class MeasurementStorage():
         for i in self.sensors:
             self.data.append([])
 
-    def take(self):
-        # save demo values every 15mins
-        if self.demo and self.env.now % 60 * 60 != 0:
-            return
-
-        # save forecasting values every hour
-        if not self.demo and self.env.now % 3600 != 0:
-            return
-
-        sensor_values = []
-        timestamp = None
-        if self.demo:
-            timestamp = datetime.utcfromtimestamp(
-                self.env.now).replace(tzinfo=pytz.utc)
-        i = 0
-        for device in self.devices:
-            for sensor in Sensor.objects.filter(device_id=device.id):
-                value = getattr(device, sensor.key, None)
-                if value is not None:
-                    # in case value is a function, call that function
-                    if hasattr(value, '__call__'):
-                        value = value()
-
-                    if self.demo:
+    def take_demo(self):
+            # save demo values every 15mins
+            if self.env.now % 60 * 60 != 0:
+                return
+            sensor_values = []
+            timestamp = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=pytz.utc)
+            for device in self.devices:
+                for sensor in Sensor.objects.filter(device_id=device.id):
+                    value = getattr(device, sensor.key, None)
+                    if value is not None:
+                        # in case value is a function, call that function
+                        if hasattr(value, '__call__'):
+                            value = value()
+                        
                         sensor_values.append((sensor.id, value, timestamp))
-                    else:
-                        if sensor.in_diagram:
-                            self.data[i].append(
-                                [self.env.now, round(float(value), 2)])
-                i += 1
-
-        if len(sensor_values) > 0:
-            cursor = connection.cursor()
-            cursor.executemany(
-                """INSERT INTO "server_sensorvalue" ("sensor_id", "value", "timestamp") VALUES (%s, %s, %s)""", sensor_values)
-
+            
+            if len(sensor_values) > 0:
+                cursor = connection.cursor()
+                cursor.executemany(
+                    """INSERT INTO "server_sensorvalue" ("sensor_id", "value", "timestamp") VALUES (%s, %s, %s)""", sensor_values)
+                
+    def take_forecast(self):
+        if self.env.now % 3600 != 0:
+            return
+        
+        for index, sensor in enumerate(self.sensors):
+            for device in self.devices:
+                if device.id == sensor.device.id and sensor.in_diagram:
+                    value = getattr(device, sensor.key, None)
+                    if value is not None:
+                        # in case value is a function, call that function
+                        if hasattr(value, '__call__'):
+                            value = value()
+                        
+                        self.data[index].append([self.env.now, round(float(value), 2)])
+                        
+    
+    def take(self):
+        if self.demo:
+            self.take_demo()
+        else:
+            self.take_forecast()        
+            
+        
+    
+    
     def get(self):
         output = []
         for index, sensor in enumerate(self.sensors):

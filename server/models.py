@@ -74,6 +74,8 @@ class Sensor(models.Model):
     setter = models.CharField(max_length=100)
     unit = models.CharField(max_length=50)
     in_diagram = models.BooleanField(default=False)
+    aggregate_sum = models.BooleanField(default=False)
+    aggregate_avg = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.name + " (#" + str(self.pk) + ")"
@@ -86,3 +88,104 @@ class SensorValue(models.Model):
 
     def __unicode__(self):
         return str(self.pk) + " (" + self.sensor.name + ")"
+
+
+class SensorValueHourly(models.Model):
+    sensor = models.ForeignKey('Sensor')
+    timestamp = models.DateTimeField(auto_now=False)
+    value = models.FloatField()
+
+    class Meta:
+        managed = False
+
+
+class SensorValueDaily(models.Model):
+    sensor = models.ForeignKey('Sensor')
+    date = models.DateField(auto_now=False)
+    value = models.FloatField()
+
+    class Meta:
+        managed = False
+
+    def __unicode__(self):
+        return str(self.pk) + " (" + self.sensor.name + ")"
+
+
+class SensorValueMonthlySum(models.Model):
+    sensor = models.ForeignKey('Sensor')
+    date = models.DateField(auto_now=False)
+    sum = models.FloatField()
+
+    class Meta:
+        managed = False
+
+    def __unicode__(self):
+        return str(self.pk) + " (" + self.sensor.name + ")"
+
+
+class SensorValueMonthlyAvg(models.Model):
+    sensor = models.ForeignKey('Sensor')
+    date = models.DateField(auto_now=False)
+    avg = models.FloatField()
+
+    class Meta:
+        managed = False
+
+    def __unicode__(self):
+        return str(self.pk) + " (" + self.sensor.name + ")"
+
+
+class Threshold(models.Model):
+    Default = 0
+    Primary = 1
+    Success = 2
+    Info = 3
+    Warning = 4
+    Danger = 5
+
+    TYPES = (
+        (Default, 'Default'),
+        (Primary, 'Primary'),
+        (Success, 'Success'),
+        (Info, 'Info'),
+        (Warning, 'Warning'),
+        (Danger, 'Danger'),
+    )
+
+    sensor = models.ForeignKey('Sensor')
+    name = models.CharField(max_length=100)
+    category = models.PositiveSmallIntegerField(choices=TYPES, default=Default)
+    show_manager = models.BooleanField(default=False)
+    min_value = models.FloatField(null=True, blank=True)
+    max_value = models.FloatField(null=True, blank=True)
+
+    def __unicode__(self):
+        return str(self.pk) + " (" + self.sensor.name + ")"
+
+
+class Notification(models.Model):
+    Default = 0
+    Primary = 1
+    Success = 2
+    Info = 3
+    Warning = 4
+    Danger = 5
+
+    TYPES = (
+        (Default, 'Default'),
+        (Primary, 'Primary'),
+        (Success, 'Success'),
+        (Info, 'Info'),
+        (Warning, 'Warning'),
+        (Danger, 'Danger'),
+    )
+
+    threshold = models.ForeignKey('Threshold')
+    message = models.CharField(max_length=200)
+    timestamp = models.DateTimeField(auto_now=True)
+    category = models.PositiveSmallIntegerField(choices=TYPES, default=Default)
+    show_manager = models.BooleanField(default=False)
+    read = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return str(self.pk) + " (" + self.threshold.name + ")"

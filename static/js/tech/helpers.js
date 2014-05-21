@@ -17,8 +17,8 @@ function filter_series() {
     $(".diagram_filter").each(function() {
         i = parseInt($(this).val());
         visible = $(this).is(":checked");
-        chart.series[i].setVisible(visible, false);
-        chart.series[i + 7].setVisible(visible, false);
+        chart.series[i * 2].setVisible(visible, false);
+        chart.series[i * 2 + 1].setVisible(visible, false);
         if ($(this).is(":checked")) {
             all_unchecked = false;
         }
