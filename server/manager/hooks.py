@@ -163,7 +163,7 @@ def get_total_balance(request, year=None, month=None):
     try:
         year = int(year)
     except (TypeError, ValueError):
-        current = get_past_time()
+        current = get_past_time(use_view=True)
         year = current.year
 
     if month is None:
@@ -188,10 +188,9 @@ def get_total_balance(request, year=None, month=None):
     return create_json_response(request, output)
 
 def get_latest_total_balance(request):
-    current = get_past_time()
+    current = get_past_time(use_view=True)
     year = current.year
     month = current.month
-
 
     output = dict([('month', month), ('year', year)]
          + get_total_balance_by_date(month, year).items())
