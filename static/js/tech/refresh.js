@@ -38,15 +38,17 @@ function update_diagram(data, forecast) {
 
     $.each(data, function(index, sensor_value) {
         if (!forecast) {
+            serie = find_series(chart, sensor_value, false);
             $.each(sensor_value.data, function(index2, sensor_data) {
-                chart.series[index * 2].addPoint([sensor_data[0] * 1000, parseFloat(sensor_data[1])], false);
+                serie.addPoint([sensor_data[0] * 1000, parseFloat(sensor_data[1])], false);
             });
         } else {
             var data_set = [];
             $.each(sensor_value.data, function(index2, sensor_data) {
                 data_set.push([sensor_data[0] * 1000, parseFloat(sensor_data[1])]);
             });
-            chart.series[index * 2 + 1].setData(data_set, false);
+            serie = find_series(chart, sensor_value, true);
+            serie.setData(data_set, false);
         }
     });
 
@@ -55,4 +57,16 @@ function update_diagram(data, forecast) {
     }
 
     chart.redraw();
+}
+
+
+function find_series(chart, sensor_value, forecast)
+{
+    var append = "";
+    if (forecast){ append = "_predicted"; }
+    
+    var series = $.grep(chart.series, function(serie){
+        return (serie.options.id == sensor_value.id+append)
+    })[0];
+    return series;
 }

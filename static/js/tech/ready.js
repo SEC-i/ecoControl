@@ -181,6 +181,7 @@ function initialize_diagram() {
                 name: value.name + ' (' + value.device + ')',
                 data: [],
                 color: colors_past[index],
+                id: value.id,
                 tooltip: {
                     valueSuffix: ' ' + value.unit
                 }
@@ -190,6 +191,7 @@ function initialize_diagram() {
                 data: [],
                 color: colors_future[index],
                 dashStyle: 'shortdot',
+                id: value.id + "_predicted",
                 tooltip: {
                     valueSuffix: ' ' + value.unit
                 }
