@@ -93,9 +93,10 @@ function initialize_diagram() {
                 },
                 xAxis: {
                     plotLines: [{
-                        id: 'now_area',
-                    }, {
                         id: 'now',
+                    }],
+                    PlotBands: [{
+                        id: 'now_band',
                     }]
                 },
                 tooltip: {
@@ -151,20 +152,21 @@ function refresh() {
 
 function update_now_line() {
     var chart = $('#simulation_diagram').highcharts();
-    // chart.xAxis[0].removePlotLine('now_area');
-    // chart.xAxis[0].addPlotLine({
-    //     id: 'now_area',
-    //     value: plotline_timestamp + 7 * 24 * 60 * 60 * 1000,
-    //     width: chart.chartWidth/2* 0.92,
-    //     color: '#F0F0F0',
-    //     label: {
-    //         text: 'Forecast',
-    //         rotation: 0,
-    //         align: 'center',
-    //         y: 32,
-    //         x: 6
-    //     }
-    // });
+
+    chart.xAxis[0].removePlotBand('now_band');
+    chart.xAxis[0].addPlotBand({
+        id: 'now_band',
+        from: plotline_timestamp,
+        to: plotline_timestamp + 14 * 24 * 60 * 60 * 1000,
+        color: '#F0F0F0',
+        label: {
+            text: 'Forecast',
+            rotation: 0,
+            align: 'center',
+            y: 32,
+            x: 6
+        }
+    });
     chart.xAxis[0].removePlotLine('now');
     chart.xAxis[0].addPlotLine({
         id: 'now',
