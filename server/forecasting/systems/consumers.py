@@ -150,8 +150,8 @@ class ThermalConsumer(BaseSystem):
 
     def simulate_consumption(self):
         # Calculate variation using daily demand
-        self.target_temperature = self.daily_demand[
-            time.gmtime(self.env.now).tm_hour]
+        hours = datetime.fromtimestamp(self.env.now).hour
+        self.target_temperature = self.daily_demand[hours]
 
         self.heat_room()
 

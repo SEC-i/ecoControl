@@ -1,4 +1,7 @@
 import unittest
+import datetime
+import time
+from django.utils import timezone
 
 from server.forecasting.environment import ForwardableRealtimeEnvironment
 from server.forecasting.systems.consumers import ThermalConsumer
@@ -189,8 +192,10 @@ class ThermalConsumerTests(unittest.TestCase):
         consumer.heat_storage = heat_storage
         consumer.daily_demand = daily_demand
 
+        base_time = datetime.datetime.strptime('2012-01-01 00:00:00 UTC', '%Y-%m-%d %X %Z')#.replace(tzinfo=timezone.utc)
+        base_timestamp = time.mktime(base_time.timetuple())
         for current_time in range(24):
-            time_in_seconds = current_time * 60 * 60
+            time_in_seconds = base_timestamp+current_time * 60 * 60
             env = ForwardableRealtimeEnvironment(initial_time=time_in_seconds)
             consumer.env = env
             consumer.target_temperature = 0
