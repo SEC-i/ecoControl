@@ -16,7 +16,7 @@ from forecasting.helpers import parse_value
 
 
 logger = logging.getLogger('django')
-CACHE_TIMEOUT = 120 # seconds
+CACHE_TIMEOUT = 120  # seconds
 
 
 def perform_configuration(data):
@@ -66,8 +66,19 @@ def perform_configuration(data):
         else:
             logger.error("Incomplete config data: %s" % config)
 
-    Configuration.objects.bulk_create(configurations)
-    DeviceConfiguration.objects.bulk_create(device_configurations)
+    if len(configurations) > 0:
+        Configuration.objects.bulk_create(configurations)
+    if len(device_configurations) > 0:
+        DeviceConfiguration.objects.bulk_create(device_configurations)
+
+
+def get_modified_configurations(data):
+    configurations = list(DeviceConfiguration.objects.all())
+    for config in configurations:
+        for change in data:
+            if str(config.device_id) == change['device'] and config.key == change['key'] and str(config.value_type) == change['type']:
+                config.value = change['value']
+    return configurations
 
 
 def get_statistics_for_cogeneration_unit(start=None, end=None):
@@ -434,11 +445,21 @@ def get_configurations():
     return [(0, configurations)]
 
 
-def get_device_configurations():
+def get_device_configuration(system, key):
+    return parse_value(DeviceConfiguration.objects.get(device=system, key=key))
+
+
+def get_device_configurations(tunable=None):
     output = []
     for device in Device.objects.all():
         configurations = {}
-        for config in DeviceConfiguration.objects.filter(device=device):
+        configuration_queryset = DeviceConfiguration.objects.filter(
+            device=device)
+        if tunable is not None:
+            configuration_queryset = configuration_queryset.filter(
+                tunable=tunable)
+
+        for config in configuration_queryset:
             configurations[config.key] = {
                 'value': config.value,
                 'type': config.value_type,

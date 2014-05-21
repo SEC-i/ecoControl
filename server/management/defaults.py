@@ -125,7 +125,7 @@ def initialize_default_scenario():
         device_configurations.append(
             DeviceConfiguration(device=cu, key='minimal_workload', value='40.0', value_type=DeviceConfiguration.FLOAT, unit='%'))
         device_configurations.append(
-            DeviceConfiguration(device=cu, key='minimal_off_time', value='600', value_type=DeviceConfiguration.INT, unit='seconds'))
+            DeviceConfiguration(device=cu, key='minimal_off_time', value='600', value_type=DeviceConfiguration.INT, unit='seconds', tunable=True))
         device_configurations.append(
             DeviceConfiguration(device=cu, key='purchase_price', value='15000', value_type=DeviceConfiguration.FLOAT, unit='€'))
         device_configurations.append(
@@ -143,11 +143,11 @@ def initialize_default_scenario():
         device_configurations.append(
             DeviceConfiguration(device=hs, key='capacity', value='2500.0', value_type=DeviceConfiguration.FLOAT, unit='l'))
         device_configurations.append(
-            DeviceConfiguration(device=hs, key='min_temperature', value='55.0', value_type=DeviceConfiguration.FLOAT, unit='°C'))
+            DeviceConfiguration(device=hs, key='min_temperature', value='55.0', value_type=DeviceConfiguration.FLOAT, unit='°C', tunable=True))
         device_configurations.append(
-            DeviceConfiguration(device=hs, key='target_temperature', value='70.0', value_type=DeviceConfiguration.FLOAT, unit='°C'))
+            DeviceConfiguration(device=hs, key='target_temperature', value='70.0', value_type=DeviceConfiguration.FLOAT, unit='°C', tunable=True))
         device_configurations.append(
-            DeviceConfiguration(device=hs, key='critical_temperature', value='90.0', value_type=DeviceConfiguration.FLOAT, unit='°C'))
+            DeviceConfiguration(device=hs, key='critical_temperature', value='90.0', value_type=DeviceConfiguration.FLOAT, unit='°C', tunable=True))
 
         DeviceConfiguration.objects.bulk_create(device_configurations)
         print "Default device configurations initialized"

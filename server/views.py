@@ -103,6 +103,11 @@ def settings(request):
     return create_json_response(request, dict(output))
 
 
+def get_tunable_device_configurations(request):
+    output = dict(functions.get_device_configurations(tunable=True))
+    return create_json_response(request, output)
+
+
 def forecast(request):
     try:
         latest_timestamp = functions.get_past_time()
@@ -110,7 +115,7 @@ def forecast(request):
     except SensorValue.DoesNotExist:
         initial_time = time()
     if request.method == 'POST':
-        configurations = parse_configurations(request.POST)
+        configurations = functions.get_modified_configurations(json.loads(request.body))
         simulation = Simulation(initial_time, configurations)
     else:
         simulation = Simulation(initial_time)
@@ -165,7 +170,7 @@ def get_monthly_statistics(request, start=functions.get_past_time(years=1), end=
 def list_values(request, start, accuracy='hour'):
 
     if start is None:
-        start = functions.get_past_time(days=14)
+        start = functions.get_past_time(months=1, use_view=True)
     else:
         start = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
     output = []
@@ -186,12 +191,12 @@ def list_values(request, start, accuracy='hour'):
         if value.sensor.id not in values.keys():
             values[value.sensor.id] = []
             output[value.sensor.id] = {
-                        'id': value.sensor.id,
-                        'device': value.sensor.device.name,
-                        'name': value.sensor.name,
-                        'unit': value.sensor.unit,
-                        'key': value.sensor.key,
-                        }
+                'id': value.sensor.id,
+                'device': value.sensor.device.name,
+                'name': value.sensor.name,
+                'unit': value.sensor.unit,
+                'key': value.sensor.key,
+            }
         # Save sensor values
         values[value.sensor.id].append((value.timestamp, value.value))
 
