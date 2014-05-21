@@ -3,6 +3,7 @@ from datetime import datetime
 import dateutil.relativedelta
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.cache import cache
 
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly
 
@@ -15,6 +16,7 @@ from forecasting.helpers import parse_value
 
 
 logger = logging.getLogger('django')
+CACHE_TIMEOUT = 120 # seconds
 
 
 def perform_configuration(data):
@@ -74,7 +76,7 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
     try:
         for system in Device.objects.filter(device_type=Device.CU):
             system_output = []
-            system_output.append(('type', system.device_type))
+            system_output.append(('type', Device.CU))
 
             sensor = Sensor.objects.get(device=system, key='workload')
             sensor_values = SensorValue.objects.filter(sensor=sensor)
@@ -404,7 +406,21 @@ def get_latest_value_with_unit(system, key):
 
 
 def get_configuration(key):
-    return parse_value(Configuration.objects.get(key=key))
+    config = cache.get(key)
+    if config is None:
+        config = Configuration.objects.get(key=key)
+        cache.set(key, config, CACHE_TIMEOUT)
+    return parse_value(config)
+
+
+def get_device_configuration(system, key):
+    configs = cache.get(key + str(system.id))
+    if configs is None:
+        configs = DeviceConfiguration.objects.filter(device=system)
+        cache.set(key + str(system.id), configs, CACHE_TIMEOUT)
+    for config in configs:
+        if config.key == key:
+            return parse_value(config)
 
 
 def get_configurations():
@@ -416,10 +432,6 @@ def get_configurations():
             'unit': config.unit
         }
     return [(0, configurations)]
-
-
-def get_device_configuration(system, key):
-    return parse_value(DeviceConfiguration.objects.get(device=system, key=key))
 
 
 def get_device_configurations():
