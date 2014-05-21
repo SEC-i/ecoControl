@@ -160,14 +160,17 @@ def get_daily_loads(request):
     return create_json_response(request, output)
 
 def get_total_balance(request, year=None, month=None):
+    current = get_past_time(use_view=True)
     try:
         year = int(year)
     except (TypeError, ValueError):
-        current = get_past_time(use_view=True)
         year = current.year
 
     if month is None:
-        months = [x for x in range(1, 13)]
+        if year == current.year:
+            months = [x for x in range(1, current.month + 1)]
+        else:
+            months = [x for x in range(1, 13)]
     else:
         try:
             month = int(month)
@@ -179,10 +182,9 @@ def get_total_balance(request, year=None, month=None):
         start = date(year, month, 1)
         end = date(year, month, calendar.mdays[month])
 
-        key = str(month) + '-' + str(year)
+        key = str(month)
         if month < 10:
             key = '0' + key
-
         output[key] = get_total_balance_by_date(month, year)
 
     return create_json_response(request, output)
@@ -264,7 +266,13 @@ def get_total_balance_by_date(month, year):
     rewards += total_electrical_infeed * get_configuration('feed_in_reward')
 
     return {
-        'costs': round(costs, 2),
+        'costs': round(-costs, 2),
         'rewards': round(rewards, 2),
-        'balance': round(rewards-costs, 2)
+        'balance': round(rewards-costs, 2),
+        'gas_consumption': round(total_gas_consumption, 2),
+        'electrical_purchase': round(total_electrical_purchase, 2),
+        'thermal_consumption': round(total_thermal_consumption, 2),
+        'warmwater_consumption': round(total_warmwater_consumption, 2),
+        'electrical_consumption': round(total_electrical_consumption, 2),
+        'electrical_infeed': round(total_electrical_infeed, 2)
     }
