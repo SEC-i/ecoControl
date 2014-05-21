@@ -109,7 +109,7 @@ class Forecast:
         
         if try_cache:
             try:
-                values = pickle.load(open( "cached_forecasts.p", "rb" ))
+                values = pickle.load(open( "cache/cached_forecasts.p", "rb" ))
                 diff_time = datetime.fromtimestamp(values["date"]) - self.time_series_end
                 if diff_time.total_seconds() < 24 * 60 * 60: #12 hours epsilon
                     forecasted_demands = values["forecasts"]
@@ -146,7 +146,7 @@ class Forecast:
             self.calculated_parameters.append(fc_tuple[1])
             
         pickle.dump( {"forecasts" :forecasted_demands, "parameters" : self.calculated_parameters, "date": self.env.now },
-                      open( "cached_forecasts.p", "wb" ) ) 
+                      open("cache/cached_forecasts.p", "wb" ) ) 
 
         return forecasted_demands
     
