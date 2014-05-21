@@ -4,16 +4,14 @@
 """max: some examples of using R in python"""
 
 import numpy as np
-from simulation.systems.data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_weekend, warm_water_demand_workday, electrical_demand_su_fr, electrical_demand_wi_fr
 from server.forecasting.forecasting.dataloader import DataLoader
 import matplotlib.pyplot as plt
 from pylab import *
 from matplotlib.widgets import Slider, Button, RadioButtons
 from datetime import date, datetime, timedelta
-from holt_winters import additive, multiplicative
-from server.forecasting.forecasting.forecasting import Forecast
-from simulation.core.environment import ForwardableRealtimeEnvironment
-from simulation.tools.plotting import Plotting
+from server.forecasting.forecasting.holt_winters import additive, multiplicative
+from server.forecasting.forecasting import Forecast
+from server.forecasting.environment import ForwardableRealtimeEnvironment
 import time
 # 
 # print 'Start importing R.'
@@ -125,7 +123,7 @@ def strategy_testing():
 
     m = 24
     #forecast length weeks
-    fc_length = 24 * 2
+    fc_length = 24 * 8
     max_training_length = 24 * 16 #point where (maximal) training data ends
     
     
