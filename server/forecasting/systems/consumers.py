@@ -174,7 +174,7 @@ class ThermalConsumer(BaseSystem):
         return (heat_flow_wall + heat_flow_window) / 1000.0 # kW
 
     def get_outside_temperature(self, offset_days=0):
-        date = datetime.datetime.fromtimestamp(self.env.now)
+        date = datetime.fromtimestamp(self.env.now)
         date_aware = date.replace(tzinfo=utc)
         return self.weather_forecast.get_temperature_estimate(date_aware)
 

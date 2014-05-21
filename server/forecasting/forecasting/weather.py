@@ -6,7 +6,6 @@ import datetime
 from django.utils import timezone
 import logging
 
-#from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
 from server.models import WeatherValue
 
 logger = logging.getLogger('simulation')
@@ -145,11 +144,11 @@ class WeatherForecast:
             target_time__lte=later_stamp
             )
         if len(entries) > 1:            
-            result_value = self.get_nearest_and_newest_weather_value(
+            result = self.get_nearest_and_newest_weather_value(
                     entries[0], entries[1], date)
-            return result_value.temperature
         else:
-            return entries[0].temperature
+            result = entries[0]
+        return float(result.temperature)
         
         
     def get_nearest_and_newest_weather_value(self, entry1, entry2, target_time):
@@ -188,14 +187,14 @@ class WeatherForecast:
             result = value.temperature
         else:
             result = entries[0].temperature     
-        return result
+        return float(result)
 
     def get_forecast_temperature_daily(self, date):
         entries = WeatherValue.objects.filter(
                 target_time = date.replace(hour= 0,
                                         minute=0, second=0, microsecond=0)
                 ).order_by('-timestamp')
-        return entries[0].temperature
+        return float(entries[0].temperature)
             
     def mix(self, a, b, x):
         return a * (1 - x) + b * x

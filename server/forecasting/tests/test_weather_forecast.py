@@ -56,7 +56,6 @@ class ForecastingTestDaily(TestCase):
     def test_daily_records_out_of_json(self):
         "the method should return a list with WeatherValues with timestamp and target_time"
         input_json = json.loads(self.data)
-        
         with patch('time.time', self.time_mock):
             result = self.forecast.set_up_records_out_of_json(input_json, daily=True)
         self.assertTrue(len(result)==1)
@@ -98,6 +97,7 @@ class ForecastingTestHourly(TestCase):
         
         self.expected_weather_value = WeatherValue(temperature = 30, 
             timestamp = expected_timestamp, target_time = target_time)
+        WeatherValue.objects.all().delete()
 
     def test_get_weather_forecast_right_url(self):
         '''the function returns the temperatures as a list of TemperatureValues.
@@ -506,6 +506,7 @@ class GetWeatherForecastURLErrorTest(unittest.TestCase):
 class GetWeatherTest(TestCase):
     
     def setUp(self):
+        WeatherValue.objects.all().delete()
         self.save_records()
         #self.begin_seconds = 1400133600 #2014-05-15 08:00:00+00:00
         #self.end_seconds = 1401228000
@@ -525,7 +526,7 @@ class GetWeatherTest(TestCase):
         search_stamp = aware_timestamp_from_seconds(search_date)
         with patch('time.time', self.time_mock):
             temperature = self.forecast.get_temperature_estimate(search_stamp)
-        expected_temperature = '36' # search date is the 17th entry -> temperature = 20+(17-1) = 36
+        expected_temperature = 36 # search date is the 17th entry -> temperature = 20+(17-1) = 36
         self.assertEqual(temperature, expected_temperature)
        
     def test_get_temperature_estimate_of_14days_date(self):
@@ -534,7 +535,7 @@ class GetWeatherTest(TestCase):
         search_stamp = aware_timestamp_from_seconds(search_date)
         with patch('time.time', self.time_mock):
             temperature = self.forecast.get_temperature_estimate(search_stamp)
-        expected_temperature = '64' # search date is the 45th entry -> temperature = 20+(45-1) = 64
+        expected_temperature = 64 # search date is the 45th entry -> temperature = 20+(45-1) = 64
         self.assertEqual(temperature, expected_temperature)
         
     def test_get_temperature_estimate_of_date_with_random_hour(self):
@@ -543,7 +544,7 @@ class GetWeatherTest(TestCase):
         search_stamp = aware_timestamp_from_seconds(search_date)
         with patch('time.time', self.time_mock):
             temperature = self.forecast.get_temperature_estimate(search_stamp)
-        expected_temperature = '63'
+        expected_temperature = 63
         self.assertEqual(temperature, expected_temperature)
     
     def test_update_weather_estimates_called_for_forecast(self):
@@ -557,7 +558,7 @@ class GetWeatherTest(TestCase):
         search_stamp = aware_timestamp_from_seconds(search_date)
         with patch('time.time', self.time_mock):
             temperature = self.forecast.get_temperature_estimate(search_stamp)
-        expected_temperature = '67' # and not 100
+        expected_temperature = 67 # and not 100
         self.assertEqual(temperature, expected_temperature)
 
     
@@ -566,7 +567,7 @@ class GetWeatherTest(TestCase):
         search_stamp = aware_timestamp_from_seconds(search_date)
         with patch('time.time', self.time_mock):
             temperature = self.forecast.get_temperature_estimate(search_stamp)
-        expected_temperature = '30' # and not 100
+        expected_temperature = 30 # and not 100
         self.assertEqual(temperature, expected_temperature)
     
     def save_records(self):
@@ -612,6 +613,7 @@ class GetWeatherTest(TestCase):
 class GetPassedWeatherTest(TestCase):
     
     def setUp(self):
+        WeatherValue.objects.all().delete()
         self.forecast = WeatherForecast()
         self.save_records()
         search_date = 1400155380.0  # '2014-05-15 14:03:00+00:00'
@@ -622,7 +624,7 @@ class GetPassedWeatherTest(TestCase):
     def test_get_passed_temperature(self):
         with patch('time.time', self.time_mock):
             temperature = self.forecast.get_temperature_estimate(self.search_stamp)
-        expected_temperature = '44' # search date is the 25th entry -> temperature = 20+(25-1) = 44
+        expected_temperature = 44 # search date is the 25th entry -> temperature = 20+(25-1) = 44
         self.assertEqual(temperature, expected_temperature)
     
     def test_update_weather_estimates_not_called_for_history(self):
