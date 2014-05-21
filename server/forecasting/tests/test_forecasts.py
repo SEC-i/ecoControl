@@ -57,7 +57,7 @@ class ForecastTests(unittest.TestCase):
         print "--------- test split_week_data ------------------"
         hourly_data = Forecast.make_hourly(self.dataset, 6)
         env = ForwardableRealtimeEnvironment()
-        fc = Forecast(env, hourly_data, 1, None, (0.0000000, 0.0,1.0))
+        fc = Forecast(env, hourly_data, hw_optimization="MASE", try_cache=False)
 
         self.assertTrue(
             len(fc.demands) == 7, "week_split does not contain 7 series")
@@ -66,9 +66,9 @@ class ForecastTests(unittest.TestCase):
         self.assertTrue(len(fc.demands[0]) / 24 >= fc.input_weeks, "the day series only contains " + str(
             len(fc.demands[0]) / 24) + " days, not " + str(fc.input_weeks) + " (or at least more than 50)")
         
-        # for i in range(7):
-        #     self.assertTrue(fc.calculated_parameters[i]["rmse"] < 10.0, "RMSE of " + str(
-        #         fc.calculated_parameters[i]["rmse"]) + "for day" + str(i) + " is way too high")
+        for i in range(7):
+            self.assertTrue(fc.calculated_parameters[i]["mase"] < 20.0, "MASE of " + str(
+                fc.calculated_parameters[i]["mase"]) + "for day" + str(i) + " is way too high")
             
     def test_forecast_at(self):
         print "--------- test forecast_at ------------------"

@@ -7,8 +7,9 @@ from multiprocessing.process import Process
 import multiprocessing
 from sys import platform as _platform
 import cPickle as pickle
+import logging
 
-
+logger = logging.getLogger('simulation')
 
 class Forecast:
 
@@ -21,7 +22,7 @@ class Forecast:
                             "MASE" --> Mean Absolute Scaled Error is used. Yields most accurate results (slowest)
     """
 
-    def __init__(self, env, input_data, samples_per_hour=1, start=None, hw_parameters=(), hw_optimization="MASE"):
+    def __init__(self, env, input_data, samples_per_hour=1, start=None, hw_parameters=(), hw_optimization="MASE", **kwargs):
         if hw_parameters == ():
             self.hw_parameters = (None, None, None)
         else:
@@ -52,13 +53,18 @@ class Forecast:
         
         # wait one week before making a new forecast
         self.forecast_update_interval = 7 * 24 * 60 * 60
+        
+        if "try_cache" in kwargs:
+            try_cache = kwargs["try_cache"]
+        else:
+            try_cache = True
 
         # demands split into weekdays
         self.demands = Forecast.split_weekdata(input_data, samples_per_hour, start)
         self.demands = [demand[-self.input_hours:] for demand in self.demands]
         
         #forecast all demands.. might take long
-        self.forecasted_demands = self.forecast_demands()
+        self.forecasted_demands = self.forecast_demands(try_cache=try_cache)
         
     def forecast_demand(self, demand, index, result_queue):
         #seasonality length -- one day
@@ -87,12 +93,12 @@ class Forecast:
         if mase_manual > mase_auto:
             forecast_values = forecast_values_auto
             calculated_parameters = {
-                "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_auto}
+                "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_auto, "mase": mase_auto}
             print "use auto HW with RMSE", rmse_auto, " and MASE ", mase_auto , " with index: " , index
         else:
             forecast_values = forecast_values_manual
             calculated_parameters = {
-                "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_manual}
+                "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_manual, "mase": mase_manual}
             print "use manual HW with RMSE", rmse_manual, " and MASE ", mase_manual, " with index: " , index
         
         result_queue.put((forecast_values, calculated_parameters, index))
@@ -108,11 +114,10 @@ class Forecast:
                 if diff_time.total_seconds() < 24 * 60 * 60: #12 hours epsilon
                     forecasted_demands = values["forecasts"]
                     self.calculated_parameters = values["parameters"] 
-                    print "reading forecastings from cache"
-                    
+                    logger.info("reading forecastings from cache")
                     return forecasted_demands
             except IOError as e:
-                print e
+                logger.info(str(e) + " .. creating new cache file")
 
         #[self.forecast_demand(d, i, result_queue) for i,d in enumerate(self.demands)]
         
