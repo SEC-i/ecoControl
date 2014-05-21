@@ -39,6 +39,8 @@ urlpatterns = patterns('',
     (r'^api2/history/$', manager.hooks.get_sensorvalue_history_list),
     (r'^api2/sensor/((?P<sensor_id>\d+)/)?$', manager.hooks.get_detailed_sensor_values),
     (r'^api2/loads/$', manager.hooks.get_daily_loads),
+    (r'^api2/balance/total/((?P<year>\d+)/)?((?P<month>\d+)/)?$', manager.hooks.get_total_balance),
+    (r'^api2/balance/total/latest/$', manager.hooks.get_latest_total_balance),
 
     url(r'^admin/', include(admin.site.urls)),
 )
