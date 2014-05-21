@@ -36,7 +36,6 @@ class ThermalConsumer(BaseSystem):
 
         self.heat_storage = None
 
-        self.total_consumption = 0.0
         # initial temperature
         self.temperature_room = 12.0
         self.temperature_warmwater = 40.0
@@ -64,16 +63,14 @@ class ThermalConsumer(BaseSystem):
         if weather_forecast == None:
             weather_forecast = WeatherForecast(self.env)
         self.weather_forecast = weather_forecast
+        self.current_power = 0
 
-
-
-        input_data = warm_water_demand_workday + warm_water_demand_weekend
         #only build once, to save lots of time
         #self.warmwater_forecast = Forecast(self.env, input_data, samples_per_hour=1)
             
 
         self.calculate()
-
+        
     def find_dependent_devices_in(self, system_list):
         for system in system_list:
             system.attach_to_thermal_consumer(self)
@@ -90,10 +87,11 @@ class ThermalConsumer(BaseSystem):
         avg_wall_size = self.avg_room_volume / self.room_height * 3
         # Assume each appartment have an average of 0.8 outer walls per apartment
         self.outer_wall_surface = avg_wall_size * self.apartments * 0.8
+        # in kW
         self.max_power = self.total_heated_floor * \
-            float(self.heating_constant)
+            float(self.heating_constant) / 1000.0
 
-        self.current_power = 0
+
         # Assume a window size of 2 square meters
         self.window_surface = 2 * self.avg_windows_per_room * \
             self.avg_rooms_per_apartment * self.apartments
@@ -103,9 +101,8 @@ class ThermalConsumer(BaseSystem):
         consumption = self.get_consumption_energy(
         ) + self.get_warmwater_consumption_energy()
         self.consumed += consumption
-        self.total_consumption += consumption
         self.heat_storage.consume_energy(consumption)
-
+        
     def heat_room(self):
         # Convert from J/(m^3 * K) to kWh/(m^3 * K)
         specific_heat_capacity_air = 1000.0 / 3600.0
@@ -116,7 +113,7 @@ class ThermalConsumer(BaseSystem):
 
     def get_consumption_power(self):
         # convert to kW
-        return self.current_power / 1000.0
+        return self.current_power
 
     def get_consumption_energy(self):
         # convert to kWh
@@ -149,6 +146,8 @@ class ThermalConsumer(BaseSystem):
 
     def simulate_consumption(self):
         # Calculate variation using daily demand
+        if self.current_power >= 65.0:
+            g = 0
         self.target_temperature = self.daily_demand[
             time.gmtime(self.env.now).tm_hour]
 
@@ -162,6 +161,7 @@ class ThermalConsumer(BaseSystem):
             self.current_power += slope
 
         # Clamp to maximum power
+        
         self.current_power = max(min(self.current_power, self.max_power), 0.0)
 
     def heat_loss_power(self):

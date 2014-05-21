@@ -10,5 +10,4 @@ def initialize_defaults(**kwargs):
     defaults.initialize_default_scenario()
     defaults.initialize_views()
 
-
 post_syncdb.connect(initialize_defaults)

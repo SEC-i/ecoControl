@@ -88,7 +88,6 @@ class PowerMeter(BaseSystem):
 
         self.energy_produced = 0.0  # kWh
         self.energy_consumed = 0.0  # kWh
-        self.current_power_consum = 0.0
 
         # costs in Euro to purchase 1 kW/h from external supplier
         self.electrical_costs = electrical_costs

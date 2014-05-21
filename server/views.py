@@ -110,8 +110,8 @@ def get_tunable_device_configurations(request):
 
 def forecast(request):
     try:
-        latest_value = SensorValue.objects.latest('timestamp')
-        initial_time = calendar.timegm(latest_value.timestamp.utctimetuple())
+        latest_timestamp = functions.get_past_time()
+        initial_time = calendar.timegm(latest_timestamp.timetuple())
     except SensorValue.DoesNotExist:
         initial_time = time()
     if request.method == 'POST':
