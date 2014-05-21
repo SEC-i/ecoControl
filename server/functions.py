@@ -448,11 +448,16 @@ def get_operating_costs(system, start):
     return '%s Euro' % round(total_gas_consumption * get_configuration('gas_costs'), 2)
 
 
-def get_past_time(years=0, months=0, days=0):
+def get_past_time(years=0, months=0, days=0, use_view=False):
+    if use_view:
+        _class = SensorValueHourly
+    else:
+        _class = SensorValue
+
     try:
-        latest_value = SensorValueHourly.objects.latest('timestamp')
+        latest_value = _class.objects.latest('timestamp')
         return latest_value.timestamp + \
             dateutil.relativedelta.relativedelta(
                 years=-years, months=-months, days=-days)
-    except SensorValueHourly.DoesNotExist:
+    except _class.DoesNotExist:
         return None

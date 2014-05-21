@@ -228,7 +228,7 @@ class ElectricalConsumer(BaseSystem):
         self.power_meter.current_power_consum = self.get_consumption_power()
         ##copyconstructed means its running a forecasting
         if self.env.demo and self.env.now - self.last_forecast_update > self.new_data_interval:
-                self.update_forecast_data()
+            self.update_forecast_data()
         
     def update_forecast_data(self):
         
@@ -242,7 +242,7 @@ class ElectricalConsumer(BaseSystem):
     def get_consumption_power(self):
         time_tuple = time.gmtime(self.env.now)
         demand = self.electrical_forecast.get_forecast_at(self.env.now)
-        #demand = 1
+        # demand = 1
         # calculate variation using demand and variation
         return demand * self.demand_variation[time_tuple.tm_hour]
 
