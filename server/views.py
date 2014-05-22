@@ -14,6 +14,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.utils.timezone import utc
 from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
+from django.core.cache import cache
 
 import functions
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
@@ -72,6 +73,7 @@ def status(request):
 
 @require_POST
 def configure(request):
+    cache.clear()
     functions.perform_configuration(json.loads(request.body))
     return create_json_response(request, {"status": "success"})
 

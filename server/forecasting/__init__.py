@@ -19,7 +19,7 @@ logger = logging.getLogger('simulation')
 
 class Simulation(object):
 
-    def __init__(self, initial_time, configurations=DeviceConfiguration.objects.all(), demo=False):
+    def __init__(self, initial_time, configurations=None, demo=False):
 
         if initial_time % 3600 != 0.0:
             # ensure that initial_time always at full hour, to avoid
@@ -31,6 +31,10 @@ class Simulation(object):
         self.env = ForwardableRealtimeEnvironment(initial_time=initial_time,demo=demo)
 
         self.demo = demo
+
+
+        if configurations is None:
+            configurations = DeviceConfiguration.objects.all()
 
         self.devices = self.get_initialized_scenario(configurations)
 
