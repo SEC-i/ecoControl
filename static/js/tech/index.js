@@ -195,7 +195,6 @@ function initialize_tuning_form() {
             });
         });
         $('#tuning_form').change(generate_immediate_feedback);
-        $('#tuning_simulate_button').click(generate_immediate_feedback);
         $('#tuning_button').click(apply_changes);
         $('#tuning_reset_button').click(function() {
             $('#tuning_form')[0].reset();
@@ -204,6 +203,7 @@ function initialize_tuning_form() {
 }
 
 function generate_immediate_feedback() {
+    $('#immediate_notice').html('<div class="alert alert-warning text-center"><b>Simulate changes...</b></div>');
     var post_data = [];
     $('.configuration').each(function () {
         post_data.push({
@@ -222,6 +222,7 @@ function generate_immediate_feedback() {
         dataType: 'json',
         success: function(data) {
             update_immediate_forecast(data);
+            $('#immediate_notice').empty();
         }
     });
 }
