@@ -66,7 +66,7 @@ class ForecastTests(unittest.TestCase):
         self.assertTrue(len(fc.demands[0]) / 24 >= fc.input_weeks, "the day series only contains " + str(
             len(fc.demands[0]) / 24) + " days, not " + str(fc.input_weeks) + " (or at least more than 50)")
         
-        from server.forecasting.tools import plotting
+        #from server.forecasting.tools import plotting
         for i in range(7):
             #plotting.Plotting.plot_dataset({"measured":fc.demands[i], "forecasted": fc.forecasted_demands[i]}, len(fc.demands[i]), block=True)
             self.assertTrue(fc.calculated_parameters[i]["mase"] < 20.0, "MASE of " + str(
