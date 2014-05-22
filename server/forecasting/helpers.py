@@ -104,6 +104,7 @@ class MeasurementStorage():
                 output.append({
                     'id': sensor.id,
                     'device_id': sensor.device_id,
+                    'device': sensor.device.name,
                     'name': sensor.name,
                     'unit': sensor.unit,
                     'key': sensor.key,

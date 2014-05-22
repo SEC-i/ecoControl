@@ -16,7 +16,7 @@ from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
 
 import functions
-from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, Threshold, Notification
+from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
 from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation, is_member
 from forecasting import Simulation
 
@@ -126,8 +126,9 @@ def forecast(request):
 
 
 def get_statistics(request):
-    start = functions.get_past_time(months=1, use_view=True)
     end = functions.get_past_time(use_view=True)
+    start = end + dateutil.relativedelta.relativedelta(months=-1)
+
     output = []
     output += functions.get_statistics_for_cogeneration_unit(start, end)
     output += functions.get_statistics_for_peak_load_boiler(start, end)
@@ -138,14 +139,17 @@ def get_statistics(request):
     return create_json_response(request, output)
 
 
-def get_monthly_statistics(request, start=functions.get_past_time(years=1), end=None):
-    sensor_values = SensorValue.objects.all()
-    if start is not None:
-        sensor_values = sensor_values.filter(timestamp__gte=start)
-    if end is not None:
-        sensor_values = sensor_values.filter(timestamp__lte=end)
+def get_monthly_statistics(request):
+    end = functions.get_past_time(use_view=True)
+    start = end + dateutil.relativedelta.relativedelta(years=-1)
 
-    months = sensor_values.extra({'month': "date_trunc('month', timestamp)"}).values(
+    sensor_values = SensorValueMonthlySum.objects.all()
+    if start is not None:
+        sensor_values = sensor_values.filter(date__gte=start)
+    if end is not None:
+        sensor_values = sensor_values.filter(date__lte=end)
+
+    months = sensor_values.extra({'month': "date_trunc('month', date)"}).values(
         'month').annotate(count=Count('id'))
     output = {}
     for month in months:
@@ -163,8 +167,11 @@ def get_monthly_statistics(request, start=functions.get_past_time(years=1), end=
             month_start, month_end)
         month_data += functions.get_statistics_for_power_meter(
             month_start, month_end)
-        timestamp = calendar.timegm(month_start.utctimetuple())
-        output[timestamp] = dict(month_data)
+        
+        key = '%s-%s' % (month_start.month, month_start.year)
+        if month_start.month < 10:
+            key = '0' + key
+        output[key] = month_data
 
     return create_json_response(request, output)
 

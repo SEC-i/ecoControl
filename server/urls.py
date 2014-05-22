@@ -22,7 +22,7 @@ urlpatterns = patterns('',
     (r'^api/settings/tunable/$', views.get_tunable_device_configurations),
     (r'^api/start/$', views.start_system),
     (r'^api/statistics/$', views.get_statistics),
-    (r'^api/statistics/monthly/(start/(?P<start>\d+)/)?(end/(?P<end>\d+)/)?$', views.get_monthly_statistics),
+    (r'^api/statistics/monthly/$', views.get_monthly_statistics),
     (r'^api/status/$', views.status),
     (r'^api/thresholds/$', views.list_thresholds),
 
