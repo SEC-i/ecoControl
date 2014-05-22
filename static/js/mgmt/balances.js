@@ -1,5 +1,4 @@
 var diagram_types = ['balances', 'rewards', 'costs'];
-var month_list = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 var cached_data = {};
 
 // READY
@@ -7,13 +6,21 @@ $(function() {
     initialize_diagram();
     initialize_diagram_filters();
 
+    resize_diagrams();
+});
+
+$( window ).resize(function() {
+    resize_diagrams();
+});
+
+function resize_diagrams() {
     // resize charts in tabs
     $.each(diagram_types, function(index, type) {
         var container = $('#' + type + '_container');
         var chart = container.highcharts();
         chart.setSize(container.parent().width(), container.parent().height(), false);
     });
-});
+}
 
 function initialize_diagram() {
     $.each(diagram_types, function(index, type) {
@@ -25,7 +32,7 @@ function initialize_diagram() {
                 text: ''
             },
             xAxis: {
-                categories: month_list
+                categories: get_text('months')
             },
             yAxis: [{
                 labels: {
@@ -43,7 +50,8 @@ function initialize_diagram() {
                     point: {
                         events: {
                             click: function (e) {
-                                var month = month_list.indexOf(e.currentTarget.category);
+                                $('#notice_container').empty();
+                                var month = get_text('months').indexOf(e.currentTarget.category);
                                 var year = get_year_from_string(this.series.name);
                                 show_month_details(year, month);
                             }
@@ -120,6 +128,8 @@ function initialize_diagram_filters() {
                         // preselect tables details
                         if ($('#details_container').is(':empty')) {
                             show_month_details(year, data.length - 1);
+                        } else {
+                            update_date_selection();
                         }
                     });
                 }
@@ -163,6 +173,8 @@ function show_month_details(year, month) {
     $.each(cached_data[year], function(index, monthly_data) {
         if (month == index) {
             update_table(monthly_data, year, month);
+            $('#selected_year').val(year);
+            $('#selected_month').val(month);
         }
     });
 }
@@ -171,7 +183,24 @@ function update_table(data, year, month) {
     var container = $('#details_container');
     container.html(
         '<div class="page-header">\
-          <h1>' + $.format.date(new Date(year, month, 1), "MMMM yyyy") + '</h1>\
+          <div class="row">\
+            <div class="col-sm-8">\
+                <h1>' + $.format.date(new Date(year, month, 1), "MMMM yyyy") + '</h1>\
+            </div>\
+            <div class="col-sm-4">\
+                <br>\
+                <div class="row">\
+                    <div class="col-sm-6">\
+                        <select id="selected_month" class="form-control">\
+                        </select>\
+                    </div>\
+                    <div class="col-sm-6">\
+                        <select id="selected_year" class="form-control">\
+                        </select>\
+                    </div>\
+                </div>\
+            </div>\
+        </div>\
         </div>\
         <table class="table table-striped">\
           <thead>\
@@ -235,6 +264,32 @@ function update_table(data, year, month) {
           </tbody>\
         </table>'
     );
+
+    update_date_selection();
+}
+
+function update_date_selection() {
+    var selected_month = $('#selected_month').val();
+    var month_options = "";
+    $.each(get_text('months'), function(index, month) {
+        month_options += '<option value="' + index + '" ' + (index == selected_month ? ' selected': '') + '>' + month + '</option>';
+    });
+    $('#selected_month').html(month_options);
+
+    $('#selected_month').change(function() {
+        show_month_details($('#selected_year').val(), $(this).val());
+    });
+
+    var selected_year = $('#selected_year').val();
+    var year_options = "";
+    $.each(cached_data, function(year, data) {
+        year_options += '<option' + (year == selected_year ? ' selected': '') + '>' + year + '</option>';
+    });
+    $('#selected_year').html(year_options);
+
+    $('#selected_year').change(function() {
+        show_month_details($(this).val(), $('#selected_month').val());
+    });
 }
 
 function get_year_from_string(string) {

@@ -33,6 +33,7 @@ var lang = {
     type_of_residents: 'Type of Residents',
     type_of_windows: 'Type of Windows',
     warmwater_consumption: 'Warmwater Revenues',
+    months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 };
 
 function get_text(key) {
