@@ -1,4 +1,6 @@
+var diagram_initialized = false;
 var plotline_timestamp = null;
+var sensor_count = 0;
 
 // READY
 $(function() {
@@ -7,10 +9,14 @@ $(function() {
             redirect_to_settings();
         } else {
             initialize_diagram();
+            initialize_tuning_form();
+            initialize_editor();
         }
     });
 });
 
+
+// Diagram
 function initialize_diagram() {
     Highcharts.setOptions({
         global: {
@@ -18,7 +24,6 @@ function initialize_diagram() {
         }
     });
 
-    var navigator_data = [];
     var series = [];
     $.getJSON('/api/data/', function(data) {
         $.each(data, function(index, sensor) {
@@ -26,12 +31,12 @@ function initialize_diagram() {
                 name: sensor.name + ' (' + sensor.device + ')',
                 data: sensor.data,
                 color: colors_past[index],
-                id: sensor.id,
                 tooltip: {
                     valueSuffix: ' ' + sensor.unit
                 }
             });
         });
+        sensor_count = series.length;
     }).done(function () {
         $.getJSON('/api/forecast/', function(forecast_data) {
             $.each(forecast_data, function(index, sensor) {
@@ -46,15 +51,8 @@ function initialize_diagram() {
                     zoomType: 'xy',
                     events: {
                         load: update_now_line,
-                        redraw: update_now_line
+                        setExtremes: update_now_line
                     }
-                },
-                navigator: {
-                    series: {
-                        id: 'navigator',
-                        data: navigator_data
-                    },
-                    adaptToUpdatedData: false
                 },
                 legend: {
                     enabled: true
@@ -88,7 +86,7 @@ function initialize_diagram() {
                         type: 'all',
                         text: 'All'
                     }],
-                    selected: 5,
+                    selected: 4,
                     inputEnabled: false
                 },
                 xAxis: {
@@ -141,7 +139,6 @@ function refresh() {
             });
 
             plotline_timestamp = forecast_data[0].data[0][0];
-            update_now_line();
         }).done(function () {
             chart.redraw();
 
@@ -151,7 +148,7 @@ function refresh() {
 }
 
 function update_now_line() {
-    var chart = $('#simulation_diagram').highcharts();
+    var chart = $(this)[0];
 
     chart.xAxis[0].removePlotBand('now_band');
     chart.xAxis[0].addPlotBand({
@@ -179,5 +176,114 @@ function update_now_line() {
             y: 32,
             x: 6
         }
+    });
+
+    if (!diagram_initialized) {
+        chart.xAxis[0].setExtremes(new Date(plotline_timestamp - 7 * 24 * 60 * 60 * 1000), new Date(plotline_timestamp + 7 * 24 * 60 * 60 * 1000));
+        diagram_initialized = true;
+    }
+}
+
+// Tuning
+function initialize_tuning_form() {
+    $.getJSON('/api/settings/tunable/', function(data) {
+        var item = $('#tuning_form');
+        $.each(data, function(device_id, device_configurations) {
+            $.each(device_configurations, function(key, config_data) {
+                var namespace = namespaces[device_id];
+                item.append(get_input_field_code(namespace, key, config_data));
+            });
+        });
+        $('#tuning_form').change(generate_immediate_feedback);
+        $('#tuning_simulate_button').click(generate_immediate_feedback);
+    });
+}
+
+function generate_immediate_feedback() {
+    var post_data = [];
+    $('.configuration').each(function () {
+        post_data.push({
+            device: $(this).attr('data-device'),
+            key: $(this).attr('data-key'),
+            type: $(this).attr('data-type'),
+            unit: $(this).attr('data-unit'),
+            value: $(this).val()
+        });
+    });
+    $.ajax({
+        type: 'POST',
+        contentType: 'application/json',
+        url: '/api/forecast/',
+        data: JSON.stringify(post_data),
+        dataType: 'json',
+        success: function(data) {
+            update_immediate_forecast(data);
+        }
+    });
+}
+
+function update_immediate_forecast(data) {
+    var chart = $('#simulation_diagram').highcharts();
+
+    var i = 0
+    while(chart.series.length > sensor_count + 1) {
+        if (chart.series[i].name.indexOf('predicted') != -1) {
+            chart.series[i].remove(false);
+        } else {
+            i++;
+        }
+    };
+
+    $.each(data, function(index, sensor) {
+        chart.addSeries({
+            name: sensor.name + ' (' + sensor.device + ') (predicted)',
+            data: sensor.data,
+            color: colors_modified[index],
+            dashStyle: 'shortdot',
+            tooltip: {
+                valueSuffix: ' ' + sensor.unit
+            }
+        }, false);
+    });
+    chart.redraw();
+}
+
+function get_input_field_code(namespace, key, data) {
+    var device_id = namespaces.indexOf(namespace);
+    var output =
+            '<div class="col-sm-4"><div class="form-group">' +
+                '<label for="' + namespace + '_' + key + '">' + get_text(key) + ' (Device #' + device_id + ')</label>';
+    if (data.unit == '') {
+        output +=
+                '<input type="text" class="configuration form-control" id="' + namespace + '_' + key + '" data-device="' + device_id + '" data-key="' + key + '" data-type="' + data.type + '" data-unit="' + data.unit + '"  value="' + data.value + '">';
+    } else {
+        output +=
+                '<div class="input-group">' +
+                    '<input type="text" class="configuration form-control" id="' + namespace + '_' + key + '" data-device="' + device_id + '" data-key="' + key + '" data-type="' + data.type + '" data-unit="' + data.unit + '"  value="' + data.value + '">' +
+                    '<span class="input-group-addon">' + data.unit + '</span>' +
+                '</div>';
+    }
+    output += '</div></div>';
+    return output;
+}
+
+// Code Editor
+function initialize_editor() {
+    ace.require("ace/ext/language_tools");
+    editor = ace.edit("editor");
+    editor.setTheme("ace/theme/github");
+    editor.getSession().setMode("ace/mode/python");
+    editor.setOptions({
+        enableBasicAutocompletion: true,
+        enableSnippets: true
+    });
+    ace.config.loadModule('ace/snippets/snippets', function() {
+        var snippetManager = ace.require('ace/snippets').snippetManager;
+        ace.config.loadModule('ace/snippets/python', function(m) {
+            if (m) {
+                m.snippets = m.snippets.concat(custom_snippets);
+                snippetManager.register(m.snippets, m.scope);
+            }
+        });
     });
 }
