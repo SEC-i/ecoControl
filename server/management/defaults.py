@@ -175,12 +175,13 @@ def initialize_views():
     try:
         len(SensorValueDaily.objects.all())
     except ProgrammingError:
-        cursor.execute('''CREATE VIEW server_sensorvaluedaily AS
+        cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluedaily AS
                     SELECT row_number() OVER (ORDER BY timestamp) AS id,
                         sensor_id, AVG(value) AS value,
                         date_trunc('day', server_sensorvaluehourly.timestamp)::timestamp::date AS date
                     FROM server_sensorvaluehourly INNER JOIN server_sensor ON server_sensor.id=server_sensorvaluehourly.sensor_id
                     GROUP BY sensor_id, timestamp;''')
+        cursor.execute('''CREATE INDEX server_sensorvaluedaily_idx ON server_sensorvaluedaily (date);''')
 
     try:
         len(SensorValueMonthlySum.objects.all())
