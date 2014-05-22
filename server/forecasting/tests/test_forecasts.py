@@ -62,13 +62,16 @@ class ForecastTests(unittest.TestCase):
         self.assertTrue(
             len(fc.demands) == 7, "week_split does not contain 7 series")
         
-        
+
         self.assertTrue(len(fc.demands[0]) / 24 >= fc.input_weeks, "the day series only contains " + str(
             len(fc.demands[0]) / 24) + " days, not " + str(fc.input_weeks) + " (or at least more than 50)")
         
+        from server.forecasting.tools import plotting
         for i in range(7):
+            #plotting.Plotting.plot_dataset({"measured":fc.demands[i], "forecasted": fc.forecasted_demands[i]}, len(fc.demands[i]), block=True)
             self.assertTrue(fc.calculated_parameters[i]["mase"] < 20.0, "MASE of " + str(
                 fc.calculated_parameters[i]["mase"]) + "for day" + str(i) + " is way too high")
+
             
     def test_forecast_at(self):
         print "\n--------- test forecast_at ------------------"
@@ -115,5 +118,9 @@ class ForecastTests(unittest.TestCase):
         self.assertTrue( approximate_index(data, 9) == -1)
         self.assertTrue( approximate_index(data, 1.2436) == 0)
         self.assertTrue( approximate_index(data, 0) == -1)
+    
+    @classmethod
+    def tearDownClass(self):
+        os.remove("cache/cached_forecasts.p") 
         
         

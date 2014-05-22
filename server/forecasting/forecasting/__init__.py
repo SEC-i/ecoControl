@@ -75,19 +75,24 @@ class Forecast:
         # cost-expensive, so only do this once..
         (alpha, beta, gamma) = self.hw_parameters
         print "find holt winter parameters for day: ", index
-        (forecast_values_manual, alpha, beta, gamma, rmse_manual) = multiplicative(
-            demand, m, fc, alpha, beta, gamma)
-
-        rmse_auto = 10 ** 6  # some really high value, wil be overwritten
-        mase_auto = 10 ** 6
-        mase_manual = Forecast.MASE(demand, demand, forecast_values_manual)
-        if self.hw_optimization != "None" and (rmse_manual > 6 or mase_manual > 3):
+        if None not in self.hw_parameters:
+            (forecast_values_manual, alpha, beta, gamma, rmse_manual) = multiplicative(
+                demand, m, fc, alpha, beta, gamma)
+            mase_manual = Forecast.MASE(demand, demand, forecast_values_manual)
+        else:
+            #set to high value, so it will be overwritten 
+            #(if algorithms totally fails, there will be an error though..)
+            mase_manual = 1000 
+        rmse_auto = 10 ** 3
+        mase_auto = 10 ** 3
+        if self.hw_optimization != "None":
             # find values automatically
             # check with MASE error measure
             (forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(
                 demand, m, fc, optimization_type="MASE")
              
             mase_auto = Forecast.MASE(demand, demand,  forecast_values_auto)
+            print mase_auto
             
             
         if mase_manual > mase_auto:
