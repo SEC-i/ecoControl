@@ -196,6 +196,10 @@ function initialize_tuning_form() {
         });
         $('#tuning_form').change(generate_immediate_feedback);
         $('#tuning_simulate_button').click(generate_immediate_feedback);
+        $('#tuning_button').click(apply_changes);
+        $('#tuning_reset_button').click(function() {
+            $('#tuning_form')[0].reset();
+        })
     });
 }
 
@@ -222,17 +226,35 @@ function generate_immediate_feedback() {
     });
 }
 
+function apply_changes() {
+    var post_data = [];
+    $('.configuration').each(function () {
+        post_data.push({
+            device: $(this).attr('data-device'),
+            key: $(this).attr('data-key'),
+            type: $(this).attr('data-type'),
+            unit: $(this).attr('data-unit'),
+            value: $(this).val()
+        });
+    });
+    $.ajax({
+        type: 'POST',
+        contentType: 'application/json',
+        url: '/api/configure/',
+        data: JSON.stringify(post_data),
+        dataType: 'json',
+        success: function(data) {
+            console.log(data);
+        }
+    }).done(function() {
+        cleanup_diagram();
+    });
+}
+
 function update_immediate_forecast(data) {
     var chart = $('#simulation_diagram').highcharts();
 
-    var i = 0
-    while(chart.series.length > sensor_count + 1) {
-        if (chart.series[i].name.indexOf('predicted') != -1) {
-            chart.series[i].remove(false);
-        } else {
-            i++;
-        }
-    };
+    cleanup_diagram();
 
     $.each(data, function(index, sensor) {
         chart.addSeries({
@@ -246,6 +268,19 @@ function update_immediate_forecast(data) {
         }, false);
     });
     chart.redraw();
+}
+
+function cleanup_diagram(chart) {
+    var chart = $('#simulation_diagram').highcharts();
+    var i = 0
+    while(chart.series.length > sensor_count + 1) {
+        if (chart.series[i].name.indexOf('predicted') != -1) {
+            chart.series[i].remove(false);
+        } else {
+            i++;
+        }
+    };
+    return true;
 }
 
 function get_input_field_code(namespace, key, data) {
