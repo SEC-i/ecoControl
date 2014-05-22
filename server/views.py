@@ -125,7 +125,9 @@ def forecast(request):
     return create_json_response(request, simulation.measurements.get())
 
 
-def get_statistics(request, start=functions.get_past_time(months=1), end=None):
+def get_statistics(request):
+    start = functions.get_past_time(months=1, use_view=True)
+    end = functions.get_past_time(use_view=True)
     output = []
     output += functions.get_statistics_for_cogeneration_unit(start, end)
     output += functions.get_statistics_for_peak_load_boiler(start, end)
@@ -133,7 +135,7 @@ def get_statistics(request, start=functions.get_past_time(months=1), end=None):
     output += functions.get_statistics_for_electrical_consumer(start, end)
     output += functions.get_statistics_for_power_meter(start, end)
 
-    return create_json_response(request, dict(output))
+    return create_json_response(request, output)
 
 
 def get_monthly_statistics(request, start=functions.get_past_time(years=1), end=None):
