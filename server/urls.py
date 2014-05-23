@@ -11,7 +11,6 @@ urlpatterns = patterns('',
     (r'^api/configure/$', views.configure),
     (r'^api/data/((?P<start>\d+)/)?$', views.list_values),
     (r'^api/data/daily/((?P<start>\d+)/)?$', views.list_values, {'accuracy': 'day'}),
-    (r'^api/export/sensorvalues/$', views.export_sensor_values),
     (r'^api/forecast/$', views.forecast),
     (r'^api/live/$', views.live_data),
     (r'^api/login/$', views.login_user),
@@ -43,6 +42,10 @@ urlpatterns = patterns('',
     (r'^api2/loads/$', manager.hooks.get_daily_loads),
     (r'^api2/balance/total/((?P<year>\d+)/)?((?P<month>\d+)/)?$', manager.hooks.get_total_balance),
     (r'^api2/balance/total/latest/$', manager.hooks.get_latest_total_balance),
+
+
+    (r'^export/statistics/$', views.get_statistics, {'export': True}),
+    (r'^export/sensor/((?P<sensor_id>\d+)/)?$', manager.hooks.get_detailed_sensor_values, {'export': True}),
 
     url(r'^admin/', include(admin.site.urls)),
 )
