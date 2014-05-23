@@ -215,19 +215,19 @@ function update_table(data, year, month) {
           <tbody>\
             <tr>\
               <td rowspan="4" class="text-center" style="vertical-align: middle;"><b>Revenues</b><br>' + data['rewards'] + ' €</td>\
-              <td style="padding-left: 20px">' + get_text('thermal_consumption') + '</td>\
+              <td style="padding-left: 20px">' + get_text('thermal_revenues') + '</td>\
               <td>' + data['prices']['thermal_revenues'] + ' €</td>\
               <td>' + data['kwh']['thermal_consumption'] + ' kWh</td>\
               <td>' + Math.round(data['kwh']['thermal_consumption'] * data['prices']['thermal_revenues'] * 100)/100 + ' €</td>\
             </tr>\
             <tr>\
-              <td style="padding-left: 20px">' + get_text('warmwater_consumption') + '</td>\
+              <td style="padding-left: 20px">' + get_text('warmwater_revenues') + '</td>\
               <td>' + data['prices']['warmwater_revenues'] + ' €</td>\
               <td>' + data['kwh']['warmwater_consumption'] + ' kWh</td>\
               <td>' + Math.round(data['kwh']['warmwater_consumption'] * data['prices']['warmwater_revenues'] * 100)/100 + ' €</td>\
             </tr>\
             <tr>\
-              <td style="padding-left: 20px">' + get_text('electrical_consumption') + '</td>\
+              <td style="padding-left: 20px">' + get_text('electrical_revenues') + '</td>\
               <td>' + data['prices']['electrical_revenues'] + ' €</td>\
               <td>' + data['kwh']['electrical_consumption'] + ' kWh</td>\
               <td>' + Math.round(data['kwh']['electrical_consumption'] * data['prices']['electrical_revenues'] * 100)/100 + ' €</td>\
