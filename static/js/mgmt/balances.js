@@ -185,7 +185,7 @@ function update_table(data, year, month) {
         '<div class="page-header">\
           <div class="row">\
             <div class="col-sm-8">\
-                <h1>' + $.format.date(new Date(year, month, 1), "MMMM yyyy") + ' <small><a href="#" id="export_button"><span class="glyphicon glyphicon-export"></span></a></small></h1>\
+                <h1>' + $.format.date(new Date(year, month, 1), "MMMM yyyy") + '</h1>\
             </div>\
             <div class="col-sm-4">\
                 <br>\
@@ -208,7 +208,7 @@ function update_table(data, year, month) {
               <th>Description</th>\
               <th>Price per Unit</th>\
               <th>Amount</th>\
-              <th>Price</th>\
+              <th>Price <a href="#" id="export_button"><span class="glyphicon glyphicon-export pull-right"></span></a></th>\
             </tr>\
           </thead>\
           <tbody>\
