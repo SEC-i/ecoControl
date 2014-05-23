@@ -9,8 +9,9 @@ $(function() {
     });
 
     $('#export_button').click(function(e) {
-        $('#csv_data').val($('#table_container').table2CSV({delivery:'value'}));
-        $('#export_form').submit();
+        Highcharts.post('/export/csv/', {
+            csv: $('#table_container').table2CSV({delivery:'value'})
+        });
         e.preventDefault();
     });
 
