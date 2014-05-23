@@ -203,7 +203,7 @@ function initialize_tuning_form() {
 }
 
 function generate_immediate_feedback() {
-    $('#immediate_notice').html('<div class="alert alert-warning text-center"><b>Simulate changes...</b></div>');
+    $('#immediate_notice').show();
     $('#tuning_button').prop('disabled', true);
 
     var post_data = [];
@@ -224,13 +224,15 @@ function generate_immediate_feedback() {
         dataType: 'json',
         success: function(data) {
             update_immediate_forecast(data);
-            $('#immediate_notice').empty();
+            $('#immediate_notice').hide();
             $('#tuning_button').prop('disabled', false);
         }
     });
 }
 
 function apply_changes() {
+    $('#tuning_button').removeClass('btn-primary');
+    $('#tuning_button').addClass('btn-success');
     var post_data = [];
     $('.configuration').each(function () {
         post_data.push({
@@ -248,6 +250,10 @@ function apply_changes() {
         data: JSON.stringify(post_data),
         dataType: 'json',
         success: function(data) {
+            setTimeout(function() {
+                $('#tuning_button').removeClass('btn-success');
+                $('#tuning_button').addClass('btn-primary');
+            }, 500);
             console.log(data);
         }
     }).done(function() {
