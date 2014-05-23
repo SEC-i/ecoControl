@@ -1,6 +1,7 @@
 from helpers import BaseSystem
 
 
+
 class GasPoweredGenerator(BaseSystem):
 
     def __init__(self, system_id, env):

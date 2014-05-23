@@ -7,15 +7,15 @@
     <meta name="description" content="">
     <meta name="author" content="BP2013H1">
 
-    <title>Live Setup - Energy Management System</title>
+    <title>Settings - Energy Management System</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="/static/libs/bootstrap/css/bootstrap.min.css">
-    <!-- Bootstrap-Wizard -->
-    <link rel="stylesheet" href="/static/libs/bootstrap-wizard/bootstrap-wizard.css">
      <!-- jQuery UI CSS core CSS -->
     <link rel="stylesheet" href="/static/libs/jquery-ui/css/jquery-ui.min.css">
     <link rel="stylesheet" href="/static/libs/jquery-ui/css/jquery.ui.slider.min.css">
+    <!-- X-editable -->
+    <link href="/static/libs/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet">
 
     <!-- Custom styles -->
     <link rel="stylesheet" href="/static/css/basic.css">
@@ -39,26 +39,48 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">BP2013H1</a>
+          <a class="navbar-brand" href="index.html">BP2013H1</a>
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li><a href="index.html">Overview</a></li>
             <li><a href="statistics.html">Statistics</a></li>
-            <li class="active"><a href="live_setup.html">Live Setup</a></li>
-            <li><a href="settings.html">Settings</a></li>
+            <li><a href="notifications.html">Notifications</a></li>
+            <li><a href="live_setup.html">Live Setup</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="thresholds.html"><span class="glyphicon glyphicon-tasks" title="Thresholds"></span></a></li>
+            <li><a href="settings.html"><span class="glyphicon glyphicon-cog" title="Settings"></span></a></li>
+            <li><a href="#" id="logout_button"><span class="glyphicon glyphicon-log-out" title="Logout"></span></a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
     </div>
 
     <!-- Settings page -->
-    <div class="container">
-      <div class="row">
-        <div class="col-sm-12">
-          <div id="schema_container"></div>
+    <div class="container" id="container">
+      <form role="form">
+        <div class="row">
+          <div class="col-sm-12" id="panels">
+            <div class="panel panel-default" id="general_panel">
+              <div class="panel-heading">General</div>
+              <div class="panel-body"></div>
+            </div>
+            <div class="panel panel-default" id="hs_panel">
+              <div class="panel-heading">Heat Storage</div>
+              <div class="panel-body"></div>
+            </div>
+            <div class="panel panel-default" id="cu_panel">
+              <div class="panel-heading">Cogeneration Unit</div>
+              <div class="panel-body"></div>
+            </div>
+            <div class="panel panel-default" id="plb_panel">
+              <div class="panel-heading">Peak Load Boiler</div>
+              <div class="panel-body"></div>
+            </div>
+          </div>
         </div>
-      </div>
+      </form>
 
       <hr>
       <footer>
@@ -76,7 +98,11 @@
     <script src="/static/libs/jquery-ui/js/jquery.ui.slider.min.js"></script>
     <script src="/static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
     <script src="/static/libs/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/static/libs/bootstrap3-editable/js/bootstrap-editable.js"></script>
 
-    <script src="/static/js/live_setup.js"></script>
+    <script src="/static/js/global.js"></script>
+    <script src="/static/js/lang.js"></script>
+    <script src="/static/js/tech/settings.js"></script>
+
   </body>
 </html>

@@ -1,8 +1,17 @@
 import time
+from datetime import datetime
+import os
 
 from helpers import BaseSystem, interpolate_year
 from data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_workday, warm_water_demand_weekend
 from server.forecasting.forecasting.weather import WeatherForecast
+from server.forecasting.forecasting import Forecast
+from server.forecasting.forecasting.dataloader import DataLoader
+from server.forecasting.forecasting.helpers import approximate_index
+
+
+electrical_forecast = None
+weather_forecast = None
 
 
 class ThermalConsumer(BaseSystem):
@@ -27,7 +36,6 @@ class ThermalConsumer(BaseSystem):
 
         self.heat_storage = None
 
-        self.total_consumption = 0.0
         # initial temperature
         self.temperature_room = 12.0
         self.temperature_warmwater = 40.0
@@ -50,10 +58,19 @@ class ThermalConsumer(BaseSystem):
         self.heat_transfer_wall = 0.5
 
         self.consumed = 0
-        self.weather_forecast = WeatherForecast(self.env)
+        
+        global weather_forecast
+        if weather_forecast == None:
+            weather_forecast = WeatherForecast(self.env)
+        self.weather_forecast = weather_forecast
+        self.current_power = 0
+
+        #only build once, to save lots of time
+        #self.warmwater_forecast = Forecast(self.env, input_data, samples_per_hour=1)
+            
 
         self.calculate()
-
+        
     def find_dependent_devices_in(self, system_list):
         for system in system_list:
             system.attach_to_thermal_consumer(self)
@@ -70,10 +87,11 @@ class ThermalConsumer(BaseSystem):
         avg_wall_size = self.avg_room_volume / self.room_height * 3
         # Assume each appartment have an average of 0.8 outer walls per apartment
         self.outer_wall_surface = avg_wall_size * self.apartments * 0.8
+        # in kW
         self.max_power = self.total_heated_floor * \
-            float(self.heating_constant)
+            float(self.heating_constant) / 1000.0
 
-        self.current_power = 0
+
         # Assume a window size of 2 square meters
         self.window_surface = 2 * self.avg_windows_per_room * \
             self.avg_rooms_per_apartment * self.apartments
@@ -83,9 +101,8 @@ class ThermalConsumer(BaseSystem):
         consumption = self.get_consumption_energy(
         ) + self.get_warmwater_consumption_energy()
         self.consumed += consumption
-        self.total_consumption += consumption
         self.heat_storage.consume_energy(consumption)
-
+        
     def heat_room(self):
         # Convert from J/(m^3 * K) to kWh/(m^3 * K)
         specific_heat_capacity_air = 1000.0 / 3600.0
@@ -96,13 +113,14 @@ class ThermalConsumer(BaseSystem):
 
     def get_consumption_power(self):
         # convert to kW
-        return self.current_power / 1000.0
+        return self.current_power
 
     def get_consumption_energy(self):
         # convert to kWh
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
 
     def get_warmwater_consumption_power(self):
+        #demand_liters_per_hour = self.warmwater_forecast.get_forecast_at(self.env.now)
         specific_heat_capacity_water = 0.001163708  # kWh/(kg*K)
         time_tuple = time.gmtime(self.env.now)
 
@@ -128,6 +146,8 @@ class ThermalConsumer(BaseSystem):
 
     def simulate_consumption(self):
         # Calculate variation using daily demand
+        if self.current_power >= 65.0:
+            g = 0
         self.target_temperature = self.daily_demand[
             time.gmtime(self.env.now).tm_hour]
 
@@ -141,6 +161,7 @@ class ThermalConsumer(BaseSystem):
             self.current_power += slope
 
         # Clamp to maximum power
+        
         self.current_power = max(min(self.current_power, self.max_power), 0.0)
 
     def heat_loss_power(self):
@@ -168,15 +189,29 @@ class ElectricalConsumer(BaseSystem):
     residents - house residents
     """
 
+
     def __init__(self, system_id, env, residents=22):
         super(ElectricalConsumer, self).__init__(system_id, env)
 
         self.power_meter = None
         self.residents = residents
         self.total_consumption = 0.0  # kWh
+        ##! TODO: this will have to replaced by a database"
+        global electrical_forecast
+        if electrical_forecast == None:
+            raw_dataset = self.get_data_until(self.env.now)
+            #cast to float and convert to kW
+            dataset = [float(val) / 1000.0 for val in raw_dataset]
+            hourly_data = Forecast.make_hourly(dataset, 6)
+            electrical_forecast = Forecast(self.env, hourly_data, samples_per_hour=1)
+        self.electrical_forecast = electrical_forecast
 
         # list of 24 values representing relative demand per hour
         self.demand_variation = [1 for i in range(24)]
+        
+        self.new_data_interval = 24 * 60 * 60 #append data each day
+        self.last_forecast_update = self.env.now
+
 
     def find_dependent_devices_in(self, system_list):
         for system in system_list:
@@ -185,28 +220,53 @@ class ElectricalConsumer(BaseSystem):
     def connected(self):
         return self.power_meter is not None
 
+
     def step(self):
         consumption = self.get_consumption_energy()
         self.total_consumption += consumption
         self.power_meter.consume_energy(consumption)
         self.power_meter.current_power_consum = self.get_consumption_power()
+        ##copyconstructed means its running a forecasting
+        if self.env.demo and self.env.now - self.last_forecast_update > self.new_data_interval:
+            self.update_forecast_data()
+        
+    def update_forecast_data(self):
+        
+        raw_dataset = self.get_data_until(self.env.now, self.last_forecast_update)
+        #cast to float and convert to kW
+        dataset = [float(val) / 1000.0 for val in raw_dataset]
+        self.electrical_forecast.append_values(dataset)
+        self.last_forecast_update = self.env.now
+        
 
     def get_consumption_power(self):
         time_tuple = time.gmtime(self.env.now)
-        quarter = int(time_tuple.tm_min / 15.0)
-        quarters = (time_tuple.tm_hour * 4 + quarter) % (4 * 24)
-        # week days 0-6 converted to 1-7
-        wday = time_tuple.tm_wday + 1
-        interpolation = interpolate_year(time_tuple.tm_yday)
-        summer_part =  (1 - interpolation) * \
-            weekly_electrical_demand_summer[quarters * wday]
-        winter_part = interpolation * \
-            weekly_electrical_demand_winter[quarters * wday]
-        demand = summer_part + winter_part
-        # data based on 22 residents
-        demand = demand / 22 * self.residents
+        demand = self.electrical_forecast.get_forecast_at(self.env.now)
+        # demand = 1
         # calculate variation using demand and variation
         return demand * self.demand_variation[time_tuple.tm_hour]
 
     def get_consumption_energy(self):
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
+    
+    def get_data_until(self, timestamp, start_timestamp=None):
+        #! TODO: reading data from csv will have to be replaced by live/fake data from database
+        date = datetime.fromtimestamp(timestamp)
+        path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_2013.csv")
+        raw_dataset = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
+        dates = DataLoader.load_from_file(path, "Datum", "\t")
+        
+        if date.year == 2014: 
+            path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_until_may_2014.csv") 
+            raw_dataset += DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
+            dates += DataLoader.load_from_file(path, "Datum", "\t")
+
+        dates = [int(date) for date in dates]
+        now_index = approximate_index(dates, self.env.now)
+        
+        #take data until simulated now time
+        if start_timestamp == None:
+            return raw_dataset[:now_index]
+        else:
+            start_index = approximate_index(dates, start_timestamp)
+            return raw_dataset[start_index:now_index]

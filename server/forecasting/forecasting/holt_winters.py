@@ -1,27 +1,52 @@
 
 from sys import exit
 from math import sqrt
+import numpy as np
 from numpy import array
-import matplotlib.pyplot as plt
-import matplotlib.dates as md
-from simulation.systems.data import weekly_electrical_demand_winter
 
 """Holt-Winters algorithms to forecasting
-Coded in Python 2 by: Andre Queiroz
+Original Gist: Andre Queiroz, modified and extended by MR
 Description: This module contains three exponential smoothing algorithms. They are Holt's linear trend method and Holt-Winters seasonal methods (additive and multiplicative).
 References:
  Hyndman, R. J.; Athanasopoulos, G. (2013) Forecasting: principles and practice. http://otexts.com/fpp/. Accessed on 07/03/2013.
  Byrd, R. H.; Lu, P.; Nocedal, J. A Limited Memory Algorithm for Bound Constrained Optimization, (1995), SIAM Journal on Scientific and Statistical Computing, 16, 5, pp. 1190-1208."""
  
 from scipy.optimize import fmin_l_bfgs_b
- 
-def RMSE(params, *args):
- 
+
+
+def exponential_smoothing_step(input, index, (alpha, beta, gamma), (level, trend, seasonal,forecast), type):
+    # 0 = linear, 1 = addditive, 2 = multiplicative
+    i = index
+    Y = input
+    
+    a = level
+    b = trend
+    s = seasonal
+    y = forecast
+    if type == 0:
+        a.append(alpha * Y[i] + (1 - alpha) * (a[i] + b[i]))
+        b.append(beta * (a[i + 1] - a[i]) + (1 - beta) * b[i])
+        y.append(a[i + 1] + b[i + 1])
+    
+    elif type == 1:
+        a.append(alpha * (Y[i] - s[i]) + (1 - alpha) * (a[i] + b[i]))
+        b.append(beta * (a[i + 1] - a[i]) + (1 - beta) * b[i])
+        s.append(gamma * (Y[i] - a[i] - b[i]) + (1 - gamma) * s[i])
+        y.append(a[i + 1] + b[i + 1] + s[i + 1])
+    
+    elif type == 2:
+        a.append(alpha * (Y[i] / s[i]) + (1 - alpha) * (a[i] + b[i]))
+        b.append(beta * (a[i + 1] - a[i]) + (1 - beta) * b[i])
+        s.append(gamma * (Y[i] / (a[i] + b[i])) + (1 - gamma) * s[i])
+        y.append((a[i + 1] + b[i + 1]) * s[i + 1])
+        
+        
+def parameter_finding(params, *args):
     Y = args[0]
     type = args[1]
     rmse = 0
  
-    if type == 'linear':
+    if type == 0:
  
         alpha, beta = params
         a = [Y[0]]
@@ -29,10 +54,8 @@ def RMSE(params, *args):
         y = [a[0] + b[0]]
  
         for i in range(len(Y)):
- 
-            a.append(alpha * Y[i] + (1 - alpha) * (a[i] + b[i]))
-            b.append(beta * (a[i + 1] - a[i]) + (1 - beta) * b[i])
-            y.append(a[i + 1] + b[i + 1])
+            
+            exponential_smoothing_step(Y, i, (alpha, beta, None), (a, b, None, y), 0)
  
     else:
  
@@ -41,39 +64,63 @@ def RMSE(params, *args):
         a = [sum(Y[0:m]) / float(m)]
         b = [(sum(Y[m:2 * m]) - sum(Y[0:m])) / m ** 2]
  
-        if type == 'additive':
+        if type == 1:
  
             s = [Y[i] - a[0] for i in range(m)]
             y = [a[0] + b[0] + s[0]]
  
             for i in range(len(Y)):
+                
+                exponential_smoothing_step(Y, i, (alpha, beta, gamma), (a, b, s, y), 1)
  
-                a.append(alpha * (Y[i] - s[i]) + (1 - alpha) * (a[i] + b[i]))
-                b.append(beta * (a[i + 1] - a[i]) + (1 - beta) * b[i])
-                s.append(gamma * (Y[i] - a[i] - b[i]) + (1 - gamma) * s[i])
-                y.append(a[i + 1] + b[i + 1] + s[i + 1])
- 
-        elif type == 'multiplicative':
+        elif type == 2:
  
             s = [Y[i] / a[0] for i in range(m)]
             y = [(a[0] + b[0]) * s[0]]
  
             for i in range(len(Y)):
- 
-                a.append(alpha * (Y[i] / s[i]) + (1 - alpha) * (a[i] + b[i]))
-                b.append(beta * (a[i + 1] - a[i]) + (1 - beta) * b[i])
-                s.append(gamma * (Y[i] / (a[i] + b[i])) + (1 - gamma) * s[i])
-                y.append(a[i + 1] + b[i + 1] + s[i + 1])
+                
+                exponential_smoothing_step(Y, i, (alpha, beta, gamma), (a, b, s, y), 2)
  
         else:
  
             exit('Type must be either linear, additive or multiplicative')
+            
+        return (Y,y)
         
-    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y, y[:-1])]) / len(Y))
+
+def RMSE(params, *args):
+    (input, forecast) = parameter_finding(params,*args)
+    
+    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(input, forecast[:-1])]) / len(input))
+    penalty = mean_below_penalty(np.array(forecast[:-1]))
+    
+    return rmse + penalty
+
+def MASE(params, *args): 
+    (input, forecast) = parameter_finding(params,*args)
+    
+    training_series = np.array(input)
+    testing_series = np.array(input)
+    prediction_series = np.array(forecast[:-1])
+    n = training_series.shape[0]
+    d = np.abs(  np.diff(training_series) ).sum()/(n-1)
+    
+    errors = np.abs(testing_series - prediction_series )
+    penalty = mean_below_penalty(prediction_series) 
+    return errors.mean()/d + penalty
+
+def mean_below_penalty(series, value=0):
+    mean = series.mean()
+    if mean > value:
+        return 0
+    else:
+        return abs(mean) - value 
+    
+
+     
  
-    return rmse
- 
-def linear(x, fc, alpha = None, beta = None):
+def linear(x, forecast, alpha = None, beta = None):
  
     Y = x[:]
  
@@ -81,7 +128,7 @@ def linear(x, fc, alpha = None, beta = None):
  
         initial_values = array([0.3, 0.1])
         boundaries = [(0, 1), (0, 1)]
-        type = 'linear'
+        type = 0#'linear'
  
         parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, type), bounds = boundaries, approx_grad = True)
         alpha, beta = parameters[0]
@@ -91,30 +138,29 @@ def linear(x, fc, alpha = None, beta = None):
     y = [a[0] + b[0]]
     rmse = 0
  
-    for i in range(len(Y) + fc):
+    for i in range(len(Y) + forecast):
  
         if i == len(Y):
             Y.append(a[-1] + b[-1])
+            
+        exponential_smoothing_step(Y, i, (alpha, beta, None), (a, b, None, y), 0)
  
-        a.append(alpha * Y[i] + (1 - alpha) * (a[i] + b[i]))
-        b.append(beta * (a[i + 1] - a[i]) + (1 - beta) * b[i])
-        y.append(a[i + 1] + b[i + 1])
+    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y[:-forecast], y[:-forecast - 1])]) / len(Y[:-forecast]))
+
  
-    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y[:-fc], y[:-fc - 1])]) / len(Y[:-fc]))
+    return Y[-forecast:], alpha, beta, rmse
  
-    return Y[-fc:], alpha, beta, rmse
- 
-def additive(x, m, fc, alpha = None, beta = None, gamma = None):
+def additive(x, m, forecast, alpha = None, beta = None, gamma = None,alpha_bound=0.01):
  
     Y = x[:]
  
     if (alpha == None or beta == None or gamma == None):
  
         initial_values = array([0.3, 0.1, 0.1])
-        boundaries = [(0, 1), (0, 1), (0, 1)]
-        type = 'additive'
+        boundaries = [(0, alpha_bound), (0, 1), (0, 1)]
+        type = 1#'additive'
  
-        parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True)
+        parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True,factr=10**6)
         alpha, beta, gamma = parameters[0]
  
     a = [sum(Y[0:m]) / float(m)]
@@ -123,97 +169,48 @@ def additive(x, m, fc, alpha = None, beta = None, gamma = None):
     y = [a[0] + b[0] + s[0]]
     rmse = 0
  
-    for i in range(len(Y) + fc):
+    for i in range(len(Y) + forecast):
  
         if i == len(Y):
             Y.append(a[-1] + b[-1] + s[-m])
+            
+        exponential_smoothing_step(Y, i, (alpha, beta, gamma), (a, b, s, y), 1)
  
-        a.append(alpha * (Y[i] - s[i]) + (1 - alpha) * (a[i] + b[i]))
-        b.append(beta * (a[i + 1] - a[i]) + (1 - beta) * b[i])
-        s.append(gamma * (Y[i] - a[i] - b[i]) + (1 - gamma) * s[i])
-        y.append(a[i + 1] + b[i + 1] + s[i + 1])
+    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y[:-forecast], y[:-forecast - 1])]) / len(Y[:-forecast]))
  
-    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y[:-fc], y[:-fc - 1])]) / len(Y[:-fc]))
+    return Y[-forecast:], alpha, beta, gamma, rmse
  
-    return Y[-fc:], alpha, beta, gamma, rmse
- 
-def multiplicative(x, m, fc, alpha = None, beta = None, gamma = None):
+def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, initial_values_optimization=[0.0002,0.0003,0.001], optimization_type="RMSE"):
  
     Y = x[:]
  
     if (alpha == None or beta == None or gamma == None):
  
-        initial_values = array([0.0, 1.0, 0.0])
+        initial_values = array(initial_values_optimization)
         boundaries = [(0, 1), (0, 1), (0, 1)]
-        type = 'multiplicative'
- 
-        parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True)
+        type = 2 #'multiplicative'
+        optimization_criterion = RMSE if optimization_type == "RMSE" else MASE
+        
+        parameters = fmin_l_bfgs_b(optimization_criterion, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True,factr=10**3)
         alpha, beta, gamma = parameters[0]
  
     a = [sum(Y[0:m]) / float(m)]
     b = [(sum(Y[m:2 * m]) - sum(Y[0:m])) / m ** 2]
     s = [Y[i] / a[0] for i in range(m)]
     y = [(a[0] + b[0]) * s[0]]
+    
     rmse = 0
  
-    for i in range(len(Y) + fc):
+    for i in range(len(Y) + forecast):
  
         if i == len(Y):
             Y.append((a[-1] + b[-1]) * s[-m])
+            
+        exponential_smoothing_step(Y, i, (alpha, beta, gamma), (a, b, s, y), 2)
+        
  
-        a.append(alpha * (Y[i] / s[i]) + (1 - alpha) * (a[i] + b[i]))
-        b.append(beta * (a[i + 1] - a[i]) + (1 - beta) * b[i])
-        s.append(gamma * (Y[i] / (a[i] + b[i])) + (1 - gamma) * s[i])
-        y.append((a[i + 1] + b[i + 1]) * s[i + 1])
+    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y[:-forecast], y[:-forecast - 1])]) / len(Y[:-forecast]))
  
-    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y[:-fc], y[:-fc - 1])]) / len(Y[:-fc]))
- 
-    return Y[-fc:], alpha, beta, gamma, rmse
+    return Y[-forecast:], alpha, beta, gamma, rmse
 
 
-
-def plot_dataset(timedata, sensordata):
-
-        fig, ax = plt.subplots()
-        for name,sensorvals in sensordata.items():
-            if name != "time":
-                ax.plot(range(len(sensorvals)),sensorvals,label=name)
-        
-        # Now add the legend with some customizations.
-        legend = ax.legend(loc='upper center', shadow=True)
-        
-        # The frame is matplotlib.patches.Rectangle instance surrounding the legend.
-        frame = legend.get_frame()
-        frame.set_facecolor('0.90')
-        
-        # Set the fontsize
-        for label in legend.get_texts():
-            label.set_fontsize('medium')
-        
-        for label in legend.get_lines():
-            label.set_linewidth(1.5)
-
-        plt.subplots_adjust(bottom=0.2)
-        plt.xlabel('Simulated time in seconds')
-        plt.xticks( rotation=90 )
-        plt.grid(True)
-        plt.show(block=False)
-
-
-#optimize algorithm for specific dataset
-def holt_winters_parameters():
-    y = weekly_electrical_demand_winter
-
-    alpha = 0.30 #forecastings are weighted more on past data
-    beta = 0.005 #very little slope changes
-    gamma = 0.8 #estimation of seasonal component based on  recent changes
-    i = "start"
-    m = len(y) * (2 / 3) #value sampling shift.. somehow
-    fc = len(y) # whole data length
-
-    while i != "stop":
-        (forecast_data, alpha, beta, gamma, rmse) = additive(y, m, fc,alpha, beta, gamma)
-        values ={ 'forcasting':forecast_data, 'simulation':y}
-        plot_dataset(len(y),values)
-        i = raw_input("change val")
-        exec(i)

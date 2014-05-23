@@ -1,6 +1,7 @@
 from helpers import BaseSystem
 
 
+
 class HeatStorage(BaseSystem):
 
     def __init__(self, system_id, env, capacity=2500, min_temperature=55.0, target_temperature=70.0, critical_temperature=90.0):
@@ -87,7 +88,6 @@ class PowerMeter(BaseSystem):
 
         self.energy_produced = 0.0  # kWh
         self.energy_consumed = 0.0  # kWh
-        self.current_power_consum = 0.0
 
         # costs in Euro to purchase 1 kW/h from external supplier
         self.electrical_costs = electrical_costs

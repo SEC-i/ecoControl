@@ -1,0 +1,6 @@
+coverage==3.7.1
+Django==1.6.2
+mock==1.0.1
+pytz==2012d
+simpy==3.0.2
+south==0.8.4

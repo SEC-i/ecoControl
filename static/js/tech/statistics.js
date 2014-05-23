@@ -50,7 +50,7 @@ $(function() {
 
             $.each(data, function(month, values) {
                 $.each(values, function(system, system_data) {
-                    timestamp = parseInt(month) * 1000;
+                    var timestamp = parseInt(month);
                     if (system_data.type == '2') {
                         cu_series_data_1[0].data.push([timestamp, system_data['total_gas_consumption']]);
                         cu_series_data_1[1].data.push([timestamp, system_data['hours_of_operation']]);

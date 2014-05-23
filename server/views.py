@@ -7,6 +7,7 @@ import calendar
 import dateutil.relativedelta
 import csv
 
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
@@ -15,10 +16,11 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.utils.timezone import utc
 from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
+from django.core.cache import cache
 
 import functions
-from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue
-from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation
+from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
+from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation, is_member
 from forecasting import Simulation
 
 
@@ -63,6 +65,8 @@ def status(request):
     if request.user.is_authenticated():
         output.append(("login", "active"))
         output.append(("user", request.user.get_full_name()))
+        output.append(("technician", is_member(request.user, 'Technician')))
+        output.append(("manager", is_member(request.user, 'Manager')))
     else:
         output.append(("login", "inactive"))
 
@@ -71,6 +75,7 @@ def status(request):
 
 @require_POST
 def configure(request):
+    cache.clear()
     functions.perform_configuration(json.loads(request.body))
     return create_json_response(request, {"status": "success"})
 
@@ -102,14 +107,19 @@ def settings(request):
     return create_json_response(request, dict(output))
 
 
+def get_tunable_device_configurations(request):
+    output = dict(functions.get_device_configurations(tunable=True))
+    return create_json_response(request, output)
+
+
 def forecast(request):
     try:
-        latest_value = SensorValue.objects.latest('timestamp')
-        initial_time = calendar.timegm(latest_value.timestamp.utctimetuple())
+        latest_timestamp = functions.get_past_time()
+        initial_time = calendar.timegm(latest_timestamp.timetuple())
     except SensorValue.DoesNotExist:
         initial_time = time()
     if request.method == 'POST':
-        configurations = parse_configurations(request.POST)
+        configurations = functions.get_modified_configurations(json.loads(request.body))
         simulation = Simulation(initial_time, configurations)
     else:
         simulation = Simulation(initial_time)
@@ -119,7 +129,10 @@ def forecast(request):
     return create_json_response(request, simulation.measurements.get())
 
 
-def get_statistics(request, start=functions.get_past_time(months=1), end=None):
+def get_statistics(request):
+    end = functions.get_past_time(use_view=True)
+    start = end + dateutil.relativedelta.relativedelta(months=-1)
+
     output = []
     output += functions.get_statistics_for_cogeneration_unit(start, end)
     output += functions.get_statistics_for_peak_load_boiler(start, end)
@@ -127,9 +140,14 @@ def get_statistics(request, start=functions.get_past_time(months=1), end=None):
     output += functions.get_statistics_for_electrical_consumer(start, end)
     output += functions.get_statistics_for_power_meter(start, end)
 
-    return create_json_response(request, dict(output))
+    return create_json_response(request, output)
 
 
+def get_monthly_statistics(request):
+    end = functions.get_past_time(use_view=True)
+    start = end + dateutil.relativedelta.relativedelta(years=-1)
+
+<<<<<<< HEAD
 def export_sensor_values(request, start=functions.get_past_time(months=1), end=None):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="statistics.csv"'
@@ -147,13 +165,13 @@ def export_sensor_values(request, start=functions.get_past_time(months=1), end=N
 
 
 def get_monthly_statistics(request, start=functions.get_past_time(years=1), end=None):
-    sensor_values = SensorValue.objects.all()
+    sensor_values = SensorValueMonthlySum.objects.all()
     if start is not None:
-        sensor_values = sensor_values.filter(timestamp__gte=start)
+        sensor_values = sensor_values.filter(date__gte=start)
     if end is not None:
-        sensor_values = sensor_values.filter(timestamp__lte=end)
+        sensor_values = sensor_values.filter(date__lte=end)
 
-    months = sensor_values.extra({'month': "date_trunc('month', timestamp)"}).values(
+    months = sensor_values.extra({'month': "date_trunc('month', date)"}).values(
         'month').annotate(count=Count('id'))
     output = {}
     for month in months:
@@ -171,66 +189,60 @@ def get_monthly_statistics(request, start=functions.get_past_time(years=1), end=
             month_start, month_end)
         month_data += functions.get_statistics_for_power_meter(
             month_start, month_end)
-        timestamp = calendar.timegm(month_start.utctimetuple())
-        output[timestamp] = dict(month_data)
+        
+        key = '%s-%s' % (month_start.month, month_start.year)
+        if month_start.month < 10:
+            key = '0' + key
+        output[key] = month_data
 
     return create_json_response(request, output)
 
 
 def list_values(request, start, accuracy='hour'):
-    if accuracy not in ['day', 'hour']:
-        return create_json_response(request, {"status": "accuracy invalid"})
 
-    sensors = Sensor.objects.filter(in_diagram=True)
-
-    start_time = end_time = 0
-    if start:
-        start_time = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
+    if start is None:
+        start = functions.get_past_time(months=1, use_view=True)
     else:
-        if accuracy == 'day':
-            start_time = functions.get_past_time(years=1)
-        else:
-            start_time = functions.get_past_time(days=14)
-
+        start = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
     output = []
-    if start_time is not None:
-        try:
-            for sensor in sensors:
-                values = []
-                for date in SensorValue.objects.filter(sensor=sensor, timestamp__gte=start_time).extra({accuracy: "date_trunc('%s', timestamp)" % accuracy}).values(accuracy).annotate(count=Count('id')):
-                    start_date = date[accuracy]
-                    if accuracy == 'day':
-                        end_date = start_date + timedelta(days=1)
-                    else:
-                        end_date = start_date + timedelta(hours=1)
+  
+    if accuracy=='hour':
+        sensor_values = SensorValueHourly.objects.\
+            filter(timestamp__gte=start, sensor__in_diagram=True).\
+            select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
+    elif accuracy=='day':
+        sensor_values = SensorValueDaily.objects.\
+            filter(date__gte=datetime.date(start), sensor__in_diagram=True).\
+            select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
 
-                    cursor = connection.cursor()
-                    cursor.execute(
-                        'SELECT AVG(value) FROM "server_sensorvalue" WHERE ("server_sensorvalue"."sensor_id" = %s AND "server_sensorvalue"."timestamp" >= \'%s\' AND "server_sensorvalue"."timestamp" < \'%s\' )' %
-                        (sensor.id, start_date, end_date))
-                    values.append(
-                        [calendar.timegm(start_date.utctimetuple()), float(cursor.fetchone()[0])])
+    values = {}
+    output = {}
+    for value in sensor_values:
+        # Save sensor data
+        if value.sensor.id not in values.keys():
+            values[value.sensor.id] = []
+            output[value.sensor.id] = {
+                'id': value.sensor.id,
+                'device': value.sensor.device.name,
+                'name': value.sensor.name,
+                'unit': value.sensor.unit,
+                'key': value.sensor.key,
+            }
+        # Save sensor values
+        values[value.sensor.id].append((value.timestamp, value.value))
 
-                output.append({
-                    'id': sensor.id,
-                    'device': sensor.device.name,
-                    'name': sensor.name,
-                    'unit': sensor.unit,
-                    'key': sensor.key,
-                    'data': values
-                })
-        except SensorValue.DoesNotExist:
-            logger.debug('No sensor values found in database.')
+    for sensor_id in output.keys():
+        output[sensor_id]['data'] = values[sensor_id]
 
-    return create_json_response(request, output)
+    return create_json_response(request, output.values())
 
 
 def list_sensors(request):
     sensors = Sensor.objects.filter(in_diagram=True).values(
-        'id', 'name', 'unit', 'device__name')
+        'id', 'name', 'unit', 'device__name', 'aggregate_sum', 'aggregate_avg')
 
     # rename device__name to device for convenience
-    output = [{'id': x['id'], 'name': x['name'], 'unit': x['unit'], 'device': x['device__name']}
+    output = [{'id': x['id'], 'name': x['name'], 'unit': x['unit'], 'device': x['device__name'], 'sum': x['aggregate_sum'], 'avg': x['aggregate_avg']}
               for x in sensors]
 
     return create_json_response(request, output)
@@ -238,3 +250,84 @@ def list_sensors(request):
 
 def live_data(request):
     return create_json_response(request, functions.get_live_data())
+
+
+def list_thresholds(request):
+    thresholds = Threshold.objects.extra(select={
+        'sensor_name': 'SELECT name FROM server_sensor WHERE id = sensor_id'
+    }).order_by('id')
+
+    return create_json_response_from_QuerySet(request, thresholds)
+
+
+@require_POST
+def handle_threshold(request):
+    data = json.loads(request.body)
+    if 'id' in data:
+        if not is_member(request.user, 'Technician'):
+            return create_json_response(request, {"status": "not a technician"})
+            
+        threshold = Threshold.objects.get(id=data['id'])
+        if threshold is not None:
+            if 'delete' in data:
+                threshold.delete()
+            else:
+                print data
+                if 'name' in data:
+                    threshold.name = data['name']
+                if 'sensor_id' in data:
+                    threshold.sensor_id = int(data['sensor_id'])
+                if 'min_value' in data:
+                    if data['min_value'] == '':
+                        threshold.min_value = None
+                    else:
+                        try:
+                            threshold.min_value = float(data['min_value'])
+                        except ValueError:
+                            pass
+                if 'max_value' in data and data['max_value'] != '':
+                    if data['max_value'] == '':
+                        threshold.max_value = None
+                    else:
+                        try:
+                            threshold.max_value = float(data['max_value'])
+                        except ValueError:
+                            pass
+                if 'category' in data:
+                    threshold.category = int(data['category'])
+                if 'show_manager' in data:
+                    threshold.show_manager = True if data['show_manager'] == '1' else False
+                threshold.save()
+            return create_json_response(request, {"status": "success"})
+    else:
+        if all(x in data for x in ['name', 'sensor_id', 'min_value', 'max_value', 'category']):
+            threshold = Threshold(name=data['name'], sensor_id=int(data['sensor_id']), category=int(data['category']))
+            try:
+                threshold.min_value = float(data['min_value'])
+            except ValueError:
+                pass
+            try:
+                threshold.max_value = float(data['max_value'])
+            except ValueError:
+                pass
+            threshold.save()
+            return create_json_response(request, {"status": "success"})
+
+    return create_json_response(request, {"status": "failed"})
+
+
+def list_notifications(request, start, end):
+    start = 0 if start is None else start
+    end = 25 if end is None else end
+
+    if is_member(request.user, 'Technician'):
+        notifications = Notification.objects.all()
+    else:
+        notifications = Notification.objects.filter(show_manager=True)
+
+    output = {
+        'total': len(notifications),
+        'notifications': list(notifications.order_by('-timestamp')[int(start):int(end)].values())
+    }
+
+    return create_json_response(request, output)
