@@ -129,7 +129,7 @@ def initialize_default_scenario():
         device_configurations.append(
             DeviceConfiguration(device=cu, key='purchase_price', value='15000', value_type=DeviceConfiguration.FLOAT, unit='€'))
         device_configurations.append(
-            DeviceConfiguration(device=cu, key='purchase_date', value='01.01.2013', value_type=DeviceConfiguration.STR, unit=''))
+            DeviceConfiguration(device=cu, key='purchase_date', value='01.01.2013', value_type=DeviceConfiguration.DATE, unit=''))
         device_configurations.append(
             DeviceConfiguration(device=cu, key='maintenance_interval_hours', value='8000', value_type=DeviceConfiguration.INT, unit='h'))
         device_configurations.append(

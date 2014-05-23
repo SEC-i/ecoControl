@@ -6,7 +6,7 @@ var lang = {
     avg_windows_per_room: 'Avg. Windows per Room',
     capacity: 'Capacity',
     critical_temperature: 'Critical Temperature',
-    electrical_consumption: 'Electrical Revenues',
+    electrical_revenues: 'Electrical Revenues',
     electrical_costs: 'Electrical Costs per kWh',
     electrical_efficiency: 'Electrical Efficiency',
     electrical_infeed: 'Electrical Infeed Revenues',
@@ -25,14 +25,14 @@ var lang = {
     purchase_price: 'Purchase Price',
     residents: 'Residents',
     target_temperature: 'Target Temperature',
-    thermal_consumption: 'Thermal Revenues',
+    thermal_revenues: 'Thermal Revenues',
     thermal_efficiency: 'Thermal Efficiency',
     total_balance: 'Total Balance',
     total_heated_floor: 'Total Heated Floor',
     type_of_housing: 'Type of Housing',
     type_of_residents: 'Type of Residents',
     type_of_windows: 'Type of Windows',
-    warmwater_consumption: 'Warmwater Revenues',
+    warmwater_revenues: 'Warmwater Revenues',
     months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 };
 
