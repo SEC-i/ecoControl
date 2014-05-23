@@ -1,7 +1,13 @@
 var sensor_list = null;
+var headlines = ['Month', '', ''];
+var table_data = [];
 
 // READY
 $(function() {
+    $.each(get_text('months'), function(index, month) {
+        table_data.push([month, 0, 0]);
+    });
+
     $.getJSON('/api/sensors/', function(data) {
         sensor_list = data;
         $.each(sensor_list, function(index, sensor) {
@@ -59,6 +65,8 @@ $(function() {
                         }
                     }, false);
                     chart.series[series_id].setData(series_data,true);
+
+                    update_table(data, sensor.name + ' in ' + sensor.unit, target == 'right');
                 });
             });
 
@@ -136,4 +144,21 @@ function initialize_diagram() {
             enabled: false
         }
     });
+}
+
+function update_table(data, col_title, right) {
+    if (right) {
+        var offset = 2;
+    } else {
+        var offset = 1;
+    }
+
+    headlines[offset] = col_title;
+
+    $.each(data, function(index, row) {
+        table_data[index][offset] = Math.round(row.total * 100) / 100;
+    });
+
+    draw_table($('#table_container'), headlines, table_data);
+
 }
