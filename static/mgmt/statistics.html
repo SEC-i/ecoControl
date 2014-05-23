@@ -83,7 +83,7 @@
           </div>
           <div class="panel panel-default">
             <div class="panel-heading">
-              <h4 class="panel-title">Overview Table<span class="glyphicon glyphicon-export pull-right"></span></h4>
+              <h4 class="panel-title">Overview Table <a href="#" id="export_button"><span class="glyphicon glyphicon-export pull-right"></span></a></h4>
             </div>
             <div class="panel-body">
               <div class="row">
@@ -92,6 +92,9 @@
                 </div>
               </div>
             </div>
+            <form id="export_form" action="/export/csv/" method="post"> 
+              <input type="hidden" name="csv_data" id="csv_data">
+            </form>
           </div>
         </div>
       </div>
@@ -111,6 +114,7 @@
     <script src="/static/libs/jquery-ui/js/jquery.ui.mouse.min.js"></script>
     <script src="/static/libs/jquery-ui/js/jquery.ui.slider.min.js"></script>
     <script src="/static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
+    <script src="/static/libs/jquery-table2csv/jquery.table2csv.js"></script>
     <script src="/static/libs/bootstrap/js/bootstrap.min.js"></script>
 
     <script src="/static/libs/highcharts/highcharts.js"></script>

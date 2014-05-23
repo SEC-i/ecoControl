@@ -3,9 +3,6 @@ import json
 import logging
 import pytz
 import calendar
-import time
-import csv
-
 from django.http import HttpResponse
 
 from server.forecasting import Simulation
@@ -46,59 +43,6 @@ def create_json_response(request, data):
 
 def create_json_response_from_QuerySet(request, data):
     return create_json_response(request, list(data.values()))
-
-
-def create_csv_response_from_list(headers, rows):
-    response = HttpResponse(content_type='text/csv')
-    response[
-        'Content-Disposition'] = 'attachment; filename="export_%s.csv"' % time.time()
-
-    writer = csv.writer(response)
-    writer.writerow(headers)
-    for row in rows:
-        writer.writerow(row)
-
-    return response
-
-
-def create_csv_response_from_dict_list(data):
-    response = HttpResponse(content_type='text/csv')
-    response[
-        'Content-Disposition'] = 'attachment; filename="export_%s.csv"' % time.time()
-
-    writer = csv.writer(response)
-    for row in data:
-        writer.writerow(row.keys())
-        writer.writerow(row.values())
-
-    return response
-
-
-def create_csv_response_from_QuerySet(queryset):
-    response = HttpResponse(content_type='text/csv')
-    response[
-        'Content-Disposition'] = 'attachment; filename="export_%s.csv"' % time.time()
-
-    model = queryset.model
-    writer = csv.writer(response)
-
-    headers = []
-    for field in model._meta.fields:
-        headers.append(field.name)
-    writer.writerow(headers)
-
-    for obj in queryset:
-        row = []
-        for field in headers:
-            val = getattr(obj, field)
-            if callable(val):
-                val = val()
-            if type(val) == unicode:
-                val = val.encode("utf-8")
-            row.append(val)
-        writer.writerow(row)
-
-    return response
 
 
 def is_member(user, group_name):

@@ -46,6 +46,7 @@ urlpatterns = patterns('',
 
     (r'^export/statistics/$', views.get_statistics, {'export': True}),
     (r'^export/sensor/((?P<sensor_id>\d+)/)?$', manager.hooks.get_detailed_sensor_values, {'export': True}),
+    (r'^export/csv/$', views.export_csv),
 
     url(r'^admin/', include(admin.site.urls)),
 )

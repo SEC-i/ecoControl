@@ -5,8 +5,6 @@ import json
 from datetime import datetime, timedelta
 import calendar
 import dateutil.relativedelta
-import csv
-
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
@@ -20,7 +18,7 @@ from django.core.cache import cache
 
 import functions
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
-from helpers import create_json_response, create_json_response_from_QuerySet, create_csv_response_from_dict_list, start_demo_simulation, is_member
+from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation, is_member
 from forecasting import Simulation
 
 
@@ -72,6 +70,16 @@ def status(request):
 
     return create_json_response(request, dict(output))
 
+@require_POST
+def export_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response[
+        'Content-Disposition'] = 'attachment; filename="export_%s.csv"' % time()
+
+    if 'csv_data' in request.POST:
+        response.write(request.POST['csv_data'])
+        
+    return response
 
 @require_POST
 def configure(request):
@@ -130,7 +138,7 @@ def forecast(request):
     return create_json_response(request, simulation.measurements.get())
 
 
-def get_statistics(request, export=False):
+def get_statistics(request):
     end = functions.get_past_time(use_view=True)
     start = end + dateutil.relativedelta.relativedelta(months=-1)
 
@@ -140,9 +148,6 @@ def get_statistics(request, export=False):
     output += functions.get_statistics_for_thermal_consumer(start, end)
     output += functions.get_statistics_for_electrical_consumer(start, end)
     output += functions.get_statistics_for_power_meter(start, end)
-
-    if export:
-        return create_csv_response_from_dict_list(output)
 
     return create_json_response(request, output)
 

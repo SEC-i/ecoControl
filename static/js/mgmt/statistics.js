@@ -8,6 +8,12 @@ $(function() {
         table_data.push([month, 0, 0]);
     });
 
+    $('#export_button').click(function(e) {
+        $('#csv_data').val($('#table_container').table2CSV({delivery:'value'}));
+        $('#export_form').submit();
+        e.preventDefault();
+    });
+
     $.getJSON('/api/sensors/', function(data) {
         sensor_list = data;
         $.each(sensor_list, function(index, sensor) {

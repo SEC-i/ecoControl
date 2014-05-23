@@ -15,7 +15,7 @@ from django.db import connection
 
 from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, SensorValueMonthlyAvg, Threshold, Notification
 from server.functions import get_configuration, get_past_time
-from server.helpers import create_json_response, create_csv_response_from_list
+from server.helpers import create_json_response
 
 
 logger = logging.getLogger('django')
@@ -130,13 +130,10 @@ def get_sensorvalue_history_list(request):
     return create_json_response(request, output)
 
 
-def get_detailed_sensor_values(request, sensor_id, export=False):
+def get_detailed_sensor_values(request, sensor_id):
     start = get_past_time(days=1)
     sensor_values = list(SensorValue.objects.filter(
         sensor_id=sensor_id, timestamp__gte=start).values_list('timestamp', 'value'))
-
-    if export:
-        return create_csv_response_from_list(['timestamp', 'value'], sensor_values)
 
     return create_json_response(request, sensor_values)
 
