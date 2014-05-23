@@ -56,24 +56,31 @@ def start_worker():
         worker = Worker()
         worker.start()
 
-
-def start_demo_simulation(print_visible=False):
-    """
-    This method start a new demo simulation
-    if neccessary and it makes sure that only
-    one demo simulation can run at once
-    """
-    if not write_pidfile_or_fail("/tmp/simulation.pid"):
-        # Start demo simulation if in demo mode
-        system_mode = Configuration.objects.get(key='system_mode')
-        if system_mode.value == 'demo':
-            if print_visible:
-                print 'Starting demo simulation...'
-            else:
-                logger.debug('Starting demo simulation...')
-
-            simulation = Simulation(get_initial_time(), demo=True)
-            simulation.start()
+class DemoSimulation(object):
+    stored_simulation = None
+    @classmethod
+    def start_or_get(cls, print_visible=False):
+        """
+        This method start a new demo simulation
+        if neccessary and it makes sure that only
+        one demo simulation can run at once
+        """
+        if not write_pidfile_or_fail("/tmp/simulation.pid"):
+            # Start demo simulation if in demo mode
+            system_mode = Configuration.objects.get(key='system_mode')
+            if system_mode.value == 'demo':
+                if print_visible:
+                    print 'Starting demo simulation...'
+                else:
+                    logger.debug('Starting demo simulation...')
+    
+                simulation = Simulation(get_initial_time(), demo=True)
+                simulation.start()
+                cls.stored_simulation = simulation
+                return simulation
+        if cls.stored_simulation != None:
+            return cls.stored_simulation
+    
 
 
 def get_initial_time():
