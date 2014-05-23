@@ -231,8 +231,7 @@ function generate_immediate_feedback() {
 }
 
 function apply_changes() {
-    $('#tuning_button').removeClass('btn-primary');
-    $('#tuning_button').addClass('btn-success');
+    $('#tuning_button').removeClass('btn-primary').addClass('btn-success');
     var post_data = [];
     $('.configuration').each(function () {
         post_data.push({
@@ -251,8 +250,7 @@ function apply_changes() {
         dataType: 'json',
         success: function(data) {
             setTimeout(function() {
-                $('#tuning_button').removeClass('btn-success');
-                $('#tuning_button').addClass('btn-primary');
+                $('#tuning_button').removeClass('btn-success').addClass('btn-primary');
             }, 500);
             console.log(data);
         }

@@ -44,5 +44,10 @@ urlpatterns = patterns('',
     (r'^api2/balance/total/((?P<year>\d+)/)?((?P<month>\d+)/)?$', manager.hooks.get_total_balance),
     (r'^api2/balance/total/latest/$', manager.hooks.get_latest_total_balance),
 
+
+    (r'^export/statistics/$', views.get_statistics, {'export': True}),
+    (r'^export/sensor/((?P<sensor_id>\d+)/)?$', manager.hooks.get_detailed_sensor_values, {'export': True}),
+    (r'^export/csv/$', views.export_csv),
+
     url(r'^admin/', include(admin.site.urls)),
 )
