@@ -8,13 +8,6 @@ $(function() {
         table_data.push([month, 0, 0]);
     });
 
-    $('#export_button').click(function(e) {
-        Highcharts.post('/export/csv/', {
-            csv: $('#table_container').table2CSV({delivery:'value'})
-        });
-        e.preventDefault();
-    });
-
     $.getJSON('/api/sensors/', function(data) {
         sensor_list = data;
         $.each(sensor_list, function(index, sensor) {
@@ -87,6 +80,13 @@ $(function() {
 
             $('.series_list').change();
         });
+    });
+
+    $('#export_button').click(function(e) {
+        Highcharts.post('/export/csv/', {
+            csv: $('#table_container').table2CSV({delivery:'value'})
+        });
+        e.preventDefault();
     });
 });
 
