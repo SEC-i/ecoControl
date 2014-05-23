@@ -646,7 +646,38 @@ class GetPassedWeatherTest(TestCase):
                 target_time=target_time, temperature=20+i))     
         
         WeatherValue.objects.bulk_create(weather_values)
+
+class GetWeatherLogTest(TestCase):
+    '''If there is no weather found or the found weather has a timestamp too old or the target time is not near enough to the wanted target time warn'''
+    
+    def setUp(self):
+        self.forecast = WeatherForecast()
+        WeatherValue.objects.all().delete()
+        weather.logger.warning = Mock()
         
+    
+    def test_get_passed_temperature(self):
+        '''If the returned date has a difference of more than fifteen 
+        minutes. Generate a warning.'''
+    
+        now = datetime.datetime.strptime('2012-01-01 22:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        now_seconds = time.mktime(now.timetuple())
+        time_mock = MagicMock(return_value = now_seconds)
+        
+        target_time = datetime.datetime.strptime('2012-01-01 15:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        saved_target_time = datetime.datetime.strptime('2012-01-01 00:00:00 UTC','%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        saved_timestamp = datetime.datetime.strptime('2012-01-01 00:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        saved_value = WeatherValue( temperature=2, 
+                                    target_time = saved_target_time,
+                                    timestamp = saved_timestamp).save()
+        with patch('time.time', time_mock):
+            temperature = self.forecast.get_temperature_estimate(target_time)
+        try:
+            argument = weather.logger.warning.call_args[0][0]
+        except TypeError:
+            self.fail("There should be a warning in the logging.")
+        self.assertTrue( argument, 
+                        "There should be a warning in the logging.")
 
 def aware_timestamp_from_seconds(seconds):
     naive = datetime.datetime.fromtimestamp(seconds)

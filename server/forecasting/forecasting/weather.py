@@ -136,64 +136,14 @@ class WeatherForecast:
             
     def get_temperature_of_passed_date(self, date):
         entry = WeatherValue.objects.get_closest_and_newest_to_target_time(date)
-        return float(entry.temperature) 
-        '''d = datetime.timedelta(0,60*15)
-        earlier_stamp = date - d
-        later_stamp = date + d
-
-        entries = WeatherValue.objects.filter(
-            target_time__gte = earlier_stamp,
-            target_time__lte=later_stamp
-            )
-        if len(entries) > 1:            
-            result = self.get_nearest_and_newest_weather_value(
-                    entries[0], entries[1], date)
-        else:
-            result = entries[0]
-        return float(result.temperature)
-        '''
-        
-        
-    def get_nearest_and_newest_weather_value(self, entry1, entry2, target_time):
-        diff_1 = abs(target_time - entry1.target_time)
-        diff_2 = abs(target_time - entry2.target_time)
-        if diff_1 > diff_2:
-            return entry2
-        elif diff_1 < diff_2:
-            return entry1
-        else:
-            sorted_list = sorted([entry1, entry2], key=lambda x: x.timestamp)
-            return sorted_list[1]
+        if (entry.target_time - date).seconds/60 > 15: 
+            # if the saved target_time is more than 15 minutes different
+            logger.warning("the saved target_time is more than 15 minutes different")
+        return float(entry.temperature)        
             
     def get_forecast_temperature_hourly(self, date):
         entry = WeatherValue.objects.get_closest_and_newest_to_target_time(date)
         return float(entry.temperature) 
-        '''if date.minute > 30:
-            look_up_hour=date.hour+1
-        else:
-            look_up_hour=date.hour
-        earlier_hour = (look_up_hour-2) % 24
-        look_up_date_earlier = date.replace(hour= earlier_hour,
-                                    minute=0, second=0, microsecond=0)
-        later_hour = (look_up_hour+2) % 24                     
-        look_up_date_later = date.replace(hour=later_hour,
-                                    minute=0, second=0, microsecond=0)
-        look_up_date = date.replace(hour=look_up_hour,
-                                    minute=0, second=0, microsecond=0)
-        entries = WeatherValue.objects.filter(
-            target_time__gte = look_up_date_earlier,
-            target_time__lte=look_up_date_later
-            ) # entries contain one to two entries  
-  
-        if len(entries) > 1:
-            value = self.get_nearest_and_newest_weather_value(entries[0],
-                                                    entries[1],
-                                                    look_up_date)
-            result = value.temperature
-        else:
-            result = entries[0].temperature     
-        return float(result)
-        '''
 
     def get_forecast_temperature_daily(self, date):
         entries = WeatherValue.objects.filter(
