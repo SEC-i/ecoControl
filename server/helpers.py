@@ -3,7 +3,6 @@ import json
 import logging
 import pytz
 import calendar
-
 from django.http import HttpResponse
 
 from server.forecasting import Simulation
@@ -107,7 +106,6 @@ def write_pidfile_or_fail(path_to_pidfile):
         pid = int(open(path_to_pidfile).read())
 
         if pid_is_running(pid):
-            # print("Sorry, found a pidfile!  Process {0} is still running.".format(pid))
             return False
 
         else:

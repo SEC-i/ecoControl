@@ -81,6 +81,13 @@ $(function() {
             $('.series_list').change();
         });
     });
+
+    $('#export_button').click(function(e) {
+        Highcharts.post('/export/csv/', {
+            csv: $('#table_container').table2CSV({delivery:'value'})
+        });
+        e.preventDefault();
+    });
 });
 
 function get_sensor(sensor_id) {

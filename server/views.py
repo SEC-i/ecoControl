@@ -6,9 +6,9 @@ from datetime import datetime, timedelta
 import calendar
 import dateutil.relativedelta
 
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
+from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.debug import sensitive_post_parameters
 from django.utils.timezone import utc
@@ -70,6 +70,16 @@ def status(request):
 
     return create_json_response(request, dict(output))
 
+@require_POST
+def export_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response[
+        'Content-Disposition'] = 'attachment; filename="export_%s.csv"' % time()
+
+    if 'csv' in request.POST:
+        response.write(request.POST['csv'])
+
+    return response
 
 @require_POST
 def configure(request):
@@ -117,7 +127,8 @@ def forecast(request):
     except SensorValue.DoesNotExist:
         initial_time = time()
     if request.method == 'POST':
-        configurations = functions.get_modified_configurations(json.loads(request.body))
+        configurations = functions.get_modified_configurations(
+            json.loads(request.body))
         simulation = Simulation(initial_time, configurations)
     else:
         simulation = Simulation(initial_time)
@@ -145,11 +156,7 @@ def get_monthly_statistics(request):
     end = functions.get_past_time(use_view=True)
     start = end + dateutil.relativedelta.relativedelta(years=-1)
 
-    sensor_values = SensorValueMonthlySum.objects.all()
-    if start is not None:
-        sensor_values = sensor_values.filter(date__gte=start)
-    if end is not None:
-        sensor_values = sensor_values.filter(date__lte=end)
+    sensor_values = SensorValueMonthlySum.objects.filter(date__gte=start, date__lte=end)
 
     months = sensor_values.extra({'month': "date_trunc('month', date)"}).values(
         'month').annotate(count=Count('id'))
@@ -169,7 +176,7 @@ def get_monthly_statistics(request):
             month_start, month_end)
         month_data += functions.get_statistics_for_power_meter(
             month_start, month_end)
-        
+
         key = '%s-%s' % (month_start.month, month_start.year)
         if month_start.month < 10:
             key = '0' + key
@@ -185,15 +192,17 @@ def list_values(request, start, accuracy='hour'):
     else:
         start = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
     output = []
-  
-    if accuracy=='hour':
+
+    if accuracy == 'hour':
         sensor_values = SensorValueHourly.objects.\
             filter(timestamp__gte=start, sensor__in_diagram=True).\
-            select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
-    elif accuracy=='day':
+            select_related(
+                'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
+    elif accuracy == 'day':
         sensor_values = SensorValueDaily.objects.\
             filter(date__gte=datetime.date(start), sensor__in_diagram=True).\
-            select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
+            select_related(
+                'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
 
     values = {}
     output = {}
@@ -246,7 +255,7 @@ def handle_threshold(request):
     if 'id' in data:
         if not is_member(request.user, 'Technician'):
             return create_json_response(request, {"status": "not a technician"})
-            
+
         threshold = Threshold.objects.get(id=data['id'])
         if threshold is not None:
             if 'delete' in data:
@@ -276,12 +285,14 @@ def handle_threshold(request):
                 if 'category' in data:
                     threshold.category = int(data['category'])
                 if 'show_manager' in data:
-                    threshold.show_manager = True if data['show_manager'] == '1' else False
+                    threshold.show_manager = True if data[
+                        'show_manager'] == '1' else False
                 threshold.save()
             return create_json_response(request, {"status": "success"})
     else:
         if all(x in data for x in ['name', 'sensor_id', 'min_value', 'max_value', 'category']):
-            threshold = Threshold(name=data['name'], sensor_id=int(data['sensor_id']), category=int(data['category']))
+            threshold = Threshold(name=data['name'], sensor_id=int(
+                data['sensor_id']), category=int(data['category']))
             try:
                 threshold.min_value = float(data['min_value'])
             except ValueError:
