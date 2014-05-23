@@ -571,10 +571,22 @@ class GetWeatherTest(TestCase):
         self.assertEqual(temperature, expected_temperature)
     
     def save_records(self):
-        base_timestamp = datetime.datetime.strptime('2014-05-15 09:03:14 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
-        base_target_time = datetime.datetime.strptime('2014-05-15 08:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
         weather_values = []
         
+        # create two older duplicate
+        old_timestamp = datetime.datetime.strptime('2014-05-01 09:03:14 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        weather_values.append(WeatherValue(timestamp=old_timestamp,
+                            target_time='2014-05-28 00:00:00+00:00', 
+                            temperature=100
+                            ))  
+        weather_values.append(WeatherValue(timestamp=old_timestamp,
+                            target_time='2014-05-16 14:00:00+00:00', 
+                            temperature=100
+                            ))   
+        # create collection of WeatherValues
+        base_timestamp = datetime.datetime.strptime('2014-05-15 09:03:14 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        base_target_time = datetime.datetime.strptime('2014-05-15 08:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+
         count_hourly_temperatures = 39
         for i in range(count_hourly_temperatures):
             timestamp = base_timestamp + datetime.timedelta(0, i) # one second more
@@ -597,17 +609,7 @@ class GetWeatherTest(TestCase):
                 WeatherValue(timestamp=timestamp,
                             target_time=target_time, 
                             temperature=20+ count_hourly_temperatures + i
-                            ))
-        # create two older duplicate
-        old_timestamp = datetime.datetime.strptime('2014-05-01 09:03:14 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
-        weather_values.append(WeatherValue(timestamp=old_timestamp,
-                            target_time='2014-05-28 00:00:00+00:00', 
-                            temperature=100
-                            ))  
-        weather_values.append(WeatherValue(timestamp=old_timestamp,
-                            target_time='2014-05-16 14:00:00+00:00', 
-                            temperature=100
-                            ))                    
+                            ))                 
         WeatherValue.objects.bulk_create(weather_values)
 
 class GetPassedWeatherTest(TestCase):

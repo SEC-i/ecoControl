@@ -88,10 +88,37 @@ class SensorValue(models.Model):
     def __unicode__(self):
         return str(self.pk) + " (" + self.sensor.name + ")"
 
+class WeatherValueManager(models.Manager):
+    def get_closest_and_newest_to_target_time(self, target):
+        closest_greater_qs = self.filter(target_time__gte=target).order_by('target_time', '-timestamp')
+        closest_less_qs    = self.filter(target_time__lt=target).order_by('-target_time', '-timestamp')
+
+        try:
+            try:
+                closest_greater = closest_greater_qs[0]
+            except IndexError:
+                return closest_less_qs[0]
+
+            try:
+                closest_less = closest_less_qs[0]
+            except IndexError:
+                return closest_greater_qs[0]
+        except IndexError:
+            raise self.model.DoesNotExist("There is no closest object"
+                                          " because there are no objects.")
+
+        if closest_greater.target_time - target > target - closest_less.target_time:
+            return closest_less
+        else:
+            return closest_greater
+
+
 class WeatherValue(models.Model):
     temperature = models.CharField(max_length = 20) # in degree celsius
     timestamp = models.DateTimeField(auto_now = False) # time when the value was taken
     target_time = models.DateTimeField(auto_now = False) # time the temperature should be effective
+    objects = WeatherValueManager()
+    
 
 class SensorValueHourly(models.Model):
     sensor = models.ForeignKey('Sensor')

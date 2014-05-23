@@ -134,8 +134,10 @@ class WeatherForecast:
         else:
             return self.get_forecast_temperature_daily(date)
             
-    def get_temperature_of_passed_date(self, date): 
-        d = datetime.timedelta(0,60*15)
+    def get_temperature_of_passed_date(self, date):
+        entry = WeatherValue.objects.get_closest_and_newest_to_target_time(date)
+        return float(entry.temperature) 
+        '''d = datetime.timedelta(0,60*15)
         earlier_stamp = date - d
         later_stamp = date + d
 
@@ -149,6 +151,7 @@ class WeatherForecast:
         else:
             result = entries[0]
         return float(result.temperature)
+        '''
         
         
     def get_nearest_and_newest_weather_value(self, entry1, entry2, target_time):
@@ -163,7 +166,9 @@ class WeatherForecast:
             return sorted_list[1]
             
     def get_forecast_temperature_hourly(self, date):
-        if date.minute > 30:
+        entry = WeatherValue.objects.get_closest_and_newest_to_target_time(date)
+        return float(entry.temperature) 
+        '''if date.minute > 30:
             look_up_hour=date.hour+1
         else:
             look_up_hour=date.hour
@@ -188,6 +193,7 @@ class WeatherForecast:
         else:
             result = entries[0].temperature     
         return float(result)
+        '''
 
     def get_forecast_temperature_daily(self, date):
         entries = WeatherValue.objects.filter(
