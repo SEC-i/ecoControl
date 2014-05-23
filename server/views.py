@@ -76,9 +76,9 @@ def export_csv(request):
     response[
         'Content-Disposition'] = 'attachment; filename="export_%s.csv"' % time()
 
-    if 'csv_data' in request.POST:
-        response.write(request.POST['csv_data'])
-        
+    if 'csv' in request.POST:
+        response.write(request.POST['csv'])
+
     return response
 
 @require_POST
