@@ -1,6 +1,5 @@
 import time
 import logging
-import pika
 
 from server.models import Device, DeviceConfiguration, Sensor, SensorValue
 

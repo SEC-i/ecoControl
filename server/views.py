@@ -15,7 +15,6 @@ from django.utils.timezone import utc
 from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
 from django.core.cache import cache
-import pika
 import cProfile
 
 
