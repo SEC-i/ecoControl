@@ -160,7 +160,7 @@ def get_monthly_statistics(request):
 
     months = sensor_values.extra({'month': "date_trunc('month', date)"}).values(
         'month').annotate(count=Count('id'))
-    output = {}
+    output = []
     for month in months:
         month_start = month['month']
         month_end = month['month'] + dateutil.relativedelta.relativedelta(
@@ -177,10 +177,7 @@ def get_monthly_statistics(request):
         month_data += functions.get_statistics_for_power_meter(
             month_start, month_end)
 
-        key = '%s-%s' % (month_start.month, month_start.year)
-        if month_start.month < 10:
-            key = '0' + key
-        output[key] = month_data
+        output.append(month_data)
 
     return create_json_response(request, output)
 
