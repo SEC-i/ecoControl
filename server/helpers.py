@@ -36,13 +36,13 @@ class WebAPIEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def create_json_response(request, data):
+def create_json_response(data):
     return HttpResponse(
         json.dumps(data, cls=WebAPIEncoder, sort_keys=True), content_type='application/json')
 
 
-def create_json_response_from_QuerySet(request, data):
-    return create_json_response(request, list(data.values()))
+def create_json_response_from_QuerySet(data):
+    return create_json_response(list(data.values()))
 
 
 def is_member(user, group_name):

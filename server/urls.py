@@ -5,6 +5,7 @@ admin.autodiscover()
 
 import views
 import manager.hooks
+import technician.hooks
 
 urlpatterns = patterns('',
     (r'^$', views.index),
@@ -21,6 +22,7 @@ urlpatterns = patterns('',
     (r'^api/sensors/$', views.list_sensors),
     (r'^api/settings/$', views.settings),
     (r'^api/settings/tunable/$', views.get_tunable_device_configurations),
+    (r'^api/snippets/$', technician.hooks.handle_snippets),
     (r'^api/start/$', views.start_system),
     (r'^api/statistics/$', views.get_statistics),
     (r'^api/statistics/monthly/$', views.get_monthly_statistics),
@@ -48,6 +50,8 @@ urlpatterns = patterns('',
     (r'^export/statistics/$', views.get_statistics, {'export': True}),
     (r'^export/sensor/((?P<sensor_id>\d+)/)?$', manager.hooks.get_detailed_sensor_values, {'export': True}),
     (r'^export/csv/$', views.export_csv),
+
+
 
     url(r'^admin/', include(admin.site.urls)),
 )

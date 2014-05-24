@@ -352,4 +352,10 @@ function initialize_editor() {
             }
         });
     });
+
+    $.getJSON('/api/snippets/', function(data) {
+        $.each(data, function(index, snippet) {
+             $("#snippets").append('<option>' + snippet + '</option>');
+        });
+    });
 }
