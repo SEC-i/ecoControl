@@ -40,10 +40,11 @@ class Simulation(object):
 
         self.measurements = MeasurementStorage(
             self.env, self.devices, demo=self.demo)
-        self.env.register_step_function(self.measurements.take)
+        self.env.register_step_function(self.step_function)
 
         self.thread = None
         self.running = False
+        
 
         # initialize BulkProcessor and add it to env
         self.bulk_processor = BulkProcessor(self.env, self.devices)
@@ -116,9 +117,16 @@ class Simulation(object):
         self.env.forward = seconds
         if self.thread == None or not self.thread.isAlive():
             self.start(blocking)
+        elif blocking:
+            while self.env.forward > 0:
+                time.sleep(0.2)
 
     def is_forwarding(self):
         return self.env.forward > 0.0
+    
+    def step_function(self):
+        self.measurements.take()
+        
 
     def get_total_bilance(self):
         return self.cu.get_operating_costs() + self.plb.get_operating_costs() - \

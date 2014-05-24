@@ -15,11 +15,14 @@ from django.utils.timezone import utc
 from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
 from django.core.cache import cache
+import cProfile
+
 
 import functions
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
-from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation, is_member
+from helpers import create_json_response, create_json_response_from_QuerySet,  is_member, DemoSimulation
 from forecasting import Simulation
+from filecmp import demo
 
 
 logger = logging.getLogger('django')
@@ -99,7 +102,7 @@ def start_system(request):
         if 'demo' in request.POST and request.POST['demo'] == '1':
             system_mode.value = 'demo'
             system_mode.save()
-            start_demo_simulation()
+            DEMO_SIMULATION = DemoSimulation.start_or_get()
             return create_json_response(request, {"status": "demo started"})
         system_mode.value = 'normal'
         system_mode.save()
@@ -136,6 +139,17 @@ def forecast(request):
     simulation.forward(seconds=DEFAULT_FORECAST_INTERVAL, blocking=True)
 
     return create_json_response(request, simulation.measurements.get())
+
+def forward(request):
+    forward_time = int(request.POST['forward_time'])
+    
+    demo_sim = DemoSimulation.start_or_get()
+    start = demo_sim.env.now
+    cProfile.runctx("demo_sim.forward(seconds=forward_time, blocking=True)", globals(), locals(), "profile.profile")
+    #demo_sim.forward(seconds=forward_time, blocking=True)
+
+    
+    return list_values(request, start)
 
 
 def get_statistics(request):
