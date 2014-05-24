@@ -11,6 +11,9 @@ $(function() {
             initialize_diagram();
             initialize_tuning_form();
             initialize_editor();
+            if (data['system_mode'] == 'demo') {
+                initialize_forward_buttons();
+            }
         }
     });
 });
@@ -182,6 +185,26 @@ function update_now_line() {
         chart.xAxis[0].setExtremes(new Date(plotline_timestamp - 7 * 24 * 60 * 60 * 1000), new Date(plotline_timestamp + 7 * 24 * 60 * 60 * 1000));
         diagram_initialized = true;
     }
+}
+
+function initialize_forward_buttons() {
+    $('#live_diagram_header').append(
+        '<div class="btn-group btn-group-xs pull-right" data-toggle="buttons"></div>'
+    );
+
+    var forward_options = [[1, '1 Day'], [7, '1 Week'], [14, '2 Weeks'], [4 * 7, '1 Month']];
+    $.each(forward_options, function(index, option){
+        $('#live_diagram_header .btn-group').append(
+            '<button type="button" class="btn btn-default" value="' + option[0] + '" data-toggle="button">\
+              <span class="glyphicon glyphicon-fast-forward"></span> ' + option[1] + '\
+            </button>'
+        );
+    });
+
+    $('#live_diagram_header button').click(function() {
+        // send value to forward hook
+        console.log($(this).val());
+    });
 }
 
 // Tuning
