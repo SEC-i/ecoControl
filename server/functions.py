@@ -163,7 +163,7 @@ def get_statistics_for_peak_load_boiler(start=None, end=None):
     try:
         for system in Device.objects.filter(device_type=Device.PLB):
             system_output = []
-            system_output.append(('type', Device.CU))
+            system_output.append(('type', Device.PLB))
             system_output.append(('system_id', system.id))
             system_output.append(('system_name', system.name))
 
