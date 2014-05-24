@@ -61,7 +61,7 @@ def logout_user(request):
 def status(request):
 
     output = [("system_status", functions.get_configuration("system_status"))]
-    output = [("system_mode", functions.get_configuration("system_mode"))]
+    output.append(("system_mode", functions.get_configuration("system_mode")))
 
     if request.user.is_authenticated():
         output.append(("login", "active"))
