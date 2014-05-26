@@ -146,10 +146,12 @@ def forward(request):
     forward_time = float(data['forward_time']) * 24 * 3600
     
     demo_sim = DemoSimulation.start_or_get()
+    
+    if demo_sim.env.forward > 0:
+        return create_json_response(request, "simulation is still forwarding")
+    
     start = demo_sim.env.now
-    #cProfile.runctx("demo_sim._forward(seconds=forward_time, blocking=True)", globals(), locals())
-    demo_sim._forward(seconds=forward_time, blocking=True)
-
+    demo_sim.forward_demo(seconds=forward_time, blocking=True)
     
     return create_json_response(request, "ok")
 
