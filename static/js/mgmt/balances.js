@@ -182,117 +182,63 @@ function show_month_details(year, month) {
 }
 
 function update_balances_table(data, year, month) {
-    var container = $('#details_container');
-    container.html(
-        '<div class="page-header">\
-          <div class="row">\
-            <div class="col-sm-8">\
-                <h1>' + $.format.date(new Date(year, month, 1), "MMMM yyyy") + '</h1>\
-            </div>\
-            <div class="col-sm-4">\
-                <br>\
-                <div class="row">\
-                    <div class="col-sm-6">\
-                        <select id="selected_month" class="form-control">\
-                        </select>\
-                    </div>\
-                    <div class="col-sm-6">\
-                        <select id="selected_year" class="form-control">\
-                        </select>\
-                    </div>\
-                </div>\
-            </div>\
-        </div>\
-        </div>\
-        <table id="table_container" class="table">\
-          <thead>\
-            <tr>\
-              <th>Description</th>\
-              <th>Price per Unit</th>\
-              <th>Amount</th>\
-              <th>Price <a href="#" id="export_button"><span class="glyphicon glyphicon-export pull-right"></span></a></th>\
-            </tr>\
-          </thead>\
-          <tbody>\
-            <tr>\
-              <td colspan="4"></td>\
-            </tr>\
-            <tr class="success">\
-              <td style="padding-left: 20px">' + get_text('thermal_revenues') + '</td>\
-              <td>' + data['prices']['thermal_revenues'] + ' €</td>\
-              <td>' + data['kwh']['thermal_consumption'] + ' kWh</td>\
-              <td>' + Math.round(data['kwh']['thermal_consumption'] * data['prices']['thermal_revenues'] * 100)/100 + ' €</td>\
-            </tr>\
-            <tr class="success">\
-              <td style="padding-left: 20px">' + get_text('warmwater_revenues') + '</td>\
-              <td>' + data['prices']['warmwater_revenues'] + ' €</td>\
-              <td>' + data['kwh']['warmwater_consumption'] + ' kWh</td>\
-              <td>' + Math.round(data['kwh']['warmwater_consumption'] * data['prices']['warmwater_revenues'] * 100)/100 + ' €</td>\
-            </tr>\
-            <tr class="success">\
-              <td style="padding-left: 20px">' + get_text('electrical_revenues') + '</td>\
-              <td>' + data['prices']['electrical_revenues'] + ' €</td>\
-              <td>' + data['kwh']['electrical_consumption'] + ' kWh</td>\
-              <td>' + Math.round(data['kwh']['electrical_consumption'] * data['prices']['electrical_revenues'] * 100)/100 + ' €</td>\
-            </tr>\
-            <tr class="success">\
-              <td style="padding-left: 20px">' + get_text('electrical_infeed') + '</td>\
-              <td>' + data['prices']['feed_in_reward'] + ' €</td>\
-              <td>' + data['kwh']['electrical_infeed'] + ' kWh</td>\
-              <td>' + Math.round(data['kwh']['electrical_infeed'] * data['prices']['feed_in_reward'] * 100)/100 + ' €</td>\
-            </tr>\
-            <tr>\
-              <td colspan="4"></td>\
-            </tr>\
-            <tr class="danger">\
-              <td style="padding-left: 20px">' + get_text('gas_consumption') + '</td>\
-              <td>' + data['prices']['gas_costs'] + ' €</td>\
-              <td>' + data['kwh']['gas_consumption'] + ' kWh</td>\
-              <td>' + Math.round(data['kwh']['gas_consumption'] * data['prices']['gas_costs'] * 100)/100 + ' €</td>\
-            </tr>\
-            <tr class="danger">\
-              <td style="padding-left: 20px">' + get_text('electrical_purchase') + '</td>\
-              <td>' + data['prices']['electrical_costs'] + ' €</td>\
-              <td>' + data['kwh']['electrical_purchase'] + ' kWh</td>\
-              <td>' + Math.round(data['kwh']['electrical_purchase'] * data['prices']['electrical_costs'] * 100)/100 + ' €</td>\
-            </tr>\
-            <tr>\
-              <td colspan="4"></td>\
-            </tr>\
-            <tr>\
-              <td></td>\
-              <td></td>\
-              <td><b>Revenues</b></td>\
-              <td>' + data['rewards'] + ' €</td>\
-            </tr>\
-            <tr>\
-              <td></td>\
-              <td></td>\
-              <td><b>Costs</b></td>\
-              <td>' + data['costs'] + ' €</td>\
-            </tr>\
-            <tr>\
-              <td></td>\
-              <td></td>\
-              <td><b>' + get_text('total_balance') + '</b></td>\
-              <td><b>' + data['balance'] + ' €</b></td>\
-            </tr>\
-          </tbody>\
-        </table>'
-    );
-
-    $('#export_button').click(function(e) {
-        Highcharts.post('/export/csv/', {
-            csv: $('#table_container').table2CSV({delivery:'value'})
+    $.get('templates/balances_table.html', function(template) {
+        var rendered = Mustache.render(template, {
+            title: $.format.date(new Date(year, month, 1), "MMMM yyyy"),
+            thermal_revenues: {
+                text: get_text('thermal_revenues'),
+                price: data['prices']['thermal_revenues'],
+                value: data['kwh']['thermal_consumption'],
+                total: Math.round(data['kwh']['thermal_consumption'] * data['prices']['thermal_revenues'] * 100)/100
+            },
+            warmwater_revenues: {
+                text: get_text('warmwater_revenues'),
+                price: data['prices']['warmwater_revenues'],
+                value: data['kwh']['warmwater_consumption'],
+                total: Math.round(data['kwh']['warmwater_consumption'] * data['prices']['warmwater_revenues'] * 100)/100
+            },
+            electrical_revenues: {
+                text: get_text('electrical_revenues'),
+                price: data['prices']['electrical_revenues'],
+                value: data['kwh']['electrical_consumption'],
+                total: Math.round(data['kwh']['electrical_consumption'] * data['prices']['electrical_revenues'] * 100)/100
+            },
+            electrical_infeed: {
+                text: get_text('electrical_infeed'),
+                price: data['prices']['feed_in_reward'] ,
+                value: data['kwh']['electrical_infeed'],
+                total: Math.round(data['kwh']['electrical_infeed'] * data['prices']['feed_in_reward'] * 100)/100
+            },
+            gas_consumption: {
+                text: get_text('gas_consumption'),
+                price: data['prices']['gas_costs'],
+                value: data['kwh']['gas_consumption'],
+                total: Math.round(data['kwh']['gas_consumption'] * data['prices']['gas_costs'] * 100)/100
+            },
+            electrical_purchase: {
+                text: get_text('electrical_purchase'),
+                price: data['prices']['electrical_costs'],
+                value: data['kwh']['electrical_purchase'],
+                total: Math.round(data['kwh']['electrical_purchase'] * data['prices']['electrical_costs'] * 100)/100
+            },
+            rewards: data['rewards'],
+            costs: data['costs'],
+            balance: data['balance'],
         });
-        e.preventDefault();
-    });
+        $('#details_container').html(rendered);
+    }).done(function() {
+        $('#export_button').click(function(e) {
+            Highcharts.post('/export/csv/', {
+                csv: $('#table_container').table2CSV({delivery:'value'})
+            });
+            e.preventDefault();
+        });
 
-    update_date_selection();
+        update_date_selection(year, month);
+    });
 }
 
-function update_date_selection() {
-    var selected_month = $('#selected_month').val();
+function update_date_selection(selected_year, selected_month) {
     var month_options = "";
     $.each(get_text('months'), function(index, month) {
         month_options += '<option value="' + index + '" ' + (index == selected_month ? ' selected': '') + '>' + month + '</option>';
