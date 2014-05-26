@@ -9,7 +9,7 @@ function manager_balances_ready() {
     resize_diagrams();
 }
 
-$( window ).resize(function() {
+$(window).resize(function() {
     if (get_current_page() == 'balances') {
         resize_diagrams();
     }

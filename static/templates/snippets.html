@@ -1,0 +1,57 @@
+<div id="snippet_settings_plain">
+    <div class="col-lg-4 col-sm-6">
+        <div class="row">
+            <div class="col-xs-9">
+                <b>{{key}}</b>:
+            </div>
+            <div class="col-xs-3 text-right">
+                {{#device}}<a href="#" class="setting_input" data-type="{{datatype}}" data-title="{{title}}" data-pk="{{key}}" data-device="{{device}}" data-unit="{{unit}}" data-type2="{{type}}">{{/device}}{{value}}{{#device}}</a>{{/device}} {{unit}}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="snippet_settings_input">
+    <div class="col-sm-4">
+        <div class="form-group">
+            <label for="{{id}}">{{key}}</label>
+            {{#unit}}<div class="input-group">
+                <input type="text" class="configuration form-control" id="{{id}}" data-device="{{device}}" data-key="{{key}}" data-type="{{type}}" data-unit="{{unit}}" value="{{value}}">
+                <span class="input-group-addon">{{unit}}</span>
+            </div>
+            {{/unit}}
+            {{^unit}}
+            <input type="text" class="configuration form-control" id="{{id}}" data-device="{{device}}" data-key="{{key}}" data-type="{{type}}" data-unit="{{unit}}" value="{{value}}">
+            {{/unit}}
+        </div>
+    </div>
+</div>
+
+<div id="snippet_settings_notice">
+    <div class="alert alert-warning fade in">
+        <h4>Please Configure The System</h4>
+        <p>Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Cras mattis consectetur purus sit amet fermentum.</p>
+    </div>
+</div>
+
+<div id="snippet_settings_buttons">
+    <div class="row">
+        <div class="col-sm-3 col-sm-offset-2">
+            <button type="button" class="configure_button btn btn-success btn-block btn-lg" data-demo="1">Start Demo</button>
+        </div>
+        <div class="col-sm-3 col-sm-offset-2">
+            <button type="button" class="configure_button btn btn-success btn-block btn-lg" data-demo="0">Start Normal</button>
+        </div>
+    </div>
+</div>
+
+
+<div id="snippet_forward_buttons">
+    <div class="btn-group btn-group-xs pull-right" data-toggle="buttons">
+        {{#buttons}}
+        <button type="button" class="btn btn-default" value="{{value}}" data-toggle="button">
+          <span class="glyphicon glyphicon-fast-forward"></span> {{text}}
+        </button>
+        {{/buttons}}
+    </div>
+</div>

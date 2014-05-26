@@ -7,6 +7,11 @@ import logging
 from django.db import connection
 
 from server.models import Sensor, SensorValue, DeviceConfiguration
+from io import BytesIO
+from struct import pack
+import numpy as np
+from StringIO import StringIO
+from django.utils.timezone import UTC
 
 logger = logging.getLogger('simulation')
 
@@ -50,27 +55,37 @@ class MeasurementStorage():
         self.data = []
         for i in self.sensors:
             self.data.append([])
+        self.device_map = []
+        self.sensor_values = []
+        for device in self.devices:
+            for sensor in self.sensors:
+                if device.id == sensor.device.id:
+                    self.device_map.append((sensor,device))
+                    
+    
+    def flush_data(self):
+        write_text_to_db(self.sensor_values)
+        self.sensor_values = []
+        
 
     def take_demo(self):
             # save demo values every 15mins
             if self.env.now % 60 * 60 != 0:
                 return
-            sensor_values = []
             timestamp = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=pytz.utc)
-            for device in self.devices:
-                for sensor in Sensor.objects.filter(device_id=device.id):
-                    value = getattr(device, sensor.key, None)
-                    if value is not None:
-                        # in case value is a function, call that function
-                        if hasattr(value, '__call__'):
-                            value = value()
-                        
-                        sensor_values.append((sensor.id, value, timestamp))
+            for (sensor, device) in self.device_map:
+                value = getattr(device, sensor.key, None)
+                if value is not None:
+                    # in case value is a function, call that function
+                    if hasattr(value, '__call__'):
+                        value = value()
+                    
+                    self.sensor_values.append((sensor.id, value, timestamp))
+                
             
-            if len(sensor_values) > 0:
-                cursor = connection.cursor()
-                cursor.executemany(
-                    """INSERT INTO "server_sensorvalue" ("sensor_id", "value", "timestamp") VALUES (%s, %s, %s)""", sensor_values)
+            if len(self.sensor_values) > 10000:
+                self.flush_data()
+
                 
     def take_forecast(self):
         if self.env.now % 3600 != 0:
@@ -134,3 +149,20 @@ def parse_value(config):
         logger.warning("ValueError parsing %s to %s" %
                        (config.value, config.value_type))
     return str(config.value)
+
+
+def write_text_to_db(data):
+    cursor = connection.cursor()
+    # Convert floating point numbers to text, write to COPY input
+
+    cpy = BytesIO()
+    for row in data:
+        vals = [row[0], row[1], connection.ops.value_to_db_datetime(row[2])]
+        cpy.write('\t'.join([str(val) for val in vals]) + '\n')
+    
+    # Insert data; database converts text back to floating point numbers
+    cpy.seek(0)
+    cursor.copy_from(cpy, 'server_sensorvalue', columns=('sensor_id', 'value', 'timestamp'))
+    connection.commit()
+    
+    cursor.execute("SELECT setval('server_sensorvalue_id_seq',(select max(id) FROM server_sensorvalue)+1);")
