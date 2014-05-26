@@ -1,7 +1,7 @@
 var x_editable_sensor_list = [];
 
 // READY
-$(function() {
+function technician_thresholds_ready() {
     $.getJSON("/api/status/", function(data) {
         if (data['system_status'] == 'init') {
             redirect_to_settings();
@@ -34,10 +34,6 @@ $(function() {
             event.preventDefault();
         });
     });
-});
-
-function redirect_to_settings(show) {
-    window.location.href = 'settings.html';    
 }
 
 function get_label(category_id) {

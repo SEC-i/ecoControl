@@ -1,5 +1,5 @@
 // READY
-$(function() {
+function technician_statistics_ready() {
     $.getJSON("/api/status/", function(data) {
         if (data['system_status'] == 'init') {
             redirect_to_settings();
@@ -245,8 +245,4 @@ $(function() {
             });
         });
     });
-});
-
-function redirect_to_settings(show) {
-    window.location.href = 'settings.html';    
 }

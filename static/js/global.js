@@ -1,25 +1,3 @@
-$(function() {
-    $('#logout_button').click(function(event) {
-        $.ajax({
-            type: "POST",
-            url: "/api/logout/",
-            crossDomain: true,
-            xhrFields: {
-                withCredentials: true
-            }
-        }).done(redirect_to_landing_page());
-        event.preventDefault();
-    });
-});
-
-function redirect_to_landing_page() {
-    window.location.href = '/static/index.html';
-}
-
-function redirect_to_settings(show) {
-    window.location.href = 'settings.html';    
-}
-
 function draw_table(target, headlines, rows) {
     if (rows.length > 0 && headlines.length == rows[0].length) {
         target.html(
