@@ -47,5 +47,5 @@ class APITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Check that the response equals {"login": "inactive"}
-        self.assertEqual(json.loads(response.content), {
-                         "login": "inactive", "system_status": "init"})
+        self.assertDictContainsSubset(
+            {"login": "inactive", "system_status": "init"}, json.loads(response.content))

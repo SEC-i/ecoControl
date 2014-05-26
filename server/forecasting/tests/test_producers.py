@@ -2,10 +2,10 @@ import unittest
 
 from server.forecasting.environment import ForwardableRealtimeEnvironment
 from server.forecasting.systems.producers import CogenerationUnit, GasPoweredGenerator
-from server.forecasting.systems.storages import PowerMeter
+from server.forecasting.systems.storages import HeatStorage, PowerMeter
 
 from helpers import values_comparison
-from mocks import HeatStorageMock
+from mock import Mock
 
 gas_price_per_kwh = 0.0655
 
@@ -87,8 +87,8 @@ class CogenerationUnitTest(unittest.TestCase):
 
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
-        self.heat_storage = HeatStorageMock()
-        self.power_meter = PowerMeter(0, self.env)
+        self.heat_storage = Mock(spec=HeatStorage)()
+        self.power_meter = Mock(spec=PowerMeter)
         self.cu = CogenerationUnit(1, self.env)
         self.cu.heat_storage = self.heat_storage
         self.cu.power_meter = self.power_meter
@@ -140,11 +140,11 @@ class CogenerationUnitTest(unittest.TestCase):
         # offtime
         
         #consider mode thermal
-        self.heat_storage.required_energy = 3
+        self.heat_storage.get_require_energy.return_value = 3
         expected_workload = self.cu.get_calculated_workload_thermal()
         self.cu.thermal_driven = True
         calculated_workload = self.cu.calculate_new_workload()
-        self.assertEqual(calculated_workload, expected_workload, \
+        self.assertEqual(calculated_workload, expected_workload,
             "thermal workload is wrong")
         
         #consider mode electric
@@ -153,13 +153,13 @@ class CogenerationUnitTest(unittest.TestCase):
         expected_workload = self.cu.get_calculated_workload_electric()
         self.cu.thermal_driven = False
         calculated_workload = self.cu.calculate_new_workload()
-        self.assertEqual(calculated_workload, expected_workload, \
+        self.assertEqual(calculated_workload, expected_workload,
                             "electrical workload is wrong expected: \
                             {0}. got: {1}"\
                             .format(expected_workload, calculated_workload))
         
         #consider overwrite of workload
-        self.heat_storage.required_energy = 3
+        self.heat_storage.get_require_energy.return_value = 3
         expected_workload = self.cu.get_calculated_workload_thermal()
         self.cu.thermal_driven = True
         self.cu.overwrite_workload = 25.0
@@ -170,7 +170,7 @@ class CogenerationUnitTest(unittest.TestCase):
                             
         #consider offtime
         self.cu.overwrite_workload = None
-        self.heat_storage.required_energy = 3
+        self.heat_storage.get_require_energy.return_value = 3
         expected_workload = 0
         self.cu.thermal_driven = True
         self.cu.off_time = self.env.now + 1
@@ -211,7 +211,7 @@ class CogenerationUnitTest(unittest.TestCase):
         gas_input = 20 # unit is energy: kWh
         thermal_efficiency = 0.6
         
-        self.heat_storage.required_energy = required_energy
+        self.heat_storage.get_require_energy.return_value = required_energy
         self.cu.max_gas_input = gas_input
         self.cu.thermal_efficiency = thermal_efficiency * 100
         
@@ -226,7 +226,7 @@ class CogenerationUnitTest(unittest.TestCase):
         # the function returns the needed workload based on the electric demand
         # dont't know why but the workload is mapped to 0-99
         self.heat_storage.target_temperature = 100
-        self.heat_storage.temperature = 0
+        self.heat_storage.get_temperature.return_value = 0
         
         required_energy = 5.0
         gas_input = 20.0 # unit is energy: kWh
@@ -262,7 +262,7 @@ class CogenerationUnitTest(unittest.TestCase):
 class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
-        self.heat_storage = HeatStorageMock()
+        self.heat_storage = Mock(spec=HeatStorage)
         self.power_meter = PowerMeter(0, self.env)
         self.cu = CogenerationUnit(1, self.env)
         self.cu.heat_storage = self.heat_storage
@@ -446,7 +446,7 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         new_workload = 0
         self.cu.thermal_driven = True 
         required_energy = 0.0
-        self.heat_storage.required_energy = required_energy
+        self.heat_storage.get_require_energy.return_value = required_energy
         off_time = self.env.now 
         self.cu.off_time = off_time
         
@@ -491,7 +491,7 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
 class CogenerationUnitMethodStepTest(unittest.TestCase):
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
-        self.heat_storage = HeatStorageMock()
+        self.heat_storage = Mock(spec=HeatStorage)()
         self.power_meter = PowerMeter(0, self.env)
         self.cu = CogenerationUnit(1, self.env)
         self.cu.heat_storage = self.heat_storage
@@ -551,6 +551,12 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         self.cu.thermal_driven = True        
         self.heat_storage.required_energy = 20
         
+        self.heat_storage.get_require_energy.return_value = 20
+        self.heat_storage.temperature = 0.0
+        self.heat_storage.get_temperature.return_value = 0.0
+        self.heat_storage.target_temperature = 0.0
+        self.heat_storage.input_energy = 0
+        
         self.cu.step()
         
         self.assertEqual(self.cu.workload, 0, "wrong workload. " + 
@@ -576,7 +582,7 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         and the effective workload is zero'''
         self.cu.thermal_driven = True
             
-        self.heat_storage.required_energy = 0.1
+        self.heat_storage.get_require_energy.return_value = 0.1
         self.power_meter.energy_produced = 0.0 #ToDo
                 
         self.cu.step()
@@ -609,20 +615,20 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         self.cu.thermal_driven = True
             
         required_energy = 5.0
-        self.heat_storage.required_energy = required_energy
+        self.heat_storage.get_require_energy.return_value = required_energy
         
         self.cu.step()
         
-        expected_workload = self.calculate_workload(required_energy, \
+        expected_workload = self.calculate_workload(required_energy,
                                 self.thermal_efficiency)
         new_gas_consumption = self.calculate_gas_consumption(expected_workload)
         self.total_gas_consumption += new_gas_consumption
         
-        new_electrical_energy = self.calculate_energy(expected_workload, \
+        new_electrical_energy = self.calculate_energy(expected_workload,
                                     self.electrical_efficiency)           
         self.total_electrical_production += new_electrical_energy
         
-        new_thermal_energy = self.calculate_energy(expected_workload, \
+        new_thermal_energy = self.calculate_energy(expected_workload,
                                     self.thermal_efficiency)         
         self.total_thermal_production += new_thermal_energy
         
@@ -652,11 +658,7 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
             msg= "wrong energy_produced(power_meter)" +
             values_comparison(self.power_meter.energy_produced, 
             expected_energy_produced))
-        self.assertAlmostEqual(self.heat_storage.input_energy,
-            expected_input_energy,
-            msg= "wrong input_energy(heat storage)" + 
-            values_comparison(self.heat_storage.input_energy,
-            expected_input_energy))
+        self.heat_storage.add_energy.assert_called_with(expected_input_energy)
         
     def test_step_electric(self):
         #if the mode is electric the cu will produce energy 
@@ -665,6 +667,7 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         self.cu.thermal_driven = False 
         
         self.heat_storage.temperature = 0.0
+        self.heat_storage.get_temperature.return_value = 0.0
         self.heat_storage.target_temperature = 90.0
         required_energy = 2.0
         self.power_meter.current_power_consum = required_energy
@@ -711,11 +714,7 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
             "wrong energy_produced(power_meter)" +
             values_comparison(self.power_meter.energy_produced,
             expected_energy_produced))
-        self.assertAlmostEqual(self.heat_storage.input_energy,
-            expected_input_energy,
-            "wrong input_energy(heat_storage)" +
-            values_comparison(self.heat_storage.input_energy,
-            expected_input_energy))
+        self.heat_storage.add_energy.assert_called_with(expected_input_energy)
         
         
     def test_step_turn_on_forbidden(self):
@@ -729,8 +728,9 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         
         self.cu.thermal_driven = False 
         
-        self.heat_storage.temperature = 0.0
+        self.heat_storage.get_temperature.return_value = 0.0
         self.heat_storage.target_temperature = 90.0
+        self.heat_storage.get_require_energy.return_value=1000
         
         required_energy = 2.0
         self.power_meter.current_power_consum = required_energy
@@ -751,15 +751,14 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         self.assertEqual(self.power_meter.energy_produced, 0,
             "energy_produced(power_meter) " + 
             values_comparison(self.power_meter.energy_produced, 0))
-        self.assertEqual(self.heat_storage.input_energy, 0,
-            "wrong input_energy (heat storage). " +
-            values_comparison(self.heat_storage.input_energy, 0))
+        self.heat_storage.add_energy.assert_called_with(0)
         
     def test_step_turn_target_temperature_reached(self):
         '''if the heat storage is too hot, the cu musn't produce energy
             although there is a demand for electrical energy'''
         self.cu.thermal_driven = False
-        self.heat_storage.temperature = 10.0
+        
+        self.heat_storage.get_temperature.return_value = 10.0
         self.heat_storage.target_temperature = 10.0
         
         required_energy = 2.0
@@ -781,9 +780,7 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         self.assertEqual(self.power_meter.energy_produced, 0,
             "energy_produced(power_meter) " + 
             values_comparison(self.power_meter.energy_produced, 0))
-        self.assertEqual(self.heat_storage.input_energy, 0,
-            "wrong input_energy (heat storage). " +
-            values_comparison(self.heat_storage.input_energy, 0))
+        self.heat_storage.add_energy.assert_called_with(0)
         
     def test_step_workload_too_high(self):
         '''if the workload is too high, the cu will be running at a workload 
@@ -791,8 +788,9 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
             
         self.cu.thermal_driven = False 
         
-        self.heat_storage.temperature = 0.0
+        self.heat_storage.get_temperature.return_value = 0.0
         self.heat_storage.target_temperature = 90.0
+        self.heat_storage.get_require_energy.return_value=1000
      
         required_energy = 500.0
         self.power_meter.current_power_consum = required_energy
@@ -831,7 +829,7 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
             new_electrical_energy, "wrong energy_produced (power_meter)" + 
             values_comparison(self.power_meter.energy_produced,
             new_electrical_energy))
-        self.assertEqual(self.heat_storage.input_energy, new_thermal_energy)
+        self.heat_storage.add_energy.assert_called_with(new_thermal_energy)
         
     def test_step_turn_bhkw_off(self):
         '''If the cu is turned off, there must be an offtime
@@ -839,14 +837,18 @@ class CogenerationUnitMethodStepTest(unittest.TestCase):
         '''
         self.cu.workload = 30
         self.cu.thermal_driven = True 
+        
+        self.heat_storage.get_temperature.return_value = 0.0
+        self.heat_storage.target_temperature = 90.0
+        
         required_energy = 0.0
-        self.heat_storage.required_energy = required_energy
+        self.heat_storage.get_require_energy.return_value = required_energy
         minimal_off_time = 40.0 * 60.0
         self.cu.minimal_off_time = minimal_off_time
         
         self.cu.step()
         
-        self.assertGreaterEqual(self.cu.off_time, \
+        self.assertGreaterEqual(self.cu.off_time,
             self.off_time + minimal_off_time)
         
     def calculate_energy(self, workload, efficiency):

@@ -4,7 +4,6 @@ from datetime import date, datetime, timedelta
 import matplotlib.pyplot as plt
 from pylab import *
 
-from server.forecasting.forecasting.forecasting import Forecast
 from server.forecasting.forecasting.dataloader import DataLoader
 from server.forecasting.forecasting.forecasting.holt_winters import additive, multiplicative
 

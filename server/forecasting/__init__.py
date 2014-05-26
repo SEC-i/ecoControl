@@ -19,7 +19,7 @@ logger = logging.getLogger('simulation')
 
 class Simulation(object):
 
-    def __init__(self, initial_time, configurations=DeviceConfiguration.objects.all(), demo=False):
+    def __init__(self, initial_time, configurations=None, demo=False):
 
         if initial_time % 3600 != 0.0:
             # ensure that initial_time always at full hour, to avoid
@@ -32,14 +32,19 @@ class Simulation(object):
 
         self.demo = demo
 
+
+        if configurations is None:
+            configurations = DeviceConfiguration.objects.all()
+
         self.devices = self.get_initialized_scenario(configurations)
 
         self.measurements = MeasurementStorage(
             self.env, self.devices, demo=self.demo)
-        self.env.register_step_function(self.measurements.take)
+        self.env.register_step_function(self.step_function)
 
         self.thread = None
         self.running = False
+        
 
         # initialize BulkProcessor and add it to env
         self.bulk_processor = BulkProcessor(self.env, self.devices)
@@ -112,9 +117,16 @@ class Simulation(object):
         self.env.forward = seconds
         if self.thread == None or not self.thread.isAlive():
             self.start(blocking)
+        elif blocking:
+            while self.env.forward > 0:
+                time.sleep(0.2)
 
     def is_forwarding(self):
         return self.env.forward > 0.0
+    
+    def step_function(self):
+        self.measurements.take()
+        
 
     def get_total_bilance(self):
         return self.cu.get_operating_costs() + self.plb.get_operating_costs() - \

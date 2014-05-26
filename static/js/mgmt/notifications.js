@@ -1,9 +1,9 @@
 var notifications_per_page = 15;
 
 // READY
-$(function() {
-        update_notifications(0);
-});
+function manager_notifications_ready() {
+    update_notifications(0);
+}
 
 function get_label(category_id) {
     var categories = ['default', 'primary', 'success', 'info', 'warning', 'danger'];
@@ -19,7 +19,7 @@ function update_notifications(start) {
             $('#notification_list tbody').append(
                 '<tr>\
                     <td>' + notification['id'] + '</td>\
-                    <td>' + $.format.date(new Date(parseFloat(notification['timestamp'] * 1000)), "HH:MM dd.MM.yyyy") + '</td>\
+                    <td>' + $.format.date(new Date(parseFloat(notification['timestamp'])), "HH:MM dd.MM.yyyy") + '</td>\
                     <td>' + get_label(notification['category']) + ' ' + notification['message'] + '</td>\
                 </tr>'
             );

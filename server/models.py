@@ -30,10 +30,12 @@ class Configuration(models.Model):
     STR = 0
     INT = 1
     FLOAT = 2
+    DATE = 3
     TYPES = (
         (STR, 'str'),
         (INT, 'int'),
         (FLOAT, 'float'),
+        (DATE, 'date'),
     )
 
     key = models.CharField(max_length=100)
@@ -52,10 +54,12 @@ class DeviceConfiguration(models.Model):
     STR = 0
     INT = 1
     FLOAT = 2
+    DATE = 3
     TYPES = (
         (STR, 'str'),
         (INT, 'int'),
         (FLOAT, 'float'),
+        (DATE, 'date'),
     )
 
     device = models.ForeignKey('Device')
@@ -64,6 +68,7 @@ class DeviceConfiguration(models.Model):
     value_type = models.PositiveSmallIntegerField(
         choices=TYPES, default=STR)
     unit = models.CharField(max_length=50)
+    tunable = models.BooleanField(default=False)
 
 
 class Sensor(models.Model):

@@ -25,7 +25,7 @@ class ForecastTests(unittest.TestCase):
         
 
     def test_data(self):
-        print "--------- test data ------------------"
+        print "\n--------- test data ------------------"
         path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_2013.csv")
         date_dataset = DataLoader.load_from_file(path, "Datum", "\t")
         ten_min = 10 * 60
@@ -40,7 +40,7 @@ class ForecastTests(unittest.TestCase):
                     diff - ten_min) + " seconds at index " + str(index))
 
     def test_make_hourly(self):
-        print "--------- test make_hourly ------------------"
+        print "\n--------- test make_hourly ------------------"
         hourly_data = Forecast.make_hourly(self.dataset, 6)
 
         average = 0
@@ -54,24 +54,27 @@ class ForecastTests(unittest.TestCase):
                                msg="data for " + str(len(hourly_data) / 24) + " days")
 
     def test_split_week_data(self):
-        print "--------- test split_week_data ------------------"
+        print "\n--------- test split_week_data ------------------"
         hourly_data = Forecast.make_hourly(self.dataset, 6)
         env = ForwardableRealtimeEnvironment()
-        fc = Forecast(env, hourly_data, 1, None, (0.0000000, 0.0,1.0))
+        fc = Forecast(env, hourly_data, hw_optimization="MASE", try_cache=False)
 
         self.assertTrue(
             len(fc.demands) == 7, "week_split does not contain 7 series")
         
-        
+
         self.assertTrue(len(fc.demands[0]) / 24 >= fc.input_weeks, "the day series only contains " + str(
             len(fc.demands[0]) / 24) + " days, not " + str(fc.input_weeks) + " (or at least more than 50)")
         
-        # for i in range(7):
-        #     self.assertTrue(fc.calculated_parameters[i]["rmse"] < 10.0, "RMSE of " + str(
-        #         fc.calculated_parameters[i]["rmse"]) + "for day" + str(i) + " is way too high")
+        #from server.forecasting.tools import plotting
+        for i in range(7):
+            #plotting.Plotting.plot_dataset({"measured":fc.demands[i], "forecasted": fc.forecasted_demands[i]}, len(fc.demands[i]), block=True)
+            self.assertTrue(fc.calculated_parameters[i]["mase"] < 20.0, "MASE of " + str(
+                fc.calculated_parameters[i]["mase"]) + "for day" + str(i) + " is way too high")
+
             
     def test_forecast_at(self):
-        print "--------- test forecast_at ------------------"
+        print "\n--------- test forecast_at ------------------"
         self.setup_forecast()
         (at_now, week_index, hour_index)  = self.forecast._forecast_at(self.env.now)
         
@@ -87,7 +90,7 @@ class ForecastTests(unittest.TestCase):
         self.assertTrue(hour_index == 2, "hour should be 2 but was " +str(hour_index))
         
     def test_append_data(self):
-        print "--------- test append_values ------------------"
+        print "\n--------- test append_values ------------------"
         self.setup_forecast()
         path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_until_may_2014.csv")
         raw_dataset_2014 = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
@@ -115,5 +118,9 @@ class ForecastTests(unittest.TestCase):
         self.assertTrue( approximate_index(data, 9) == -1)
         self.assertTrue( approximate_index(data, 1.2436) == 0)
         self.assertTrue( approximate_index(data, 0) == -1)
+    
+    @classmethod
+    def tearDownClass(self):
+        os.remove("cache/cached_forecasts.p") 
         
         

@@ -6,19 +6,23 @@ from datetime import datetime, timedelta
 import calendar
 import dateutil.relativedelta
 
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
+from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.debug import sensitive_post_parameters
 from django.utils.timezone import utc
 from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
+from django.core.cache import cache
+import cProfile
+
 
 import functions
-from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, Threshold, Notification
-from helpers import create_json_response, create_json_response_from_QuerySet, start_demo_simulation, is_member
+from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
+from helpers import create_json_response, create_json_response_from_QuerySet,  is_member, DemoSimulation
 from forecasting import Simulation
+from filecmp import demo
 
 
 logger = logging.getLogger('django')
@@ -55,9 +59,9 @@ def logout_user(request):
 
 
 def status(request):
-    system_status = Configuration.objects.get(key="system_status")
 
-    output = [("system_status", system_status.value)]
+    output = [("system_status", functions.get_configuration("system_status"))]
+    output.append(("system_mode", functions.get_configuration("system_mode")))
 
     if request.user.is_authenticated():
         output.append(("login", "active"))
@@ -69,9 +73,20 @@ def status(request):
 
     return create_json_response(request, dict(output))
 
+@require_POST
+def export_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response[
+        'Content-Disposition'] = 'attachment; filename="export_%s.csv"' % time()
+
+    if 'csv' in request.POST:
+        response.write(request.POST['csv'])
+
+    return response
 
 @require_POST
 def configure(request):
+    cache.clear()
     functions.perform_configuration(json.loads(request.body))
     return create_json_response(request, {"status": "success"})
 
@@ -87,7 +102,7 @@ def start_system(request):
         if 'demo' in request.POST and request.POST['demo'] == '1':
             system_mode.value = 'demo'
             system_mode.save()
-            start_demo_simulation()
+            DEMO_SIMULATION = DemoSimulation.start_or_get()
             return create_json_response(request, {"status": "demo started"})
         system_mode.value = 'normal'
         system_mode.save()
@@ -103,14 +118,20 @@ def settings(request):
     return create_json_response(request, dict(output))
 
 
+def get_tunable_device_configurations(request):
+    output = dict(functions.get_device_configurations(tunable=True))
+    return create_json_response(request, output)
+
+
 def forecast(request):
     try:
-        latest_value = SensorValue.objects.latest('timestamp')
-        initial_time = calendar.timegm(latest_value.timestamp.utctimetuple())
+        latest_timestamp = functions.get_past_time()
+        initial_time = calendar.timegm(latest_timestamp.timetuple())
     except SensorValue.DoesNotExist:
         initial_time = time()
     if request.method == 'POST':
-        configurations = parse_configurations(request.POST)
+        configurations = functions.get_modified_configurations(
+            json.loads(request.body))
         simulation = Simulation(initial_time, configurations)
     else:
         simulation = Simulation(initial_time)
@@ -119,8 +140,22 @@ def forecast(request):
 
     return create_json_response(request, simulation.measurements.get())
 
+def forward(request):
+    forward_time = int(request.POST['forward_time'])
+    
+    demo_sim = DemoSimulation.start_or_get()
+    start = demo_sim.env.now
+    cProfile.runctx("demo_sim.forward(seconds=forward_time, blocking=True)", globals(), locals(), "profile.profile")
+    #demo_sim.forward(seconds=forward_time, blocking=True)
 
-def get_statistics(request, start=functions.get_past_time(months=1), end=None):
+    
+    return list_values(request, start)
+
+
+def get_statistics(request):
+    end = functions.get_past_time(use_view=True)
+    start = end + dateutil.relativedelta.relativedelta(months=-1)
+
     output = []
     output += functions.get_statistics_for_cogeneration_unit(start, end)
     output += functions.get_statistics_for_peak_load_boiler(start, end)
@@ -128,19 +163,18 @@ def get_statistics(request, start=functions.get_past_time(months=1), end=None):
     output += functions.get_statistics_for_electrical_consumer(start, end)
     output += functions.get_statistics_for_power_meter(start, end)
 
-    return create_json_response(request, dict(output))
+    return create_json_response(request, output)
 
 
-def get_monthly_statistics(request, start=functions.get_past_time(years=1), end=None):
-    sensor_values = SensorValue.objects.all()
-    if start is not None:
-        sensor_values = sensor_values.filter(timestamp__gte=start)
-    if end is not None:
-        sensor_values = sensor_values.filter(timestamp__lte=end)
+def get_monthly_statistics(request):
+    end = functions.get_past_time(use_view=True)
+    start = end + dateutil.relativedelta.relativedelta(years=-1)
 
-    months = sensor_values.extra({'month': "date_trunc('month', timestamp)"}).values(
+    sensor_values = SensorValueMonthlySum.objects.filter(date__gte=start, date__lte=end)
+
+    months = sensor_values.extra({'month': "date_trunc('month', date)"}).values(
         'month').annotate(count=Count('id'))
-    output = {}
+    output = []
     for month in months:
         month_start = month['month']
         month_end = month['month'] + dateutil.relativedelta.relativedelta(
@@ -156,8 +190,8 @@ def get_monthly_statistics(request, start=functions.get_past_time(years=1), end=
             month_start, month_end)
         month_data += functions.get_statistics_for_power_meter(
             month_start, month_end)
-        timestamp = calendar.timegm(month_start.utctimetuple())
-        output[timestamp] = dict(month_data)
+
+        output.append(month_data)
 
     return create_json_response(request, output)
 
@@ -165,19 +199,21 @@ def get_monthly_statistics(request, start=functions.get_past_time(years=1), end=
 def list_values(request, start, accuracy='hour'):
 
     if start is None:
-        start = functions.get_past_time(days=14)
+        start = functions.get_past_time(months=1, use_view=True)
     else:
         start = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
     output = []
-  
-    if accuracy=='hour':
+
+    if accuracy == 'hour':
         sensor_values = SensorValueHourly.objects.\
             filter(timestamp__gte=start, sensor__in_diagram=True).\
-            select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
-    elif accuracy=='day':
+            select_related(
+                'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
+    elif accuracy == 'day':
         sensor_values = SensorValueDaily.objects.\
             filter(date__gte=datetime.date(start), sensor__in_diagram=True).\
-            select_related('sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
+            select_related(
+                'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
 
     values = {}
     output = {}
@@ -186,12 +222,12 @@ def list_values(request, start, accuracy='hour'):
         if value.sensor.id not in values.keys():
             values[value.sensor.id] = []
             output[value.sensor.id] = {
-                        'id': value.sensor.id,
-                        'device': value.sensor.device.name,
-                        'name': value.sensor.name,
-                        'unit': value.sensor.unit,
-                        'key': value.sensor.key,
-                        }
+                'id': value.sensor.id,
+                'device': value.sensor.device.name,
+                'name': value.sensor.name,
+                'unit': value.sensor.unit,
+                'key': value.sensor.key,
+            }
         # Save sensor values
         values[value.sensor.id].append((value.timestamp, value.value))
 
@@ -230,7 +266,7 @@ def handle_threshold(request):
     if 'id' in data:
         if not is_member(request.user, 'Technician'):
             return create_json_response(request, {"status": "not a technician"})
-            
+
         threshold = Threshold.objects.get(id=data['id'])
         if threshold is not None:
             if 'delete' in data:
@@ -260,12 +296,14 @@ def handle_threshold(request):
                 if 'category' in data:
                     threshold.category = int(data['category'])
                 if 'show_manager' in data:
-                    threshold.show_manager = True if data['show_manager'] == '1' else False
+                    threshold.show_manager = True if data[
+                        'show_manager'] == '1' else False
                 threshold.save()
             return create_json_response(request, {"status": "success"})
     else:
         if all(x in data for x in ['name', 'sensor_id', 'min_value', 'max_value', 'category']):
-            threshold = Threshold(name=data['name'], sensor_id=int(data['sensor_id']), category=int(data['category']))
+            threshold = Threshold(name=data['name'], sensor_id=int(
+                data['sensor_id']), category=int(data['category']))
             try:
                 threshold.min_value = float(data['min_value'])
             except ValueError:

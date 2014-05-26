@@ -1,16 +1,16 @@
 var sensor_list = null;
 
 // READY
-$(function() {
+function manager_load_curves_ready() {
     $.getJSON("/api/sensors/", function(sensor_data) {
         sensor_list = sensor_data;
         $.getJSON("/api2/loads/", function(loads_data) {
-            initialize_diagram(loads_data);
+            initialize_load_diagrams(loads_data);
         });
     });
-});
+}
 
-function initialize_diagram(loads_data) {
+function initialize_load_diagrams(loads_data) {
     var types = ['thermal', 'warmwater', 'electrical'];
     $.each(types, function (index, type) {
         var diagram_data = get_diagram_data(type, loads_data[type])
@@ -55,17 +55,12 @@ function get_diagram_data(type, input_data) {
         'series' : [],
         'yaxis' : []
     };
-    $.each(input_data, function (sensor_id, data){
+    $.each(input_data, function (sensor_id, sensor_data){
         var sensor = get_sensor(sensor_id);
-
-        var series_data = [];
-        $.each(data, function(index, value) {
-            series_data.push([value[0] * 1000, value[1]]);
-        });
         
         output['series'].push({
             name: sensor.name + ' #' + sensor.id,
-            data: series_data,
+            data: sensor_data,
         });
 
         output['yaxis'].push({

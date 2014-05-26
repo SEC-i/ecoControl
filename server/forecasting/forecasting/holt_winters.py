@@ -46,7 +46,7 @@ def parameter_finding(params, *args):
     type = args[1]
     rmse = 0
  
-    if type == 'linear':
+    if type == 0:
  
         alpha, beta = params
         a = [Y[0]]
@@ -64,7 +64,7 @@ def parameter_finding(params, *args):
         a = [sum(Y[0:m]) / float(m)]
         b = [(sum(Y[m:2 * m]) - sum(Y[0:m])) / m ** 2]
  
-        if type == 'additive':
+        if type == 1:
  
             s = [Y[i] - a[0] for i in range(m)]
             y = [a[0] + b[0] + s[0]]
@@ -73,7 +73,7 @@ def parameter_finding(params, *args):
                 
                 exponential_smoothing_step(Y, i, (alpha, beta, gamma), (a, b, s, y), 1)
  
-        elif type == 'multiplicative':
+        elif type == 2:
  
             s = [Y[i] / a[0] for i in range(m)]
             y = [(a[0] + b[0]) * s[0]]
@@ -93,10 +93,11 @@ def RMSE(params, *args):
     (input, forecast) = parameter_finding(params,*args)
     
     rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(input, forecast[:-1])]) / len(input))
+    penalty = mean_below_penalty(np.array(forecast[:-1]))
     
-    return rmse
+    return rmse + penalty
 
-def MASE(params, *args):
+def MASE(params, *args): 
     (input, forecast) = parameter_finding(params,*args)
     
     training_series = np.array(input)
@@ -106,7 +107,18 @@ def MASE(params, *args):
     d = np.abs(  np.diff(training_series) ).sum()/(n-1)
     
     errors = np.abs(testing_series - prediction_series )
-    return errors.mean()/d
+    penalty = mean_below_penalty(prediction_series) 
+    return errors.mean()/d + penalty
+
+def mean_below_penalty(series, value=0):
+    mean = series.mean()
+    if mean > value:
+        return 0
+    else:
+        return abs(mean) - value 
+    
+
+     
  
 def linear(x, forecast, alpha = None, beta = None):
  
@@ -116,7 +128,7 @@ def linear(x, forecast, alpha = None, beta = None):
  
         initial_values = array([0.3, 0.1])
         boundaries = [(0, 1), (0, 1)]
-        type = 'linear'
+        type = 0#'linear'
  
         parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, type), bounds = boundaries, approx_grad = True)
         alpha, beta = parameters[0]
@@ -146,7 +158,7 @@ def additive(x, m, forecast, alpha = None, beta = None, gamma = None,alpha_bound
  
         initial_values = array([0.3, 0.1, 0.1])
         boundaries = [(0, alpha_bound), (0, 1), (0, 1)]
-        type = 'additive'
+        type = 1#'additive'
  
         parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True,factr=10**6)
         alpha, beta, gamma = parameters[0]
@@ -168,7 +180,7 @@ def additive(x, m, forecast, alpha = None, beta = None, gamma = None,alpha_bound
  
     return Y[-forecast:], alpha, beta, gamma, rmse
  
-def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, initial_values_optimization=[0.3,1.0,0.0], optimization_type="RMSE"):
+def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, initial_values_optimization=[0.0002,0.0003,0.001], optimization_type="RMSE"):
  
     Y = x[:]
  
@@ -176,10 +188,10 @@ def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, init
  
         initial_values = array(initial_values_optimization)
         boundaries = [(0, 1), (0, 1), (0, 1)]
-        type = 'multiplicative'
+        type = 2 #'multiplicative'
         optimization_criterion = RMSE if optimization_type == "RMSE" else MASE
         
-        parameters = fmin_l_bfgs_b(optimization_criterion, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True,factr=10**4)
+        parameters = fmin_l_bfgs_b(optimization_criterion, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True,factr=10**3)
         alpha, beta, gamma = parameters[0]
  
     a = [sum(Y[0:m]) / float(m)]

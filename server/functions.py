@@ -3,8 +3,9 @@ from datetime import datetime
 import dateutil.relativedelta
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.cache import cache
 
-from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly
+from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum, SensorValueDaily
 
 from forecasting.environment import ForwardableRealtimeEnvironment
 from forecasting.systems.code import CodeExecuter
@@ -15,6 +16,7 @@ from forecasting.helpers import parse_value
 
 
 logger = logging.getLogger('django')
+CACHE_TIMEOUT = 120  # seconds
 
 
 def perform_configuration(data):
@@ -64,8 +66,19 @@ def perform_configuration(data):
         else:
             logger.error("Incomplete config data: %s" % config)
 
-    Configuration.objects.bulk_create(configurations)
-    DeviceConfiguration.objects.bulk_create(device_configurations)
+    if len(configurations) > 0:
+        Configuration.objects.bulk_create(configurations)
+    if len(device_configurations) > 0:
+        DeviceConfiguration.objects.bulk_create(device_configurations)
+
+
+def get_modified_configurations(data):
+    configurations = list(DeviceConfiguration.objects.all())
+    for config in configurations:
+        for change in data:
+            if str(config.device_id) == change['device'] and config.key == change['key'] and str(config.value_type) == change['type']:
+                config.value = change['value']
+    return configurations
 
 
 def get_statistics_for_cogeneration_unit(start=None, end=None):
@@ -74,19 +87,32 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
     try:
         for system in Device.objects.filter(device_type=Device.CU):
             system_output = []
-            system_output.append(('type', system.device_type))
+            system_output.append(('type', Device.CU))
+            system_output.append(('system_id', system.id))
+            system_output.append(('system_name', system.name))
 
-            sensor = Sensor.objects.get(device=system, key='workload')
-            sensor_values = SensorValue.objects.filter(sensor=sensor)
+            sensor_workload = Sensor.objects.get(device=system, key='workload')
+            sensor_consumption = Sensor.objects.get(device=system, key='current_gas_consumption')
+            workloads = SensorValueDaily.objects.filter(sensor=sensor_workload)
+            workloads_monthly_avg = SensorValueMonthlyAvg.objects.filter(sensor=sensor_workload)
+            consumptions_monthly_sum = SensorValueMonthlySum.objects.filter(sensor=sensor_consumption)
             if start is not None:
-                sensor_values = sensor_values.filter(timestamp__gte=start)
+                workloads = workloads.filter(date__gte=start)
+                workloads_monthly_avg = workloads_monthly_avg.filter(date__gte=start)
+                consumptions_monthly_sum = consumptions_monthly_sum.filter(date__gte=start)
             if end is not None:
-                sensor_values = sensor_values.filter(timestamp__lte=end)
+                workloads = workloads.filter(date__lte=end)
+                workloads_monthly_avg = workloads_monthly_avg.filter(date__lte=end)
+                consumptions_monthly_sum = consumptions_monthly_sum.filter(date__lte=end)
 
-            hours_of_operation = sensor_values.filter(
-                value__gt=0).count() * (120 / 3600.0)
+            hours_of_operation = workloads.filter(
+                value__gt=0).count() * 24
+
             system_output.append(
                 ('hours_of_operation', round(hours_of_operation, 2)))
+
+            system_output.append(
+                ('average_workload', round(workloads_monthly_avg.latest('date').avg, 2)))
 
             thermal_efficiency = get_device_configuration(
                 system, 'thermal_efficiency')
@@ -94,25 +120,27 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
                 system, 'electrical_efficiency')
             max_gas_input = get_device_configuration(system, 'max_gas_input')
 
-            total_thermal_production = 0
-            total_electrical_production = 0
-            total_gas_consumption = 0
-            power_ons = 0
+            total_gas_consumption = consumptions_monthly_sum.latest('date').sum
+            total_electrical_production = total_gas_consumption * electrical_efficiency
+            total_thermal_production = total_gas_consumption * thermal_efficiency
+            system_output.append(
+                ('total_thermal_production', round(total_thermal_production, 2)))
+            system_output.append(
+                ('total_electrical_production', round(total_electrical_production, 2)))
+            system_output.append(
+                ('total_gas_consumption', round(total_gas_consumption, 2)))
 
-            values = list(sensor_values)
+            gas_costs = get_configuration('gas_costs')
+            operating_costs = total_gas_consumption * gas_costs
+            system_output.append(
+                ('operating_costs', round(operating_costs, 2)))
+
+            values = list(workloads)
             system_output.append(('values_count', len(values)))
 
-            average_workload = 0
+            power_ons = 0
             last_time_on = None
             for value in values:
-                average_workload += value.value
-                step = (value.value / 100.0) * (120 / 3600.0)
-                total_thermal_production += (
-                    thermal_efficiency / 100.0) * step
-                total_electrical_production += (
-                    electrical_efficiency / 100.0) * step
-                total_gas_consumption += max_gas_input * step
-
                 if last_time_on is None:
                     last_time_on = value.value > 0
 
@@ -120,25 +148,9 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
                     power_ons += 1
                     last_time_on = not last_time_on
 
-            if len(values) > 0:
-                average_workload /= len(values)
-            system_output.append(
-                ('average_workload', round(average_workload, 2)))
-
-            system_output.append(
-                ('total_thermal_production', round(total_thermal_production, 2)))
-            system_output.append(
-                ('total_electrical_production', round(total_electrical_production, 2)))
-            system_output.append(
-                ('total_gas_consumption', round(total_gas_consumption, 2)))
             system_output.append(('power_ons', power_ons))
 
-            gas_costs = get_configuration('gas_costs')
-            operating_costs = total_gas_consumption * gas_costs
-            system_output.append(
-                ('operating_costs', round(operating_costs, 2)))
-
-            output.append(('device_%s' % system.id, dict(system_output)))
+            output.append(dict(system_output))
 
     except (Device.DoesNotExist, DeviceConfiguration.DoesNotExist, Configuration.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist) as e:
         logger.warning("DoesNotExist error: %s" % e)
@@ -152,38 +164,55 @@ def get_statistics_for_peak_load_boiler(start=None, end=None):
     try:
         for system in Device.objects.filter(device_type=Device.PLB):
             system_output = []
-            system_output.append(('type', system.device_type))
+            system_output.append(('type', Device.PLB))
+            system_output.append(('system_id', system.id))
+            system_output.append(('system_name', system.name))
 
-            sensor = Sensor.objects.get(device=system, key='workload')
-            sensor_values = SensorValue.objects.filter(sensor=sensor)
+            sensor_workload = Sensor.objects.get(device=system, key='workload')
+            sensor_consumption = Sensor.objects.get(device=system, key='current_gas_consumption')
+            workloads = SensorValueDaily.objects.filter(sensor=sensor_workload)
+            workloads_monthly_avg = SensorValueMonthlyAvg.objects.filter(sensor=sensor_workload)
+            consumptions_monthly_sum = SensorValueMonthlySum.objects.filter(sensor=sensor_consumption)
             if start is not None:
-                sensor_values = sensor_values.filter(timestamp__gte=start)
+                workloads = workloads.filter(date__gte=start)
+                workloads_monthly_avg = workloads_monthly_avg.filter(date__gte=start)
+                consumptions_monthly_sum = consumptions_monthly_sum.filter(date__gte=start)
             if end is not None:
-                sensor_values = sensor_values.filter(timestamp__lte=end)
+                workloads = workloads.filter(date__lte=end)
+                workloads_monthly_avg = workloads_monthly_avg.filter(date__lte=end)
+                consumptions_monthly_sum = consumptions_monthly_sum.filter(date__lte=end)
 
-            hours_of_operation = sensor_values.filter(
-                value__gt=0).count() * (120 / 3600.0)
+            hours_of_operation = workloads.filter(
+                value__gt=0).count() * 24
+
             system_output.append(
                 ('hours_of_operation', round(hours_of_operation, 2)))
+
+            system_output.append(
+                ('average_workload', round(workloads_monthly_avg.latest('date').avg, 2)))
 
             thermal_efficiency = get_device_configuration(
                 system, 'thermal_efficiency')
             max_gas_input = get_device_configuration(system, 'max_gas_input')
 
-            total_thermal_production = 0
-            total_gas_consumption = 0
-            power_ons = 0
+            total_gas_consumption = consumptions_monthly_sum.latest('date').sum
+            total_thermal_production = total_gas_consumption * thermal_efficiency
+            system_output.append(
+                ('total_thermal_production', round(total_thermal_production, 2)))
+            system_output.append(
+                ('total_gas_consumption', round(total_gas_consumption, 2)))
 
-            values = list(sensor_values)
+            gas_costs = get_configuration('gas_costs')
+            operating_costs = total_gas_consumption * gas_costs
+            system_output.append(
+                ('operating_costs', round(operating_costs, 2)))
+
+            values = list(workloads)
             system_output.append(('values_count', len(values)))
 
+            power_ons = 0
             last_time_on = None
             for value in values:
-                step = (value.value / 100.0) * (120 / 3600.0)
-                total_thermal_production += (
-                    thermal_efficiency / 100.0) * step
-                total_gas_consumption += max_gas_input * step
-
                 if last_time_on is None:
                     last_time_on = value.value > 0
 
@@ -191,18 +220,9 @@ def get_statistics_for_peak_load_boiler(start=None, end=None):
                     power_ons += 1
                     last_time_on = not last_time_on
 
-            system_output.append(
-                ('total_thermal_production', round(total_thermal_production, 2)))
-            system_output.append(
-                ('total_gas_consumption', round(total_gas_consumption, 2)))
             system_output.append(('power_ons', power_ons))
 
-            gas_costs = get_configuration('gas_costs')
-            operating_costs = total_gas_consumption * gas_costs
-            system_output.append(
-                ('operating_costs', round(operating_costs, 2)))
-
-            output.append(('device_%s' % system.id, dict(system_output)))
+            output.append(dict(system_output))
 
     except (Device.DoesNotExist, DeviceConfiguration.DoesNotExist, Configuration.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist) as e:
         logger.warning("DoesNotExist error: %s" % e)
@@ -217,12 +237,14 @@ def get_statistics_for_thermal_consumer(start=None, end=None):
         for system in Device.objects.filter(device_type=Device.TC):
             system_output = []
             system_output.append(('type', system.device_type))
+            system_output.append(('system_id', system.id))
+            system_output.append(('system_name', system.name))
 
-            sensor_values = SensorValue.objects.all()
+            sensor_values = SensorValueDaily.objects.all()
             if start is not None:
-                sensor_values = sensor_values.filter(timestamp__gte=start)
+                sensor_values = sensor_values.filter(date__gte=start)
             if end is not None:
-                sensor_values = sensor_values.filter(timestamp__lte=end)
+                sensor_values = sensor_values.filter(date__lte=end)
 
             thermal_consumption = 0
             warmwater_consumption = 0
@@ -230,19 +252,19 @@ def get_statistics_for_thermal_consumer(start=None, end=None):
             sensor1 = Sensor.objects.get(
                 device=system, key='get_consumption_power')
             for value in sensor_values.filter(sensor=sensor1):
-                thermal_consumption += value.value * (120 / 3600.0)
+                thermal_consumption += value.value * 24
 
             sensor2 = Sensor.objects.get(
                 device=system, key='get_warmwater_consumption_power')
             for value in sensor_values.filter(sensor=sensor2):
-                warmwater_consumption += value.value * (120 / 3600.0)
+                warmwater_consumption += value.value * 24
 
             system_output.append(
                 ('thermal_consumption', round(thermal_consumption, 2)))
             system_output.append(
                 ('warmwater_consumption', round(warmwater_consumption, 2)))
 
-            output.append(('device_%s' % system.id, dict(system_output)))
+            output.append(dict(system_output))
 
     except (Device.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist) as e:
         logger.warning("DoesNotExist error: %s" % e)
@@ -257,24 +279,26 @@ def get_statistics_for_electrical_consumer(start=None, end=None):
         for system in Device.objects.filter(device_type=Device.EC):
             system_output = []
             system_output.append(('type', system.device_type))
+            system_output.append(('system_id', system.id))
+            system_output.append(('system_name', system.name))
 
-            sensor_values = SensorValue.objects.all()
+            sensor_values = SensorValueMonthlySum.objects.all()
             if start is not None:
-                sensor_values = sensor_values.filter(timestamp__gte=start)
+                sensor_values = sensor_values.filter(date__gte=start)
             if end is not None:
-                sensor_values = sensor_values.filter(timestamp__lte=end)
+                sensor_values = sensor_values.filter(date__lte=end)
 
             electrical_consumption = 0
 
-            sensor1 = Sensor.objects.get(
+            power = Sensor.objects.get(
                 device=system, key='get_consumption_power')
-            for value in sensor_values.filter(sensor=sensor1):
-                electrical_consumption += value.value * (120 / 3600.0)
+            for value in sensor_values.filter(sensor=power):
+                electrical_consumption += value.sum
 
             system_output.append(
                 ('electrical_consumption', electrical_consumption))
 
-            output.append(('device_%s' % system.id, dict(system_output)))
+            output.append(dict(system_output))
 
     except (Device.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist) as e:
         logger.warning("DoesNotExist error: %s" % e)
@@ -289,31 +313,33 @@ def get_statistics_for_power_meter(start=None, end=None):
         for system in Device.objects.filter(device_type=Device.PM):
             system_output = []
             system_output.append(('type', system.device_type))
+            system_output.append(('system_id', system.id))
+            system_output.append(('system_name', system.name))
 
-            sensor_values = SensorValue.objects.all()
+            sensor_values = SensorValueMonthlySum.objects.all()
             if start is not None:
-                sensor_values = sensor_values.filter(timestamp__gte=start)
+                sensor_values = sensor_values.filter(date__gte=start)
             if end is not None:
-                sensor_values = sensor_values.filter(timestamp__lte=end)
+                sensor_values = sensor_values.filter(date__lte=end)
 
             total_purchased = 0
             total_fed_in_electricity = 0
 
-            sensor1 = Sensor.objects.get(
+            purchase = Sensor.objects.get(
                 device=system, key='purchased')
-            for value in sensor_values.filter(sensor=sensor1):
-                total_purchased += value.value
+            for value in sensor_values.filter(sensor=purchase):
+                total_purchased += value.sum
 
-            sensor2 = Sensor.objects.get(
+            feed_in = Sensor.objects.get(
                 device=system, key='fed_in_electricity')
-            for value in sensor_values.filter(sensor=sensor2):
-                total_fed_in_electricity += value.value
+            for value in sensor_values.filter(sensor=feed_in):
+                total_fed_in_electricity += value.sum
 
             system_output.append(('total_purchased', total_purchased))
             system_output.append(
                 ('total_fed_in_electricity', total_fed_in_electricity))
 
-            output.append(('device_%s' % system.id, dict(system_output)))
+            output.append(dict(system_output))
 
     except (Device.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist) as e:
         logger.warning("DoesNotExist error: %s" % e)
@@ -404,7 +430,21 @@ def get_latest_value_with_unit(system, key):
 
 
 def get_configuration(key):
-    return parse_value(Configuration.objects.get(key=key))
+    config = cache.get(key)
+    if config is None:
+        config = Configuration.objects.get(key=key)
+        cache.set(key, config, CACHE_TIMEOUT)
+    return parse_value(config)
+
+
+def get_device_configuration(system, key):
+    configs = cache.get(key + str(system.id))
+    if configs is None:
+        configs = DeviceConfiguration.objects.filter(device=system)
+        cache.set(key + str(system.id), configs, CACHE_TIMEOUT)
+    for config in configs:
+        if config.key == key:
+            return parse_value(config)
 
 
 def get_configurations():
@@ -422,11 +462,17 @@ def get_device_configuration(system, key):
     return parse_value(DeviceConfiguration.objects.get(device=system, key=key))
 
 
-def get_device_configurations():
+def get_device_configurations(tunable=None):
     output = []
     for device in Device.objects.all():
         configurations = {}
-        for config in DeviceConfiguration.objects.filter(device=device):
+        configuration_queryset = DeviceConfiguration.objects.filter(
+            device=device)
+        if tunable is not None:
+            configuration_queryset = configuration_queryset.filter(
+                tunable=tunable)
+
+        for config in configuration_queryset:
             configurations[config.key] = {
                 'value': config.value,
                 'type': config.value_type,
@@ -439,20 +485,25 @@ def get_device_configurations():
 
 
 def get_operating_costs(system, start):
-    sensor = Sensor.objects.get(device=system, key='workload')
+    workload = Sensor.objects.get(device=system, key='workload')
     max_gas_input = get_device_configuration(system, 'max_gas_input')
     total_gas_consumption = 0
-    for value in SensorValue.objects.filter(sensor=sensor, timestamp__gte=start):
+    for value in SensorValueDaily.objects.filter(sensor=workload, date__gte=start):
         step = (value.value / 100.0) * (120 / 3600.0)
         total_gas_consumption += max_gas_input * step
     return '%s Euro' % round(total_gas_consumption * get_configuration('gas_costs'), 2)
 
 
-def get_past_time(years=0, months=0, days=0):
+def get_past_time(years=0, months=0, days=0, use_view=False):
+    if use_view:
+        _class = SensorValueHourly
+    else:
+        _class = SensorValue
+
     try:
-        latest_value = SensorValueHourly.objects.latest('timestamp')
+        latest_value = _class.objects.latest('timestamp')
         return latest_value.timestamp + \
             dateutil.relativedelta.relativedelta(
                 years=-years, months=-months, days=-days)
-    except SensorValueHourly.DoesNotExist:
+    except _class.DoesNotExist:
         return None
