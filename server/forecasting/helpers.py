@@ -7,6 +7,11 @@ import logging
 from django.db import connection
 
 from server.models import Sensor, SensorValue, DeviceConfiguration
+from io import BytesIO
+from struct import pack
+import numpy as np
+from StringIO import StringIO
+from django.utils.timezone import UTC
 
 logger = logging.getLogger('simulation')
 
@@ -59,9 +64,7 @@ class MeasurementStorage():
                     
     
     def flush_data(self):
-        cursor = connection.cursor()
-        cursor.executemany(
-                    """INSERT INTO "server_sensorvalue" ("sensor_id", "value", "timestamp") VALUES (%s, %s, %s)""", self.sensor_values)
+        write_text_to_db(self.sensor_values)
         self.sensor_values = []
         
 
@@ -146,3 +149,53 @@ def parse_value(config):
         logger.warning("ValueError parsing %s to %s" %
                        (config.value, config.value_type))
     return str(config.value)
+
+
+def write_text_to_db(data):
+    curs = connection.cursor()
+    # Convert floating point numbers to text, write to COPY input
+
+    cpy = BytesIO()
+    for row in data:
+        vals = [row[0], row[1], connection.ops.value_to_db_datetime(row[2])]
+        cpy.write('\t'.join([str(val) for val in vals]) + '\n')
+    
+    # Insert data; database converts text back to floating point numbers
+    cpy.seek(0)
+    curs.copy_from(cpy, 'server_sensorvalue', columns=('sensor_id', 'value', 'timestamp'))
+    connection.commit()
+
+def write_binary(data):
+    cursor = connection.cursor()
+    # Determine starting value for sequence
+    cursor.execute("SELECT nextval('server_sensorvalue_id_seq')")
+    id_seq = cursor.fetchone()[0]
+    
+    # Make a binary file object for COPY FROM
+    cpy = BytesIO()
+    # 11-byte signature, no flags, no header extension
+    cpy.write(pack('!11sii', b'PGCOPY\n\377\r\n\0', 0, 0))
+    
+    # Columns: id, sensor_id, value, timestamp
+    # Zip: (column position, format, size)
+    row_format = list(zip(range(-1, 3),
+                          ('i', 'i', 'f', 'ts'),
+                          ( 4,   4,   8,   "")))
+    for row in data:
+        # Number of columns/fields (always 4)
+        cpy.write(pack('!h', 4))
+        for col, fmt, size in row_format:
+            value = (id_seq if col == -1 else row[col])
+            cpy.write(pack('!i' + fmt, size, value))
+        id_seq += 1  # manually increment sequence outside of database
+    
+    # File trailer
+    cpy.write(pack('!h', -1))
+    
+    # Copy data to database
+    cpy.seek(0)
+    cursor.copy_expert("COPY server_sensorvalue FROM STDIN WITH BINARY", cpy)
+    
+    # Update sequence on database
+    cursor.execute("SELECT setval('server_sensorvalue_id_seq', %s, false)", (id_seq,))
+    connection.commit()
