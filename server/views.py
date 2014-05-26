@@ -140,16 +140,18 @@ def forecast(request):
 
     return create_json_response(request, simulation.measurements.get())
 
+@require_POST
 def forward(request):
-    forward_time = int(request.POST['forward_time'])
+    data = json.loads(request.body)
+    forward_time = int(data['forward_time']) * 24 * 3600
     
     demo_sim = DemoSimulation.start_or_get()
     start = demo_sim.env.now
-    cProfile.runctx("demo_sim.forward(seconds=forward_time, blocking=True)", globals(), locals(), "profile.profile")
-    #demo_sim.forward(seconds=forward_time, blocking=True)
+    #cProfile.runctx("demo_sim._forward(seconds=forward_time, blocking=True)", globals(), locals())
+    demo_sim._forward(seconds=forward_time, blocking=True)
 
     
-    return list_values(request, start)
+    return create_json_response(request, "ok")
 
 
 def get_statistics(request):

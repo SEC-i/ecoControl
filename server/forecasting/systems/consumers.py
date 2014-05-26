@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 import os
 from django.utils.timezone import utc
+import cProfile
 
 from helpers import BaseSystem, interpolate_year
 from data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_workday, warm_water_demand_weekend
@@ -187,6 +188,8 @@ class ElectricalConsumer(BaseSystem):
     power_meter - PowerMeter
     residents - house residents
     """
+    dataset = []
+    dates = []
 
 
     def __init__(self, system_id, env, residents=22):
@@ -251,21 +254,33 @@ class ElectricalConsumer(BaseSystem):
     def get_data_until(self, timestamp, start_timestamp=None):
         #! TODO: reading data from csv will have to be replaced by live/fake data from database
         date = datetime.fromtimestamp(timestamp)
-        path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_2013.csv")
-        raw_dataset = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
-        dates = DataLoader.load_from_file(path, "Datum", "\t")
+        if self.__class__.dataset == [] or self.__class__.dates == []:
+            path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_2013.csv")
+            raw_dataset = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
+            dates = DataLoader.load_from_file(path, "Datum", "\t")
+            
+            if date.year == 2014: 
+                path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_until_may_2014.csv") 
+                raw_dataset += DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
+                dates += DataLoader.load_from_file(path, "Datum", "\t")
+            
+            self.__class__.dates = [int(date) for date in dates]
+            self.__class__.dataset = raw_dataset
+            
+        dates = self.__class__.dates
+        dataset = self.__class__.dataset
 
-        if date.year == 2014:
-            path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_until_may_2014.csv")
-            raw_dataset += DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
-            dates += DataLoader.load_from_file(path, "Datum", "\t")
-
-        dates = [int(date) for date in dates]
         now_index = approximate_index(dates, self.env.now)
 
         #take data until simulated now time
         if start_timestamp == None:
-            return raw_dataset[:now_index]
+            return dataset[:now_index]
         else:
             start_index = approximate_index(dates, start_timestamp)
+<<<<<<< HEAD
             return raw_dataset[start_index:now_index]
+=======
+            return dataset[start_index:now_index]
+        
+        
+>>>>>>> dev
