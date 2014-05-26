@@ -143,7 +143,7 @@ def forecast(request):
 @require_POST
 def forward(request):
     data = json.loads(request.body)
-    forward_time = int(data['forward_time']) * 24 * 3600
+    forward_time = float(data['forward_time']) * 24 * 3600
     
     demo_sim = DemoSimulation.start_or_get()
     start = demo_sim.env.now

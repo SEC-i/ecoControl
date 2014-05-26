@@ -3,8 +3,8 @@ from datetime import datetime
 import os
 import cProfile
 
-from helpers import BaseSystem, interpolate_year
-from data import weekly_electrical_demand_winter, weekly_electrical_demand_summer, warm_water_demand_workday, warm_water_demand_weekend
+from helpers import BaseSystem
+from data import warm_water_demand_workday, warm_water_demand_weekend
 from server.forecasting.forecasting.weather import WeatherForecast
 from server.forecasting.forecasting import Forecast
 from server.forecasting.forecasting.dataloader import DataLoader

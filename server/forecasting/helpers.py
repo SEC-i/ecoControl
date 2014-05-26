@@ -50,27 +50,39 @@ class MeasurementStorage():
         self.data = []
         for i in self.sensors:
             self.data.append([])
+        self.device_map = []
+        self.sensor_values = []
+        for device in self.devices:
+            for sensor in self.sensors:
+                if device.id == sensor.device.id:
+                    self.device_map.append((sensor,device))
+                    
+    
+    def flush_data(self):
+        cursor = connection.cursor()
+        cursor.executemany(
+                    """INSERT INTO "server_sensorvalue" ("sensor_id", "value", "timestamp") VALUES (%s, %s, %s)""", self.sensor_values)
+        self.sensor_values = []
+        
 
     def take_demo(self):
             # save demo values every 15mins
             if self.env.now % 60 * 60 != 0:
                 return
-            sensor_values = []
             timestamp = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=pytz.utc)
-            for device in self.devices:
-                for sensor in Sensor.objects.filter(device_id=device.id):
-                    value = getattr(device, sensor.key, None)
-                    if value is not None:
-                        # in case value is a function, call that function
-                        if hasattr(value, '__call__'):
-                            value = value()
-                        
-                        sensor_values.append((sensor.id, value, timestamp))
+            for (sensor, device) in self.device_map:
+                value = getattr(device, sensor.key, None)
+                if value is not None:
+                    # in case value is a function, call that function
+                    if hasattr(value, '__call__'):
+                        value = value()
+                    
+                    self.sensor_values.append((sensor.id, value, timestamp))
+                
             
-            if len(sensor_values) > 0:
-                cursor = connection.cursor()
-                cursor.executemany(
-                    """INSERT INTO "server_sensorvalue" ("sensor_id", "value", "timestamp") VALUES (%s, %s, %s)""", sensor_values)
+            if len(self.sensor_values) > 10000:
+                self.flush_data()
+
                 
     def take_forecast(self):
         if self.env.now % 3600 != 0:

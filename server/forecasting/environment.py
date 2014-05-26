@@ -37,7 +37,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         if self.forward > 0:
             forward_to = self.now + self.forward
             sim_delta = self.forward - self.now
-
+            
             while self.now < forward_to:
                 self.handle_step_function()
                 Environment.step(self)
