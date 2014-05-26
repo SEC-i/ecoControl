@@ -17,8 +17,10 @@ function login_user() {
     }).done(function(data) {
         if (data['login'] == 'successful') {
             $.getJSON('/api/status/', function(data) {
-                status = data;
-                load_page('overview');
+                status_data = data;
+                initialize_page(function() {
+                    $.address.value('overview');
+                });
             });
         } else {
             var login_button = $('#login_button');

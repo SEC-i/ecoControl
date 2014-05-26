@@ -3,14 +3,16 @@ var cached_data = {};
 
 // READY
 function manager_balances_ready() {
-    initialize_diagram();
-    initialize_diagram_filters();
+    initialize_balance_diagrams();
+    initialize_balance_diagrams_filters();
 
     resize_diagrams();
 }
 
 $( window ).resize(function() {
-    resize_diagrams();
+    if (get_current_page() == 'balances') {
+        resize_diagrams();
+    }
 });
 
 function resize_diagrams() {
@@ -22,7 +24,7 @@ function resize_diagrams() {
     });
 }
 
-function initialize_diagram() {
+function initialize_balance_diagrams() {
     $.each(diagram_types, function(index, type) {
         $('#' + type + '_container').highcharts({
             chart: {
@@ -73,7 +75,7 @@ function initialize_diagram() {
     });
 }
 
-function initialize_diagram_filters() {
+function initialize_balance_diagrams_filters() {
     $.getJSON('/api2/history/', function(history_data) {
         $.each(history_data, function(index, year) {
             $('#diagram_filters').append(
@@ -172,14 +174,14 @@ function initialize_diagram_filters() {
 function show_month_details(year, month) {
     $.each(cached_data[year], function(index, monthly_data) {
         if (month == index) {
-            update_table(monthly_data, year, month);
+            update_balances_table(monthly_data, year, month);
             $('#selected_year').val(year);
             $('#selected_month').val(month);
         }
     });
 }
 
-function update_table(data, year, month) {
+function update_balances_table(data, year, month) {
     var container = $('#details_container');
     container.html(
         '<div class="page-header">\
