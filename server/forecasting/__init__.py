@@ -120,6 +120,14 @@ class Simulation(object):
         elif blocking:
             while self.env.forward > 0:
                 time.sleep(0.2)
+                
+    def _forward(self, seconds, blocking=False):
+        self.env.forward = seconds
+        if self.thread == None or not self.thread.isAlive():
+            self.start(blocking)
+        elif blocking:
+            while self.env.forward > 0:
+                time.sleep(0.2)
 
     def is_forwarding(self):
         return self.env.forward > 0.0
