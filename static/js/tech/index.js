@@ -202,8 +202,21 @@ function initialize_forward_buttons() {
     });
 
     $('#live_diagram_header button').click(function() {
-        // send value to forward hook
-        console.log($(this).val());
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: '/api/forward/',
+            data: JSON.stringify({
+                forward_time: $(this).val()
+            }),
+            dataType: 'json',
+            success: function(data) {
+                // send value to forward hook
+                console.log(data);
+                
+            }
+        });
+
     });
 }
 
