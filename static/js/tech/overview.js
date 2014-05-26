@@ -183,18 +183,26 @@ function update_now_line() {
 }
 
 function initialize_forward_buttons() {
-    $('#live_diagram_header').append(
-        '<div class="btn-group btn-group-xs pull-right" data-toggle="buttons"></div>'
-    );
+    var forward_options = {
+        buttons: [
+        {
+            value: 1,
+            text: '1 Day'
+        }, {
+            value: 7,
+            text: '1 Week'
+        }, {
+            value: 14,
+            text: '2 Weeks'
+        }, {
+            value: 4 * 7,
+            text: '1 Month'
+        }]
+    };
 
-    var forward_options = [[1, '1 Day'], [7, '1 Week'], [14, '2 Weeks'], [4 * 7, '1 Month']];
-    $.each(forward_options, function(index, option){
-        $('#live_diagram_header .btn-group').append(
-            '<button type="button" class="btn btn-default" value="' + option[0] + '" data-toggle="button">\
-              <span class="glyphicon glyphicon-fast-forward"></span> ' + option[1] + '\
-            </button>'
-        );
-    });
+    var output = Mustache.render($('#snippet_forward_buttons').html(), forward_options);
+    console.log(output);
+    $('#live_diagram_header').append(output);
 
     $('#live_diagram_header button').click(function() {
         $.ajax({
