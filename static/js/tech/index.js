@@ -11,6 +11,9 @@ $(function() {
             initialize_diagram();
             initialize_tuning_form();
             initialize_editor();
+            if (data['system_mode'] == 'demo') {
+                initialize_forward_buttons();
+            }
         }
     });
 });
@@ -184,6 +187,26 @@ function update_now_line() {
     }
 }
 
+function initialize_forward_buttons() {
+    $('#live_diagram_header').append(
+        '<div class="btn-group btn-group-xs pull-right" data-toggle="buttons"></div>'
+    );
+
+    var forward_options = [[1, '1 Day'], [7, '1 Week'], [14, '2 Weeks'], [4 * 7, '1 Month']];
+    $.each(forward_options, function(index, option){
+        $('#live_diagram_header .btn-group').append(
+            '<button type="button" class="btn btn-default" value="' + option[0] + '" data-toggle="button">\
+              <span class="glyphicon glyphicon-fast-forward"></span> ' + option[1] + '\
+            </button>'
+        );
+    });
+
+    $('#live_diagram_header button').click(function() {
+        // send value to forward hook
+        console.log($(this).val());
+    });
+}
+
 // Tuning
 function initialize_tuning_form() {
     $.getJSON('/api/settings/tunable/', function(data) {
@@ -195,11 +218,17 @@ function initialize_tuning_form() {
             });
         });
         $('#tuning_form').change(generate_immediate_feedback);
-        $('#tuning_simulate_button').click(generate_immediate_feedback);
+        $('#tuning_button').click(apply_changes);
+        $('#tuning_reset_button').click(function() {
+            $('#tuning_form')[0].reset();
+        })
     });
 }
 
 function generate_immediate_feedback() {
+    $('#immediate_notice').show();
+    $('#tuning_button').prop('disabled', true);
+
     var post_data = [];
     $('.configuration').each(function () {
         post_data.push({
@@ -218,21 +247,45 @@ function generate_immediate_feedback() {
         dataType: 'json',
         success: function(data) {
             update_immediate_forecast(data);
+            $('#immediate_notice').hide();
+            $('#tuning_button').prop('disabled', false);
         }
+    });
+}
+
+function apply_changes() {
+    $('#tuning_button').removeClass('btn-primary').addClass('btn-success');
+    var post_data = [];
+    $('.configuration').each(function () {
+        post_data.push({
+            device: $(this).attr('data-device'),
+            key: $(this).attr('data-key'),
+            type: $(this).attr('data-type'),
+            unit: $(this).attr('data-unit'),
+            value: $(this).val()
+        });
+    });
+    $.ajax({
+        type: 'POST',
+        contentType: 'application/json',
+        url: '/api/configure/',
+        data: JSON.stringify(post_data),
+        dataType: 'json',
+        success: function(data) {
+            setTimeout(function() {
+                $('#tuning_button').removeClass('btn-success').addClass('btn-primary');
+            }, 500);
+            console.log(data);
+        }
+    }).done(function() {
+        cleanup_diagram();
     });
 }
 
 function update_immediate_forecast(data) {
     var chart = $('#simulation_diagram').highcharts();
 
-    var i = 0
-    while(chart.series.length > sensor_count + 1) {
-        if (chart.series[i].name.indexOf('predicted') != -1) {
-            chart.series[i].remove(false);
-        } else {
-            i++;
-        }
-    };
+    cleanup_diagram();
 
     $.each(data, function(index, sensor) {
         chart.addSeries({
@@ -246,6 +299,19 @@ function update_immediate_forecast(data) {
         }, false);
     });
     chart.redraw();
+}
+
+function cleanup_diagram(chart) {
+    var chart = $('#simulation_diagram').highcharts();
+    var i = 0
+    while(chart.series.length > sensor_count + 1) {
+        if (chart.series[i].name.indexOf('predicted') != -1) {
+            chart.series[i].remove(false);
+        } else {
+            i++;
+        }
+    };
+    return true;
 }
 
 function get_input_field_code(namespace, key, data) {

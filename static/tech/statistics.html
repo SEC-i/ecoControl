@@ -59,28 +59,54 @@
     <div class="container">
       <div class="row">
         <div class="col-sm-12" id="panels">
-          <div class="panel panel-default">
-            <div class="panel-heading">CU Gas Consumption and Hours of Operation</div>
-            <div class="panel-body">
-              <div id="cu_statistics_1"></div>
+          <div class="panel-group">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">Cogeneration Unit Diagrams</h4>
+              </div>
+              <div class="panel-body">
+                <div id="cu_statistics_1"></div>
+                <hr>
+                <div id="cu_statistics_2"></div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#cu_statistics_table">
+                    Cogeneration Unit Overview Table
+                  </a>
+                 <a href="#" id="cu_export_button"><span class="glyphicon glyphicon-export pull-right"></span></a>
+                </h4>
+              </div>
+              <div id="cu_statistics_table" class="panel-collapse collapse">
+                <div class="panel-body"></div>
+              </div>
             </div>
           </div>
-          <div class="panel panel-default">
-            <div class="panel-heading">CU Power Ons and Average Workload</div>
-            <div class="panel-body">
-              <div id="cu_statistics_2"></div>
+          <div class="panel-group">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">Peak Load Boiler Diagrams</h4>
+              </div>
+              <div class="panel-body">
+                <div id="plb_statistics_1"></div>
+                <hr>
+                <div id="plb_statistics_2"></div>
+              </div>
             </div>
-          </div>
-          <div class="panel panel-default">
-            <div class="panel-heading">PLB Gas Consumption and Hours of Operation</div>
-            <div class="panel-body">
-              <div id="plb_statistics_1"></div>
-            </div>
-          </div>
-          <div class="panel panel-default">
-            <div class="panel-heading">PLB Power Ons</div>
-            <div class="panel-body">
-              <div id="plb_statistics_2"></div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#plb_statistics_table">
+                    Peak Load Boiler Overview Table
+                  </a>
+                   <a href="#" id="plb_export_button"><span class="glyphicon glyphicon-export pull-right"></span></a>
+                  </h4>
+              </div>
+              <div id="plb_statistics_table" class="panel-collapse collapse">
+                <div class="panel-body"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -101,12 +127,15 @@
     <script src="/static/libs/jquery-ui/js/jquery.ui.mouse.min.js"></script>
     <script src="/static/libs/jquery-ui/js/jquery.ui.slider.min.js"></script>
     <script src="/static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
+    <script src="/static/libs/jquery-table2csv/jquery.table2csv.js"></script>
     <script src="/static/libs/bootstrap/js/bootstrap.min.js"></script>
 
     <script src="/static/libs/highcharts/highcharts.js"></script>
     <script src="/static/libs/highcharts/modules/exporting.js"></script>
+    <script src="/static/js/libs/highcharts.csv-export.js"></script>
 
     <script src="/static/js/global.js"></script>
+    <script src="/static/js/lang.js"></script>
     <script src="/static/js/tech/statistics.js"></script>
 
   </body>

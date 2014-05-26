@@ -59,26 +59,36 @@
     <div class="container">
       <div class="row">
         <div class="col-sm-12">
-          <div class="panel-group" id="accordion">
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <h4 class="panel-title">Statistics</h4>
-              </div>
-              <div class="panel-body">
-                <div class="row">
-                  <div class="col-sm-12">
-                    <div id="diagram_container"></div>
-                  </div>
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">Statistics</h4>
+            </div>
+            <div class="panel-body">
+              <div class="row">
+                <div class="col-sm-12">
+                  <div id="diagram_container"></div>
                 </div>
-                <div class="row text-center">
-                  <div class="col-sm-6">
-                    <select id="series_left" class="series_list" data-target="left"></select>
-                    <select id="years_left" class="years_list" data-target="left"></select>
-                  </div>
-                  <div class="col-sm-6">
-                    <select id="series_right" class="series_list" data-target="right"></select>
-                    <select id="years_right" class="years_list" data-target="right"></select>
-                  </div>
+              </div>
+              <div class="row text-center">
+                <div class="col-sm-6">
+                  <select id="series_left" class="series_list" data-target="left"></select>
+                  <select id="years_left" class="years_list" data-target="left"></select>
+                </div>
+                <div class="col-sm-6">
+                  <select id="series_right" class="series_list" data-target="right"></select>
+                  <select id="years_right" class="years_list" data-target="right"></select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">Overview Table <a href="#" id="export_button"><span class="glyphicon glyphicon-export pull-right"></span></a></h4>
+            </div>
+            <div class="panel-body">
+              <div class="row">
+                <div class="col-sm-12">
+                  <div id="table_container"></div>
                 </div>
               </div>
             </div>
@@ -101,13 +111,16 @@
     <script src="/static/libs/jquery-ui/js/jquery.ui.mouse.min.js"></script>
     <script src="/static/libs/jquery-ui/js/jquery.ui.slider.min.js"></script>
     <script src="/static/libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
+    <script src="/static/libs/jquery-table2csv/jquery.table2csv.js"></script>
     <script src="/static/libs/bootstrap/js/bootstrap.min.js"></script>
 
     <script src="/static/libs/highcharts/highcharts.js"></script>
     <script src="/static/libs/highcharts/modules/exporting.js"></script>
     <script src="/static/libs/highcharts/modules/no-data-to-display.js"></script>
+    <script src="/static/js/libs/highcharts.csv-export.js"></script>
 
     <script src="/static/js/global.js"></script>
+    <script src="/static/js/lang.js"></script>
     <script src="/static/js/mgmt/statistics.js"></script>
   </body>
 </html>

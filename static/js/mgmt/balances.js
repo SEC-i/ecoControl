@@ -1,5 +1,4 @@
 var diagram_types = ['balances', 'rewards', 'costs'];
-var month_list = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 var cached_data = {};
 
 // READY
@@ -7,13 +6,21 @@ $(function() {
     initialize_diagram();
     initialize_diagram_filters();
 
+    resize_diagrams();
+});
+
+$( window ).resize(function() {
+    resize_diagrams();
+});
+
+function resize_diagrams() {
     // resize charts in tabs
     $.each(diagram_types, function(index, type) {
         var container = $('#' + type + '_container');
         var chart = container.highcharts();
         chart.setSize(container.parent().width(), container.parent().height(), false);
     });
-});
+}
 
 function initialize_diagram() {
     $.each(diagram_types, function(index, type) {
@@ -25,7 +32,7 @@ function initialize_diagram() {
                 text: ''
             },
             xAxis: {
-                categories: month_list
+                categories: get_text('months')
             },
             yAxis: [{
                 labels: {
@@ -43,7 +50,8 @@ function initialize_diagram() {
                     point: {
                         events: {
                             click: function (e) {
-                                var month = month_list.indexOf(e.currentTarget.category);
+                                $('#notice_container').empty();
+                                var month = get_text('months').indexOf(e.currentTarget.category);
                                 var year = get_year_from_string(this.series.name);
                                 show_month_details(year, month);
                             }
@@ -120,6 +128,8 @@ function initialize_diagram_filters() {
                         // preselect tables details
                         if ($('#details_container').is(':empty')) {
                             show_month_details(year, data.length - 1);
+                        } else {
+                            update_date_selection();
                         }
                     });
                 }
@@ -163,6 +173,8 @@ function show_month_details(year, month) {
     $.each(cached_data[year], function(index, monthly_data) {
         if (month == index) {
             update_table(monthly_data, year, month);
+            $('#selected_year').val(year);
+            $('#selected_month').val(month);
         }
     });
 }
@@ -171,62 +183,93 @@ function update_table(data, year, month) {
     var container = $('#details_container');
     container.html(
         '<div class="page-header">\
-          <h1>' + $.format.date(new Date(year, month, 1), "MMMM yyyy") + '</h1>\
+          <div class="row">\
+            <div class="col-sm-8">\
+                <h1>' + $.format.date(new Date(year, month, 1), "MMMM yyyy") + '</h1>\
+            </div>\
+            <div class="col-sm-4">\
+                <br>\
+                <div class="row">\
+                    <div class="col-sm-6">\
+                        <select id="selected_month" class="form-control">\
+                        </select>\
+                    </div>\
+                    <div class="col-sm-6">\
+                        <select id="selected_year" class="form-control">\
+                        </select>\
+                    </div>\
+                </div>\
+            </div>\
         </div>\
-        <table class="table table-striped">\
+        </div>\
+        <table id="table_container" class="table">\
           <thead>\
             <tr>\
-              <th></th>\
               <th>Description</th>\
               <th>Price per Unit</th>\
               <th>Amount</th>\
-              <th>Price</th>\
+              <th>Price <a href="#" id="export_button"><span class="glyphicon glyphicon-export pull-right"></span></a></th>\
             </tr>\
           </thead>\
           <tbody>\
             <tr>\
-              <td rowspan="4" class="text-center" style="vertical-align: middle;"><b>Revenues</b><br>' + data['rewards'] + ' €</td>\
-              <td style="padding-left: 20px">' + get_text('thermal_consumption') + '</td>\
+              <td colspan="4"></td>\
+            </tr>\
+            <tr class="success">\
+              <td style="padding-left: 20px">' + get_text('thermal_revenues') + '</td>\
               <td>' + data['prices']['thermal_revenues'] + ' €</td>\
               <td>' + data['kwh']['thermal_consumption'] + ' kWh</td>\
               <td>' + Math.round(data['kwh']['thermal_consumption'] * data['prices']['thermal_revenues'] * 100)/100 + ' €</td>\
             </tr>\
-            <tr>\
-              <td style="padding-left: 20px">' + get_text('warmwater_consumption') + '</td>\
+            <tr class="success">\
+              <td style="padding-left: 20px">' + get_text('warmwater_revenues') + '</td>\
               <td>' + data['prices']['warmwater_revenues'] + ' €</td>\
               <td>' + data['kwh']['warmwater_consumption'] + ' kWh</td>\
               <td>' + Math.round(data['kwh']['warmwater_consumption'] * data['prices']['warmwater_revenues'] * 100)/100 + ' €</td>\
             </tr>\
-            <tr>\
-              <td style="padding-left: 20px">' + get_text('electrical_consumption') + '</td>\
+            <tr class="success">\
+              <td style="padding-left: 20px">' + get_text('electrical_revenues') + '</td>\
               <td>' + data['prices']['electrical_revenues'] + ' €</td>\
               <td>' + data['kwh']['electrical_consumption'] + ' kWh</td>\
               <td>' + Math.round(data['kwh']['electrical_consumption'] * data['prices']['electrical_revenues'] * 100)/100 + ' €</td>\
             </tr>\
-            <tr>\
+            <tr class="success">\
               <td style="padding-left: 20px">' + get_text('electrical_infeed') + '</td>\
               <td>' + data['prices']['feed_in_reward'] + ' €</td>\
               <td>' + data['kwh']['electrical_infeed'] + ' kWh</td>\
               <td>' + Math.round(data['kwh']['electrical_infeed'] * data['prices']['feed_in_reward'] * 100)/100 + ' €</td>\
             </tr>\
             <tr>\
-              <td rowspan="2" class="text-center" style="vertical-align: middle;"><b>Costs</b><br>' + data['costs'] + ' €</td>\
+              <td colspan="4"></td>\
+            </tr>\
+            <tr class="danger">\
               <td style="padding-left: 20px">' + get_text('gas_consumption') + '</td>\
               <td>' + data['prices']['gas_costs'] + ' €</td>\
               <td>' + data['kwh']['gas_consumption'] + ' kWh</td>\
               <td>' + Math.round(data['kwh']['gas_consumption'] * data['prices']['gas_costs'] * 100)/100 + ' €</td>\
             </tr>\
-            <tr>\
+            <tr class="danger">\
               <td style="padding-left: 20px">' + get_text('electrical_purchase') + '</td>\
               <td>' + data['prices']['electrical_costs'] + ' €</td>\
               <td>' + data['kwh']['electrical_purchase'] + ' kWh</td>\
               <td>' + Math.round(data['kwh']['electrical_purchase'] * data['prices']['electrical_costs'] * 100)/100 + ' €</td>\
             </tr>\
             <tr>\
-              <td colspan="5"></td>\
+              <td colspan="4"></td>\
             </tr>\
             <tr>\
               <td></td>\
+              <td></td>\
+              <td><b>Revenues</b></td>\
+              <td>' + data['rewards'] + ' €</td>\
+            </tr>\
+            <tr>\
+              <td></td>\
+              <td></td>\
+              <td><b>Costs</b></td>\
+              <td>' + data['costs'] + ' €</td>\
+            </tr>\
+            <tr>\
               <td></td>\
               <td></td>\
               <td><b>' + get_text('total_balance') + '</b></td>\
@@ -235,6 +278,39 @@ function update_table(data, year, month) {
           </tbody>\
         </table>'
     );
+
+    $('#export_button').click(function(e) {
+        Highcharts.post('/export/csv/', {
+            csv: $('#table_container').table2CSV({delivery:'value'})
+        });
+        e.preventDefault();
+    });
+
+    update_date_selection();
+}
+
+function update_date_selection() {
+    var selected_month = $('#selected_month').val();
+    var month_options = "";
+    $.each(get_text('months'), function(index, month) {
+        month_options += '<option value="' + index + '" ' + (index == selected_month ? ' selected': '') + '>' + month + '</option>';
+    });
+    $('#selected_month').html(month_options);
+
+    $('#selected_month').change(function() {
+        show_month_details($('#selected_year').val(), $(this).val());
+    });
+
+    var selected_year = $('#selected_year').val();
+    var year_options = "";
+    $.each(cached_data, function(year, data) {
+        year_options += '<option' + (year == selected_year ? ' selected': '') + '>' + year + '</option>';
+    });
+    $('#selected_year').html(year_options);
+
+    $('#selected_year').change(function() {
+        show_month_details($(this).val(), $('#selected_month').val());
+    });
 }
 
 function get_year_from_string(string) {

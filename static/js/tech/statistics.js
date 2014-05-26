@@ -48,18 +48,35 @@ $(function() {
                 data: [],
             }];
 
-            $.each(data, function(month, values) {
+            var cu_statistics_table_headlines = ['Month', 'Gas Consumption', 'Hours of Operation', 'Power-Ons', 'Average Workload'];
+            var plb_statistics_table_headlines = ['Month', 'Gas Consumption', 'Hours of Operation', 'Power-Ons'];
+            
+            var cu_statistics_table_data = [];
+            var plb_statistics_table_data = [];
+
+            $.each(data, function(index, values) {
                 $.each(values, function(system, system_data) {
-                    var timestamp = parseInt(month);
                     if (system_data.type == '2') {
-                        cu_series_data_1[0].data.push([timestamp, system_data['total_gas_consumption']]);
-                        cu_series_data_1[1].data.push([timestamp, system_data['hours_of_operation']]);
-                        cu_series_data_2[0].data.push([timestamp, system_data['power_ons']]);
-                        cu_series_data_2[1].data.push([timestamp, system_data['average_workload']]);
+                        cu_series_data_1[0].data.push(system_data['total_gas_consumption']);
+                        cu_series_data_1[1].data.push(system_data['hours_of_operation']);
+
+                        cu_series_data_2[0].data.push(system_data['power_ons']);
+                        cu_series_data_2[1].data.push(system_data['average_workload']);
+
+                        cu_statistics_table_data.push([
+                            get_text('months')[index], system_data['total_gas_consumption'] + 'kWh',
+                            system_data['hours_of_operation'] + 'h', system_data['power_ons'],
+                            system_data['average_workload'] + '%'
+                        ]);
                     } else if (system_data.type == '3') {
-                        plb_series_data_1[0].data.push([timestamp, system_data['total_gas_consumption']]);
-                        plb_series_data_1[1].data.push([timestamp, system_data['hours_of_operation']]);
-                        plb_series_data_2[0].data.push([timestamp, system_data['power_ons']]);
+                        plb_series_data_1[0].data.push(system_data['total_gas_consumption']);
+                        plb_series_data_1[1].data.push(system_data['hours_of_operation']);
+                        plb_series_data_2[0].data.push(system_data['power_ons']);
+
+                        plb_statistics_table_data.push([
+                            get_text('months')[index], system_data['total_gas_consumption'] + 'kWh',
+                            system_data['hours_of_operation'] + 'h', system_data['power_ons']
+                        ]);
                     }
                 });
             });
@@ -69,10 +86,10 @@ $(function() {
                     zoomType: 'xy'
                 },
                 title: {
-                    text: ''
+                    text: 'CU Gas Consumption and Hours of Operation'
                 },
                 xAxis: {
-                    type: 'datetime',
+                    categories: get_text('months')
                 },
                 yAxis: [{
                     labels: {
@@ -108,10 +125,10 @@ $(function() {
                     zoomType: 'xy'
                 },
                 title: {
-                    text: ''
+                    text: 'CU Power Ons and Average Workload'
                 },
                 xAxis: {
-                    type: 'datetime',
+                    categories: get_text('months')
                 },
                 yAxis: [{
                     labels: {
@@ -147,10 +164,10 @@ $(function() {
                     zoomType: 'xy'
                 },
                 title: {
-                    text: ''
+                    text: 'PLB Gas Consumption and Hours of Operation'
                 },
                 xAxis: {
-                    type: 'datetime',
+                    categories: get_text('months')
                 },
                 yAxis: [{
                     labels: {
@@ -186,10 +203,10 @@ $(function() {
                     zoomType: 'xy'
                 },
                 title: {
-                    text: ''
+                    text: 'PLB Power Ons'
                 },
                 xAxis: {
-                    type: 'datetime',
+                    categories: get_text('months')
                 },
                 yAxis: [{
                     labels: {
@@ -208,6 +225,23 @@ $(function() {
                 credits: {
                     enabled: false
                 }
+            });
+
+            draw_table($('#cu_statistics_table .panel-body'), cu_statistics_table_headlines, cu_statistics_table_data);
+            draw_table($('#plb_statistics_table .panel-body'), plb_statistics_table_headlines, plb_statistics_table_data);
+
+            $('#cu_export_button').click(function(e) {
+                Highcharts.post('/export/csv/', {
+                    csv: $('#cu_statistics_table .panel-body').table2CSV({delivery:'value'})
+                });
+                e.preventDefault();
+            });
+
+            $('#plb_export_button').click(function(e) {
+                Highcharts.post('/export/csv/', {
+                    csv: $('#plb_statistics_table .panel-body').table2CSV({delivery:'value'})
+                });
+                e.preventDefault();
             });
         });
     });

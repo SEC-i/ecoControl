@@ -8,7 +8,7 @@ $(function() {
                 } else {
                     redirect_to_tech();
                 }
-            }else if (status_data['manager']) {
+            } else if (status_data['manager']) {
                 redirect_to_mgmt();
             }
         } else {
@@ -38,7 +38,11 @@ function login_user() {
                 }
             });
         } else {
-           console.log('fail');
+            var login_button = $('#login_button');
+            login_button.text('Login incorrect. Please try again!').removeClass('btn-primary').addClass('btn-danger');
+            setTimeout(function() {
+                login_button.text('Login').removeClass('btn-danger').addClass('btn-primary');
+            }, 2000);
         }
     });
 }
