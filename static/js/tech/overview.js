@@ -240,6 +240,7 @@ function initialize_forward_buttons() {
             dataType: 'json',
             success: function(data) {
                 // send value to forward hook
+                refresh();
                 console.log(data);
             }
         });
