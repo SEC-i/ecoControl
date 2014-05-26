@@ -22,13 +22,9 @@ def get_snippet_code(name):
 
 
 def save_snippet(name, code):
-    data = json.loads(request.body)
-    if 'name' in data and 'code' in data:
-        name = data['name']
-        code = data['code']
-        if os.path.splitext(name)[1] == ".py" and code != "":
-            with open(SNIPPET_FOLDER + snippet, "w") as snippet_file:
-                snippet_file.write(code)
-            return {'status': 'success'}
+    if os.path.splitext(name)[1] == ".py" and code != "":
+        with open(SNIPPET_FOLDER + name, "w") as snippet_file:
+            snippet_file.write(code.encode('utf-8'))
+        return {'code': code}
 
     return {'status': 'failed'}

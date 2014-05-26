@@ -17,7 +17,6 @@ from django.db import connection
 from django.core.cache import cache
 import cProfile
 
-
 import functions
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
 from helpers import create_json_response, create_json_response_from_QuerySet, is_member, DemoSimulation
