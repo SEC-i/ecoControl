@@ -277,10 +277,4 @@ class ElectricalConsumer(BaseSystem):
             return dataset[:now_index]
         else:
             start_index = approximate_index(dates, start_timestamp)
-<<<<<<< HEAD
-            return raw_dataset[start_index:now_index]
-=======
             return dataset[start_index:now_index]
-        
-        
->>>>>>> dev
