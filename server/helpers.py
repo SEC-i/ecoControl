@@ -55,8 +55,10 @@ def start_worker():
         worker = Worker()
         worker.start()
 
+
 class DemoSimulation(object):
     stored_simulation = None
+
     @classmethod
     def start_or_get(cls, print_visible=False):
         """
@@ -72,14 +74,13 @@ class DemoSimulation(object):
                     print 'Starting demo simulation...'
                 else:
                     logger.debug('Starting demo simulation...')
-    
+
                 simulation = Simulation(get_initial_time(), demo=True)
                 simulation.start()
                 cls.stored_simulation = simulation
                 return simulation
         if cls.stored_simulation != None:
             return cls.stored_simulation
-    
 
 
 def get_initial_time():

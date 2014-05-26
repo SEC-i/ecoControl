@@ -3,24 +3,17 @@ var plotline_timestamp = null;
 var sensor_count = 0;
 
 // READY
-$(function() {
-    $.getJSON("/api/status/", function(data) {
-        if (data['system_status'] == 'init') {
-            redirect_to_settings();
-        } else {
-            initialize_diagram();
-            initialize_tuning_form();
-            initialize_editor();
-            if (data['system_mode'] == 'demo') {
-                initialize_forward_buttons();
-            }
-        }
-    });
-});
-
+function technician_overview_ready() {
+    initialize_technician_diagram();
+    initialize_technician_tuning_form();
+    initialize_technician_editor();
+    if (status_data['system_mode'] == 'demo') {
+        initialize_forward_buttons();
+    }
+}
 
 // Diagram
-function initialize_diagram() {
+function initialize_technician_diagram() {
     Highcharts.setOptions({
         global: {
             useUTC: false
@@ -29,6 +22,9 @@ function initialize_diagram() {
 
     var series = [];
     $.getJSON('/api/data/', function(data) {
+        var table_headlines = ['Sensor', 'Device', 'Value'];
+        var table_rows = [];
+        var latest_date = 0;
         $.each(data, function(index, sensor) {
             series.push({
                 name: sensor.name + ' (' + sensor.device + ')',
@@ -38,7 +34,11 @@ function initialize_diagram() {
                     valueSuffix: ' ' + sensor.unit
                 }
             });
+            latest_value = Math.round(sensor.data[sensor.data.length - 1][1] * 100) / 100;
+            latest_date = sensor.data[sensor.data.length - 1][0];
+            table_rows.push([sensor.name, sensor.device, latest_value + ' ' + sensor.unit]);
         });
+        update_now_table(table_rows, latest_date);
         sensor_count = series.length;
     }).done(function () {
         $.getJSON('/api/forecast/', function(forecast_data) {
@@ -123,31 +123,53 @@ function initialize_diagram() {
                 }
             });
 
-            setTimeout(refresh, 10000);
+            setTimeout(function() {
+                refresh_technician_diagram(true);
+            }, 10000);
         });
+    });
+
+    $('#live_data_export_button').click(function(e) {
+        Highcharts.post('/export/csv/', {
+            csv: $('#live_data_table_container').table2CSV({delivery:'value'})
+        });
+        e.preventDefault();
     });
 }
 
-function refresh() {
+function refresh_technician_diagram(repeat) {
     var chart = $('#simulation_diagram').highcharts();
     var series_data = []
     $.getJSON('/api/data/', function(data) {
+        var table_rows = [];
+        var latest_date = 0;
         $.each(data, function(index, sensor) {
             series_data.push(sensor.data);
+            latest_value = Math.round(sensor.data[sensor.data.length - 1][1] * 100) / 100;
+            latest_date = sensor.data[sensor.data.length - 1][0];
+            table_rows.push([sensor.name, sensor.device, latest_value + ' ' + sensor.unit]);
         });
+        update_now_table(table_rows, latest_date);
     }).done(function () {
         $.getJSON('/api/forecast/', function(forecast_data) {
             $.each(forecast_data, function(index, sensor) {
                 chart.series[index].setData($.merge(series_data[index], sensor.data), false);
             });
-
             plotline_timestamp = forecast_data[0].data[0][0];
         }).done(function () {
             chart.redraw();
 
-            setTimeout(refresh, 10000);
+            if (repeat && get_current_page() == 'overview') {
+                setTimeout(refresh_technician_diagram, 10000);
+            }
         });
     });
+}
+
+function update_now_table(rows, date) {
+    var headlines = ['Sensor', 'Device', 'Value'];
+    draw_table($('#live_data_table_container'), headlines, rows);
+    $('#live_data_table_container').prepend('<h3>' + $.format.date(new Date(date), "dd.MM.yyyy HH:MM") + '</h3>');
 }
 
 function update_now_line() {
@@ -188,27 +210,45 @@ function update_now_line() {
 }
 
 function initialize_forward_buttons() {
-    $('#live_diagram_header').append(
-        '<div class="btn-group btn-group-xs pull-right" data-toggle="buttons"></div>'
-    );
+    var forward_options = {
+        buttons: [
+        {
+            value: 1,
+            text: '1 Day'
+        }, {
+            value: 7,
+            text: '1 Week'
+        }, {
+            value: 14,
+            text: '2 Weeks'
+        }, {
+            value: 4 * 7,
+            text: '1 Month'
+        }]
+    };
 
-    var forward_options = [[1, '1 Day'], [7, '1 Week'], [14, '2 Weeks'], [4 * 7, '1 Month']];
-    $.each(forward_options, function(index, option){
-        $('#live_diagram_header .btn-group').append(
-            '<button type="button" class="btn btn-default" value="' + option[0] + '" data-toggle="button">\
-              <span class="glyphicon glyphicon-fast-forward"></span> ' + option[1] + '\
-            </button>'
-        );
-    });
+    var output = Mustache.render($('#snippet_forward_buttons').html(), forward_options);
+    $('#live_diagram_header').append(output);
 
     $('#live_diagram_header button').click(function() {
-        // send value to forward hook
-        console.log($(this).val());
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: '/api/forward/',
+            data: JSON.stringify({
+                forward_time: $(this).val()
+            }),
+            dataType: 'json',
+            success: function(data) {
+                refresh_technician_diagram(false);
+                console.log(data);
+            }
+        });
     });
 }
 
 // Tuning
-function initialize_tuning_form() {
+function initialize_technician_tuning_form() {
     $.getJSON('/api/settings/tunable/', function(data) {
         var item = $('#tuning_form');
         $.each(data, function(device_id, device_configurations) {
@@ -334,7 +374,7 @@ function get_input_field_code(namespace, key, data) {
 }
 
 // Code Editor
-function initialize_editor() {
+function initialize_technician_editor() {
     ace.require("ace/ext/language_tools");
     editor = ace.edit("editor");
     editor.setTheme("ace/theme/github");

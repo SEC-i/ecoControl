@@ -1,48 +1,33 @@
 var x_editable_sensor_list = [];
 
 // READY
-$(function() {
-    $.getJSON("/api/status/", function(data) {
-        if (data['system_status'] == 'init') {
-            redirect_to_settings();
-        }
-    }).done(function() {
-        refresh_thresholds();
-        initialize_sensor_list();
+function technician_thresholds_ready() {
+    refresh_thresholds();
+    initialize_sensor_list();
 
-        $('#add_threshold_form').submit( function ( event ) {
-            var post_data = {
-                'name': $('#add_threshold_form input[name=threshold_name]').val(),
-                'sensor_id': $('#add_threshold_form select[name=sensor_id]').val(),
-                'min_value': $('#add_threshold_form input[name=min_value]').val(),
-                'max_value': $('#add_threshold_form input[name=max_value]').val(),
-                'category': $('#add_threshold_form select[name=category]').val(),
-                'show_manager': $('#add_threshold_form select[name=show_manager]').val(),
-            };
-            $.ajax({
-                type: 'POST',
-                contentType: 'application/json',
-                url: '/api/manage/thresholds/',
-                data: JSON.stringify(post_data),
-                dataType: 'json'
-            }).done( function () {
-                refresh_thresholds();
-                $('#add_threshold_form').each( function(){
-                  this.reset();
-                });
+    $('#add_threshold_form').submit( function ( event ) {
+        var post_data = {
+            'name': $('#add_threshold_form input[name=threshold_name]').val(),
+            'sensor_id': $('#add_threshold_form select[name=sensor_id]').val(),
+            'min_value': $('#add_threshold_form input[name=min_value]').val(),
+            'max_value': $('#add_threshold_form input[name=max_value]').val(),
+            'category': $('#add_threshold_form select[name=category]').val(),
+            'show_manager': $('#add_threshold_form select[name=show_manager]').val(),
+        };
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: '/api/manage/thresholds/',
+            data: JSON.stringify(post_data),
+            dataType: 'json'
+        }).done( function () {
+            refresh_thresholds();
+            $('#add_threshold_form').each( function(){
+              this.reset();
             });
-            event.preventDefault();
         });
+        event.preventDefault();
     });
-});
-
-function redirect_to_settings(show) {
-    window.location.href = 'settings.html';    
-}
-
-function get_label(category_id) {
-    var categories = ['default', 'primary', 'success', 'info', 'warning', 'danger'];
-    return '<span class="label label-' + categories[category_id] + '">' + categories[category_id] + '</span>'
 }
 
 function initialize_sensor_list() {

@@ -20,7 +20,7 @@ import cProfile
 
 import functions
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
-from helpers import create_json_response, create_json_response_from_QuerySet,  is_member, DemoSimulation
+from helpers import create_json_response, create_json_response_from_QuerySet, is_member, DemoSimulation
 from forecasting import Simulation
 from filecmp import demo
 
@@ -140,16 +140,20 @@ def forecast(request):
 
     return create_json_response(simulation.measurements.get())
 
+@require_POST
 def forward(request):
-    forward_time = int(request.POST['forward_time'])
+    data = json.loads(request.body)
+    forward_time = float(data['forward_time']) * 24 * 3600
     
     demo_sim = DemoSimulation.start_or_get()
-    start = demo_sim.env.now
-    cProfile.runctx("demo_sim.forward(seconds=forward_time, blocking=True)", globals(), locals(), "profile.profile")
-    #demo_sim.forward(seconds=forward_time, blocking=True)
-
     
-    return list_values(request, start)
+    if demo_sim.env.forward > 0:
+        return create_json_response(request, "simulation is still forwarding")
+    
+    start = demo_sim.env.now
+    demo_sim.forward_demo(seconds=forward_time, blocking=True)
+    
+    return create_json_response(request, "ok")
 
 
 def get_statistics(request):

@@ -120,12 +120,17 @@ class Simulation(object):
         elif blocking:
             while self.env.forward > 0:
                 time.sleep(0.2)
+                
+    def forward_demo(self, seconds, blocking=False):
+        self.forward(seconds, blocking)
+        self.measurements.flush_data()
 
     def is_forwarding(self):
         return self.env.forward > 0.0
     
     def step_function(self):
         self.measurements.take()
+
         
 
     def get_total_bilance(self):

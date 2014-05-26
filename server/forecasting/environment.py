@@ -1,5 +1,6 @@
 import time
 import logging
+import cProfile
 
 from simpy.core import Environment, EmptySchedule
 from simpy.rt import RealtimeEnvironment
@@ -36,10 +37,12 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         if self.forward > 0:
             forward_to = self.now + self.forward
             sim_delta = self.forward - self.now
-
+            
             while self.now < forward_to:
                 self.handle_step_function()
                 Environment.step(self)
+                    
+            #cProfile.runctx("t()", globals(), locals())
 
             self.env_start += self.forward
             self.forward = 0

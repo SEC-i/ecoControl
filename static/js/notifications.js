@@ -1,15 +1,9 @@
 var notifications_per_page = 15;
 
 // READY
-$(function() {
-        update_notifications(0);
-});
-
-function get_label(category_id) {
-    var categories = ['default', 'primary', 'success', 'info', 'warning', 'danger'];
-    return '<span class="label label-' + categories[category_id] + '">' + categories[category_id] + '</span>'
+function notifications_ready() {
+    update_notifications(0);
 }
-
 
 function update_notifications(start) {
     var url = '/api/notifications/start/' + start + '/end/' + (start + notifications_per_page) + '/';
