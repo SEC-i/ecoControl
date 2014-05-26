@@ -6,7 +6,7 @@ from django.db import connection, ProgrammingError
 from django.contrib.auth.models import User, Group
 
 from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
-from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum
+from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum, WeatherValue
 
 
 def initialize_default_user():
