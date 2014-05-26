@@ -59,7 +59,7 @@ def initialize_default_scenario():
         sensors.append(
             Sensor(device=plb, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh', aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Thermal Consumption',
-                       key='current_power', setter='current_power', unit='kWh', in_diagram=True, aggregate_sum=True))
+                       key='get_consumption_power', setter='current_power', unit='kWh', in_diagram=True, aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Warm Water Consumption',
                        key='get_warmwater_consumption_power', unit='kWh', in_diagram=True, aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Room Temperature',
@@ -68,7 +68,7 @@ def initialize_default_scenario():
                        key='get_outside_temperature', unit='°C', in_diagram=True, aggregate_avg=True))
         sensors.append(Sensor(device=ec, name='Electrical Consumption',
                        key='get_consumption_power', unit='kWh', in_diagram=True, aggregate_sum=True))
-        
+
         Sensor.objects.bulk_create(sensors)
         print "Default sensors initialized"
 
@@ -129,7 +129,7 @@ def initialize_default_scenario():
         device_configurations.append(
             DeviceConfiguration(device=cu, key='purchase_price', value='15000', value_type=DeviceConfiguration.FLOAT, unit='€'))
         device_configurations.append(
-            DeviceConfiguration(device=cu, key='purchase_date', value='01.01.2013', value_type=DeviceConfiguration.DATE, unit=''))
+            DeviceConfiguration(device=cu, key='purchase_date', value='01.01.2013', value_type=DeviceConfiguration.STR, unit=''))
         device_configurations.append(
             DeviceConfiguration(device=cu, key='maintenance_interval_hours', value='8000', value_type=DeviceConfiguration.INT, unit='h'))
         device_configurations.append(
@@ -186,7 +186,7 @@ def initialize_views():
     try:
         len(SensorValueMonthlySum.objects.all())
     except ProgrammingError:
-        cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluemonthlysum AS 
+        cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluemonthlysum AS
                      SELECT row_number() OVER (ORDER BY t1.date) AS id,
                         t1.sensor_id,
                         t1.date,
@@ -204,7 +204,7 @@ def initialize_views():
         len(SensorValueMonthlyAvg.objects.all())
     except ProgrammingError:
         # could be derived from server_sensorvaluehourly
-        cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluemonthlyavg AS 
+        cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluemonthlyavg AS
                      SELECT row_number() OVER (ORDER BY t1.date) AS id,
                         t1.sensor_id,
                         t1.date,
