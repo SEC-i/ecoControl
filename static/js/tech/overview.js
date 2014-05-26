@@ -407,13 +407,13 @@ function initialize_technician_editor() {
     });
 
     $("#load_snippet").submit(function(event) {
-        
-        event.preventDefault();
         $.postJSON("/api/snippets/", {
             name: $("#code_snippets").val()
         }, function(data) {
             editor.setValue(data['code'], 1);
         });
+        $('#snippet_name').val($("#code_snippets").val());
+        event.preventDefault();
     });
 }
 
