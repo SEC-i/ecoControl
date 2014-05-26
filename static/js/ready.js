@@ -6,7 +6,7 @@ $(function() {
         if (is_logged_in()) {
             initialize_page(function() {
                 if (status_data['technician'] && status_data['system_status'] == 'init') {
-                    load_page('settings');
+                    $.address.value('settings');
                 } else {
                     load_page(get_current_page());
                 }
@@ -93,6 +93,11 @@ function initialize_page(callback) {
             }).done(load_page('login'));
             event.preventDefault();
         });
-        callback();
+
+        $('#snippets').load('templates/snippets.html', function() {
+            callback();
+        });
     });
+
+
 }

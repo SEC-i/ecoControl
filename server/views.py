@@ -20,7 +20,7 @@ import cProfile
 
 import functions
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
-from helpers import create_json_response, create_json_response_from_QuerySet,  is_member, DemoSimulation
+from helpers import create_json_response, create_json_response_from_QuerySet, is_member, DemoSimulation
 from forecasting import Simulation
 from filecmp import demo
 

@@ -6,22 +6,14 @@ function manager_settings_ready() {
                 var namespace = namespaces[device_id];
                 var item = $('#' + namespace + '_panel .panel-body');
                 if (item.length) {
-                    item.append(get_plain_text(key, config_data));
+                    var output = Mustache.render($('#snippet_settings_plain').html(), {
+                        key: get_text(key),
+                        value: config_data.value,
+                        unit: config_data.unit
+                    });
+                    item.append(output);
                 }
             });
         });
     });
-}
-
-function get_plain_text(key, data) {
-    return '<div class="col-lg-4 col-sm-6">\
-                <div class="row">\
-                    <div class="col-xs-9">\
-                        <b>' + get_text(key) + '</b>:\
-                    </div>\
-                    <div class="col-xs-3 text-right">\
-                        ' + data.value + ' ' + data.unit + '\
-                    </div>\
-                </div>\
-            </div>';
 }

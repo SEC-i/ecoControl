@@ -4,14 +4,12 @@ var sensor_count = 0;
 
 // READY
 function technician_overview_ready() {
-    $.getJSON("/api/status/", function(data) {
-        initialize_technician_diagram();
-        initialize_technician_tuning_form();
-        initialize_technician_editor();
-        if (data['system_mode'] == 'demo') {
-            initialize_forward_buttons();
-        }
-    });
+    initialize_technician_diagram();
+    initialize_technician_tuning_form();
+    initialize_technician_editor();
+    if (status_data['system_mode'] == 'demo') {
+        initialize_forward_buttons();
+    }
 }
 
 // Diagram
@@ -118,12 +116,12 @@ function initialize_technician_diagram() {
                 }
             });
 
-            setTimeout(refresh, 10000);
+            setTimeout(refresh_technician_diagram, 10000);
         });
     });
 }
 
-function refresh() {
+function refresh_technician_diagram() {
     var chart = $('#simulation_diagram').highcharts();
     var series_data = []
     $.getJSON('/api/data/', function(data) {
@@ -141,7 +139,7 @@ function refresh() {
             chart.redraw();
 
             if (get_current_page() == 'overview') {
-                setTimeout(refresh, 10000);
+                setTimeout(refresh_technician_diagram, 10000);
             }
         });
     });
@@ -185,18 +183,26 @@ function update_now_line() {
 }
 
 function initialize_forward_buttons() {
-    $('#live_diagram_header').append(
-        '<div class="btn-group btn-group-xs pull-right" data-toggle="buttons"></div>'
-    );
+    var forward_options = {
+        buttons: [
+        {
+            value: 1,
+            text: '1 Day'
+        }, {
+            value: 7,
+            text: '1 Week'
+        }, {
+            value: 14,
+            text: '2 Weeks'
+        }, {
+            value: 4 * 7,
+            text: '1 Month'
+        }]
+    };
 
-    var forward_options = [[1, '1 Day'], [7, '1 Week'], [14, '2 Weeks'], [4 * 7, '1 Month']];
-    $.each(forward_options, function(index, option){
-        $('#live_diagram_header .btn-group').append(
-            '<button type="button" class="btn btn-default" value="' + option[0] + '" data-toggle="button">\
-              <span class="glyphicon glyphicon-fast-forward"></span> ' + option[1] + '\
-            </button>'
-        );
-    });
+    var output = Mustache.render($('#snippet_forward_buttons').html(), forward_options);
+    console.log(output);
+    $('#live_diagram_header').append(output);
 
     $('#live_diagram_header button').click(function() {
         $.ajax({
@@ -211,10 +217,8 @@ function initialize_forward_buttons() {
                 // send value to forward hook
                 refresh();
                 console.log(data);
-                
             }
         });
-
     });
 }
 
