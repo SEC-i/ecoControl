@@ -18,9 +18,9 @@ weather_forecast = None
 class ThermalConsumer(BaseSystem):
 
     """
-    physically based heating, using formulas from 
+    physically based heating, using formulas from
     http://www.model.in.tum.de/um/research/groups/ai/fki-berichte/postscript/fki-227-98.pdf and
-    http://www.inference.phy.cam.ac.uk/is/papers/DanThermalModellingBuildings.pdf 
+    http://www.inference.phy.cam.ac.uk/is/papers/DanThermalModellingBuildings.pdf
     house data from pamiru48 (12 apartments with 22 persons)
 
     total_heated_floor - area of simulated house in square meter (650)
@@ -59,7 +59,7 @@ class ThermalConsumer(BaseSystem):
         self.heat_transfer_wall = 0.5
 
         self.consumed = 0
-        
+
         global weather_forecast
         if weather_forecast == None:
             weather_forecast = WeatherForecast(self.env)
@@ -68,10 +68,9 @@ class ThermalConsumer(BaseSystem):
 
         #only build once, to save lots of time
         #self.warmwater_forecast = Forecast(self.env, input_data, samples_per_hour=1)
-            
 
         self.calculate()
-        
+
     def find_dependent_devices_in(self, system_list):
         for system in system_list:
             system.attach_to_thermal_consumer(self)
@@ -81,6 +80,7 @@ class ThermalConsumer(BaseSystem):
 
     def calculate(self):
 
+        self.current_power = 0
         self.total_heated_volume = self.total_heated_floor * self.room_height
         self.avg_room_volume = self.total_heated_volume / \
             (self.apartments * self.avg_rooms_per_apartment)
@@ -88,9 +88,8 @@ class ThermalConsumer(BaseSystem):
         avg_wall_size = self.avg_room_volume / self.room_height * 3
         # Assume each appartment have an average of 0.8 outer walls per apartment
         self.outer_wall_surface = avg_wall_size * self.apartments * 0.8
-        # in kW
         self.max_power = self.total_heated_floor * \
-            float(self.heating_constant) / 1000.0
+            float(self.heating_constant)
 
 
         # Assume a window size of 2 square meters
@@ -103,7 +102,7 @@ class ThermalConsumer(BaseSystem):
         ) + self.get_warmwater_consumption_energy()
         self.consumed += consumption
         self.heat_storage.consume_energy(consumption)
-        
+
     def heat_room(self):
         # Convert from J/(m^3 * K) to kWh/(m^3 * K)
         specific_heat_capacity_air = 1000.0 / 3600.0
@@ -114,7 +113,7 @@ class ThermalConsumer(BaseSystem):
 
     def get_consumption_power(self):
         # convert to kW
-        return self.current_power
+        return self.current_power / 1000.0
 
     def get_consumption_energy(self):
         # convert to kWh
@@ -147,8 +146,6 @@ class ThermalConsumer(BaseSystem):
 
     def simulate_consumption(self):
         # Calculate variation using daily demand
-        if self.current_power >= 65.0:
-            g = 0
         self.target_temperature = self.daily_demand[
             time.gmtime(self.env.now).tm_hour]
 
@@ -162,7 +159,6 @@ class ThermalConsumer(BaseSystem):
             self.current_power += slope
 
         # Clamp to maximum power
-        
         self.current_power = max(min(self.current_power, self.max_power), 0.0)
 
     def heat_loss_power(self):
@@ -211,7 +207,7 @@ class ElectricalConsumer(BaseSystem):
 
         # list of 24 values representing relative demand per hour
         self.demand_variation = [1 for i in range(24)]
-        
+
         self.new_data_interval = 24 * 60 * 60 #append data each day
         self.last_forecast_update = self.env.now
 
@@ -232,15 +228,15 @@ class ElectricalConsumer(BaseSystem):
         ##copyconstructed means its running a forecasting
         if self.env.demo and self.env.now - self.last_forecast_update > self.new_data_interval:
             self.update_forecast_data()
-        
+
     def update_forecast_data(self):
-        
+
         raw_dataset = self.get_data_until(self.env.now, self.last_forecast_update)
         #cast to float and convert to kW
         dataset = [float(val) / 1000.0 for val in raw_dataset]
         self.electrical_forecast.append_values(dataset)
         self.last_forecast_update = self.env.now
-        
+
 
     def get_consumption_power(self):
         time_tuple = time.gmtime(self.env.now)
@@ -251,7 +247,7 @@ class ElectricalConsumer(BaseSystem):
 
     def get_consumption_energy(self):
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
-    
+
     def get_data_until(self, timestamp, start_timestamp=None):
         #! TODO: reading data from csv will have to be replaced by live/fake data from database
         date = datetime.fromtimestamp(timestamp)
@@ -272,7 +268,7 @@ class ElectricalConsumer(BaseSystem):
         dataset = self.__class__.dataset
 
         now_index = approximate_index(dates, self.env.now)
-        
+
         #take data until simulated now time
         if start_timestamp == None:
             return dataset[:now_index]

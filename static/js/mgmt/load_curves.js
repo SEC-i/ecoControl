@@ -1,16 +1,16 @@
 var sensor_list = null;
 
 // READY
-$(function() {
+function manager_load_curves_ready() {
     $.getJSON("/api/sensors/", function(sensor_data) {
         sensor_list = sensor_data;
         $.getJSON("/api2/loads/", function(loads_data) {
-            initialize_diagram(loads_data);
+            initialize_load_diagrams(loads_data);
         });
     });
-});
+}
 
-function initialize_diagram(loads_data) {
+function initialize_load_diagrams(loads_data) {
     var types = ['thermal', 'warmwater', 'electrical'];
     $.each(types, function (index, type) {
         var diagram_data = get_diagram_data(type, loads_data[type])
