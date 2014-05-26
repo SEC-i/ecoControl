@@ -4,14 +4,12 @@ var sensor_count = 0;
 
 // READY
 function technician_overview_ready() {
-    $.getJSON("/api/status/", function(data) {
-        initialize_technician_diagram();
-        initialize_technician_tuning_form();
-        initialize_technician_editor();
-        if (data['system_mode'] == 'demo') {
-            initialize_forward_buttons();
-        }
-    });
+    initialize_technician_diagram();
+    initialize_technician_tuning_form();
+    initialize_technician_editor();
+    if (status_data['system_mode'] == 'demo') {
+        initialize_forward_buttons();
+    }
 }
 
 // Diagram
@@ -118,12 +116,12 @@ function initialize_technician_diagram() {
                 }
             });
 
-            setTimeout(refresh, 10000);
+            setTimeout(refresh_technician_diagram, 10000);
         });
     });
 }
 
-function refresh() {
+function refresh_technician_diagram() {
     var chart = $('#simulation_diagram').highcharts();
     var series_data = []
     $.getJSON('/api/data/', function(data) {
@@ -141,7 +139,7 @@ function refresh() {
             chart.redraw();
 
             if (get_current_page() == 'overview') {
-                setTimeout(refresh, 10000);
+                setTimeout(refresh_technician_diagram, 10000);
             }
         });
     });
@@ -210,10 +208,8 @@ function initialize_forward_buttons() {
             success: function(data) {
                 // send value to forward hook
                 console.log(data);
-                
             }
         });
-
     });
 }
 
