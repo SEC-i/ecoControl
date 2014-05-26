@@ -123,7 +123,9 @@ function initialize_technician_diagram() {
                 }
             });
 
-            setTimeout(refresh_technician_diagram, 10000);
+            setTimeout(function() {
+                refresh_technician_diagram(true);
+            }, 10000);
         });
     });
 
@@ -135,7 +137,7 @@ function initialize_technician_diagram() {
     });
 }
 
-function refresh_technician_diagram() {
+function refresh_technician_diagram(repeat) {
     var chart = $('#simulation_diagram').highcharts();
     var series_data = []
     $.getJSON('/api/data/', function(data) {
@@ -157,7 +159,7 @@ function refresh_technician_diagram() {
         }).done(function () {
             chart.redraw();
 
-            if (get_current_page() == 'overview') {
+            if (repeat && get_current_page() == 'overview') {
                 setTimeout(refresh_technician_diagram, 10000);
             }
         });
@@ -226,7 +228,6 @@ function initialize_forward_buttons() {
     };
 
     var output = Mustache.render($('#snippet_forward_buttons').html(), forward_options);
-    console.log(output);
     $('#live_diagram_header').append(output);
 
     $('#live_diagram_header button').click(function() {
@@ -239,8 +240,7 @@ function initialize_forward_buttons() {
             }),
             dataType: 'json',
             success: function(data) {
-                // send value to forward hook
-                refresh();
+                refresh_technician_diagram(false);
                 console.log(data);
             }
         });
