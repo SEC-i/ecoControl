@@ -9,6 +9,19 @@ function get_label(category_id) {
     return '<span class="label label-' + categories[category_id] + '">' + categories[category_id] + '</span>'
 }
 
+jQuery.extend({
+    postJSON: function(url, data, callback) {
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: url,
+            data: JSON.stringify(data),
+            dataType: 'json',
+            success: callback
+        });
+    }
+});
+
 function draw_table(target, headlines, rows) {
     if (rows.length > 0 && headlines.length == rows[0].length) {
         target.html(

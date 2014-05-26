@@ -72,10 +72,10 @@ function technician_settings_ready() {
                     data: JSON.stringify(post_data),
                     dataType: 'json'
                 }).done(function(response) {
-                    $.post("/api/start/", {
+                    $.postJSON("/api/start/", {
                         demo: demo
                     }).done(function() {
-                        window.location.href = 'index.html';
+                        $.address.value('overview');
                     });
                 });
             });

@@ -93,13 +93,15 @@ def configure(request):
 
 @require_POST
 def start_system(request):
+    data = json.loads(request.body)
+    
     system_status = Configuration.objects.get(key='system_status')
     system_mode = Configuration.objects.get(key='system_mode')
 
     if system_status.value != 'running':
         system_status.value = 'running'
         system_status.save()
-        if 'demo' in request.POST and request.POST['demo'] == '1':
+        if 'demo' in data and data['demo'] == '1':
             system_mode.value = 'demo'
             system_mode.save()
             DEMO_SIMULATION = DemoSimulation.start_or_get()

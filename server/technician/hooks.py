@@ -29,6 +29,6 @@ def handle_snippets(request):
             if 'code' in data:
                 return create_json_response(functions.save_snippet(data['name'], data['code']))
             else:
-                return create_json_response(functions.get_snippet_code(name))
+                return create_json_response(functions.get_snippet_code(data['name']))
 
     return create_json_response(functions.get_snippet_list())

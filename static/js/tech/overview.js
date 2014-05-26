@@ -395,7 +395,35 @@ function initialize_technician_editor() {
 
     $.getJSON('/api/snippets/', function(data) {
         $.each(data, function(index, snippet) {
-             $("#snippets").append('<option>' + snippet + '</option>');
+             $("#code_snippets").append('<option>' + snippet + '</option>');
+        });
+    });
+
+    $("#save_snippet").submit(function(event) {
+        $.postJSON("/api/snippets/", {
+            name: $("#snippet_name").val(),
+            code: editor.getValue()
+        }, function(data) {
+            editor.setValue(data['code'], 1);
+
+            // refresh snippet list
+            if ('code_snippets' in data) {
+                $("#code_snippets").html('');
+                $.each(data['code_snippets'], function(index, snippet_name) {
+                    $("#code_snippets").append('<option>' + snippet_name + '</option>');
+                });
+            }
+        });
+        event.preventDefault();
+    });
+
+    $("#load_snippet").submit(function(event) {
+        
+        event.preventDefault();
+        $.postJSON("/api/snippets/", {
+            name: $("#code_snippets").val()
+        }, function(data) {
+            editor.setValue(data['code'], 1);
         });
     });
 }
