@@ -1,9 +1,9 @@
 var notifications_per_page = 15;
 
 // READY
-$(function() {
-        update_notifications(0);
-});
+function manager_notifications_ready() {
+    update_notifications(0);
+}
 
 function get_label(category_id) {
     var categories = ['default', 'primary', 'success', 'info', 'warning', 'danger'];

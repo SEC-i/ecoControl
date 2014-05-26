@@ -1,5 +1,5 @@
 // READY
-$(function() {
+function technician_live_setup_ready() {
     $.getJSON("/api/status/", function(data) {
         if (data['system_status'] == 'init') {
             redirect_to_settings();
@@ -12,14 +12,16 @@ $(function() {
             refresh();
         });
     });
-});
+}
 
 function refresh() {
     $.getJSON('/api/live/', function(data) {
         update_schema(data);
     });
-                
-    setTimeout(refresh, 2000);
+
+    if (get_current_page() == 'live_setup') {
+        setTimeout(refresh, 2000);
+    }
 }
 
 function update_schema(data) {

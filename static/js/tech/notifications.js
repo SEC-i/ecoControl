@@ -1,7 +1,7 @@
 // READY
 var notifications_per_page = 15;
 
-$(function() {
+function technician_notifications_ready() {
     $.getJSON("/api/status/", function(data) {
         if (data['system_status'] == 'init') {
             redirect_to_settings();
@@ -9,17 +9,12 @@ $(function() {
     }).done(function() {
         update_notifications(0);
     });
-});
-
-function redirect_to_settings(show) {
-    window.location.href = 'settings.html';    
 }
 
 function get_label(category_id) {
     var categories = ['default', 'primary', 'success', 'info', 'warning', 'danger'];
     return '<span class="label label-' + categories[category_id] + '">' + categories[category_id] + '</span>'
 }
-
 
 function update_notifications(start) {
     var url = '/api/notifications/start/' + start + '/end/' + (start + notifications_per_page) + '/';

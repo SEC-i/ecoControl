@@ -3,7 +3,7 @@ var headlines = ['Month', '', ''];
 var table_data = [];
 
 // READY
-$(function() {
+function manager_statistics_ready() {
     $.each(get_text('months'), function(index, month) {
         table_data.push([month, 0, 0]);
     });
@@ -88,7 +88,7 @@ $(function() {
         });
         e.preventDefault();
     });
-});
+}
 
 function get_sensor(sensor_id) {
     if (sensor_list == null) {

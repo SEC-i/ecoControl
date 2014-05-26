@@ -2,12 +2,12 @@ var diagram_types = ['balances', 'rewards', 'costs'];
 var cached_data = {};
 
 // READY
-$(function() {
+function manager_balances_ready() {
     initialize_diagram();
     initialize_diagram_filters();
 
     resize_diagrams();
-});
+}
 
 $( window ).resize(function() {
     resize_diagrams();

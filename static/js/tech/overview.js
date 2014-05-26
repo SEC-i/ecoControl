@@ -3,24 +3,19 @@ var plotline_timestamp = null;
 var sensor_count = 0;
 
 // READY
-$(function() {
+function technician_overview_ready() {
     $.getJSON("/api/status/", function(data) {
-        if (data['system_status'] == 'init') {
-            redirect_to_settings();
-        } else {
-            initialize_diagram();
-            initialize_tuning_form();
-            initialize_editor();
-            if (data['system_mode'] == 'demo') {
-                initialize_forward_buttons();
-            }
+        initialize_technician_diagram();
+        initialize_technician_tuning_form();
+        initialize_technician_editor();
+        if (data['system_mode'] == 'demo') {
+            initialize_forward_buttons();
         }
     });
-});
-
+}
 
 // Diagram
-function initialize_diagram() {
+function initialize_technician_diagram() {
     Highcharts.setOptions({
         global: {
             useUTC: false
@@ -145,7 +140,9 @@ function refresh() {
         }).done(function () {
             chart.redraw();
 
-            setTimeout(refresh, 10000);
+            if (get_current_page() == 'overview') {
+                setTimeout(refresh, 10000);
+            }
         });
     });
 }
@@ -208,7 +205,7 @@ function initialize_forward_buttons() {
 }
 
 // Tuning
-function initialize_tuning_form() {
+function initialize_technician_tuning_form() {
     $.getJSON('/api/settings/tunable/', function(data) {
         var item = $('#tuning_form');
         $.each(data, function(device_id, device_configurations) {
@@ -334,7 +331,7 @@ function get_input_field_code(namespace, key, data) {
 }
 
 // Code Editor
-function initialize_editor() {
+function initialize_technician_editor() {
     ace.require("ace/ext/language_tools");
     editor = ace.edit("editor");
     editor.setTheme("ace/theme/github");

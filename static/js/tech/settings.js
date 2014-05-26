@@ -1,7 +1,7 @@
 var settings_data = null;
 
 // READY
-$(function() {
+function technician_settings_ready() {
     $.getJSON('/api/status/', function(status_data) {
         $.getJSON('/api/settings/', function(data) {
             var system_status = status_data['system_status'];
@@ -12,9 +12,9 @@ $(function() {
                     var item = $('#' + namespace + '_panel .panel-body');
                     if (item.length) {
                         if (system_status == 'init') {
-                            item.append(get_input_field_code(namespace, key, config_data));
+                            item.append(technician_get_input_field_code(namespace, key, config_data));
                         } else {
-                            item.append(get_plain_text(namespace, key, config_data));
+                            item.append(technician_get_plain_text(namespace, key, config_data));
                         }
                     }
                 });
@@ -86,9 +86,9 @@ $(function() {
             }
         });
     });
-});
+}
 
-function get_input_field_code(namespace, key, data) {
+function technician_get_input_field_code(namespace, key, data) {
     var device_id = namespaces.indexOf(namespace);
     var output =
             '<div class="col-sm-4"><div class="form-group">' +
@@ -107,7 +107,7 @@ function get_input_field_code(namespace, key, data) {
     return output;
 }
 
-function get_plain_text(namespace, key, data) {
+function technician_get_plain_text(namespace, key, data) {
     var device_id = namespaces.indexOf(namespace);
     return '<div class="col-lg-4 col-sm-6">\
                 <div class="row">\

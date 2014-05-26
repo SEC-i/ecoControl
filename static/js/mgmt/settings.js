@@ -2,7 +2,7 @@ var namespaces = ['general', 'hs', 'pm', 'cu', 'plb'];
 var settings_data = null;
 
 // READY
-$(function() {
+function manager_settings_ready() {
     $.getJSON('/api/status/', function(status_data) {
         $.getJSON('/api/settings/', function(data) {
             var system_status = status_data['system_status'];
@@ -18,7 +18,7 @@ $(function() {
             });
         });
     });
-});
+}
 
 function get_plain_text(key, data) {
     return '<div class="col-lg-4 col-sm-6">\
