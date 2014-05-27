@@ -3,6 +3,9 @@ import os
 import logging
 from time import time
 import json
+import calendar
+from datetime import datetime, timedelta
+import dateutil.relativedelta
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
@@ -12,8 +15,10 @@ from django.utils.timezone import utc
 from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
 
-from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, Threshold, Notification
+from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
 from server.helpers import create_json_response, create_json_response_from_QuerySet
+from server.functions import get_device_configurations, get_past_time
+from server.forecasting import Simulation
 import functions
 
 logger = logging.getLogger('django')
@@ -66,13 +71,13 @@ def start_system(request):
 
 
 def get_tunable_device_configurations(request):
-    output = dict(functions.get_device_configurations(tunable=True))
+    output = dict(get_device_configurations(tunable=True))
     return create_json_response(output)
 
 
 def forecast(request):
     try:
-        latest_timestamp = functions.get_past_time()
+        latest_timestamp = get_past_time()
         initial_time = calendar.timegm(latest_timestamp.timetuple())
     except SensorValue.DoesNotExist:
         initial_time = time()
@@ -173,7 +178,7 @@ def handle_threshold(request):
 def list_sensor_values(request, start, accuracy='hour'):
 
     if start is None:
-        start = functions.get_past_time(months=1, use_view=True)
+        start = get_past_time(months=1, use_view=True)
     else:
         start = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
     output = []
@@ -212,7 +217,7 @@ def list_sensor_values(request, start, accuracy='hour'):
 
 
 def get_statistics(request):
-    end = functions.get_past_time(use_view=True)
+    end = get_past_time(use_view=True)
     start = end + dateutil.relativedelta.relativedelta(months=-1)
 
     output = []
@@ -226,7 +231,7 @@ def get_statistics(request):
 
 
 def get_monthly_statistics(request):
-    end = functions.get_past_time(use_view=True)
+    end = get_past_time(use_view=True)
     start = end + dateutil.relativedelta.relativedelta(years=-1)
 
     sensor_values = SensorValueMonthlySum.objects.filter(

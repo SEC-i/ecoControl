@@ -95,4 +95,6 @@ def get_past_time(years=0, months=0, days=0, use_view=False):
             dateutil.relativedelta.relativedelta(
                 years=-years, months=-months, days=-days)
     except _class.DoesNotExist:
-        return None
+        return datetime.now() + \
+            dateutil.relativedelta.relativedelta(
+                years=-years, months=-months, days=-days)

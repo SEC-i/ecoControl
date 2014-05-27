@@ -128,7 +128,7 @@ def get_total_balance(request, year=None, month=None):
         start = date(year, month, 1)
         end = date(year, month, calendar.mdays[month])
 
-        output.append(function.get_total_balance_by_date(month, year))
+        output.append(functions.get_total_balance_by_date(month, year))
 
     return create_json_response(output)
 
@@ -139,6 +139,6 @@ def get_latest_total_balance(request):
     month = current.month
 
     output = dict([('month', month), ('year', year)]
-                  + function.get_total_balance_by_date(month, year).items())
+                  + functions.get_total_balance_by_date(month, year).items())
 
     return create_json_response(output)

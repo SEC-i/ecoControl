@@ -3,6 +3,7 @@ import logging
 import json
 
 from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueMonthlyAvg, SensorValueMonthlySum, SensorValueDaily
+from server.functions import get_past_time, get_latest_value, get_latest_value_with_unit, get_configuration, get_device_configuration
 
 logger = logging.getLogger('django')
 SNIPPET_FOLDER = 'snippets/'
@@ -173,7 +174,7 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
 
             output.append(dict(system_output))
 
-    except (Device.DoesNotExist, DeviceConfiguration.DoesNotExist, Configuration.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist) as e:
+    except (Device.DoesNotExist, DeviceConfiguration.DoesNotExist, Configuration.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist, SensorValueMonthlyAvg.DoesNotExist) as e:
         logger.warning("DoesNotExist error: %s" % e)
 
     return output
@@ -253,7 +254,7 @@ def get_statistics_for_peak_load_boiler(start=None, end=None):
 
             output.append(dict(system_output))
 
-    except (Device.DoesNotExist, DeviceConfiguration.DoesNotExist, Configuration.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist) as e:
+    except (Device.DoesNotExist, DeviceConfiguration.DoesNotExist, Configuration.DoesNotExist, Sensor.DoesNotExist, SensorValue.DoesNotExist, SensorValueMonthlyAvg.DoesNotExist) as e:
         logger.warning("DoesNotExist error: %s" % e)
 
     return output

@@ -2,9 +2,6 @@ import sys
 import logging
 from time import time
 import json
-from datetime import datetime, timedelta
-import calendar
-import dateutil.relativedelta
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
@@ -15,13 +12,10 @@ from django.utils.timezone import utc
 from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
 from django.core.cache import cache
-import cProfile
 
 import functions
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
 from helpers import create_json_response, create_json_response_from_QuerySet, is_member, DemoSimulation
-from forecasting import Simulation
-from filecmp import demo
 
 
 logger = logging.getLogger('django')
@@ -67,6 +61,7 @@ def status(request):
         output.append(("login", "inactive"))
 
     return create_json_response(dict(output))
+
 
 @require_POST
 def export_csv(request):
