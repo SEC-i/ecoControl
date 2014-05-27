@@ -180,7 +180,7 @@ def list_sensor_values(request, start, accuracy='hour'):
     if start is None:
         start = get_past_time(months=1, use_view=True)
     else:
-        start = datetime.fromtimestamp(int(start)).replace(tzinfo=utc)
+        start = datetime.utcfromtimestamp(int(start)).replace(tzinfo=utc)
     output = []
 
     if accuracy == 'hour':

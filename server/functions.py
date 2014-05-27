@@ -4,6 +4,7 @@ import dateutil.relativedelta
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
+from django.utils.timezone import utc
 
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly
 
@@ -95,6 +96,6 @@ def get_past_time(years=0, months=0, days=0, use_view=False):
             dateutil.relativedelta.relativedelta(
                 years=-years, months=-months, days=-days)
     except _class.DoesNotExist:
-        return datetime.now() + \
+        return datetime.now().replace(tzinfo=utc) + \
             dateutil.relativedelta.relativedelta(
                 years=-years, months=-months, days=-days)
