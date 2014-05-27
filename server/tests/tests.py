@@ -1,9 +1,11 @@
 import json
+import re
 
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 
 from server.models import DeviceConfiguration, Notification, Threshold
+from server.urls import urlpatterns
 
 
 class APITestCase(TestCase):
@@ -49,3 +51,9 @@ class APITestCase(TestCase):
         # Check that the response equals {"login": "inactive"}
         self.assertDictContainsSubset(
             {"login": "inactive", "system_status": "init"}, json.loads(response.content))
+
+    def test_all_hooks_simple(self):
+        for pattern in urlpatterns:
+            response = self.client.get(
+                re.sub('\((.)*', '', pattern.regex.pattern).replace('^', '/').replace('$', ''))
+            self.assertTrue(response.status_code in [200, 405])
