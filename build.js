@@ -19,6 +19,9 @@
         ace_snippets: "../libs/ace/snippets/",
     },
     shim: {
+        'mustache': {
+            exports: 'Mustache'
+        },
         'jquery_address': ['jquery'],
         'jquery_dateFormat': ['jquery'],
         'jquery_table2csv': ['jquery'],

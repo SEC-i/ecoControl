@@ -5,7 +5,6 @@ function technician_settings_ready() {
     $.getJSON('/api/settings/', function(data) {
         settings_data = data;
         $.each(settings_data, function(device_id, device_configurations) {
-            console.log(Object.keys(device_configurations).length)
             $.each(device_configurations, function(key, config_data) {
                 var namespace = namespaces[device_id];
                 var item = $('#' + namespace + '_panel .panel-body');
