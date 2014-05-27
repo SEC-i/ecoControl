@@ -50,11 +50,12 @@ class MeasurementStorage():
         self.sensors = Sensor.objects.filter(
             device_id__in=[x.id for x in devices])
         self.demo = demo
-
-        # initialize empty deques
-        self.data = []
+        
+        #initialize for forecasting
+        self.forecast_data = []
         for i in self.sensors:
-            self.data.append([])
+            self.forecast_data.append([])
+        #initialize for demo
         self.device_map = []
         self.sensor_values = []
         for device in self.devices:
@@ -66,7 +67,6 @@ class MeasurementStorage():
     def flush_data(self):
         write_text_to_db(self.sensor_values)
         self.sensor_values = []
-        
 
     def take_demo(self):
             # save demo values every 15mins
@@ -100,7 +100,7 @@ class MeasurementStorage():
                         if hasattr(value, '__call__'):
                             value = value()
                         
-                        self.data[index].append([self.env.now * 1000, round(float(value), 2)])
+                        self.forecast_data[index].append([self.env.now * 1000, round(float(value), 2)])
                         
     
     def take(self):
@@ -109,9 +109,7 @@ class MeasurementStorage():
         else:
             self.take_forecast()        
             
-        
-    
-    
+
     def get(self):
         output = []
         for index, sensor in enumerate(self.sensors):
@@ -123,14 +121,14 @@ class MeasurementStorage():
                     'name': sensor.name,
                     'unit': sensor.unit,
                     'key': sensor.key,
-                    'data': self.data[index]
+                    'forecast_data': self.forecast_data[index]
                 })
         return output
 
     def get_last(self, value):
         index = self.sensors.index(value)
-        if len(self.data[index]) > 0:
-            return self.data[index][-1]  # return newest item
+        if len(self.forecast_data[index]) > 0:
+            return self.forecast_data[index][-1]  # return newest item
         return None
 
 
@@ -160,9 +158,10 @@ def write_text_to_db(data):
         vals = [row[0], row[1], connection.ops.value_to_db_datetime(row[2])]
         cpy.write('\t'.join([str(val) for val in vals]) + '\n')
     
-    # Insert data; database converts text back to floating point numbers
+    # Insert forecast_data; database converts text back to floating point numbers
     cpy.seek(0)
     cursor.copy_from(cpy, 'server_sensorvalue', columns=('sensor_id', 'value', 'timestamp'))
     connection.commit()
+    
     
     cursor.execute("SELECT setval('server_sensorvalue_id_seq',(select max(id) FROM server_sensorvalue)+1);")

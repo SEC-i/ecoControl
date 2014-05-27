@@ -16,8 +16,10 @@ virtualenv:
   system_site_packages: true
 before_install:
  - sudo apt-get install -qq python-dateutil python-numpy python-psycopg2 python-scipy
+ - sudo apt-get install -qq nodejs nodejs-dev npm
 install: 
   - pip install -r requirements_travis.txt
+  - npm install -g requirejs
 before_script:
   - psql -c "CREATE ROLE BP2013H1 LOGIN PASSWORD 'hirsch' SUPERUSER CREATEDB CREATEROLE;" -U postgres
   - createdb bp2013h1
@@ -25,3 +27,4 @@ before_script:
 script:
   - coverage run --source='.' manage.py test
   - coverage report
+  - r.js -o build.js
