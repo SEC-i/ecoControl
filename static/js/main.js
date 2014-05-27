@@ -3,11 +3,11 @@ var status_data = null;
 require( [ "jquery", "jquery_address", "jquery_dateFormat", "jquery_table2csv",
     "bootstrap", "bootstratp_editable",
     "mustache",
-    "ace", "ace_lang", "ace_python", "ace_github", "ace_text", "ace_snippets", "ace_snippets_python",
+    "ace/ace", "ace/ext-language_tools", "ace/mode-python", "ace/theme-github", "ace_snippets/text", "ace_snippets/snippets", "ace_snippets/python",
     "highstock", "highstock_no_data_to_display", "highstock_exporting", "highstock_csv_export",
     "core", "lang", "login", "notifications",
-    "tech_overview_snippets", "tech_overview", "tech_live_setup", "tech_settings", "tech_statistics", "tech_thresholds",
-    "mgmt_overview", "mgmt_balances", "mgmt_load_curves", "mgmt_settings", "mgmt_statistics" ], function () {
+    "tech/overview.snippets", "tech/overview", "tech/live_setup", "tech/settings", "tech/statistics", "tech/thresholds",
+    "mgmt/overview", "mgmt/balances", "mgmt/load_curves", "mgmt/settings", "mgmt/statistics" ], function () {
 
     $(function() {
         $.getJSON('/api/status/', function(data) {
