@@ -9,6 +9,19 @@ function get_label(category_id) {
     return '<span class="label label-' + categories[category_id] + '">' + categories[category_id] + '</span>'
 }
 
+jQuery.extend({
+    postJSON: function(url, data, callback) {
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: url,
+            data: JSON.stringify(data),
+            dataType: 'json',
+            success: callback
+        });
+    }
+});
+
 function draw_table(target, headlines, rows) {
     if (rows.length > 0 && headlines.length == rows[0].length) {
         target.html(
@@ -42,6 +55,12 @@ function draw_table(target, headlines, rows) {
     } else {
         target.html('More or less headlines than rows or empty rows!');
     }
+}
+
+function export_table(target) {
+    Highcharts.post('/export/csv/', {
+        csv: target.table2CSV({delivery:'value'})
+    });
 }
 
 function get_current_page() {
@@ -90,6 +109,7 @@ function initialize_page(callback) {
         }); 
 
         $('#logout_button').click(function(event) {
+            event.preventDefault();
             $('#navbar_container').empty();
             $.ajax({
                 type: "POST",
@@ -99,7 +119,6 @@ function initialize_page(callback) {
                     withCredentials: true
                 }
             }).done(load_page('login'));
-            event.preventDefault();
         });
 
         $('#snippets').load('templates/snippets.html', function() {

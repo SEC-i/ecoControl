@@ -1,8 +1,8 @@
 // READY
 function login_ready() {
     $('#login_form').submit(function(event) {
-        login_user();
         event.preventDefault();
+        login_user();
     }); 
 }
 

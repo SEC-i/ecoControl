@@ -82,11 +82,9 @@ function manager_statistics_ready() {
         });
     });
 
-    $('#export_button').click(function(e) {
-        Highcharts.post('/export/csv/', {
-            csv: $('#table_container').table2CSV({delivery:'value'})
-        });
-        e.preventDefault();
+    $('#export_button').click(function(event) {
+        event.preventDefault();
+        export_table($('#mgmt_statistics_table_container'));
     });
 }
 
@@ -166,6 +164,6 @@ function update_table(data, col_title, right) {
         table_data[index][offset] = Math.round(row.total * 100) / 100;
     });
 
-    draw_table($('#table_container'), headlines, table_data);
+    draw_table($('#mgmt_statistics_table_container'), headlines, table_data);
 
 }

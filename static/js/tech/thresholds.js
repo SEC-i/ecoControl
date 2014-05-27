@@ -5,7 +5,8 @@ function technician_thresholds_ready() {
     refresh_thresholds();
     initialize_sensor_list();
 
-    $('#add_threshold_form').submit( function ( event ) {
+    $('#add_threshold_form').submit(function(event) {
+        event.preventDefault();
         var post_data = {
             'name': $('#add_threshold_form input[name=threshold_name]').val(),
             'sensor_id': $('#add_threshold_form select[name=sensor_id]').val(),
@@ -26,7 +27,6 @@ function technician_thresholds_ready() {
               this.reset();
             });
         });
-        event.preventDefault();
     });
 }
 

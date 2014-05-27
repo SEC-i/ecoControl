@@ -227,11 +227,9 @@ function update_balances_table(data, year, month) {
         });
         $('#details_container').html(rendered);
     }).done(function() {
-        $('#export_button').click(function(e) {
-            Highcharts.post('/export/csv/', {
-                csv: $('#table_container').table2CSV({delivery:'value'})
-            });
-            e.preventDefault();
+        $('#export_button').click(function(event) {
+            event.preventDefault();
+            export_table($('#table_container'));
         });
 
         update_date_selection(year, month);

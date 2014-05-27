@@ -225,18 +225,14 @@ function technician_statistics_ready() {
         draw_table($('#cu_statistics_table .panel-body'), cu_statistics_table_headlines, cu_statistics_table_data);
         draw_table($('#plb_statistics_table .panel-body'), plb_statistics_table_headlines, plb_statistics_table_data);
 
-        $('#cu_export_button').click(function(e) {
-            Highcharts.post('/export/csv/', {
-                csv: $('#cu_statistics_table .panel-body').table2CSV({delivery:'value'})
-            });
-            e.preventDefault();
+        $('#cu_export_button').click(function(event) {
+            event.preventDefault();
+            export_table($('#cu_statistics_table .panel-body'));
         });
 
-        $('#plb_export_button').click(function(e) {
-            Highcharts.post('/export/csv/', {
-                csv: $('#plb_statistics_table .panel-body').table2CSV({delivery:'value'})
-            });
-            e.preventDefault();
+        $('#plb_export_button').click(function(event) {
+            event.preventDefault();
+            export_table($('#plb_statistics_table .panel-body'));
         });
     });
 }

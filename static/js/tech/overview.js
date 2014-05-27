@@ -129,11 +129,9 @@ function initialize_technician_diagram() {
         });
     });
 
-    $('#live_data_export_button').click(function(e) {
-        Highcharts.post('/export/csv/', {
-            csv: $('#live_data_table_container').table2CSV({delivery:'value'})
-        });
-        e.preventDefault();
+    $('#live_data_export_button').click(function(event) {
+        event.preventDefault();
+        export_table($('#live_data_table_container'));
     });
 }
 
@@ -396,6 +394,7 @@ function initialize_technician_editor() {
     update_snippet_list();
 
     $("#save_snippet").submit(function(event) {
+        event.preventDefault();
         $.postJSON("/api/snippets/", {
             name: $("#snippet_name").val(),
             code: editor.getValue()
@@ -403,17 +402,16 @@ function initialize_technician_editor() {
             editor.setValue(data['code'], 1);
             update_snippet_list();
         });
-        event.preventDefault();
     });
 
     $("#load_snippet").submit(function(event) {
+        event.preventDefault();
         $.postJSON("/api/snippets/", {
             name: $("#code_snippets").val()
         }, function(data) {
             editor.setValue(data['code'], 1);
         });
         $('#snippet_name').val($("#code_snippets").val());
-        event.preventDefault();
     });
 }
 

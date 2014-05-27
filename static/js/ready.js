@@ -24,7 +24,8 @@ $(function() {
         });
     });
 
-    $('.navbar-brand').click(function(e) {
+    $('.navbar-brand').click(function(event) {
+        event.preventDefault();
         if (is_logged_in()) {
             $('.nav li').removeClass('active');
             $('.nav li').first().addClass('active');
@@ -32,6 +33,5 @@ $(function() {
         } else {
             load_page('login'); 
         }
-        e.preventDefault();
     });
 });

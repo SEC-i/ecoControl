@@ -42,10 +42,10 @@ function update_pagination(current, total) {
     );
 
     $('#notification_pagination .pagination li a').click(function(event) {
+        event.preventDefault();
         if (!$(this).parent().hasClass('disabled') && !$(this).parent().hasClass('active')) {
             update_notifications(parseInt($(this).attr('data-start')));
         }
-        event.preventDefault();
     });
 
 }
