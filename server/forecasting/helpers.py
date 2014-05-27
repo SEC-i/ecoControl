@@ -121,7 +121,7 @@ class MeasurementStorage():
                     'name': sensor.name,
                     'unit': sensor.unit,
                     'key': sensor.key,
-                    'forecast_data': self.forecast_data[index]
+                    'data': self.forecast_data[index]
                 })
         return output
 
