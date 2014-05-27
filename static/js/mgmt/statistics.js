@@ -23,7 +23,7 @@ function manager_statistics_ready() {
             }
         });
 
-        $.getJSON('/api2/history/', function(history_data) {
+        $.getJSON('/api/history/', function(history_data) {
             $.each(history_data, function(index, year) {
                 $('.years_list').append(
                     '<option value="' + year + '">' + year + '</option>'
@@ -37,9 +37,9 @@ function manager_statistics_ready() {
                 var target = $(this).attr('data-target');
                 var year = $('#years_' + target).val();
 
-                var url = '/api2/avgs/sensor/' + sensor_id + '/year/' + year + '/';
+                var url = '/api/avgs/sensor/' + sensor_id + '/year/' + year + '/';
                 if ($(this).find(":selected").attr('data-aggregation') == 'sum') {
-                    var url = '/api2/sums/sensor/' + sensor_id + '/year/' + year + '/';
+                    var url = '/api/sums/sensor/' + sensor_id + '/year/' + year + '/';
                 }
 
                 $.getJSON(url, function(data) {
