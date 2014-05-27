@@ -22,44 +22,44 @@ logger = logging.getLogger('django')
 
 
 def get_totals(request):
-    return create_json_response(request, {"status": "success"})
+    return create_json_response({"status": "success"})
 
 
 def get_infeed(request):
     feed_in_reward = get_configuration('feed_in_reward')
-    return get_sum_response(request, Device.PM, 'fed_in_electricity', feed_in_reward)
+    return get_sum_response(Device.PM, 'fed_in_electricity', feed_in_reward)
 
 
 def get_purchase(request):
     electrical_costs = get_configuration('electrical_costs')
-    return get_sum_response(request, Device.PM, 'purchased', electrical_costs)
+    return get_sum_response(Device.PM, 'purchased', electrical_costs)
 
 
 def get_thermal_consumption(request):
-    return get_sum_response(request, Device.TC, 'get_consumption_power')
+    return get_sum_response(Device.TC, 'get_consumption_power')
 
 
 def get_warmwater_consumption(request):
-    return get_sum_response(request, Device.TC, 'get_warmwater_consumption_power')
+    return get_sum_response(Device.TC, 'get_warmwater_consumption_power')
 
 
 def get_electrical_consumption(request):
-    return get_sum_response(request, Device.EC, 'get_consumption_power')
+    return get_sum_response(Device.EC, 'get_consumption_power')
 
 
 def get_maintenance_costs(request):
-    return create_json_response(request, {"status": "success"})
+    return create_json_response({"status": "success"})
 
 
 def get_cu_consumption(request):
-    return get_sum_response(request, Device.CU, 'current_gas_consumption')
+    return get_sum_response(Device.CU, 'current_gas_consumption')
 
 
 def get_plb_consumption(request):
-    return get_sum_response(request, Device.PLB, 'current_gas_consumption')
+    return get_sum_response(Device.PLB, 'current_gas_consumption')
 
 
-def get_sum_response(request, device_type, key, multiply_by=1):
+def get_sum_response(device_type, key, multiply_by=1):
     sensors = Sensor.objects.filter(
         device__device_type=device_type, key=key).values_list('id', flat=True)
     totals = list(SensorValueMonthly.objects.filter(sensor_id__in=sensors)
@@ -71,8 +71,8 @@ def get_sum_response(request, device_type, key, multiply_by=1):
                 'date': total['date'],
                 'total': round(total['total_sum'] * multiply_by, 2)
             })
-        return create_json_response(request, output)
-    return create_json_response(request, {"status": "failed"})
+        return create_json_response(output)
+    return create_json_response({"status": "failed"})
 
 
 def get_sums(request, sensor_id=None, year=None):
@@ -95,7 +95,7 @@ def get_sums(request, sensor_id=None, year=None):
         output = list(sensorvaluemonthlysum.filter(
             sensor_id=sensor_id).values('date').annotate(total=Sum('sum')).order_by('date'))
 
-    return create_json_response(request, output)
+    return create_json_response(output)
 
 
 def get_avgs(request, sensor_id=None, year=None):
@@ -118,7 +118,7 @@ def get_avgs(request, sensor_id=None, year=None):
         output = list(sensorvaluemonthlyavg.filter(
             sensor_id=sensor_id).values('date').annotate(total=Avg('avg')).order_by('date'))
 
-    return create_json_response(request, output)
+    return create_json_response(output)
 
 
 def get_sensorvalue_history_list(request):
@@ -127,7 +127,7 @@ def get_sensorvalue_history_list(request):
         '''SELECT DISTINCT date_part('year', server_sensorvaluemonthlysum.date) as year FROM server_sensorvaluemonthlysum ORDER BY year DESC''')
 
     output = [int(x[0]) for x in cursor.fetchall()]
-    return create_json_response(request, output)
+    return create_json_response(output)
 
 
 def get_detailed_sensor_values(request, sensor_id):
@@ -135,7 +135,7 @@ def get_detailed_sensor_values(request, sensor_id):
     sensor_values = list(SensorValue.objects.filter(
         sensor_id=sensor_id, timestamp__gte=start).values_list('timestamp', 'value'))
 
-    return create_json_response(request, sensor_values)
+    return create_json_response(sensor_values)
 
 def get_daily_loads(request):
     start = get_past_time(days=1)
@@ -157,7 +157,7 @@ def get_daily_loads(request):
     for sensor_id in sensors:
         output['electrical'][sensor_id] = list(SensorValue.objects.filter(sensor__id=sensor_id, timestamp__gte=start).values_list('timestamp', 'value'))
 
-    return create_json_response(request, output)
+    return create_json_response(output)
 
 def get_total_balance(request, year=None, month=None):
     current = get_past_time(use_view=True)
@@ -184,7 +184,7 @@ def get_total_balance(request, year=None, month=None):
 
         output.append(get_total_balance_by_date(month, year))
 
-    return create_json_response(request, output)
+    return create_json_response(output)
 
 def get_latest_total_balance(request):
     current = get_past_time(use_view=True)
@@ -194,7 +194,7 @@ def get_latest_total_balance(request):
     output = dict([('month', month), ('year', year)]
          + get_total_balance_by_date(month, year).items())
 
-    return create_json_response(request, output)
+    return create_json_response(output)
 
 def get_total_balance_by_date(month, year):
     

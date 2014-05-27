@@ -392,4 +392,36 @@ function initialize_technician_editor() {
             }
         });
     });
+
+    update_snippet_list();
+
+    $("#save_snippet").submit(function(event) {
+        $.postJSON("/api/snippets/", {
+            name: $("#snippet_name").val(),
+            code: editor.getValue()
+        }, function(data) {
+            editor.setValue(data['code'], 1);
+            update_snippet_list();
+        });
+        event.preventDefault();
+    });
+
+    $("#load_snippet").submit(function(event) {
+        $.postJSON("/api/snippets/", {
+            name: $("#code_snippets").val()
+        }, function(data) {
+            editor.setValue(data['code'], 1);
+        });
+        $('#snippet_name').val($("#code_snippets").val());
+        event.preventDefault();
+    });
+}
+
+function update_snippet_list() {
+    $("#code_snippets").empty();
+    $.getJSON('/api/snippets/', function(data) {
+        $.each(data, function(index, snippet) {
+             $("#code_snippets").append('<option>' + snippet + '</option>');
+        });
+    });
 }
