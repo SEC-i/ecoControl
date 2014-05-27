@@ -3,6 +3,8 @@ from datetime import datetime
 import os
 import cProfile
 
+from django.utils.timezone import utc
+
 from helpers import BaseSystem
 from data import warm_water_demand_workday, warm_water_demand_weekend
 from server.forecasting.forecasting.weather import WeatherForecast
@@ -250,7 +252,7 @@ class ElectricalConsumer(BaseSystem):
 
     def get_data_until(self, timestamp, start_timestamp=None):
         #! TODO: reading data from csv will have to be replaced by live/fake data from database
-        date = datetime.fromtimestamp(timestamp)
+        date = datetime.utcfromtimestamp(timestamp).replace(tzinfo=utc)
         if self.__class__.dataset == [] or self.__class__.dates == []:
             path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_2013.csv")
             raw_dataset = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")

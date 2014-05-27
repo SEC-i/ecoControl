@@ -1,9 +1,9 @@
 from threading import Thread
 import itertools
 from datetime import datetime
-import pytz
 import logging
 
+from django.utils.timezone import utc
 from django.db import connection
 
 from server.models import Sensor, SensorValue, DeviceConfiguration
@@ -72,7 +72,7 @@ class MeasurementStorage():
             # save demo values every 15mins
             if self.env.now % 60 * 60 != 0:
                 return
-            timestamp = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=pytz.utc)
+            timestamp = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=utc)
             for (sensor, device) in self.device_map:
                 value = getattr(device, sensor.key, None)
                 if value is not None:

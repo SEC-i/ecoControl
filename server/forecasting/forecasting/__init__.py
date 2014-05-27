@@ -9,6 +9,8 @@ from sys import platform as _platform
 import cPickle as pickle
 import logging
 
+from django.utils.timezone import utc
+
 logger = logging.getLogger('simulation')
 
 class Forecast:
@@ -37,7 +39,7 @@ class Forecast:
         #only use days
         data_length = timedelta(days=data_length.days) 
         if start == None:
-            start = datetime.fromtimestamp(env.now) - data_length
+            start = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=utc) - data_length
             
         #always set to start of day
         start = start.replace(hour=0,minute=0) 
@@ -49,7 +51,7 @@ class Forecast:
         self.output_weeks = 8
                
         # ending time of input data
-        self.time_series_end = datetime.fromtimestamp(env.now)
+        self.time_series_end = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=utc)
         
         # wait one week before making a new forecast
         self.forecast_update_interval = 7 * 24 * 60 * 60
@@ -115,7 +117,7 @@ class Forecast:
         if try_cache:
             try:
                 values = pickle.load(open( "cache/cached_forecasts.p", "rb" ))
-                diff_time = datetime.fromtimestamp(values["date"]) - self.time_series_end
+                diff_time = datetime.utcfromtimestamp(values["date"]).replace(tzinfo=utc) - self.time_series_end
                 if diff_time.total_seconds() < 24 * 60 * 60: #12 hours epsilon
                     forecasted_demands = values["forecasts"]
                     self.calculated_parameters = values["parameters"] 
@@ -197,14 +199,14 @@ class Forecast:
             self.demands[index] = self.demands[index][start_index:]
             pass
             
-        now = datetime.fromtimestamp(self.env.now) 
+        now = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=utc)
         delta = (now - self.time_series_end).total_seconds()
         if delta > self.forecast_update_interval:
             self.forecasted_demands = self.forecast_demands(try_cache=False)
-            self.time_series_end = datetime.fromtimestamp(self.env.now)
+            self.time_series_end = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=utc)
 
     def _forecast_at(self, timestamp):
-        date = datetime.fromtimestamp(timestamp)
+        date = datetime.utcfromtimestamp(timestamp).replace(tzinfo=utc)
         delta = (date - self.time_series_end).total_seconds()
         arr_index = int((delta / (60.0 * 60.0)) * self.samples_per_hour)
         week_index = int(arr_index / (7 * 24))
