@@ -76,7 +76,7 @@ function initialize_balance_diagrams() {
 }
 
 function initialize_balance_diagrams_filters() {
-    $.getJSON('/api/history/', function(history_data) {
+    $.getJSON('../api/history/', function(history_data) {
         $.each(history_data, function(index, year) {
             $('#diagram_filters').append(
                 '<label class="btn btn-default">\
@@ -101,7 +101,7 @@ function initialize_balance_diagrams_filters() {
                     });
                 });
                 if (!found) {
-                    $.getJSON("/api/balance/total/" + year + "/", function(data) {
+                    $.getJSON("../api/balance/total/" + year + "/", function(data) {
                         cached_data[year] = data;
                         var balances = {
                             name: 'Total Balances in ' + year,

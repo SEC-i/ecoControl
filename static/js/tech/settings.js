@@ -2,7 +2,7 @@ var settings_data = null;
 
 // READY
 function technician_settings_ready() {
-    $.getJSON('/api/settings/', function(data) {
+    $.getJSON('../api/settings/', function(data) {
         settings_data = data;
         $.each(settings_data, function(device_id, device_configurations) {
             $.each(device_configurations, function(key, config_data) {
@@ -30,7 +30,7 @@ function technician_settings_ready() {
         });
 
         $('#panels .setting_input').editable({
-            url: '/api/configure/',
+            url: '../api/configure/',
             params: function(params) {
                 var item = $('a[data-pk="' + params.pk + '"]');
                 var post_data = [{
@@ -67,11 +67,11 @@ function technician_settings_ready() {
                 $.ajax({
                     type: 'POST',
                     contentType: 'application/json',
-                    url: '/api/configure/',
+                    url: '../api/configure/',
                     data: JSON.stringify(post_data),
                     dataType: 'json'
                 }).done(function(response) {
-                    $.postJSON("/api/start/", {
+                    $.postJSON("../api/start/", {
                         demo: demo
                     }).done(function() {
                         $.address.value('overview');

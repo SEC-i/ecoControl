@@ -1,6 +1,6 @@
 // READY
 function technician_statistics_ready() {
-    $.getJSON('/api/statistics/monthly/', function(data) {
+    $.getJSON('../api/statistics/monthly/', function(data) {
         var cu_series_data_1 = [{
             type: 'column',
             name: 'Gas Consumption',

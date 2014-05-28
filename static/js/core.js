@@ -113,7 +113,7 @@ function initialize_page(callback) {
             $('#navbar_container').empty();
             $.ajax({
                 type: "POST",
-                url: "/api/logout/",
+                url: "../api/logout/",
                 crossDomain: true,
                 xhrFields: {
                     withCredentials: true

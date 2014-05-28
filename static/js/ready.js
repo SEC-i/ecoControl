@@ -1,7 +1,7 @@
 var status_data = null;
 
 $(function() {
-    $.getJSON('/api/status/', function(data) {
+    $.getJSON('../api/status/', function(data) {
         status_data = data;
         if (is_logged_in()) {
             initialize_page(function() {
