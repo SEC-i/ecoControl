@@ -2,9 +2,9 @@ var sensor_list = null;
 
 // READY
 function manager_load_curves_ready() {
-    $.getJSON("../api/sensors/", function(sensor_data) {
+    $.getJSON(api_base_url + "sensors/", function(sensor_data) {
         sensor_list = sensor_data;
-        $.getJSON("../api/loads/", function(loads_data) {
+        $.getJSON(api_base_url + "loads/", function(loads_data) {
             initialize_load_diagrams(loads_data);
         });
     });

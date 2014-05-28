@@ -21,7 +21,7 @@ function initialize_technician_diagram() {
     });
 
     var series = [];
-    $.getJSON('../api/data/', function(data) {
+    $.getJSON(api_base_url + 'data/', function(data) {
         var table_headlines = ['Sensor', 'Device', 'Value'];
         var table_rows = [];
         var latest_date = 0;
@@ -41,7 +41,7 @@ function initialize_technician_diagram() {
         update_now_table(table_rows, latest_date);
         sensor_count = series.length;
     }).done(function () {
-        $.getJSON('../api/forecast/', function(forecast_data) {
+        $.getJSON(api_base_url + 'forecast/', function(forecast_data) {
             $.each(forecast_data, function(index, sensor) {
                 $.merge(series[index].data, sensor.data);
             });
@@ -138,7 +138,7 @@ function initialize_technician_diagram() {
 function refresh_technician_diagram(repeat) {
     var chart = $('#simulation_diagram').highcharts();
     var series_data = []
-    $.getJSON('../api/data/', function(data) {
+    $.getJSON(api_base_url + 'data/', function(data) {
         var table_rows = [];
         var latest_date = 0;
         $.each(data, function(index, sensor) {
@@ -149,7 +149,7 @@ function refresh_technician_diagram(repeat) {
         });
         update_now_table(table_rows, latest_date);
     }).done(function () {
-        $.getJSON('../api/forecast/', function(forecast_data) {
+        $.getJSON(api_base_url + 'forecast/', function(forecast_data) {
             $.each(forecast_data, function(index, sensor) {
                 chart.series[index].setData($.merge(series_data[index], sensor.data), false);
             });
@@ -232,7 +232,7 @@ function initialize_forward_buttons() {
         $.ajax({
             type: 'POST',
             contentType: 'application/json',
-            url: '../api/forward/',
+            url: api_base_url + 'forward/',
             data: JSON.stringify({
                 forward_time: $(this).val()
             }),
@@ -247,7 +247,7 @@ function initialize_forward_buttons() {
 
 // Tuning
 function initialize_technician_tuning_form() {
-    $.getJSON('../api/settings/tunable/', function(data) {
+    $.getJSON(api_base_url + 'settings/tunable/', function(data) {
         var item = $('#tuning_form');
         $.each(data, function(device_id, device_configurations) {
             $.each(device_configurations, function(key, config_data) {
@@ -280,7 +280,7 @@ function generate_immediate_feedback() {
     $.ajax({
         type: 'POST',
         contentType: 'application/json',
-        url: '../api/forecast/',
+        url: api_base_url + 'forecast/',
         data: JSON.stringify(post_data),
         dataType: 'json',
         success: function(data) {
@@ -306,7 +306,7 @@ function apply_changes() {
     $.ajax({
         type: 'POST',
         contentType: 'application/json',
-        url: '../api/configure/',
+        url: api_base_url + 'configure/',
         data: JSON.stringify(post_data),
         dataType: 'json',
         success: function(data) {
@@ -395,7 +395,7 @@ function initialize_technician_editor() {
 
     $("#save_snippet").submit(function(event) {
         event.preventDefault();
-        $.postJSON("../api/snippets/", {
+        $.postJSON(api_base_url + "snippets/", {
             name: $("#snippet_name").val(),
             code: editor.getValue()
         }, function(data) {
@@ -406,7 +406,7 @@ function initialize_technician_editor() {
 
     $("#load_snippet").submit(function(event) {
         event.preventDefault();
-        $.postJSON("../api/snippets/", {
+        $.postJSON(api_base_url + "snippets/", {
             name: $("#code_snippets").val()
         }, function(data) {
             editor.setValue(data['code'], 1);
@@ -417,7 +417,7 @@ function initialize_technician_editor() {
 
 function update_snippet_list() {
     $("#code_snippets").empty();
-    $.getJSON('../api/snippets/', function(data) {
+    $.getJSON(api_base_url + 'snippets/', function(data) {
         $.each(data, function(index, snippet) {
              $("#code_snippets").append('<option>' + snippet + '</option>');
         });

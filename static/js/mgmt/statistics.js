@@ -8,7 +8,7 @@ function manager_statistics_ready() {
         table_data.push([month, 0, 0]);
     });
 
-    $.getJSON('../api/sensors/', function(data) {
+    $.getJSON(api_base_url + 'sensors/', function(data) {
         sensor_list = data;
         $.each(sensor_list, function(index, sensor) {
             if (sensor.sum) {
@@ -23,7 +23,7 @@ function manager_statistics_ready() {
             }
         });
 
-        $.getJSON('../api/history/', function(history_data) {
+        $.getJSON(api_base_url + 'history/', function(history_data) {
             $.each(history_data, function(index, year) {
                 $('.years_list').append(
                     '<option value="' + year + '">' + year + '</option>'
@@ -37,9 +37,9 @@ function manager_statistics_ready() {
                 var target = $(this).attr('data-target');
                 var year = $('#years_' + target).val();
 
-                var url = '../api/avgs/sensor/' + sensor_id + '/year/' + year + '/';
+                var url = api_base_url + 'avgs/sensor/' + sensor_id + '/year/' + year + '/';
                 if ($(this).find(":selected").attr('data-aggregation') == 'sum') {
-                    var url = '../api/sums/sensor/' + sensor_id + '/year/' + year + '/';
+                    var url = api_base_url + 'sums/sensor/' + sensor_id + '/year/' + year + '/';
                 }
 
                 $.getJSON(url, function(data) {

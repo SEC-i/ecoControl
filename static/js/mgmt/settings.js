@@ -1,6 +1,6 @@
 // READY
 function manager_settings_ready() {
-    $.getJSON('../api/settings/', function(data) {
+    $.getJSON(api_base_url + 'settings/', function(data) {
         $.each(data, function(device_id, device_configurations) {
             $.each(device_configurations, function(key, config_data) {
                 var namespace = namespaces[device_id];

@@ -6,7 +6,7 @@ function notifications_ready() {
 }
 
 function update_notifications(start) {
-    var url = '../api/notifications/start/' + start + '/end/' + (start + notifications_per_page) + '/';
+    var url = api_base_url + 'notifications/start/' + start + '/end/' + (start + notifications_per_page) + '/';
     $.getJSON(url, function(data) {
         $('#notification_list tbody').empty();
         $.each(data['notifications'], function(index, notification) {
