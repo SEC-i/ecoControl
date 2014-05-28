@@ -36,6 +36,10 @@ def check_thresholds():
                          threshold.sensor_id)
 
 
+def execute_user_code():
+    pass
+
+
 def refresh_views():
     logger.debug('Trigger views refresh')
 

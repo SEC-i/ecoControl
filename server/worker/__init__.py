@@ -15,6 +15,7 @@ class Worker(Thread):
         while True:
             # every minute
             functions.check_thresholds()
+            functions.execute_user_code()
 
             # every 10 minutes
             if step % 10 == 0:
