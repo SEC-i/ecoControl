@@ -43,7 +43,9 @@ function initialize_technician_diagram() {
     }).done(function () {
         $.getJSON(api_base_url + 'forecast/', function(forecast_data) {
             $.each(forecast_data, function(index, sensor) {
-                $.merge(series[index].data, sensor.data);
+                if (index < series.length) {
+                    $.merge(series[index].data, sensor.data);
+                }
             });
             plotline_timestamp = forecast_data[0].data[0][0];
         }).done(function () {
@@ -151,7 +153,9 @@ function refresh_technician_diagram(repeat) {
     }).done(function () {
         $.getJSON(api_base_url + 'forecast/', function(forecast_data) {
             $.each(forecast_data, function(index, sensor) {
-                chart.series[index].setData($.merge(series_data[index], sensor.data), false);
+                if (index < series.length) {
+                    chart.series[index].setData($.merge(series_data[index], sensor.data), false);
+                }
             });
             plotline_timestamp = forecast_data[0].data[0][0];
         }).done(function () {
