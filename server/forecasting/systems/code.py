@@ -4,6 +4,7 @@ import logging
 from helpers import BaseSystem
 
 logger = logging.getLogger('simulation')
+SNIPPET_FOLDER = 'snippets/'
 
 class CodeExecuter(BaseSystem):
 
@@ -16,13 +17,15 @@ class CodeExecuter(BaseSystem):
 
         self.execution_successful = True
 
-        parent_directory = os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__)))
-        self.snippet_folder = parent_directory + "/server/data/snippets"
+    def find_dependent_devices_in(self, system_list):
+        self.register_local_variables(system_list)
 
-    def register_local_variables(self, local_variables):
-        self.local_names = ['device_%s' % i for i in range(len(local_variables))]
-        self.local_references = local_variables
+    def connected(self):
+        return not (self.local_names is None and self.local_references is None)
+
+    def register_local_variables(self, system_list):
+        self.local_names = ['device_%s' % system.id for system in system_list]
+        self.local_references = system_list
 
         # initialize code with names of local variables
         self.code = "#"
@@ -31,12 +34,6 @@ class CodeExecuter(BaseSystem):
         self.code += "\n"
 
         self.create_function(self.code)
-
-    def find_dependent_devices_in(self, system_list):
-        self.register_local_variables(system_list)
-
-    def connected(self):
-        return not (self.local_names is None and self.local_references is None)
 
     def create_function(self, code):
         self.code = code
@@ -62,25 +59,3 @@ class CodeExecuter(BaseSystem):
         except:
             logger.error("CodeExecuter: Could not execute user code")
             self.execution_successful = False
-
-    def snippets_list(self):
-        output = []
-        for filename in os.listdir(self.snippet_folder):
-            if os.path.splitext(filename)[1] == ".py":
-                output.append(filename)
-        return output
-
-    def get_snippet_code(self, snippet):
-        if snippet in self.snippets_list():
-            with open(self.snippet_folder + "/" + snippet, "r") as snippet_file:
-                return snippet_file.read()
-            logger.error("CodeExecuter: Could not read snippet '" + snippet + "'")
-        return ""
-
-    def save_snippet(self, snippet, code):
-        if os.path.splitext(snippet)[1] == ".py" and code != "":
-            with open(self.snippet_folder + "/" + snippet, "w") as snippet_file:
-                snippet_file.write(code)
-            return True
-
-        return False
