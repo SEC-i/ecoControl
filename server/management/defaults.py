@@ -12,14 +12,14 @@ def initialize_default_user():
         manager_group = Group(name="Manager")
         manager_group.save()
 
-        technician = User(username='bp2013h1', email='bp2013h1@lists.myhpi.de')
-        technician.set_password('hirsch')
+        technician = User(username='technician')
+        technician.set_password('techniker')
         technician.save()
         technician.groups.add(technician_group)
         technician.save()
 
-        manager = User(username='witt', password='demo')
-        manager.set_password('demo')
+        manager = User(username='manager')
+        manager.set_password('verwaltung')
         manager.save()
         manager.groups.add(manager_group)
         manager.save()
@@ -62,8 +62,6 @@ def initialize_default_scenario():
                        key='get_consumption_power', setter='current_power', unit='kWh', in_diagram=True, aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Warm Water Consumption',
                        key='get_warmwater_consumption_power', unit='kWh', in_diagram=True, aggregate_sum=True))
-        sensors.append(Sensor(device=tc, name='Room Temperature',
-                       key='temperature_room', setter='temperature_room', unit='°C', aggregate_avg=True))
         sensors.append(Sensor(device=tc, name='Outside Temperature',
                        key='get_outside_temperature', unit='°C', in_diagram=True, aggregate_avg=True))
         sensors.append(Sensor(device=ec, name='Electrical Consumption',
@@ -181,7 +179,7 @@ def initialize_views():
                         date_trunc('day', server_sensorvaluehourly.timestamp)::timestamp::date AS date
                     FROM server_sensorvaluehourly INNER JOIN server_sensor ON server_sensor.id=server_sensorvaluehourly.sensor_id
                     GROUP BY sensor_id, timestamp;''')
-        cursor.execute('''CREATE INDEX server_sensorvaluedaily_idx ON server_sensorvaluedaily (date);''')
+        cursor.execute('''CREATE INDEX server_sensorvaluedaily_date ON server_sensorvaluedaily (date);''')
 
     try:
         len(SensorValueMonthlySum.objects.all())
