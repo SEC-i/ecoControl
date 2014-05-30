@@ -1,11 +1,11 @@
-from helpers import BaseSystem
+from server.systems.producers import CogenerationUnit, PeakLoadBoiler
 
 
-
-class GasPoweredGenerator(BaseSystem):
+class SimulatedCogenerationUnit(CogenerationUnit):
 
     def __init__(self, system_id, env):
-        super(GasPoweredGenerator, self).__init__(system_id, env)
+
+        super(SimulatedCogenerationUnit, self).__init__(self, system_id, env)
 
         self.heat_storage = None
         self.running = True
@@ -21,27 +21,6 @@ class GasPoweredGenerator(BaseSystem):
 
         self.gas_costs = 0.0655  # Euro
 
-    def start(self):
-        self.running = True
-
-    def stop(self):
-        self.running = False
-
-    def consume_gas(self):
-        self.total_gas_consumption += self.current_gas_consumption * \
-            (self.env.step_size / 3600.0)
-        self.total_thermal_production += self.current_thermal_production * \
-            (self.env.step_size / 3600.0)
-
-    def get_operating_costs(self):
-        return self.total_gas_consumption * self.gas_costs
-
-
-class CogenerationUnit(GasPoweredGenerator):
-
-    def __init__(self, system_id, env, max_gas_input=19.0, electrical_efficiency=24.7, thermal_efficiency=65, maintenance_interval=4000, minimal_workload=40.0):
-
-        GasPoweredGenerator.__init__(self, system_id, env)
         self.power_meter = None
 
         # vaillant ecopower 4.7
@@ -81,6 +60,12 @@ class CogenerationUnit(GasPoweredGenerator):
             self.consume_gas()
         else:
             self.workload = 0.0
+
+    def start(self):
+        self.running = True
+
+    def stop(self):
+        self.running = False
 
     def calculate_new_workload(self):
         if self.overwrite_workload is not None:
@@ -158,15 +143,32 @@ class CogenerationUnit(GasPoweredGenerator):
             self.thermal_efficiency / 100.0 * self.get_efficiency_loss_factor()
 
     def consume_gas(self):
-        GasPoweredGenerator.consume_gas(self)
+        self.total_gas_consumption += self.current_gas_consumption * \
+            (self.env.step_size / 3600.0)
+        self.total_thermal_production += self.current_thermal_production * \
+            (self.env.step_size / 3600.0)
         self.total_electrical_production += self.current_electrical_production * \
             (self.env.step_size / 3600.0)
 
 
-class PeakLoadBoiler(GasPoweredGenerator):
+class SimulatedPeakLoadBoiler(PeakLoadBoiler):
 
-    def __init__(self, system_id, env, max_gas_input=45.0, thermal_efficiency=80.0):
-        GasPoweredGenerator.__init__(self, system_id, env)
+    def __init__(self, system_id, env):
+        super(SimulatedPeakLoadBoiler, self).__init__(self, system_id, env)
+
+        self.heat_storage = None
+        self.running = True
+
+        self.workload = 0
+        self.current_gas_consumption = 0.0  # kW
+        self.current_thermal_production = 0.0  # kWh
+        self.total_gas_consumption = 0  # kWh
+        self.total_thermal_production = 0.0  # kWh
+
+        self.total_hours_of_operation = 0
+        self.power_on_count = 0
+
+        self.gas_costs = 0.0655  # Euro
         
         self.max_gas_input = max_gas_input  # kW
         self.thermal_efficiency = thermal_efficiency  # %
@@ -189,8 +191,17 @@ class PeakLoadBoiler(GasPoweredGenerator):
         else:
             self.workload = 0.0
 
+    def start(self):
+        self.running = True
+
+    def stop(self):
+        self.running = False
+
     def get_thermal_energy_production(self):
         return self.current_thermal_production * (self.env.step_size / 3600.0)
+
+    def get_operating_costs(self):
+        return self.total_gas_consumption * self.gas_costs
 
     def calculate_state(self):
         if self.overwrite_workload is not None:
@@ -216,3 +227,9 @@ class PeakLoadBoiler(GasPoweredGenerator):
             99.0 * self.max_gas_input
         self.current_thermal_production = self.current_gas_consumption * \
             self.thermal_efficiency / 100.0
+
+    def consume_gas(self):
+        self.total_gas_consumption += self.current_gas_consumption * \
+            (self.env.step_size / 3600.0)
+        self.total_thermal_production += self.current_thermal_production * \
+            (self.env.step_size / 3600.0)

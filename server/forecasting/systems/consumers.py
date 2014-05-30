@@ -5,7 +5,7 @@ import cProfile
 
 from django.utils.timezone import utc
 
-from helpers import BaseSystem
+from server.systems.consumers import ThermalConsumer, ElectricalConsumer
 from data import warm_water_demand_workday, warm_water_demand_weekend
 from server.forecasting.forecasting.weather import WeatherForecast
 from server.forecasting.forecasting import Forecast
@@ -17,7 +17,7 @@ electrical_forecast = None
 weather_forecast = None
 
 
-class ThermalConsumer(BaseSystem):
+class SimulatedThermalConsumer(ThermalConsumer):
 
     """
     physically based heating, using formulas from
@@ -178,7 +178,7 @@ class ThermalConsumer(BaseSystem):
         return a * (1 - x) + b * x
 
 
-class ElectricalConsumer(BaseSystem):
+class SimulatedElectricalConsumer(ElectricalConsumer):
 
     """
     Demand based on pamiru's data (22 residents in a 12 apartment house)
@@ -191,7 +191,7 @@ class ElectricalConsumer(BaseSystem):
     dates = []
 
 
-    def __init__(self, system_id, env, residents=22):
+    def __init__(self, system_id, env):
         super(ElectricalConsumer, self).__init__(system_id, env)
 
         self.power_meter = None

@@ -1,11 +1,11 @@
-from server.forecasting.forecasting.systems.consumers as consumers
+from server.systems import BaseSystem
 
 
-class RealThermalConsumer(consumers.ThermalConsumer):
+class ThermalConsumer(BaseSystem):
 
     def __init__(self, system_id, env):
 
-        super(ThermalConsumer, self).__init__(system_id, env)
+        super(ThermalConsumer, self).__init__(system_id)
 
         self.heat_storage = None
 
@@ -43,18 +43,6 @@ class RealThermalConsumer(consumers.ThermalConsumer):
 
         self.calculate()
 
-    def find_dependent_devices_in(self, system_list):
-        raise NotImplementedError
-
-    def connected(self):
-        raise NotImplementedError
-
-    def calculate(self):
-        raise NotImplementedError
-
-    def step(self):
-        raise NotImplementedError
-
     def heat_room(self):
         raise NotImplementedError
 
@@ -81,14 +69,11 @@ class RealThermalConsumer(consumers.ThermalConsumer):
     def get_outside_temperature(self, offset_days=0):
         raise NotImplementedError
 
-    def linear_interpolation(self, a, b, x):
-        raise NotImplementedError
 
-
-class RealElectricalConsumer(consumers.ElectricalConsumer):
+class ElectricalConsumer(BaseSystem):
 
     def __init__(self, system_id, env, residents=22):
-        super(ElectricalConsumer, self).__init__(system_id, env)
+        super(ElectricalConsumer, self).__init__(system_id)
 
         self.power_meter = None
         self.residents = residents
@@ -99,15 +84,6 @@ class RealElectricalConsumer(consumers.ElectricalConsumer):
 
         self.new_data_interval = 24 * 60 * 60  # append data each day
         self.last_forecast_update = self.env.now
-
-    def find_dependent_devices_in(self, system_list):
-        raise NotImplementedError
-
-    def connected(self):
-        raise NotImplementedError
-
-    def step(self):
-        raise NotImplementedError
 
     def update_forecast_data(self):
         raise NotImplementedError

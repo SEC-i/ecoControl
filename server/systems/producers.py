@@ -1,11 +1,11 @@
-from server.forecasting.forecasting.systems.producers as producers
+from server.systems import BaseSystem
 
 
-class RealCogenerationUnit(producers.CogenerationUnit):
+class CogenerationUnit(BaseSystem):
 
-    def __init__(self, system_id, env, max_gas_input=19.0, electrical_efficiency=24.7, thermal_efficiency=65, maintenance_interval=4000, minimal_workload=40.0):
+    def __init__(self, system_id):
 
-        GasPoweredGenerator.__init__(self, system_id, env)
+        super(CogenerationUnit, self).__init__(self, system_id)
         self.power_meter = None
 
         # vaillant ecopower 4.7
@@ -27,15 +27,6 @@ class RealCogenerationUnit(producers.CogenerationUnit):
         self.electrical_driven_minimal_production = 1.0  # kWh (electrical)
 
         self.overwrite_workload = None
-
-    def find_dependent_devices_in(self, system_list):
-        raise NotImplementedError
-
-    def connected(self):
-        raise NotImplementedError
-
-    def step(self):
-        raise NotImplementedError
 
     def calculate_new_workload(self):
         raise NotImplementedError
@@ -61,29 +52,17 @@ class RealCogenerationUnit(producers.CogenerationUnit):
     def update_parameters(self, calculated_workload):
         raise NotImplementedError
 
-    def consume_gas(self):
-        raise NotImplementedError
 
+class PeakLoadBoiler(BaseSystem):
 
-class RealPeakLoadBoiler(producers.PeakLoadBoiler):
-
-    def __init__(self, system_id, env, max_gas_input=45.0, thermal_efficiency=80.0):
-        GasPoweredGenerator.__init__(self, system_id, env)
+    def __init__(self, system_id):
+        super(PeakLoadBoiler, self).__init__(self, system_id)
 
         self.max_gas_input = max_gas_input  # kW
         self.thermal_efficiency = thermal_efficiency  # %
         self.off_time = self.env.now
 
         self.overwrite_workload = None
-
-    def find_dependent_devices_in(self, system_list):
-        raise NotImplementedError
-
-    def connected(self):
-        raise NotImplementedError
-
-    def step(self):
-        raise NotImplementedError
 
     def get_thermal_energy_production(self):
         return self.current_thermal_production * (self.env.step_size / 3600.0)

@@ -1,11 +1,10 @@
-from helpers import BaseSystem
+from server.systems.storages import HeatStorage, PowerMeter
 
 
+class SimulatedHeatStorage(HeatStorage):
 
-class HeatStorage(BaseSystem):
-
-    def __init__(self, system_id, env, capacity=2500, min_temperature=55.0, target_temperature=70.0, critical_temperature=90.0):
-        super(HeatStorage, self).__init__(system_id, env)
+    def __init__(self, system_id, env):
+        super(SimulatedHeatStorage, self).__init__(system_id, env)
 
         # default data from pamiru48
         self.capacity = capacity  # liters
@@ -76,10 +75,10 @@ class HeatStorage(BaseSystem):
     def attach_to_thermal_consumer(self, system):
         system.heat_storage = self
 
-class PowerMeter(BaseSystem):
+class SimulatedPowerMeter(PowerMeter):
 
-    def __init__(self, system_id, env, electrical_costs=0.283, feed_in_reward=0.0917):
-        super(PowerMeter, self).__init__(system_id, env)
+    def __init__(self, system_id, env):
+        super(SimulatedPowerMeter, self).__init__(system_id, env)
 
         self.fed_in_electricity = 0.0  # kWh
         self.purchased = 0  # kWh
