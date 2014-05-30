@@ -36,9 +36,10 @@ function manager_statistics_ready() {
                 var sensor = get_sensor(sensor_id);
                 var target = $(this).attr('data-target');
                 var year = $('#years_' + target).val();
+                var aggregation_type = $(this).find(":selected").attr('data-aggregation');
 
                 var url = api_base_url + 'avgs/sensor/' + sensor_id + '/year/' + year + '/';
-                if ($(this).find(":selected").attr('data-aggregation') == 'sum') {
+                if (aggregation_type == 'sum') {
                     var url = api_base_url + 'sums/sensor/' + sensor_id + '/year/' + year + '/';
                 }
 
@@ -66,7 +67,13 @@ function manager_statistics_ready() {
                     }, false);
                     chart.series[series_id].setData(series_data,true);
 
-                    update_table(data, sensor.name + ' in ' + sensor.unit, target == 'right');
+                    var title = sensor.name + ' in ' + sensor.unit + ' - ' + year;
+                    if (aggregation_type == 'sum') {
+                        title = 'SUM ' + title;
+                    } else {
+                        title = 'AVG ' + title;
+                    }
+                    update_table(data, title, target == 'right');
                 });
             });
 
