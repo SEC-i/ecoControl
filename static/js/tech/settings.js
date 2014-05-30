@@ -73,7 +73,7 @@ function technician_settings_ready() {
                 }).done(function(response) {
                     $.postJSON(api_base_url + "start/", {
                         demo: demo
-                    }).done(function() {
+                    }, function() {
                         $.address.value('overview');
                     });
                 });

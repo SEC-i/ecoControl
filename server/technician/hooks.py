@@ -7,7 +7,6 @@ import calendar
 from datetime import datetime, timedelta
 import dateutil.relativedelta
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.http import require_POST
 from django.views.decorators.debug import sensitive_post_parameters
