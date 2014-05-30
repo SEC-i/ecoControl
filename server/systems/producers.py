@@ -1,4 +1,4 @@
-from server.systems import BaseSystem
+from server.systems.base import BaseSystem
 
 
 class CogenerationUnit(BaseSystem):

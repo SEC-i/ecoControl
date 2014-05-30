@@ -1,4 +1,4 @@
-from server.systems import BaseSystem
+from server.systems.base import BaseSystem
 from server.forecasting.forecasting.weather import WeatherForecast
 
 electrical_forecast = None
