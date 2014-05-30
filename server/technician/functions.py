@@ -20,17 +20,37 @@ def get_snippet_list():
 def get_snippet_code(name):
     if name in get_snippet_list():
         with open(SNIPPET_FOLDER + name, "r") as snippet_file:
-            return {'code': snippet_file.read()}
-    return {'status': 'not found'}
+            return {
+                'code': snippet_file.read(),
+                'status': 1
+            }
+    return {'status': 0}
 
 
 def save_snippet(name, code):
     if os.path.splitext(name)[1] == ".py" and code != "":
         with open(SNIPPET_FOLDER + name, "w") as snippet_file:
             snippet_file.write(code.encode('utf-8'))
-        return {'code': code}
+        return {
+            'code': code,
+            'status': 1
+        }
 
-    return {'status': 'failed'}
+    return {'status': 0}
+
+
+def apply_snippet(code):
+    with open('server/user_code.py', "w") as snippet_file:
+        snippet_file.write(code.encode('utf-8'))
+    return {
+        'code': code,
+        'status': 1
+    }
+
+
+def get_current_snippet():
+    with open('server/user_code.py', "r") as snippet_file:
+        return {'code': snippet_file.read()}
 
 
 def perform_configuration(data):
@@ -106,7 +126,8 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
             system_output.append(('system_name', system.name))
 
             sensor_workload = Sensor.objects.get(device=system, key='workload')
-            sensor_consumption = Sensor.objects.get(device=system, key='current_gas_consumption')
+            sensor_consumption = Sensor.objects.get(
+                device=system, key='current_gas_consumption')
             workloads = SensorValueDaily.objects.filter(sensor=sensor_workload)
             workloads_monthly_avg = SensorValueMonthlyAvg.objects.filter(
                 sensor=sensor_workload)
