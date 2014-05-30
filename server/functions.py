@@ -74,6 +74,7 @@ def get_device_configurations(tunable=None):
 
         for config in configuration_queryset:
             configurations[config.key] = {
+                'device': config.device.name,
                 'value': config.value,
                 'type': config.value_type,
                 'unit': config.unit

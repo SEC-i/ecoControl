@@ -395,10 +395,11 @@ function cleanup_diagram(chart) {
 }
 
 function get_input_field_code(namespace, key, data) {
+    console.log(data)
     var device_id = namespaces.indexOf(namespace);
     var output =
-            '<div class="col-sm-4"><div class="form-group">' +
-                '<label for="' + namespace + '_' + key + '">' + get_text(key) + ' (Device #' + device_id + ')</label>';
+            '<div class="col-sm-6"><div class="form-group">' +
+                '<label for="' + namespace + '_' + key + '">' + get_text(key) + ' (' + data.device + ')</label>';
     if (data.unit == '') {
         output +=
                 '<input type="text" class="configuration form-control" id="' + namespace + '_' + key + '" data-device="' + device_id + '" data-key="' + key + '" data-type="' + data.type + '" data-unit="' + data.unit + '"  value="' + data.value + '">';
