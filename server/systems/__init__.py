@@ -1,25 +1,38 @@
-class BaseSystem(object):
+from producers import CogenerationUnit, PeakLoadBoiler
+from storages import HeatStorage, PowerMeter
+from consumers import ThermalConsumer, ElectricalConsumer
 
-    def __init__(self, system_id):
-        self.id = system_id
+from server.models import Device
 
-    def calculate(self):
-        pass
 
-    def find_dependent_devices_in(self, system_list):
-        pass
+def get_initialized_scenario():
+        devices = list(Device.objects.all())
+        system_list = []
+        for device in devices:
+            for device_type, class_name in Device.DEVICE_TYPES:
+                if device.device_type == device_type:
+                    system_class = globals()[class_name]
+                    system_list.append(system_class(device.id))
 
-    def attach_to_cogeneration_unit(self, system):
-        pass
+        return system_list
 
-    def attach_to_peak_load_boiler(self, system):
-        pass
 
-    def attach_to_thermal_consumer(self, system):
-        pass
+def get_user_function(systems):
+    local_names = ['device_%s' % system.id for system in systems]
 
-    def attach_to_electrical_consumer(self, system):
-        pass
+    with open('server/user_code.py', "r") as code_file:
+        code = code_file.read()
 
-    def connected(self):
-        return True
+    lines = []
+    lines.append("def user_function(%s):" %
+                 (",".join(local_names)))
+
+    for line in code.split("\n"):
+        lines.append("\t" + line)
+    lines.append("\tpass")  # make sure function is not empty
+
+    source = "\n".join(lines)
+    namespace = {}
+    exec source in namespace  # execute code in namespace
+
+    return namespace['user_function']
