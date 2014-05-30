@@ -113,13 +113,10 @@ def get_total_balance(request, year=None, month=None):
         year = current.year
 
     if month is None:
-        if year == current.year:
-            months = [x for x in range(1, current.month + 1)]
-        else:
-            months = [x for x in range(1, 13)]
+        months = [x for x in range(1, 13)]
     else:
         try:
-            month = int(month)
+            months = [int(month)]
         except (TypeError, ValueError):
             months = [current.month]
 
