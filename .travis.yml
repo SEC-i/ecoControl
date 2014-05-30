@@ -23,6 +23,5 @@ before_script:
   - createdb bp2013h1
   - python manage.py syncdb --noinput
 script:
-  - cat ./* | grep "systems.code"
   - coverage run --source='.' manage.py test
   - coverage report
