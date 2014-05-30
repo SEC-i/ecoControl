@@ -19,7 +19,11 @@ function login_user() {
             $.getJSON(api_base_url + 'status/', function(data) {
                 status_data = data;
                 initialize_page(function() {
-                    $.address.value('overview');
+                    if (status_data['technician'] && status_data['system_status'] == 'init') {
+                        $.address.value('settings');
+                    } else {
+                        $.address.value('overview');
+                    }
                 });
             });
         } else {

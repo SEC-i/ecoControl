@@ -14,6 +14,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.utils.timezone import utc
 from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
+from django.core.cache import cache
 
 from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
 from server.helpers import create_json_response, create_json_response_from_QuerySet
