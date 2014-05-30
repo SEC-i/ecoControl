@@ -1,17 +1,17 @@
 import unittest
 
 from server.forecasting.environment import ForwardableRealtimeEnvironment
-from server.forecasting.systems.storages import HeatStorage, PowerMeter
+from server.forecasting.systems.storages import SimulatedHeatStorage, SimulatedPowerMeter
 
 electrical_feed_in_reward_per_kwh = 0.0917
 electrical_costs_per_kwh = 0.283
 
 
-class HeatStorageTests(unittest.TestCase):
+class SimulatedHeatStorageTests(unittest.TestCase):
 
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
-        self.hs = HeatStorage(0, env=self.env)
+        self.hs = SimulatedHeatStorage(0, env=self.env)
 
     def test_heat_storage_creation(self):
         self.assertGreater(self.hs.capacity, 0)
@@ -114,18 +114,6 @@ class HeatStorageTests(unittest.TestCase):
 
         self.assertFalse(self.hs.undersupplied())
 
-    def test_start(self):
-        self.hs.running = False
-        self.hs.start()
-
-        self.assertTrue(self.hs.running)
-
-    def test_stop(self):
-        self.hs.running = True
-        self.hs.stop()
-
-        self.assertFalse(self.hs.running)
-
     def test_step(self):
         self.hs.temperature_loss = 3.0 / 24.0   # per hour
         self.hs.capacity = 2500
@@ -135,7 +123,8 @@ class HeatStorageTests(unittest.TestCase):
 
         # capacity * temperature_loss
         energy_loss_per_hour = (2500 * 0.002) * (3.0 / 24.0)
-        energy_loss_per_step = energy_loss_per_hour * (self.env.step_size / 3600.0)  # divide steps
+        energy_loss_per_step = energy_loss_per_hour * \
+            (self.env.step_size / 3600.0)  # divide steps
 
         self.hs.step()
 
@@ -145,11 +134,11 @@ class HeatStorageTests(unittest.TestCase):
         # If not the values are physically wrong!
 
 
-class PowerMeterTests(unittest.TestCase):
+class SimulatedPowerMeterTests(unittest.TestCase):
 
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
-        self.power_meter = PowerMeter(0, env=self.env)
+        self.power_meter = SimulatedPowerMeter(0, env=self.env)
 
     def test_power_meter_creation(self):
         self.assertEqual(self.power_meter.total_fed_in_electricity, 0)

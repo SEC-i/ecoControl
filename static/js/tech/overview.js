@@ -435,6 +435,7 @@ function initialize_technician_editor() {
     });
 
     update_snippet_list();
+    update_user_code();
 
     $("#save_snippet").submit(function(event) {
         event.preventDefault();
@@ -456,6 +457,18 @@ function initialize_technician_editor() {
         });
         $('#snippet_name').val($("#code_snippets").val());
     });
+
+    $("#editor_apply_button").click(function() {
+        $.postJSON(api_base_url + "code/", {
+            code: editor.getValue()
+        }, function(data) {
+            if (data['status'] == '1') {
+                editor.setValue(data['code'], 1);
+            } else {
+                console.log('Failed to apply');
+            }
+        });
+    });
 }
 
 function update_snippet_list() {
@@ -464,5 +477,11 @@ function update_snippet_list() {
         $.each(data, function(index, snippet) {
              $("#code_snippets").append('<option>' + snippet + '</option>');
         });
+    });
+}
+
+function update_user_code() {
+    $.getJSON(api_base_url + 'code/', function(data) {
+        editor.setValue(data['code'], 1);
     });
 }

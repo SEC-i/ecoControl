@@ -8,7 +8,6 @@ class Device(models.Model):
     PLB = 3  # PeakLoadBoiler(self.env, self.hs)
     TC = 4  # ThermalConsumer(self.env, self.hs)
     EC = 5  # ElectricalConsumer(self.env, self.pm)
-    CE = 6  # CodeExecuter(self.env, {'env': self.env, 'hs': self.hs, ... })
     DEVICE_TYPES = (
         (HS, 'HeatStorage'),
         (PM, 'PowerMeter'),
@@ -16,7 +15,6 @@ class Device(models.Model):
         (PLB, 'PeakLoadBoiler'),
         (TC, 'ThermalConsumer'),
         (EC, 'ElectricalConsumer'),
-        (CE, 'CodeExecuter'),
     )
 
     name = models.CharField(max_length=100)

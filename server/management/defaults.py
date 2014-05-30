@@ -39,8 +39,6 @@ def initialize_default_scenario():
         tc.save()
         ec = Device(name='Electrical Consumer', device_type=Device.EC)
         ec.save()
-        ce = Device(name='Code Executer', device_type=Device.CE)
-        ce.save()
         print "Default power systems initialized"
 
         sensors = []

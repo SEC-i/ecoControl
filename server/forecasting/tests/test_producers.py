@@ -1,95 +1,22 @@
 import unittest
 
 from server.forecasting.environment import ForwardableRealtimeEnvironment
-from server.forecasting.systems.producers import CogenerationUnit, GasPoweredGenerator
-from server.forecasting.systems.storages import HeatStorage, PowerMeter
+from server.forecasting.systems.producers import SimulatedCogenerationUnit
+from server.forecasting.systems.storages import SimulatedHeatStorage, SimulatedPowerMeter
 
 from helpers import values_comparison
 from mock import Mock
 
 gas_price_per_kwh = 0.0655
-
-
-class GasPoweredGeneratorTests(unittest.TestCase):
-
-    def setUp(self):
-        self.env = ForwardableRealtimeEnvironment()
-        self.g_generator = GasPoweredGenerator(0, env=self.env)
+           
         
-    def test_gas_powered_generator_creation(self):
-        self.assertTrue(self.g_generator.running)
-
-        self.assertEqual(self.g_generator.workload, 0,
-            "wrong workload. "+ values_comparison(self.g_generator.workload, 0))
-        self.assertEqual(self.g_generator.current_gas_consumption, 0,
-             "wrong current_gas_consumption. " + 
-             values_comparison(self.g_generator.current_gas_consumption,0))   
-        self.assertEqual(self.g_generator.current_thermal_production, 0,
-            "wrong current_thermal_production" +
-            values_comparison(self.g_generator.current_thermal_production, 0)) 
-        self.assertEqual(self.g_generator.total_gas_consumption, 0,
-            "wrong total_gas_consumption. " +
-            values_comparison(self.g_generator.total_gas_consumption, 0)) 
-        self.assertEqual(self.g_generator.total_thermal_production, 0.0,
-            "wrong total_thermal_production. " + 
-            values_comparison(self.g_generator.total_thermal_production, 0))
-        self.assertEqual(self.g_generator.total_hours_of_operation, 0,
-            "wrong total_hours_of_operation. " +
-            values_comparison(self.g_generator.total_hours_of_operation, 0))        
-        self.assertEqual(self.g_generator.power_on_count, 0,
-            "wrong power_on_count. " + 
-            values_comparison(self.g_generator.power_on_count, 0.0))
-    
-    def test_start(self):
-        self.g_generator.running = False
-        self.g_generator.start()
-        self.assertTrue(self.g_generator.running)    
-        
-        
-    def test_stop(self):
-        self.g_generator.running = True
-        self.g_generator.stop()
-        
-        self.assertFalse(self.g_generator.running)
-        
-    def test_get_operating_costs(self):
-        self.g_generator.total_gas_consumption = 4
-        
-        self.assertEqual(self.g_generator.get_operating_costs(), \
-                            4*gas_price_per_kwh)
-                            
-    def test_consume_gas(self):
-        '''increases total_gas_consumtion 
-        and total_thermal_production
-        both are measured in energy'''
-        self.g_generator.total_gas_consumption = 0
-        self.g_generator.total_thermal_production = 0
-        self.g_generator.current_gas_consumption = 5 # unit is power in kW
-        self.g_generator.current_thermal_production = 4 # also kW
-        
-        self.g_generator.consume_gas()
-        
-        expected_total_gas_consumption = 5 * (self.env.step_size / 3600.0)
-        expected_total_thermal_production = 4 * (self.env.step_size / 3600.0)
-        
-        self.assertEqual(self.g_generator.total_gas_consumption,
-            expected_total_gas_consumption, 
-            "wrong total_gas_consumption. " +
-            values_comparison(self.g_generator.total_gas_consumption, 
-            expected_total_gas_consumption,))
-        self.assertEqual(self.g_generator.total_thermal_production,
-            expected_total_thermal_production,
-            "wrong total_thermal_production. " +
-            values_comparison(self.g_generator.total_thermal_production, 
-                expected_total_thermal_production))            
-        
-class CogenerationUnitTest(unittest.TestCase):
+class SimulatedCogenerationUnitTest(unittest.TestCase):
 
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
-        self.heat_storage = Mock(spec=HeatStorage)()
-        self.power_meter = Mock(spec=PowerMeter)
-        self.cu = CogenerationUnit(1, self.env)
+        self.heat_storage = Mock(spec=SimulatedHeatStorage)()
+        self.power_meter = Mock(spec=SimulatedPowerMeter)
+        self.cu = SimulatedCogenerationUnit(1, self.env)
         self.cu.heat_storage = self.heat_storage
         self.cu.power_meter = self.power_meter
         
@@ -259,12 +186,12 @@ class CogenerationUnitTest(unittest.TestCase):
         
         self.assertAlmostEqual(calculated_result, 0)
 
-class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
+class SimulatedCogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
-        self.heat_storage = Mock(spec=HeatStorage)
-        self.power_meter = PowerMeter(0, self.env)
-        self.cu = CogenerationUnit(1, self.env)
+        self.heat_storage = Mock(spec=SimulatedHeatStorage)
+        self.power_meter = SimulatedPowerMeter(0, self.env)
+        self.cu = SimulatedCogenerationUnit(1, self.env)
         self.cu.heat_storage = self.heat_storage
         self.cu.power_meter = self.power_meter
 
@@ -488,12 +415,12 @@ class CogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
             values_comparison(self.cu.total_electrical_production,
             expected_total_electrical_production))
     
-class CogenerationUnitMethodStepTest(unittest.TestCase):
+class SimulatedCogenerationUnitMethodStepTest(unittest.TestCase):
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
-        self.heat_storage = Mock(spec=HeatStorage)()
-        self.power_meter = PowerMeter(0, self.env)
-        self.cu = CogenerationUnit(1, self.env)
+        self.heat_storage = Mock(spec=SimulatedHeatStorage)()
+        self.power_meter = SimulatedPowerMeter(0, self.env)
+        self.cu = SimulatedCogenerationUnit(1, self.env)
         self.cu.heat_storage = self.heat_storage
         self.cu.power_meter = self.power_meter
         

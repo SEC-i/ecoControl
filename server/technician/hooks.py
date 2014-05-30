@@ -28,8 +28,6 @@ DEMO_SIMULATION = None
 
 
 def handle_snippets(request):
-    output = []
-
     if request.method == 'POST':
         data = json.loads(request.body)
         if 'name' in data:
@@ -39,6 +37,15 @@ def handle_snippets(request):
                 return create_json_response(functions.get_snippet_code(data['name']))
 
     return create_json_response(functions.get_snippet_list())
+
+
+def handle_code(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        if 'code' in data:
+            return create_json_response(functions.apply_snippet(data['code']))
+
+    return create_json_response(functions.get_current_snippet())
 
 
 @require_POST
