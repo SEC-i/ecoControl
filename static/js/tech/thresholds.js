@@ -35,7 +35,7 @@ function initialize_sensor_list() {
         $('#sensor_list').html('<option value="">Select Sensor</option>');
         $.each(data, function(index, sensor) {
             $('#sensor_list').append('<option value="' + sensor.id + '">' + sensor.name + ' #' + sensor.id + ' (' + sensor.device + ')</option>');
-            x_editable_sensor_list.push({value: sensor.id, text: sensor.name + ' #' + sensor.id});
+            x_editable_sensor_list.push({value: sensor.id, text: sensor.name + ' #' + sensor.id + ' (' + sensor.device + ')'});
         });
     });
 }
