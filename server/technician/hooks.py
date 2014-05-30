@@ -16,7 +16,7 @@ from django.db import connection
 from django.core.cache import cache
 
 from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
-from server.helpers import create_json_response, create_json_response_from_QuerySet
+from server.helpers import create_json_response, create_json_response_from_QuerySet, DemoSimulation
 from server.functions import get_device_configurations, get_past_time
 from server.forecasting import Simulation
 import functions
