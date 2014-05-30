@@ -114,18 +114,6 @@ class SimulatedHeatStorageTests(unittest.TestCase):
 
         self.assertFalse(self.hs.undersupplied())
 
-    def test_start(self):
-        self.hs.running = False
-        self.hs.start()
-
-        self.assertTrue(self.hs.running)
-
-    def test_stop(self):
-        self.hs.running = True
-        self.hs.stop()
-
-        self.assertFalse(self.hs.running)
-
     def test_step(self):
         self.hs.temperature_loss = 3.0 / 24.0   # per hour
         self.hs.capacity = 2500
@@ -135,7 +123,8 @@ class SimulatedHeatStorageTests(unittest.TestCase):
 
         # capacity * temperature_loss
         energy_loss_per_hour = (2500 * 0.002) * (3.0 / 24.0)
-        energy_loss_per_step = energy_loss_per_hour * (self.env.step_size / 3600.0)  # divide steps
+        energy_loss_per_step = energy_loss_per_hour * \
+            (self.env.step_size / 3600.0)  # divide steps
 
         self.hs.step()
 

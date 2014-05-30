@@ -38,28 +38,10 @@ class SimulatedThermalConsumer(ThermalConsumer):
         super(SimulatedThermalConsumer, self).__init__(system_id)
         self.env = env
 
-        self.heat_storage = None
-
-        # initial temperature
-        self.temperature_room = 12.0
-        self.temperature_warmwater = 40.0
-
         # list of 24 values representing target_temperature per hour
         self.daily_demand = [19, 19, 19, 19, 19, 19, 19, 20, 21,
                              20, 20, 21, 20, 21, 21, 21, 21, 22, 22, 22, 22, 22, 21, 19]
         self.target_temperature = self.daily_demand[0]
-
-        self.total_heated_floor = 650
-        self.room_height = 2.5  # constant
-        self.residents = 22
-        self.apartments = 12
-        self.avg_rooms_per_apartment = 4
-        self.avg_windows_per_room = 3
-        self.heating_constant = 100
-        # heat transfer coefficient normal glas window in W/(m^2 * K)
-        # normal glas 5.9, isolated 1.1
-        self.heat_transfer_window = 2.2
-        self.heat_transfer_wall = 0.5
 
         self.consumed = 0
 
@@ -73,13 +55,6 @@ class SimulatedThermalConsumer(ThermalConsumer):
         #self.warmwater_forecast = Forecast(self.env, input_data, samples_per_hour=1)
 
         self.calculate()
-
-    def find_dependent_devices_in(self, system_list):
-        for system in system_list:
-            system.attach_to_thermal_consumer(self)
-
-    def connected(self):
-        return self.heat_storage is not None
 
     def calculate(self):
 
@@ -197,7 +172,6 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         self.env = env
 
         self.power_meter = None
-        self.residents = 22
         self.total_consumption = 0.0  # kWh
         # ! TODO: this will have to replaced by a database"
         global electrical_forecast
@@ -216,13 +190,6 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         self.new_data_interval = 24 * 60 * 60  # append data each day
         self.last_forecast_update = self.env.now
 
-    def find_dependent_devices_in(self, system_list):
-        for system in system_list:
-            system.attach_to_electrical_consumer(self)
-
-    def connected(self):
-        return self.power_meter is not None
-
     def step(self):
         consumption = self.get_consumption_energy()
         self.total_consumption += consumption
@@ -233,7 +200,6 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
             self.update_forecast_data()
 
     def update_forecast_data(self):
-
         raw_dataset = self.get_data_until(
             self.env.now, self.last_forecast_update)
         # cast to float and convert to kW

@@ -15,10 +15,14 @@ class HeatStorage(BaseSystem):
 
         self.specific_heat_capacity = 4.19 / 3600.0  # kWh/(kg*K)
 
-        self.input_energy = 0.0  # kWh
-        self.output_energy = 0.0  # kWh
-        self.empty_count = 0
-        self.temperature_loss = 3.0 / 24.0  # loss per hour
+    def attach_to_cogeneration_unit(self, system):
+        system.heat_storage = self
+
+    def attach_to_peak_load_boiler(self, system):
+        system.heat_storage = self
+
+    def attach_to_thermal_consumer(self, system):
+        system.heat_storage = self
 
     def energy_stored(self):
         return self.input_energy - self.output_energy
@@ -31,9 +35,6 @@ class HeatStorage(BaseSystem):
 
     def get_temperature(self):
         return self.base_temperature + self.energy_stored() / (self.capacity * self.specific_heat_capacity)
-
-    def set_temperature(self, value):
-        raise NotImplementedError
 
     def get_energy_capacity(self):
         return self.capacity * \
@@ -61,6 +62,12 @@ class PowerMeter(BaseSystem):
         self.electrical_costs = 0.283
         # reward in Euro for feed in 1 kW/h
         self.feed_in_reward = 0.0917
+
+    def attach_to_cogeneration_unit(self, system):
+        system.power_meter = self
+
+    def attach_to_electrical_consumer(self, system):
+        system.power_meter = self
 
     def get_reward(self):
         return self.total_fed_in_electricity * self.feed_in_reward

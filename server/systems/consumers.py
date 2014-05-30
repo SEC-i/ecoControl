@@ -42,7 +42,12 @@ class ThermalConsumer(BaseSystem):
         # self.weather_forecast = weather_forecast
         self.current_power = 0
 
-        self.calculate()
+    def find_dependent_devices_in(self, system_list):
+        for system in system_list:
+            system.attach_to_thermal_consumer(self)
+
+    def connected(self):
+        return self.heat_storage is not None
 
     def heat_room(self):
         raise NotImplementedError
@@ -86,14 +91,15 @@ class ElectricalConsumer(BaseSystem):
         self.new_data_interval = 24 * 60 * 60  # append data each day
         self.last_forecast_update = 0  # self.env.now
 
-    def update_forecast_data(self):
-        raise NotImplementedError
+    def find_dependent_devices_in(self, system_list):
+        for system in system_list:
+            system.attach_to_electrical_consumer(self)
+
+    def connected(self):
+        return self.power_meter is not None
 
     def get_consumption_power(self):
         raise NotImplementedError
 
     def get_consumption_energy(self):
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
-
-    def get_data_until(self, timestamp, start_timestamp=None):
-        raise NotImplementedError

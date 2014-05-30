@@ -7,15 +7,6 @@ class SimulatedHeatStorage(HeatStorage):
         super(SimulatedHeatStorage, self).__init__(system_id)
         self.env = env
 
-        # default data from pamiru48
-        self.capacity = 2500  # liters
-        self.base_temperature = 20.0  # assume no lower temperature
-        self.min_temperature = 55.0  # degree Celsius
-        self.target_temperature = 70.0  # degree Celsius
-        self.critical_temperature = 90.0  # degree Celsius
-
-        self.specific_heat_capacity = 4.19 / 3600.0  # kWh/(kg*K)
-
         self.input_energy = 0.0  # kWh
         self.output_energy = 0.0  # kWh
         self.empty_count = 0
@@ -56,26 +47,11 @@ class SimulatedHeatStorage(HeatStorage):
     def undersupplied(self):
         return self.get_temperature() < self.min_temperature
 
-    def start(self):
-        self.running = True
-
-    def stop(self):
-        self.running = False
-
     def step(self):
         hourly_energy_loss = (self.capacity * self.specific_heat_capacity) * \
             self.temperature_loss
         self.output_energy += hourly_energy_loss * \
             (self.env.step_size / 3600.0)
-
-    def attach_to_cogeneration_unit(self, system):
-        system.heat_storage = self
-
-    def attach_to_peak_load_boiler(self, system):
-        system.heat_storage = self
-
-    def attach_to_thermal_consumer(self, system):
-        system.heat_storage = self
 
 
 class SimulatedPowerMeter(PowerMeter):
@@ -91,11 +67,6 @@ class SimulatedPowerMeter(PowerMeter):
 
         self.energy_produced = 0.0  # kWh
         self.energy_consumed = 0.0  # kWh
-
-        # costs in Euro to purchase 1 kW/h from external supplier
-        self.electrical_costs = 0.283
-        # reward in Euro for feed in 1 kW/h
-        self.feed_in_reward = 0.0917
 
     def add_energy(self, energy):
         self.energy_produced += energy
@@ -120,9 +91,3 @@ class SimulatedPowerMeter(PowerMeter):
             self.total_fed_in_electricity += balance
         self.energy_produced = 0
         self.energy_consumed = 0
-
-    def attach_to_cogeneration_unit(self, system):
-        system.power_meter = self
-
-    def attach_to_electrical_consumer(self, system):
-        system.power_meter = self
