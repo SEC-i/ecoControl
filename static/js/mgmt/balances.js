@@ -130,8 +130,6 @@ function initialize_balance_diagrams_filters() {
                         // preselect tables details
                         if ($('#details_container').is(':empty')) {
                             show_month_details(year, data.length - 1);
-                        } else {
-                            update_date_selection();
                         }
                     });
                 }
@@ -247,7 +245,6 @@ function update_date_selection(selected_year, selected_month) {
         show_month_details($('#selected_year').val(), $(this).val());
     });
 
-    var selected_year = $('#selected_year').val();
     var year_options = "";
     $.each(cached_data, function(year, data) {
         year_options += '<option' + (year == selected_year ? ' selected': '') + '>' + year + '</option>';
