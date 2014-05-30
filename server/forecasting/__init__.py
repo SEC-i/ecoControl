@@ -6,7 +6,6 @@ from server.models import Device, DeviceConfiguration, Sensor, SensorValue
 from environment import ForwardableRealtimeEnvironment
 from helpers import BulkProcessor, SimulationBackgroundRunner, MeasurementStorage, parse_value
 
-from systems.code import CodeExecuter
 from systems.producers import SimulatedCogenerationUnit, SimulatedPeakLoadBoiler
 from systems.storages import SimulatedHeatStorage, SimulatedPowerMeter
 from systems.consumers import SimulatedThermalConsumer, SimulatedElectricalConsumer
