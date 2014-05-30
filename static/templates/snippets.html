@@ -55,3 +55,20 @@
         {{/buttons}}
     </div>
 </div>
+
+<div id="snippet_tech_live_diagram_filters">
+    {{#rows}}
+    <br>
+    <div class="row text-center">
+        <div class="col-sm-12">
+            <div class="btn-group" data-toggle="buttons">
+            {{#filters}}
+                <label class="btn btn-xs btn-default" style="color:{{color}};">
+                    <input class="tech_live_data_filter_button" type="checkbox" value="{{id}}"> {{name}}
+                </label>
+            {{/filters}}
+            </div>
+        </div>
+    </div>
+    {{/rows}}
+</div>

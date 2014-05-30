@@ -27,6 +27,7 @@ function initialize_technician_diagram() {
         var latest_date = 0;
         $.each(data, function(index, sensor) {
             series.push({
+                id: index,
                 name: sensor.name + ' (' + sensor.device + ')',
                 data: sensor.data,
                 color: colors_past[index],
@@ -50,7 +51,7 @@ function initialize_technician_diagram() {
             plotline_timestamp = forecast_data[0].data[0][0];
         }).done(function () {
             // Create the chart
-            $('#simulation_diagram').highcharts('StockChart', {
+            $('#tech_live_diagram').highcharts('StockChart', {
                 chart: {
                     height: 500,
                     zoomType: 'xy',
@@ -58,9 +59,6 @@ function initialize_technician_diagram() {
                         load: update_now_line,
                         setExtremes: update_now_line
                     }
-                },
-                legend: {
-                    enabled: true
                 },
                 rangeSelector: {
                     buttons: [{
@@ -123,6 +121,8 @@ function initialize_technician_diagram() {
                 credits: {
                     enabled: false
                 }
+            }, function(chart) {
+                initialize_tech_live_diagram_filters(series);
             });
 
             setTimeout(function() {
@@ -131,14 +131,14 @@ function initialize_technician_diagram() {
         });
     });
 
-    $('#live_data_export_button').click(function(event) {
+    $('#tech_live_data_export_button').click(function(event) {
         event.preventDefault();
-        export_table($('#live_data_table_container'));
+        export_table($('#tech_live_data_table_container'));
     });
 }
 
 function refresh_technician_diagram(repeat) {
-    var chart = $('#simulation_diagram').highcharts();
+    var chart = $('#tech_live_diagram').highcharts();
     var series_data = []
     $.getJSON(api_base_url + 'data/', function(data) {
         var table_rows = [];
@@ -153,7 +153,7 @@ function refresh_technician_diagram(repeat) {
     }).done(function () {
         $.getJSON(api_base_url + 'forecast/', function(forecast_data) {
             $.each(forecast_data, function(index, sensor) {
-                if (index < series.length) {
+                if (index < series_data.length) {
                     chart.series[index].setData($.merge(series_data[index], sensor.data), false);
                 }
             });
@@ -168,10 +168,49 @@ function refresh_technician_diagram(repeat) {
     });
 }
 
+function initialize_tech_live_diagram_filters(series) {
+    var rows = [{filters: []}];
+    $.each(series, function(index, series_data) {
+        var row = Math.floor(series_data.id / 4);
+        if (rows[row] == undefined) {
+            rows.push({filters: []});
+        }
+        rows[row].filters.push({
+            id: series_data.id,
+            name: series_data.name,
+            color: series_data.color});
+    });
+    var output = Mustache.render($('#snippet_tech_live_diagram_filters').html(), { rows: rows });
+    $('#tech_live_diagram_filters').html(output);
+    $('.tech_live_data_filter_button').change(function() {
+        var chart = $('#tech_live_diagram').highcharts();
+
+        var check_selected = false;
+        $('#tech_live_diagram_filters .tech_live_data_filter_button').each(function(index, item) {
+            var series_index = $(item).val();
+            var visible = $(this).is(":checked");
+            check_selected = check_selected || visible;
+            chart.series[series_index].setVisible(visible, false);
+            var simulated_index = series.length + parseInt(series_index) + 1;
+            if (simulated_index < chart.series.length) {
+                chart.series[simulated_index].setVisible(visible, false);
+            }
+        });
+
+        if (!check_selected) {
+            $.each(chart.series, function(index, series) {
+                series.setVisible(true, false);
+            });
+        }
+
+        chart.redraw();
+    });
+}
+
 function update_now_table(rows, date) {
     var headlines = ['Sensor', 'Device', 'Value'];
-    draw_table($('#live_data_table_container'), headlines, rows);
-    $('#live_data_table_container').prepend('<h3>' + $.format.date(new Date(date), "dd.MM.yyyy HH:MM") + '</h3>');
+    draw_table($('#tech_live_data_table_container'), headlines, rows);
+    $('#tech_live_data_table_container').prepend('<h3>' + $.format.date(new Date(date), "dd.MM.yyyy HH:MM") + '</h3>');
 }
 
 function update_now_line() {
@@ -325,10 +364,8 @@ function apply_changes() {
 }
 
 function update_immediate_forecast(data) {
-    var chart = $('#simulation_diagram').highcharts();
-
+    var chart = $('#tech_live_diagram').highcharts();
     cleanup_diagram();
-
     $.each(data, function(index, sensor) {
         chart.addSeries({
             name: sensor.name + ' (' + sensor.device + ') (predicted)',
@@ -337,14 +374,15 @@ function update_immediate_forecast(data) {
             dashStyle: 'shortdot',
             tooltip: {
                 valueSuffix: ' ' + sensor.unit
-            }
+            },
+            visible: chart.series[index].visible
         }, false);
     });
     chart.redraw();
 }
 
 function cleanup_diagram(chart) {
-    var chart = $('#simulation_diagram').highcharts();
+    var chart = $('#tech_live_diagram').highcharts();
     var i = 0
     while(chart.series.length > sensor_count + 1) {
         if (chart.series[i].name.indexOf('predicted') != -1) {
