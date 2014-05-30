@@ -4,6 +4,7 @@ from server.forecasting.forecasting.weather import WeatherForecast
 electrical_forecast = None
 weather_forecast = None
 
+
 class ThermalConsumer(BaseSystem):
 
     def __init__(self, system_id):
@@ -40,7 +41,6 @@ class ThermalConsumer(BaseSystem):
         #     weather_forecast = WeatherForecast(self.env)
         # self.weather_forecast = weather_forecast
         self.current_power = 0
-
 
         self.calculate()
 
@@ -84,7 +84,7 @@ class ElectricalConsumer(BaseSystem):
         self.demand_variation = [1 for i in range(24)]
 
         self.new_data_interval = 24 * 60 * 60  # append data each day
-        self.last_forecast_update = 0 # self.env.now
+        self.last_forecast_update = 0  # self.env.now
 
     def update_forecast_data(self):
         raise NotImplementedError

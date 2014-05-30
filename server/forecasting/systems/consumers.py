@@ -50,7 +50,7 @@ class SimulatedThermalConsumer(ThermalConsumer):
         self.target_temperature = self.daily_demand[0]
 
         self.total_heated_floor = 650
-        self.room_height = 2.5 # constant
+        self.room_height = 2.5  # constant
         self.residents = 22
         self.apartments = 12
         self.avg_rooms_per_apartment = 4
@@ -69,7 +69,7 @@ class SimulatedThermalConsumer(ThermalConsumer):
         self.weather_forecast = weather_forecast
         self.current_power = 0
 
-        #only build once, to save lots of time
+        # only build once, to save lots of time
         #self.warmwater_forecast = Forecast(self.env, input_data, samples_per_hour=1)
 
         self.calculate()
@@ -89,11 +89,11 @@ class SimulatedThermalConsumer(ThermalConsumer):
             (self.apartments * self.avg_rooms_per_apartment)
         # Assume 3 walls per room to not count multiple
         avg_wall_size = self.avg_room_volume / self.room_height * 3
-        # Assume each appartment have an average of 0.8 outer walls per apartment
+        # Assume each appartment have an average of 0.8 outer walls per
+        # apartment
         self.outer_wall_surface = avg_wall_size * self.apartments * 0.8
         self.max_power = self.total_heated_floor * \
             float(self.heating_constant)
-
 
         # Assume a window size of 2 square meters
         self.window_surface = 2 * self.avg_windows_per_room * \
@@ -111,7 +111,8 @@ class SimulatedThermalConsumer(ThermalConsumer):
         specific_heat_capacity_air = 1000.0 / 3600.0
         room_power = self.get_consumption_power() - self.heat_loss_power()
         room_energy = room_power * (self.env.step_size / 3600.0)
-        temp_delta = room_energy / (self.avg_room_volume *  specific_heat_capacity_air)
+        temp_delta = room_energy / \
+            (self.avg_room_volume * specific_heat_capacity_air)
         self.temperature_room += temp_delta
 
     def get_consumption_power(self):
@@ -170,7 +171,7 @@ class SimulatedThermalConsumer(ThermalConsumer):
             self.heat_transfer_window * temp_delta
         heat_flow_wall = self.outer_wall_surface * \
             self.heat_transfer_wall * temp_delta
-        return (heat_flow_wall + heat_flow_window) / 1000.0 # kW
+        return (heat_flow_wall + heat_flow_window) / 1000.0  # kW
 
     def get_outside_temperature(self, offset_days=0):
         return self.weather_forecast.get_temperature_estimate(self.env.now)
@@ -191,7 +192,6 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
     dataset = []
     dates = []
 
-
     def __init__(self, system_id, env):
         super(SimulatedElectricalConsumer, self).__init__(system_id)
         self.env = env
@@ -199,22 +199,22 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         self.power_meter = None
         self.residents = 22
         self.total_consumption = 0.0  # kWh
-        ##! TODO: this will have to replaced by a database"
+        # ! TODO: this will have to replaced by a database"
         global electrical_forecast
         if electrical_forecast == None:
             raw_dataset = self.get_data_until(self.env.now)
-            #cast to float and convert to kW
+            # cast to float and convert to kW
             dataset = [float(val) / 1000.0 for val in raw_dataset]
             hourly_data = Forecast.make_hourly(dataset, 6)
-            electrical_forecast = Forecast(self.env, hourly_data, samples_per_hour=1)
+            electrical_forecast = Forecast(
+                self.env, hourly_data, samples_per_hour=1)
         self.electrical_forecast = electrical_forecast
 
         # list of 24 values representing relative demand per hour
         self.demand_variation = [1 for i in range(24)]
 
-        self.new_data_interval = 24 * 60 * 60 #append data each day
+        self.new_data_interval = 24 * 60 * 60  # append data each day
         self.last_forecast_update = self.env.now
-
 
     def find_dependent_devices_in(self, system_list):
         for system in system_list:
@@ -223,24 +223,23 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
     def connected(self):
         return self.power_meter is not None
 
-
     def step(self):
         consumption = self.get_consumption_energy()
         self.total_consumption += consumption
         self.power_meter.consume_energy(consumption)
         self.power_meter.current_power_consum = self.get_consumption_power()
-        ##copyconstructed means its running a forecasting
+        # copyconstructed means its running a forecasting
         if self.env.demo and self.env.now - self.last_forecast_update > self.new_data_interval:
             self.update_forecast_data()
 
     def update_forecast_data(self):
 
-        raw_dataset = self.get_data_until(self.env.now, self.last_forecast_update)
-        #cast to float and convert to kW
+        raw_dataset = self.get_data_until(
+            self.env.now, self.last_forecast_update)
+        # cast to float and convert to kW
         dataset = [float(val) / 1000.0 for val in raw_dataset]
         self.electrical_forecast.append_values(dataset)
         self.last_forecast_update = self.env.now
-
 
     def get_consumption_power(self):
         time_tuple = time.gmtime(self.env.now)
@@ -256,28 +255,30 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         #! TODO: reading data from csv will have to be replaced by live/fake data from database
         date = datetime.utcfromtimestamp(timestamp).replace(tzinfo=utc)
         if self.__class__.dataset == [] or self.__class__.dates == []:
-            path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_2013.csv")
-            raw_dataset = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
+            path = os.path.join(
+                os.path.realpath('server'), "forecasting/tools/Electricity_2013.csv")
+            raw_dataset = DataLoader.load_from_file(
+                path, "Strom - Verbrauchertotal (Aktuell)", "\t")
             dates = DataLoader.load_from_file(path, "Datum", "\t")
-            
-            if date.year == 2014: 
-                path = os.path.join(os.path.realpath('server'), "forecasting/tools/Electricity_until_may_2014.csv") 
-                raw_dataset += DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
+
+            if date.year == 2014:
+                path = os.path.join(
+                    os.path.realpath('server'), "forecasting/tools/Electricity_until_may_2014.csv")
+                raw_dataset += DataLoader.load_from_file(
+                    path, "Strom - Verbrauchertotal (Aktuell)", "\t")
                 dates += DataLoader.load_from_file(path, "Datum", "\t")
-            
+
             self.__class__.dates = [int(date) for date in dates]
             self.__class__.dataset = raw_dataset
-            
+
         dates = self.__class__.dates
         dataset = self.__class__.dataset
 
         now_index = approximate_index(dates, self.env.now)
 
-        #take data until simulated now time
+        # take data until simulated now time
         if start_timestamp == None:
             return dataset[:now_index]
         else:
             start_index = approximate_index(dates, start_timestamp)
             return dataset[start_index:now_index]
-        
-        

@@ -157,7 +157,7 @@ class SimulatedPeakLoadBoiler(PeakLoadBoiler):
     def __init__(self, system_id, env):
         super(SimulatedPeakLoadBoiler, self).__init__(system_id)
         self.env = env
-        
+
         self.max_gas_input = 45.0  # kW
         self.thermal_efficiency = 80.0  # %
         self.off_time = self.env.now

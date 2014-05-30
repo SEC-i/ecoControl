@@ -65,7 +65,8 @@ class SimulatedHeatStorage(HeatStorage):
     def step(self):
         hourly_energy_loss = (self.capacity * self.specific_heat_capacity) * \
             self.temperature_loss
-        self.output_energy += hourly_energy_loss * (self.env.step_size / 3600.0)
+        self.output_energy += hourly_energy_loss * \
+            (self.env.step_size / 3600.0)
 
     def attach_to_cogeneration_unit(self, system):
         system.heat_storage = self
@@ -75,6 +76,7 @@ class SimulatedHeatStorage(HeatStorage):
 
     def attach_to_thermal_consumer(self, system):
         system.heat_storage = self
+
 
 class SimulatedPowerMeter(PowerMeter):
 
