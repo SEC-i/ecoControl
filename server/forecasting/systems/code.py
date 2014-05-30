@@ -1,7 +1,7 @@
 import os
 import logging
 
-from helpers import BaseSystem
+from server.systems import BaseSystem
 
 logger = logging.getLogger('simulation')
 SNIPPET_FOLDER = 'snippets/'

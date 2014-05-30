@@ -35,7 +35,8 @@ class SimulatedThermalConsumer(ThermalConsumer):
 
     def __init__(self, system_id, env):
 
-        super(ThermalConsumer, self).__init__(system_id, env)
+        super(SimulatedThermalConsumer, self).__init__(system_id)
+        self.env = env
 
         self.heat_storage = None
 
@@ -192,10 +193,11 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
 
 
     def __init__(self, system_id, env):
-        super(ElectricalConsumer, self).__init__(system_id, env)
+        super(SimulatedElectricalConsumer, self).__init__(system_id)
+        self.env = env
 
         self.power_meter = None
-        self.residents = residents
+        self.residents = 22
         self.total_consumption = 0.0  # kWh
         ##! TODO: this will have to replaced by a database"
         global electrical_forecast

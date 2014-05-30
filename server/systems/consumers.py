@@ -1,9 +1,12 @@
 from server.systems import BaseSystem
+from server.forecasting.forecasting.weather import WeatherForecast
 
+electrical_forecast = None
+weather_forecast = None
 
 class ThermalConsumer(BaseSystem):
 
-    def __init__(self, system_id, env):
+    def __init__(self, system_id):
 
         super(ThermalConsumer, self).__init__(system_id)
 
@@ -32,14 +35,12 @@ class ThermalConsumer(BaseSystem):
 
         self.consumed = 0
 
-        global weather_forecast
-        if weather_forecast == None:
-            weather_forecast = WeatherForecast(self.env)
-        self.weather_forecast = weather_forecast
+        # global weather_forecast
+        # if weather_forecast == None:
+        #     weather_forecast = WeatherForecast(self.env)
+        # self.weather_forecast = weather_forecast
         self.current_power = 0
 
-        # only build once, to save lots of time
-        #self.warmwater_forecast = Forecast(self.env, input_data, samples_per_hour=1)
 
         self.calculate()
 
@@ -72,18 +73,18 @@ class ThermalConsumer(BaseSystem):
 
 class ElectricalConsumer(BaseSystem):
 
-    def __init__(self, system_id, env, residents=22):
+    def __init__(self, system_id):
         super(ElectricalConsumer, self).__init__(system_id)
 
         self.power_meter = None
-        self.residents = residents
+        self.residents = 22
         self.total_consumption = 0.0  # kWh
 
         # list of 24 values representing relative demand per hour
         self.demand_variation = [1 for i in range(24)]
 
         self.new_data_interval = 24 * 60 * 60  # append data each day
-        self.last_forecast_update = self.env.now
+        self.last_forecast_update = 0 # self.env.now
 
     def update_forecast_data(self):
         raise NotImplementedError

@@ -4,14 +4,15 @@ from server.systems.storages import HeatStorage, PowerMeter
 class SimulatedHeatStorage(HeatStorage):
 
     def __init__(self, system_id, env):
-        super(SimulatedHeatStorage, self).__init__(system_id, env)
+        super(SimulatedHeatStorage, self).__init__(system_id)
+        self.env = env
 
         # default data from pamiru48
-        self.capacity = capacity  # liters
+        self.capacity = 2500  # liters
         self.base_temperature = 20.0  # assume no lower temperature
-        self.min_temperature = min_temperature  # degree Celsius
-        self.target_temperature = target_temperature  # degree Celsius
-        self.critical_temperature = critical_temperature  # degree Celsius
+        self.min_temperature = 55.0  # degree Celsius
+        self.target_temperature = 70.0  # degree Celsius
+        self.critical_temperature = 90.0  # degree Celsius
 
         self.specific_heat_capacity = 4.19 / 3600.0  # kWh/(kg*K)
 
@@ -78,7 +79,8 @@ class SimulatedHeatStorage(HeatStorage):
 class SimulatedPowerMeter(PowerMeter):
 
     def __init__(self, system_id, env):
-        super(SimulatedPowerMeter, self).__init__(system_id, env)
+        super(SimulatedPowerMeter, self).__init__(system_id)
+        self.env = env
 
         self.fed_in_electricity = 0.0  # kWh
         self.purchased = 0  # kWh
@@ -89,9 +91,9 @@ class SimulatedPowerMeter(PowerMeter):
         self.energy_consumed = 0.0  # kWh
 
         # costs in Euro to purchase 1 kW/h from external supplier
-        self.electrical_costs = electrical_costs
+        self.electrical_costs = 0.283
         # reward in Euro for feed in 1 kW/h
-        self.feed_in_reward = feed_in_reward
+        self.feed_in_reward = 0.0917
 
     def add_energy(self, energy):
         self.energy_produced += energy

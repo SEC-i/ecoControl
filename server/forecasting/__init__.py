@@ -7,9 +7,9 @@ from environment import ForwardableRealtimeEnvironment
 from helpers import BulkProcessor, SimulationBackgroundRunner, MeasurementStorage, parse_value
 
 from systems.code import CodeExecuter
-from systems.producers import CogenerationUnit, PeakLoadBoiler
-from systems.storages import HeatStorage, PowerMeter
-from systems.consumers import ThermalConsumer, ElectricalConsumer
+from systems.producers import SimulatedCogenerationUnit, SimulatedPeakLoadBoiler
+from systems.storages import SimulatedHeatStorage, SimulatedPowerMeter
+from systems.consumers import SimulatedThermalConsumer, SimulatedElectricalConsumer
 import cProfile
 
 
@@ -56,7 +56,7 @@ class Simulation(object):
         for device in devices:
             for device_type, class_name in Device.DEVICE_TYPES:
                 if device.device_type == device_type:
-                    system_class = globals()[class_name]
+                    system_class = globals()['Simulated%s' % class_name]
                     system_list.append(system_class(device.id, self.env))
 
         for device in system_list:

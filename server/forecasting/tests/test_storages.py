@@ -1,17 +1,17 @@
 import unittest
 
 from server.forecasting.environment import ForwardableRealtimeEnvironment
-from server.forecasting.systems.storages import HeatStorage, PowerMeter
+from server.forecasting.systems.storages import SimulatedHeatStorage, SimulatedPowerMeter
 
 electrical_feed_in_reward_per_kwh = 0.0917
 electrical_costs_per_kwh = 0.283
 
 
-class HeatStorageTests(unittest.TestCase):
+class SimulatedHeatStorageTests(unittest.TestCase):
 
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
-        self.hs = HeatStorage(0, env=self.env)
+        self.hs = SimulatedHeatStorage(0, env=self.env)
 
     def test_heat_storage_creation(self):
         self.assertGreater(self.hs.capacity, 0)
@@ -145,11 +145,11 @@ class HeatStorageTests(unittest.TestCase):
         # If not the values are physically wrong!
 
 
-class PowerMeterTests(unittest.TestCase):
+class SimulatedPowerMeterTests(unittest.TestCase):
 
     def setUp(self):
         self.env = ForwardableRealtimeEnvironment()
-        self.power_meter = PowerMeter(0, env=self.env)
+        self.power_meter = SimulatedPowerMeter(0, env=self.env)
 
     def test_power_meter_creation(self):
         self.assertEqual(self.power_meter.total_fed_in_electricity, 0)
