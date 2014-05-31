@@ -17,11 +17,12 @@ def get_initialized_scenario():
         return system_list
 
 
-def get_user_function(systems):
+def get_user_function(systems, code=None):
     local_names = ['device_%s' % system.id for system in systems]
 
-    with open('server/user_code.py', "r") as code_file:
-        code = code_file.read()
+    if code is None:
+        with open('server/user_code.py', "r") as code_file:
+            code = code_file.read()
 
     lines = []
     lines.append("def user_function(%s):" %

@@ -18,7 +18,7 @@ import cProfile
 logger = logging.getLogger('simulation')
 
 
-def get_forecast(initial_time, configurations=None):
+def get_forecast(initial_time, configurations=None, code=None):
     env = DummyEnvironment(initial_time)
 
     if configurations is None:
@@ -27,7 +27,7 @@ def get_forecast(initial_time, configurations=None):
     systems = get_initialized_scenario(env, configurations)
 
     measurements = MeasurementStorage(env, systems)
-    user_function = get_user_function(systems)
+    user_function = get_user_function(systems, code)
 
     forward = 14 * 24 * 3600
     while forward > 0:

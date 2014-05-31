@@ -1,6 +1,7 @@
 var diagram_initialized = false;
 var plotline_timestamp = null;
 var sensor_count = 0;
+var editor = null;
 
 // READY
 function technician_overview_ready() {
@@ -395,7 +396,6 @@ function cleanup_diagram(chart) {
 }
 
 function get_input_field_code(namespace, key, data) {
-    console.log(data)
     var device_id = namespaces.indexOf(namespace);
     var output =
             '<div class="col-sm-6"><div class="form-group">' +
@@ -467,6 +467,14 @@ function initialize_technician_editor() {
             } else {
                 console.log('Failed to apply');
             }
+        });
+    });
+
+    $("#editor_simulate_button").click(function() {
+        $.postJSON(api_base_url + "forecast/", {
+            code: editor.getValue()
+        }, function(data) {
+            update_immediate_forecast(data);
         });
     });
 }
