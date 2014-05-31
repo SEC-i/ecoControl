@@ -1,52 +1,13 @@
 from datetime import datetime
 from io import BytesIO
-from StringIO import StringIO
-from struct import pack
-from threading import Thread
-import itertools
 import logging
-import numpy as np
 
 from django.utils.timezone import utc
 from django.db import connection
 
-from server.systems import get_user_function
-from server.models import Sensor, SensorValue, DeviceConfiguration
+from server.models import Sensor, DeviceConfiguration
 
 logger = logging.getLogger('simulation')
-
-
-class BulkProcessor(object):
-
-    def __init__(self, env, systems):
-        self.env = env
-        self.systems = systems
-
-        self.user_function = get_user_function(systems)
-
-    def loop(self):
-        while True:
-            self.step()
-            yield self.env.timeout(self.env.step_size)
-
-    def step(self):
-        # execute user function
-        self.user_function(*self.systems)
-
-        # call step function for all systems
-        for system in self.systems:
-            system.step()
-
-
-class SimulationBackgroundRunner(Thread):
-
-    def __init__(self, env):
-        Thread.__init__(self)
-        self.daemon = True
-        self.env = env
-
-    def run(self):
-        self.env.run()
 
 
 class MeasurementStorage():

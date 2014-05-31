@@ -7,9 +7,9 @@ weather_forecast = None
 
 class ThermalConsumer(BaseSystem):
 
-    def __init__(self, system_id):
+    def __init__(self, system_id, env):
 
-        super(ThermalConsumer, self).__init__(system_id)
+        super(ThermalConsumer, self).__init__(system_id, env)
 
         self.heat_storage = None
 
@@ -78,8 +78,8 @@ class ThermalConsumer(BaseSystem):
 
 class ElectricalConsumer(BaseSystem):
 
-    def __init__(self, system_id):
-        super(ElectricalConsumer, self).__init__(system_id)
+    def __init__(self, system_id, env):
+        super(ElectricalConsumer, self).__init__(system_id, env)
 
         self.power_meter = None
         self.residents = 22

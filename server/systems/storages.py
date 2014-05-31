@@ -3,8 +3,8 @@ from server.systems.base import BaseSystem
 
 class HeatStorage(BaseSystem):
 
-    def __init__(self, system_id):
-        super(HeatStorage, self).__init__(system_id)
+    def __init__(self, system_id, env):
+        super(HeatStorage, self).__init__(system_id, env)
 
         # default data from pamiru48
         self.capacity = 2500  # liters
@@ -47,8 +47,8 @@ class HeatStorage(BaseSystem):
 
 class PowerMeter(BaseSystem):
 
-    def __init__(self, system_id):
-        super(PowerMeter, self).__init__(system_id)
+    def __init__(self, system_id, env):
+        super(PowerMeter, self).__init__(system_id, env)
 
         self.fed_in_electricity = 0.0  # kWh
         self.purchased = 0  # kWh

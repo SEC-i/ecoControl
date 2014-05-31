@@ -4,7 +4,7 @@ import os
 
 from server.forecasting.forecasting import Forecast
 from server.forecasting.forecasting.dataloader import DataLoader
-from server.forecasting.environments import ForwardableRealtimeEnvironment
+from server.systems.base import BaseEnvironment
 from server.forecasting.forecasting.helpers import approximate_index
 
 
@@ -20,7 +20,7 @@ class ForecastTests(unittest.TestCase):
     
     def setup_forecast(self):
         hourly_data = Forecast.make_hourly(self.dataset, 6)
-        self.env = ForwardableRealtimeEnvironment()
+        self.env = BaseEnvironment()
         self.forecast = Forecast(self.env, hourly_data, 1, None, (0.0000000, 0.0,1.0), hw_optimization="RMSE")
         
 
@@ -56,7 +56,7 @@ class ForecastTests(unittest.TestCase):
     def test_split_week_data(self):
         print "\n--------- test split_week_data ------------------"
         hourly_data = Forecast.make_hourly(self.dataset, 6)
-        env = ForwardableRealtimeEnvironment()
+        env = BaseEnvironment()
         fc = Forecast(env, hourly_data, hw_optimization="MASE", try_cache=False)
 
         self.assertTrue(

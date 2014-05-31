@@ -1,3 +1,4 @@
+from base import BaseEnvironment
 from producers import CogenerationUnit, PeakLoadBoiler
 from storages import HeatStorage, PowerMeter
 from consumers import ThermalConsumer, ElectricalConsumer
@@ -8,11 +9,12 @@ from server.models import Device
 def get_initialized_scenario():
         devices = list(Device.objects.all())
         system_list = []
+        env = BaseEnvironment()
         for device in devices:
             for device_type, class_name in Device.DEVICE_TYPES:
                 if device.device_type == device_type:
                     system_class = globals()[class_name]
-                    system_list.append(system_class(device.id))
+                    system_list.append(system_class(device.id, env))
 
         return system_list
 
@@ -65,7 +67,7 @@ def perform_configuration(data):
 
                     # Make sure that key is present in corresponding system
                     # class
-                    if getattr(system_class(0, ForwardableRealtimeEnvironment()), config['key'], None) is not None:
+                    if getattr(system_class(0, BasicEnvironment()), config['key'], None) is not None:
                         try:
                             existing_config = DeviceConfiguration.objects.get(
                                 device=device, key=config['key'])

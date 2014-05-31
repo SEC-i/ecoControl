@@ -1,6 +1,6 @@
 import unittest
 
-from server.forecasting.environments import ForwardableRealtimeEnvironment
+from server.systems.base import BaseEnvironment
 from server.forecasting.systems.storages import SimulatedHeatStorage, SimulatedPowerMeter
 
 electrical_feed_in_reward_per_kwh = 0.0917
@@ -10,7 +10,7 @@ electrical_costs_per_kwh = 0.283
 class SimulatedHeatStorageTests(unittest.TestCase):
 
     def setUp(self):
-        self.env = ForwardableRealtimeEnvironment()
+        self.env = BaseEnvironment()
         self.hs = SimulatedHeatStorage(0, env=self.env)
 
     def test_heat_storage_creation(self):
@@ -137,7 +137,7 @@ class SimulatedHeatStorageTests(unittest.TestCase):
 class SimulatedPowerMeterTests(unittest.TestCase):
 
     def setUp(self):
-        self.env = ForwardableRealtimeEnvironment()
+        self.env = BaseEnvironment()
         self.power_meter = SimulatedPowerMeter(0, env=self.env)
 
     def test_power_meter_creation(self):

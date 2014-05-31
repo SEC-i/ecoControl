@@ -1,25 +1,24 @@
 import time
 import logging
 import calendar
+from threading import Thread
 
 from server.models import Device, DeviceConfiguration, Configuration, Sensor, SensorValue
 from server.systems import get_user_function
 from server.helpers import write_pidfile_or_fail
 
-from environments import DummyEnvironment, ForwardableRealtimeEnvironment
-from helpers import BulkProcessor, SimulationBackgroundRunner, MeasurementStorage, parse_value
+from helpers import MeasurementStorage, parse_value
 
+from server.systems.base import BaseEnvironment
 from server.forecasting.systems.producers import SimulatedCogenerationUnit, SimulatedPeakLoadBoiler
 from server.forecasting.systems.storages import SimulatedHeatStorage, SimulatedPowerMeter
 from server.forecasting.systems.consumers import SimulatedThermalConsumer, SimulatedElectricalConsumer
-import cProfile
-
 
 logger = logging.getLogger('simulation')
 
 
 def get_forecast(initial_time, configurations=None, code=None):
-    env = DummyEnvironment(initial_time)
+    env = BaseEnvironment(initial_time)
 
     if configurations is None:
         configurations = DeviceConfiguration.objects.all()
@@ -96,29 +95,27 @@ def get_initialized_scenario(env, configurations):
         return system_list
 
 
-class DemoSimulation(object):
+class DemoSimulation(Thread):
     stored_simulation = None
 
     def __init__(self, initial_time, configurations=None):
+        Thread.__init__(self)
+        self.daemon = True
         initial_time = (int(initial_time) / 3600) * 3600.0
+        self.forward = 0
 
         # initialize real-time environment
-        self.env = ForwardableRealtimeEnvironment(initial_time=initial_time)
+        self.env = BaseEnvironment(initial_time=initial_time, demo=True)
 
         if configurations is None:
             configurations = DeviceConfiguration.objects.all()
 
-        self.devices = get_initialized_scenario(self.env, configurations)
+        self.systems = get_initialized_scenario(self.env, configurations)
 
-        self.measurements = MeasurementStorage(self.env, self.devices)
-        self.env.register_step_function(self.measurements.take_and_save)
+        self.measurements = MeasurementStorage(self.env, self.systems)
+        self.user_function = get_user_function(self.systems)
 
-        self.thread = None
         self.running = False
-
-        # initialize BulkProcessor and add it to env
-        self.bulk_processor = BulkProcessor(self.env, self.devices)
-        self.env.process(self.bulk_processor.loop())
 
     @classmethod
     def start_or_get(cls, print_visible=False):
@@ -143,22 +140,37 @@ class DemoSimulation(object):
         if cls.stored_simulation != None:
             return cls.stored_simulation
 
+    def run(self):
+        while self.running:
+            self.measurements.take_and_save()
+
+            self.user_function(*self.systems)
+
+            # call step function for all systems
+            for system in self.systems:
+                system.step()
+
+            if self.forward > 0:
+                self.forward -= 120.0
+            else:
+                time.sleep(1 / 3600.0)
+
+            self.env.now += 120.0
+
     def start(self):
         self.running = True
-        self.thread = SimulationBackgroundRunner(self.env)
-        self.thread.start()
+        Thread.start(self)
 
     def fast_forward(self, seconds):
-        self.env.forward = seconds
+        self.forward = seconds
         self.start()
         self.measurements.flush_data()
 
     def is_forwarding(self):
-        return self.env.forward > 0.0
+        return self.forward > 0.0
 
-    def get_total_bilance(self):
-        return self.cu.get_operating_costs() + self.plb.get_operating_costs() - \
-            self.pm.get_reward() + self.pm.get_costs()
+    def update_user_function(self):
+        self.user_function = get_user_function(self.systems)
 
 
 def get_initial_time():

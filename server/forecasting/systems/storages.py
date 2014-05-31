@@ -4,8 +4,7 @@ from server.systems.storages import HeatStorage, PowerMeter
 class SimulatedHeatStorage(HeatStorage):
 
     def __init__(self, system_id, env):
-        super(SimulatedHeatStorage, self).__init__(system_id)
-        self.env = env
+        super(SimulatedHeatStorage, self).__init__(system_id, env)
 
         self.input_energy = 0.0  # kWh
         self.output_energy = 0.0  # kWh
@@ -57,8 +56,7 @@ class SimulatedHeatStorage(HeatStorage):
 class SimulatedPowerMeter(PowerMeter):
 
     def __init__(self, system_id, env):
-        super(SimulatedPowerMeter, self).__init__(system_id)
-        self.env = env
+        super(SimulatedPowerMeter, self).__init__(system_id, env)
 
         self.fed_in_electricity = 0.0  # kWh
         self.purchased = 0  # kWh

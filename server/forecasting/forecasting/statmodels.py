@@ -11,7 +11,7 @@ from matplotlib.widgets import Slider, Button, RadioButtons
 from datetime import date, datetime, timedelta
 from server.forecasting.forecasting.holt_winters import additive, multiplicative
 from server.forecasting.forecasting import Forecast
-from server.forecasting.environment import ForwardableRealtimeEnvironment
+from server.systems.base import BaseEnvironment
 import time
 # 
 # print 'Start importing R.'
@@ -136,7 +136,7 @@ def strategy_testing():
     split_data = Forecast.split_weekdata(hourly_data , 1, start)
     
     
-    env = ForwardableRealtimeEnvironment()
+    env = BaseEnvironment()
     days = ["Mo","Di","Mi","Do","Fr","Sa","So"]
     input_length = [24*8, 24*10, 24*12, 24*16]
     
