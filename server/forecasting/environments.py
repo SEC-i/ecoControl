@@ -7,10 +7,18 @@ from simpy.rt import RealtimeEnvironment
 
 logger = logging.getLogger('simulation')
 
+
+class DummyEnvironment(object):
+
+    def __init__(self, initial_time):
+        self.now = (int(initial_time) / 3600) * 3600.0
+        self.step_size = 120
+        self.demo = False
+
+
 class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
-
-    def __init__(self, initial_time=1356998400, interval=120, strict=False, demo=False):
+    def __init__(self, initial_time=1356998400, interval=120, strict=False):
 
         RealtimeEnvironment.__init__(
             self, initial_time, 1.0 / 3600, strict)
@@ -27,7 +35,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         self.last_step = self.now
         self.stop_simulation = False
         self.stop_after_forward = False
-        self.demo = demo
+        self.demo = True
 
     def step(self):
         if self.stop_simulation:
@@ -37,11 +45,11 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
         if self.forward > 0:
             forward_to = self.now + self.forward
             sim_delta = self.forward - self.now
-            
+
             while self.now < forward_to:
                 self.handle_step_function()
                 Environment.step(self)
-                    
+
             #cProfile.runctx("t()", globals(), locals())
 
             self.env_start += self.forward
@@ -70,6 +78,7 @@ class ForwardableRealtimeEnvironment(RealtimeEnvironment):
 
     def register_step_function(self, function, kwargs={}):
         if self.step_function != None:
-            logger.warning("Environment: Overwriting existing step_function " + self.step_function)
+            logger.warning(
+                "Environment: Overwriting existing step_function " + self.step_function)
         self.step_function = function
         self.step_function_kwarguments = kwargs

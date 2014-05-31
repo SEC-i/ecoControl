@@ -3,7 +3,7 @@ import time
 
 from django.db import connection
 
-from server.systems import get_initialized_scenario, get_user_function
+from server.systems import get_initialized_scenario
 from server.models import SensorValue, Threshold, Notification
 import functions
 
@@ -39,8 +39,8 @@ def check_thresholds():
 
 def execute_user_code():
     system_list = get_initialized_scenario()
-    user_function = get_user_function(system_list)
-    user_function(*system_list)
+    # user_function = get_user_function(system_list)
+    # user_function(*system_list)
 
 
 def refresh_views():

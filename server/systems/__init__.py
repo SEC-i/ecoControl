@@ -36,3 +36,56 @@ def get_user_function(systems):
     exec source in namespace  # execute code in namespace
 
     return namespace['user_function']
+
+
+def perform_configuration(data):
+    configurations = []
+    device_configurations = []
+    for config in data:
+        if all(x in config for x in ['device', 'key', 'value', 'type', 'unit']):
+            if config['device'] == '0':
+                try:
+                    existing_config = Configuration.objects.get(
+                        key=config['key'])
+                    existing_config.value = config['value']
+                    existing_config.value_type = int(
+                        config['type'])
+                    existing_config.unit = config['unit']
+                    existing_config.save()
+                except Configuration.DoesNotExist:
+                    configurations.append(
+                        Configuration(key=config['key'], value=config['value'], value_type=int(config['type']), unit=config['unit']))
+            else:
+                try:
+                    device = Device.objects.get(id=config['device'])
+                    for device_type, class_name in Device.DEVICE_TYPES:
+                        if device.device_type == device_type:
+                            system_class = globals()[class_name]
+
+                    # Make sure that key is present in corresponding system
+                    # class
+                    if getattr(system_class(0, ForwardableRealtimeEnvironment()), config['key'], None) is not None:
+                        try:
+                            existing_config = DeviceConfiguration.objects.get(
+                                device=device, key=config['key'])
+                            existing_config.device = device
+                            existing_config.value = config['value']
+                            existing_config.value_type = int(
+                                config['type'])
+                            existing_config.unit = config['unit']
+                            existing_config.save()
+                        except DeviceConfiguration.DoesNotExist:
+                            device_configurations.append(
+                                DeviceConfiguration(device=device, key=config['key'], value=config['value'], value_type=int(config['type']), unit=config['unit']))
+                except ObjectDoesNotExist:
+                    logger.error("Unknown device %s" % config['device'])
+                except ValueError:
+                    logger.error(
+                        "ValueError value_type '%s' not an int" % config['type'])
+        else:
+            logger.error("Incomplete config data: %s" % config)
+
+    if len(configurations) > 0:
+        Configuration.objects.bulk_create(configurations)
+    if len(device_configurations) > 0:
+        DeviceConfiguration.objects.bulk_create(device_configurations)

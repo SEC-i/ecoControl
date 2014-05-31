@@ -16,9 +16,9 @@ from django.db import connection
 from django.core.cache import cache
 
 from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
-from server.helpers import create_json_response, create_json_response_from_QuerySet, DemoSimulation
+from server.helpers import create_json_response, create_json_response_from_QuerySet
 from server.functions import get_device_configurations, get_past_time
-from server.forecasting import Simulation
+from server.forecasting import get_forecast, DemoSimulation
 import functions
 
 logger = logging.getLogger('django')
@@ -88,16 +88,15 @@ def forecast(request):
         initial_time = calendar.timegm(latest_timestamp.timetuple())
     except SensorValue.DoesNotExist:
         initial_time = time()
+
     if request.method == 'POST':
         configurations = functions.get_modified_configurations(
             json.loads(request.body))
-        simulation = Simulation(initial_time, configurations)
+        output = get_forecast(initial_time, configurations)
     else:
-        simulation = Simulation(initial_time)
+        output = get_forecast(initial_time)
 
-    simulation.forward(seconds=DEFAULT_FORECAST_INTERVAL, blocking=True)
-
-    return create_json_response(simulation.measurements.get())
+    return create_json_response(output)
 
 
 @require_POST
@@ -110,8 +109,7 @@ def forward(request):
     if demo_sim.env.forward > 0:
         return create_json_response(request, "simulation is still forwarding")
 
-    start = demo_sim.env.now
-    demo_sim.forward_demo(seconds=forward_time, blocking=True)
+    demo_sim.forward_demo(forward_time)
 
     return create_json_response(request, "ok")
 

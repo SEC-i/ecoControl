@@ -26,13 +26,16 @@ class BulkProcessor(object):
 
     def loop(self):
         while True:
-            # execute user function
-            self.user_function(*self.systems)
-
-            # call step function for all systems
-            for system in self.systems:
-                system.step()
+            self.step()
             yield self.env.timeout(self.env.step_size)
+
+    def step(self):
+        # execute user function
+        self.user_function(*self.systems)
+
+        # call step function for all systems
+        for system in self.systems:
+            system.step()
 
 
 class SimulationBackgroundRunner(Thread):
@@ -48,54 +51,47 @@ class SimulationBackgroundRunner(Thread):
 
 class MeasurementStorage():
 
-
     def __init__(self, env, devices, demo=False):
         self.env = env
         self.devices = devices
         self.sensors = Sensor.objects.filter(
             device_id__in=[x.id for x in devices])
         self.demo = demo
-        
-        #initialize for forecasting
+
+        # initialize for forecasting
         self.forecast_data = []
         for i in self.sensors:
             self.forecast_data.append([])
-        #initialize for demo
+        # initialize for demo
         self.device_map = []
         self.sensor_values = []
         for device in self.devices:
             for sensor in self.sensors:
                 if device.id == sensor.device.id:
-                    self.device_map.append((sensor,device))
-                    
-    
-    def flush_data(self):
-        write_text_to_db(self.sensor_values)
-        self.sensor_values = []
+                    self.device_map.append((sensor, device))
 
-    def take_demo(self):
-            # save demo values every 15mins
-            if self.env.now % 60 * 60 != 0:
-                return
-            timestamp = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=utc)
-            for (sensor, device) in self.device_map:
-                value = getattr(device, sensor.key, None)
-                if value is not None:
-                    # in case value is a function, call that function
-                    if hasattr(value, '__call__'):
-                        value = value()
-                    
-                    self.sensor_values.append((sensor.id, value, timestamp))
-                
-            
-            if len(self.sensor_values) > 10000:
-                self.flush_data()
+    def take_and_save(self):
+        # save demo values every 15mins
+        if self.env.now % 60 * 60 != 0:
+            return
+        timestamp = datetime.utcfromtimestamp(
+            self.env.now).replace(tzinfo=utc)
+        for (sensor, device) in self.device_map:
+            value = getattr(device, sensor.key, None)
+            if value is not None:
+                # in case value is a function, call that function
+                if hasattr(value, '__call__'):
+                    value = value()
 
-                
-    def take_forecast(self):
+                self.sensor_values.append((sensor.id, value, timestamp))
+
+        if len(self.sensor_values) > 10000:
+            self.flush_data()
+
+    def take_and_cache(self):
         if self.env.now % 3600 != 0:
             return
-        
+
         for index, sensor in enumerate(self.sensors):
             for device in self.devices:
                 if device.id == sensor.device.id and sensor.in_diagram:
@@ -104,16 +100,10 @@ class MeasurementStorage():
                         # in case value is a function, call that function
                         if hasattr(value, '__call__'):
                             value = value()
-                        
-                        self.forecast_data[index].append([self.env.now * 1000, round(float(value), 2)])
-                        
-    
-    def take(self):
-        if self.demo:
-            self.take_demo()
-        else:
-            self.take_forecast()        
-            
+
+                        self.forecast_data[index].append(
+                            [self.env.now * 1000, round(float(value), 2)])
+
 
     def get(self):
         output = []
@@ -136,6 +126,28 @@ class MeasurementStorage():
             return self.forecast_data[index][-1]  # return newest item
         return None
 
+    def flush_data(self):
+        cursor = connection.cursor()
+        # Convert floating point numbers to text, write to COPY input
+
+        cpy = BytesIO()
+        for row in self.sensor_values:
+            vals = [
+                row[0], row[1], connection.ops.value_to_db_datetime(row[2])]
+            cpy.write('\t'.join([str(val) for val in vals]) + '\n')
+
+        # Insert forecast_data; database converts text back to floating point
+        # numbers
+        cpy.seek(0)
+        cursor.copy_from(cpy, 'server_sensorvalue',
+                         columns=('sensor_id', 'value', 'timestamp'))
+        connection.commit()
+
+        cursor.execute(
+            "SELECT setval('server_sensorvalue_id_seq',(select max(id) FROM server_sensorvalue)+1);")
+
+        self.sensor_values = []
+
 
 def parse_value(config):
     try:
@@ -152,21 +164,3 @@ def parse_value(config):
         logger.warning("ValueError parsing %s to %s" %
                        (config.value, config.value_type))
     return str(config.value)
-
-
-def write_text_to_db(data):
-    cursor = connection.cursor()
-    # Convert floating point numbers to text, write to COPY input
-
-    cpy = BytesIO()
-    for row in data:
-        vals = [row[0], row[1], connection.ops.value_to_db_datetime(row[2])]
-        cpy.write('\t'.join([str(val) for val in vals]) + '\n')
-    
-    # Insert forecast_data; database converts text back to floating point numbers
-    cpy.seek(0)
-    cursor.copy_from(cpy, 'server_sensorvalue', columns=('sensor_id', 'value', 'timestamp'))
-    connection.commit()
-    
-    
-    cursor.execute("SELECT setval('server_sensorvalue_id_seq',(select max(id) FROM server_sensorvalue)+1);")
