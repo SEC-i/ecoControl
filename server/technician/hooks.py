@@ -92,11 +92,16 @@ def forecast(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+
+            code = None
             if 'code' in data:
-                output = get_forecast(initial_time, code=data['code'])
-            else:
-                configurations = functions.get_modified_configurations(data)
-                output = get_forecast(initial_time, configurations)
+                code = data['code']
+
+            configurations = None
+            if 'configurations' in data:
+                configurations = functions.get_modified_configurations(data['configurations'])
+
+            output = get_forecast(initial_time, configurations=configurations, code=code)
         except ValueError:
             return create_json_response({"status": "failed"})
     else:

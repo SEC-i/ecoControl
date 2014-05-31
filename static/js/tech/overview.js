@@ -303,6 +303,7 @@ function initialize_technician_tuning_form() {
         $('#tuning_button').click(apply_changes);
         $('#tuning_reset_button').click(function() {
             $('#tuning_form')[0].reset();
+            $('#tuning_form').trigger('change');
         })
     });
 }
@@ -311,9 +312,12 @@ function generate_immediate_feedback() {
     $('#immediate_notice').show();
     $('#tuning_button').prop('disabled', true);
 
-    var post_data = [];
+    var post_data = {
+        configurations: [],
+        code: editor.getValue()
+    };
     $('.configuration').each(function () {
-        post_data.push({
+        post_data.configurations.push({
             device: $(this).attr('data-device'),
             key: $(this).attr('data-key'),
             type: $(this).attr('data-type'),
@@ -470,13 +474,7 @@ function initialize_technician_editor() {
         });
     });
 
-    $("#editor_simulate_button").click(function() {
-        $.postJSON(api_base_url + "forecast/", {
-            code: editor.getValue()
-        }, function(data) {
-            update_immediate_forecast(data);
-        });
-    });
+    $("#editor_simulate_button").click(generate_immediate_feedback);
 }
 
 function update_snippet_list() {
