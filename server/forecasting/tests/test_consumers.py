@@ -1,6 +1,6 @@
 import unittest
 
-from server.forecasting.environment import ForwardableRealtimeEnvironment
+from server.forecasting.environments import ForwardableRealtimeEnvironment
 from server.forecasting.systems.consumers import SimulatedThermalConsumer
 from server.forecasting.systems.storages import SimulatedHeatStorage
 
