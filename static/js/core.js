@@ -93,7 +93,7 @@ function load_page(target) {
 }
 
 function role_name() {
-    if (status_data['technician']) {
+    if (status_data['admin']) {
         return 'technician';
     }
     return 'manager';

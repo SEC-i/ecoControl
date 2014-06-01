@@ -14,6 +14,7 @@ from django.utils.timezone import utc
 from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
 from django.core.cache import cache
+from django.core.exceptions import PermissionDenied
 
 from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
 from server.helpers import create_json_response
@@ -28,6 +29,9 @@ DEMO_SIMULATION = None
 
 
 def handle_snippets(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     if request.method == 'POST':
         data = json.loads(request.body)
         if 'name' in data:
@@ -40,6 +44,9 @@ def handle_snippets(request):
 
 
 def handle_code(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     if request.method == 'POST':
         data = json.loads(request.body)
         if 'code' in data:
@@ -50,6 +57,9 @@ def handle_code(request):
 
 @require_POST
 def configure(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     cache.clear()
     functions.perform_configuration(json.loads(request.body))
     return create_json_response({"status": "success"}, request)
@@ -57,6 +67,9 @@ def configure(request):
 
 @require_POST
 def start_system(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     data = json.loads(request.body)
 
     system_status = Configuration.objects.get(key='system_status')
@@ -78,11 +91,17 @@ def start_system(request):
 
 
 def get_tunable_device_configurations(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     output = dict(get_device_configurations(tunable=True))
     return create_json_response(output, request)
 
 
 def forecast(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     try:
         latest_timestamp = get_past_time()
         initial_time = calendar.timegm(latest_timestamp.timetuple())
@@ -112,6 +131,9 @@ def forecast(request):
 
 @require_POST
 def forward(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     data = json.loads(request.body)
     forward_time = float(data['forward_time']) * 24 * 3600
 
@@ -126,6 +148,9 @@ def forward(request):
 
 
 def list_thresholds(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     thresholds = Threshold.objects.extra(select={
         'sensor_name': 'SELECT name FROM server_sensor WHERE id = sensor_id'
     }).order_by('id')
@@ -135,10 +160,11 @@ def list_thresholds(request):
 
 @require_POST
 def handle_threshold(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     data = json.loads(request.body)
     if 'id' in data:
-        if not is_member(request.user, 'Technician'):
-            return create_json_response({"status": "not a technician"}, request)
 
         threshold = Threshold.objects.get(id=data['id'])
         if threshold is not None:
@@ -192,6 +218,8 @@ def handle_threshold(request):
 
 
 def list_sensor_values(request, start, accuracy='hour'):
+    if not request.user.is_superuser:
+        raise PermissionDenied
 
     if start is None:
         if accuracy == 'hour':
@@ -239,6 +267,9 @@ def list_sensor_values(request, start, accuracy='hour'):
 
 
 def get_statistics(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     end = get_past_time(use_view=True)
     start = end + dateutil.relativedelta.relativedelta(months=-1)
 
@@ -253,6 +284,9 @@ def get_statistics(request):
 
 
 def get_monthly_statistics(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     end = get_past_time(use_view=True)
     start = end + dateutil.relativedelta.relativedelta(years=-1)
 
@@ -284,4 +318,7 @@ def get_monthly_statistics(request):
 
 
 def live_data(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     return create_json_response(functions.get_live_data(), request)

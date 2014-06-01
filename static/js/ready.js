@@ -5,7 +5,7 @@ $(function() {
         status_data = data;
         if (is_logged_in()) {
             initialize_page(function() {
-                if (status_data['technician'] && status_data['system_status'] == 'init') {
+                if (status_data['admin'] && status_data['system_status'] == 'init') {
                     $.address.value('settings');
                 } else {
                     load_page(get_current_page());

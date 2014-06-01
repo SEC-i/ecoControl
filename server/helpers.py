@@ -27,10 +27,6 @@ def create_json_response(data, request):
         json.dumps(data, cls=WebAPIEncoder, sort_keys=True, indent=indent), content_type='application/json')
 
 
-def is_member(user, group_name):
-    return True if user.groups.filter(name=group_name) else False
-
-
 def start_worker():
     if not write_pidfile_or_fail("/tmp/worker.pid"):
         print 'Starting worker...'

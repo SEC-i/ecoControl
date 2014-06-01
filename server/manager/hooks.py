@@ -4,6 +4,7 @@ from datetime import date
 
 from django.db.models import Sum, Avg
 from django.db import connection
+from django.core.exceptions import PermissionDenied
 
 from server.models import Device, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, SensorValueMonthlyAvg
 from server.functions import get_configuration, get_past_time
@@ -14,6 +15,9 @@ logger = logging.getLogger('django')
 
 
 def get_sums(request, sensor_id=None, year=None):
+    if not request.user.is_authenticated():
+        raise PermissionDenied
+
     if year is None:
         start = date(date.today().year, 1, 1)
         end = date(date.today().year, 12, 31)
@@ -37,6 +41,9 @@ def get_sums(request, sensor_id=None, year=None):
 
 
 def get_avgs(request, sensor_id=None, year=None):
+    if not request.user.is_authenticated():
+        raise PermissionDenied
+
     if year is None:
         start = date(date.today().year, 1, 1)
         end = date(date.today().year, 12, 31)
@@ -60,6 +67,9 @@ def get_avgs(request, sensor_id=None, year=None):
 
 
 def get_sensorvalue_history_list(request):
+    if not request.user.is_authenticated():
+        raise PermissionDenied
+
     cursor = connection.cursor()
     cursor.execute(
         '''SELECT DISTINCT date_part('year', server_sensorvaluemonthlysum.date) as year FROM server_sensorvaluemonthlysum ORDER BY year DESC''')
@@ -69,6 +79,9 @@ def get_sensorvalue_history_list(request):
 
 
 def get_detailed_sensor_values(request, sensor_id):
+    if not request.user.is_authenticated():
+        raise PermissionDenied
+
     start = get_past_time(days=1)
     sensor_values = list(SensorValue.objects.filter(
         sensor_id=sensor_id, timestamp__gte=start).values_list('timestamp', 'value'))
@@ -77,6 +90,9 @@ def get_detailed_sensor_values(request, sensor_id):
 
 
 def get_daily_loads(request):
+    if not request.user.is_authenticated():
+        raise PermissionDenied
+
     start = get_past_time(days=1)
     sensors = Sensor.objects.filter(
         device__device_type=Device.TC, key='get_consumption_power').values_list('id', flat=True)
@@ -106,6 +122,9 @@ def get_daily_loads(request):
 
 
 def get_total_balance(request, year=None, month=None):
+    if not request.user.is_authenticated():
+        raise PermissionDenied
+
     current = get_past_time(use_view=True)
     try:
         year = int(year)
@@ -131,6 +150,9 @@ def get_total_balance(request, year=None, month=None):
 
 
 def get_latest_total_balance(request):
+    if not request.user.is_authenticated():
+        raise PermissionDenied
+
     current = get_past_time(use_view=True)
     year = current.year
     month = current.month

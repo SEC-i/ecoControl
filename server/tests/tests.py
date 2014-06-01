@@ -16,6 +16,8 @@ class APITestCase(TestCase):
         User.objects.create_user(
             username="test_user", password="demo123", first_name="test_fn", last_name="test_ln")
 
+        User.objects.create_superuser('test_admin', 'admin@localhost', 'demo321')
+
     def setUp(self):
         self.client = Client()
 
@@ -54,6 +56,6 @@ class APITestCase(TestCase):
 
     def test_all_hooks_simple(self):
         for pattern in urlpatterns:
-            response = self.client.get(
-                re.sub('\((.)*', '', pattern.regex.pattern).replace('^', '/').replace('$', ''))
-            self.assertTrue(response.status_code in [200, 405])
+            url = re.sub('\((.)*', '', pattern.regex.pattern).replace('^', '/').replace('$', '')
+            response = self.client.get(url)
+            self.assertTrue(response.status_code in [200, 403, 405])
