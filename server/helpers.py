@@ -1,7 +1,7 @@
 import os
 import json
 import logging
-import pytz
+import datetime
 import calendar
 from django.http import HttpResponse
 
@@ -15,23 +15,9 @@ logger = logging.getLogger('django')
 class WebAPIEncoder(json.JSONEncoder):
 
     def default(self, obj):
-        import calendar
-        import datetime
-        # Support datetime instances
-        if isinstance(obj, datetime.datetime):
-            if obj.utcoffset() is not None:
-                obj = obj - obj.utcoffset()
-            obj.replace(tzinfo=pytz.timezone('CET'))
-            milliseconds = int(
-                calendar.timegm(obj.timetuple()) * 1000 +
-                obj.microsecond / 1000
-            )
-            return milliseconds
-        if isinstance(obj, datetime.date):
-            timestamp = int(
-                calendar.timegm(obj.timetuple()) * 1000
-            )
-            return timestamp
+        # Support datetime and date instances
+        if isinstance(obj, datetime.datetime) or isinstance(obj, datetime.date):
+            return obj.isoformat()
 
         return json.JSONEncoder.default(self, obj)
 

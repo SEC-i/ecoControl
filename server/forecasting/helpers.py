@@ -105,7 +105,7 @@ class MeasurementStorage():
                         if hasattr(value, '__call__'):
                             value = value()
                         
-                        self.forecast_data[index].append([self.env.now * 1000, round(float(value), 2)])
+                        self.forecast_data[index].append([datetime.fromtimestamp(self.env.now).isoformat(), round(float(value), 2)])
                         
     
     def take(self):

@@ -27,6 +27,9 @@ function initialize_technician_diagram() {
         var table_rows = [];
         var latest_date = 0;
         $.each(data, function(index, sensor) {
+            $.each(sensor.data, function(index, value){
+                value[0] = new Date(value[0]).getTime();
+            });
             series.push({
                 id: index,
                 name: sensor.name + ' (' + sensor.device + ')',
@@ -45,6 +48,9 @@ function initialize_technician_diagram() {
     }).done(function () {
         $.getJSON(api_base_url + 'forecast/', function(forecast_data) {
             $.each(forecast_data, function(index, sensor) {
+                $.each(sensor.data, function(index, value){
+                    value[0] = new Date(value[0]).getTime();
+                });
                 if (index < series.length) {
                     $.merge(series[index].data, sensor.data);
                 }
@@ -155,6 +161,9 @@ function refresh_technician_diagram(repeat) {
         var table_rows = [];
         var latest_date = 0;
         $.each(data, function(index, sensor) {
+            $.each(sensor.data, function(index, value){
+                value[0] = new Date(value[0]).getTime();
+            });
             series_data.push(sensor.data);
             latest_value = Math.round(sensor.data[sensor.data.length - 1][1] * 100) / 100;
             latest_date = sensor.data[sensor.data.length - 1][0];
@@ -164,6 +173,9 @@ function refresh_technician_diagram(repeat) {
     }).done(function () {
         $.getJSON(api_base_url + 'forecast/', function(forecast_data) {
             $.each(forecast_data, function(index, sensor) {
+                $.each(sensor.data, function(index, value){
+                    value[0] = new Date(value[0]).getTime();
+                });
                 if (index < series_data.length) {
                     chart.series[index].setData($.merge(series_data[index], sensor.data), false);
                 }
@@ -406,7 +418,6 @@ function cleanup_diagram(chart) {
 }
 
 function get_input_field_code(namespace, key, data) {
-    console.log(data)
     var device_id = namespaces.indexOf(namespace);
     var output =
             '<div class="col-sm-6"><div class="form-group">' +
