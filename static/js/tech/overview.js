@@ -132,14 +132,13 @@ function initialize_technician_diagram() {
         });
     });
 
-    $('#live_data_granularity li a').click(function(event) {
-        event.preventDefault();
-        if ($(this).attr('data-value') == 'year') {
-            live_diagram_detailed = false;
-        } else {
-            live_diagram_detailed = false;
-        }
-        $('#live_data_granularity_selection').html($(this).text());
+    $('#live_data_month').click(function() {
+        live_diagram_detailed = true;
+        refresh_technician_diagram(false);
+    });
+
+    $('#live_data_year').click(function() {
+        live_diagram_detailed = false;
         refresh_technician_diagram(false);
     });
 

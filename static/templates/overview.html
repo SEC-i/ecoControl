@@ -1,18 +1,18 @@
 <div class="technician">
   <div class="panel panel-default">
     <div class="panel-heading">
-      <div class="dropdown pull-right">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span id="live_data_granularity_selection">Last month</span> <b class="caret"></b></a>
-
-          <ul id="live_data_granularity" class="dropdown-menu" role="menu">
-              <li><a href="#" data-value="month">Last month</a></li>
-              <li><a href="#" data-value="year">Last year</a></li>
-          </ul>
-      </div>
       <h4 id="live_diagram_header" class="panel-title">
         <a data-toggle="collapse" href="#diagram_container">
           Live Diagram
         </a>
+      <div class="btn-group btn-group-xs pull-right" data-toggle="buttons">
+        <label id="live_data_month" class="btn btn-default active">
+          <input type="radio" name="options" id="option1" checked> Last Month
+        </label>
+        <label id="live_data_year" class="btn btn-default">
+          <input type="radio" name="options" id="option2"> Last Year
+        </label>
+      </div>
       </h4>
     </div>
     <div id="diagram_container" class="panel-collapse collapse in">
