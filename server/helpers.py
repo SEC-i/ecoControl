@@ -1,7 +1,7 @@
 import os
 import json
 import logging
-import pytz
+import datetime
 import calendar
 from django.http import HttpResponse
 
@@ -14,34 +14,17 @@ logger = logging.getLogger('django')
 class WebAPIEncoder(json.JSONEncoder):
 
     def default(self, obj):
-        import calendar
-        import datetime
-        # Support datetime instances
-        if isinstance(obj, datetime.datetime):
-            if obj.utcoffset() is not None:
-                obj = obj - obj.utcoffset()
-            obj.replace(tzinfo=pytz.timezone('CET'))
-            milliseconds = int(
-                calendar.timegm(obj.timetuple()) * 1000 +
-                obj.microsecond / 1000
-            )
-            return milliseconds
-        if isinstance(obj, datetime.date):
-            timestamp = int(
-                calendar.timegm(obj.timetuple()) * 1000
-            )
-            return timestamp
+        # Support datetime and date instances
+        if isinstance(obj, datetime.datetime) or isinstance(obj, datetime.date):
+            return obj.isoformat()
 
         return json.JSONEncoder.default(self, obj)
 
 
-def create_json_response(data):
+def create_json_response(data, request):
+    indent = None if request.is_ajax() else 2
     return HttpResponse(
-        json.dumps(data, cls=WebAPIEncoder, sort_keys=True), content_type='application/json')
-
-
-def create_json_response_from_QuerySet(data):
-    return create_json_response(list(data.values()))
+        json.dumps(data, cls=WebAPIEncoder, sort_keys=True, indent=indent), content_type='application/json')
 
 
 def is_member(user, group_name):

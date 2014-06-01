@@ -16,7 +16,7 @@ from django.db import connection
 from django.core.cache import cache
 
 from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
-from server.helpers import create_json_response, create_json_response_from_QuerySet
+from server.helpers import create_json_response
 from server.functions import get_device_configurations, get_past_time
 from server.forecasting import get_forecast, DemoSimulation
 import functions
@@ -32,27 +32,27 @@ def handle_snippets(request):
         data = json.loads(request.body)
         if 'name' in data:
             if 'code' in data:
-                return create_json_response(functions.save_snippet(data['name'], data['code']))
+                return create_json_response(functions.save_snippet(data['name'], data['code']), request)
             else:
-                return create_json_response(functions.get_snippet_code(data['name']))
+                return create_json_response(functions.get_snippet_code(data['name']), request)
 
-    return create_json_response(functions.get_snippet_list())
+    return create_json_response(functions.get_snippet_list(), request)
 
 
 def handle_code(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         if 'code' in data:
-            return create_json_response(functions.apply_snippet(data['code']))
+            return create_json_response(functions.apply_snippet(data['code']), request)
 
-    return create_json_response(functions.get_current_snippet())
+    return create_json_response(functions.get_current_snippet(), request)
 
 
 @require_POST
 def configure(request):
     cache.clear()
     functions.perform_configuration(json.loads(request.body))
-    return create_json_response({"status": "success"})
+    return create_json_response({"status": "success"}, request)
 
 
 @require_POST
@@ -69,17 +69,17 @@ def start_system(request):
             system_mode.value = 'demo'
             system_mode.save()
             DEMO_SIMULATION = DemoSimulation.start_or_get()
-            return create_json_response({"status": "demo started"})
+            return create_json_response({"status": "demo started"}, request)
         system_mode.value = 'normal'
         system_mode.save()
-        return create_json_response({"status": "system started without demo"})
+        return create_json_response({"status": "system started without demo"}, request)
 
-    return create_json_response({"status": "system already running"})
+    return create_json_response({"status": "system already running"}, request)
 
 
 def get_tunable_device_configurations(request):
     output = dict(get_device_configurations(tunable=True))
-    return create_json_response(output)
+    return create_json_response(output, request)
 
 
 def forecast(request):
@@ -107,7 +107,7 @@ def forecast(request):
     else:
         output = get_forecast(initial_time)
 
-    return create_json_response(output)
+    return create_json_response(output, request)
 
 
 @require_POST
@@ -118,11 +118,11 @@ def forward(request):
     demo_sim = DemoSimulation.start_or_get()
 
     if demo_sim.env.forward > 0:
-        return create_json_response(request, "simulation is still forwarding")
+        return create_json_response(request, "simulation is still forwarding", request)
 
     demo_sim.forward_demo(forward_time)
 
-    return create_json_response(request, "ok")
+    return create_json_response(request, "ok", request)
 
 
 def list_thresholds(request):
@@ -130,7 +130,7 @@ def list_thresholds(request):
         'sensor_name': 'SELECT name FROM server_sensor WHERE id = sensor_id'
     }).order_by('id')
 
-    return create_json_response_from_QuerySet(thresholds)
+    return create_json_response(list(thresholds.values()), request)
 
 
 @require_POST
@@ -138,7 +138,7 @@ def handle_threshold(request):
     data = json.loads(request.body)
     if 'id' in data:
         if not is_member(request.user, 'Technician'):
-            return create_json_response({"status": "not a technician"})
+            return create_json_response({"status": "not a technician"}, request)
 
         threshold = Threshold.objects.get(id=data['id'])
         if threshold is not None:
@@ -172,7 +172,7 @@ def handle_threshold(request):
                     threshold.show_manager = True if data[
                         'show_manager'] == '1' else False
                 threshold.save()
-            return create_json_response({"status": "success"})
+            return create_json_response({"status": "success"}, request)
     else:
         if all(x in data for x in ['name', 'sensor_id', 'min_value', 'max_value', 'category']):
             threshold = Threshold(name=data['name'], sensor_id=int(
@@ -186,15 +186,18 @@ def handle_threshold(request):
             except ValueError:
                 pass
             threshold.save()
-            return create_json_response({"status": "success"})
+            return create_json_response({"status": "success"}, request)
 
-    return create_json_response({"status": "failed"})
+    return create_json_response({"status": "failed"}, request)
 
 
 def list_sensor_values(request, start, accuracy='hour'):
 
     if start is None:
-        start = get_past_time(months=1, use_view=True)
+        if accuracy == 'hour':
+            start = get_past_time(months=1, use_view=True)
+        else:
+            start = get_past_time(years=1, use_view=True)
     else:
         start = datetime.utcfromtimestamp(int(start)).replace(tzinfo=utc)
     output = []
@@ -204,7 +207,7 @@ def list_sensor_values(request, start, accuracy='hour'):
             filter(timestamp__gte=start, sensor__in_diagram=True).\
             select_related(
                 'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
-    elif accuracy == 'day':
+    else:
         sensor_values = SensorValueDaily.objects.\
             filter(date__gte=datetime.date(start), sensor__in_diagram=True).\
             select_related(
@@ -224,12 +227,15 @@ def list_sensor_values(request, start, accuracy='hour'):
                 'key': value.sensor.key,
             }
         # Save sensor values
-        values[value.sensor.id].append((value.timestamp, value.value))
+        if accuracy == 'hour':
+            values[value.sensor.id].append((value.timestamp, value.value))
+        else:
+            values[value.sensor.id].append((value.date, value.value))
 
     for sensor_id in output.keys():
         output[sensor_id]['data'] = values[sensor_id]
 
-    return create_json_response(output.values())
+    return create_json_response(output.values(), request)
 
 
 def get_statistics(request):
@@ -243,7 +249,7 @@ def get_statistics(request):
     output += functions.get_statistics_for_electrical_consumer(start, end)
     output += functions.get_statistics_for_power_meter(start, end)
 
-    return create_json_response(output)
+    return create_json_response(output, request)
 
 
 def get_monthly_statistics(request):
@@ -274,8 +280,8 @@ def get_monthly_statistics(request):
 
         output.append(month_data)
 
-    return create_json_response(output)
+    return create_json_response(output, request)
 
 
 def live_data(request):
-    return create_json_response(functions.get_live_data())
+    return create_json_response(functions.get_live_data(), request)

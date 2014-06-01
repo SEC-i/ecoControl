@@ -63,8 +63,7 @@ class MeasurementStorage():
                             value = value()
 
                         self.forecast_data[index].append(
-                            [self.env.now * 1000, round(float(value), 2)])
-
+                            [datetime.fromtimestamp(self.env.now).isoformat(), round(float(value), 2)])
 
     def get(self):
         output = []

@@ -13,7 +13,8 @@ function load_curves_ready() {
 function initialize_load_diagrams(loads_data) {
     var types = ['thermal', 'warmwater', 'electrical'];
     $.each(types, function (index, type) {
-        var diagram_data = get_diagram_data(type, loads_data[type])
+        var diagram_data = get_diagram_data(type, loads_data[type]);
+        console.log(diagram_data);
         $('#' + type + '_container').highcharts({
             chart: {
                 type: 'spline'
@@ -58,6 +59,10 @@ function get_diagram_data(type, input_data) {
     $.each(input_data, function (sensor_id, sensor_data){
         var sensor = get_sensor(sensor_id);
         
+        $.each(sensor_data, function(index, value){
+            value[0] = new Date(value[0]).getTime();
+        });
+
         output['series'].push({
             name: sensor.name + ' #' + sensor.id,
             data: sensor_data,

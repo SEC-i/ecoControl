@@ -2,6 +2,7 @@ var diagram_initialized = false;
 var plotline_timestamp = null;
 var sensor_count = 0;
 var editor = null;
+var live_diagram_detailed = true;
 
 // READY
 function technician_overview_ready() {
@@ -22,11 +23,14 @@ function initialize_technician_diagram() {
     });
 
     var series = [];
-    $.getJSON(api_base_url + 'data/', function(data) {
+    $.getJSON(api_base_url + 'data' + (live_diagram_detailed ? '' : 'daily/'), function(data) {
         var table_headlines = ['Sensor', 'Device', 'Value'];
         var table_rows = [];
         var latest_date = 0;
         $.each(data, function(index, sensor) {
+            $.each(sensor.data, function(index, value){
+                value[0] = new Date(value[0]).getTime();
+            });
             series.push({
                 id: index,
                 name: sensor.name + ' (' + sensor.device + ')',
@@ -45,6 +49,9 @@ function initialize_technician_diagram() {
     }).done(function () {
         $.getJSON(api_base_url + 'forecast/', function(forecast_data) {
             $.each(forecast_data, function(index, sensor) {
+                $.each(sensor.data, function(index, value){
+                    value[0] = new Date(value[0]).getTime();
+                });
                 if (index < series.length) {
                     $.merge(series[index].data, sensor.data);
                 }
@@ -132,6 +139,16 @@ function initialize_technician_diagram() {
         });
     });
 
+    $('#live_data_month').click(function() {
+        live_diagram_detailed = true;
+        refresh_technician_diagram(false);
+    });
+
+    $('#live_data_year').click(function() {
+        live_diagram_detailed = false;
+        refresh_technician_diagram(false);
+    });
+
     $('#tech_live_data_export_button').click(function(event) {
         event.preventDefault();
         export_table($('#tech_live_data_table_container'));
@@ -141,10 +158,13 @@ function initialize_technician_diagram() {
 function refresh_technician_diagram(repeat) {
     var chart = $('#tech_live_diagram').highcharts();
     var series_data = []
-    $.getJSON(api_base_url + 'data/', function(data) {
+    $.getJSON(api_base_url + 'data/' + (live_diagram_detailed ? '' : 'daily/'), function(data) {
         var table_rows = [];
         var latest_date = 0;
         $.each(data, function(index, sensor) {
+            $.each(sensor.data, function(index, value){
+                value[0] = new Date(value[0]).getTime();
+            });
             series_data.push(sensor.data);
             latest_value = Math.round(sensor.data[sensor.data.length - 1][1] * 100) / 100;
             latest_date = sensor.data[sensor.data.length - 1][0];
@@ -154,6 +174,9 @@ function refresh_technician_diagram(repeat) {
     }).done(function () {
         $.getJSON(api_base_url + 'forecast/', function(forecast_data) {
             $.each(forecast_data, function(index, sensor) {
+                $.each(sensor.data, function(index, value){
+                    value[0] = new Date(value[0]).getTime();
+                });
                 if (index < series_data.length) {
                     chart.series[index].setData($.merge(series_data[index], sensor.data), false);
                 }
