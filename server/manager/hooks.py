@@ -33,7 +33,7 @@ def get_sums(request, sensor_id=None, year=None):
         output = list(sensorvaluemonthlysum.filter(
             sensor_id=sensor_id).values('date').annotate(total=Sum('sum')).order_by('date'))
 
-    return create_json_response(output)
+    return create_json_response(output, request)
 
 
 def get_avgs(request, sensor_id=None, year=None):
@@ -56,7 +56,7 @@ def get_avgs(request, sensor_id=None, year=None):
         output = list(sensorvaluemonthlyavg.filter(
             sensor_id=sensor_id).values('date').annotate(total=Avg('avg')).order_by('date'))
 
-    return create_json_response(output)
+    return create_json_response(output, request)
 
 
 def get_sensorvalue_history_list(request):
@@ -65,7 +65,7 @@ def get_sensorvalue_history_list(request):
         '''SELECT DISTINCT date_part('year', server_sensorvaluemonthlysum.date) as year FROM server_sensorvaluemonthlysum ORDER BY year DESC''')
 
     output = [int(x[0]) for x in cursor.fetchall()]
-    return create_json_response(output)
+    return create_json_response(output, request)
 
 
 def get_detailed_sensor_values(request, sensor_id):
@@ -73,7 +73,7 @@ def get_detailed_sensor_values(request, sensor_id):
     sensor_values = list(SensorValue.objects.filter(
         sensor_id=sensor_id, timestamp__gte=start).values_list('timestamp', 'value'))
 
-    return create_json_response(sensor_values)
+    return create_json_response(sensor_values, request)
 
 
 def get_daily_loads(request):
@@ -102,7 +102,7 @@ def get_daily_loads(request):
         output['electrical'][sensor_id] = list(SensorValue.objects.filter(
             sensor__id=sensor_id, timestamp__gte=start).values_list('timestamp', 'value'))
 
-    return create_json_response(output)
+    return create_json_response(output, request)
 
 
 def get_total_balance(request, year=None, month=None):
@@ -127,7 +127,7 @@ def get_total_balance(request, year=None, month=None):
 
         output.append(functions.get_total_balance_by_date(month, year))
 
-    return create_json_response(output)
+    return create_json_response(output, request)
 
 
 def get_latest_total_balance(request):
@@ -138,4 +138,4 @@ def get_latest_total_balance(request):
     output = dict([('month', month), ('year', year)]
                   + functions.get_total_balance_by_date(month, year).items())
 
-    return create_json_response(output)
+    return create_json_response(output, request)

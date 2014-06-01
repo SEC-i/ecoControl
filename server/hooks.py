@@ -14,14 +14,14 @@ from django.db import connection
 
 import functions
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
-from helpers import create_json_response, create_json_response_from_QuerySet, is_member
+from helpers import create_json_response, is_member
 
 
 logger = logging.getLogger('django')
 
 
 def index(request):
-    return create_json_response({'version': 0.2})
+    return create_json_response({'version': 0.2}, request)
 
 
 @require_POST
@@ -33,18 +33,18 @@ def login_user(request):
         if user is not None:
             if user.is_active:
                 login(request, user)
-                return create_json_response({"login": "successful", "user": request.user.get_full_name()})
+                return create_json_response({"login": "successful", "user": request.user.get_full_name()}, request)
             else:
-                return create_json_response({"login": "disabled", "user": request.user.get_full_name()})
+                return create_json_response({"login": "disabled", "user": request.user.get_full_name()}, request)
         else:
-            return create_json_response({"login": "invalid"})
+            return create_json_response({"login": "invalid"}, request)
     else:
-        return create_json_response({"login": "failed"})
+        return create_json_response({"login": "failed"}, request)
 
 
 def logout_user(request):
     logout(request)
-    return create_json_response({"logout": "successful"})
+    return create_json_response({"logout": "successful"}, request)
 
 
 def status(request):
@@ -59,7 +59,7 @@ def status(request):
     else:
         output.append(("login", "inactive"))
 
-    return create_json_response(dict(output))
+    return create_json_response(dict(output), request)
 
 
 @require_POST
@@ -78,7 +78,7 @@ def list_settings(request):
     output = []
     output += functions.get_configurations()
     output += functions.get_device_configurations()
-    return create_json_response(dict(output))
+    return create_json_response(dict(output), request)
 
 
 def list_sensors(request):
@@ -89,7 +89,7 @@ def list_sensors(request):
     output = [{'id': x['id'], 'name': x['name'], 'unit': x['unit'], 'device': x['device__name'], 'sum': x['aggregate_sum'], 'avg': x['aggregate_avg']}
               for x in sensors]
 
-    return create_json_response(output)
+    return create_json_response(output, request)
 
 
 def list_notifications(request, start, end):
@@ -106,4 +106,4 @@ def list_notifications(request, start, end):
         'notifications': list(notifications.order_by('-timestamp')[int(start):int(end)].values())
     }
 
-    return create_json_response(output)
+    return create_json_response(output, request)

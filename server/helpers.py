@@ -22,13 +22,10 @@ class WebAPIEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def create_json_response(data):
+def create_json_response(data, request):
+    indent = None if request.is_ajax() else 2
     return HttpResponse(
-        json.dumps(data, cls=WebAPIEncoder, sort_keys=True), content_type='application/json')
-
-
-def create_json_response_from_QuerySet(data):
-    return create_json_response(list(data.values()))
+        json.dumps(data, cls=WebAPIEncoder, sort_keys=True, indent=indent), content_type='application/json')
 
 
 def is_member(user, group_name):

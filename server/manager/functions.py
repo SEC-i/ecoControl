@@ -6,7 +6,6 @@ from django.db.models import Sum
 
 from server.models import Device, Sensor, SensorValue, SensorValueMonthlySum
 from server.functions import get_configuration
-from server.helpers import create_json_response
 
 logger = logging.getLogger('django')
 
