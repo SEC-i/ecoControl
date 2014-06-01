@@ -24,7 +24,6 @@ import functions
 
 logger = logging.getLogger('django')
 
-DEFAULT_FORECAST_INTERVAL = 3600.0 * 24 * 14
 DEMO_SIMULATION = None
 
 

@@ -14,6 +14,7 @@ from server.forecasting.systems.producers import SimulatedCogenerationUnit, Simu
 from server.forecasting.systems.storages import SimulatedHeatStorage, SimulatedPowerMeter
 from server.forecasting.systems.consumers import SimulatedThermalConsumer, SimulatedElectricalConsumer
 
+DEFAULT_FORECAST_INTERVAL = 14 * 24 * 3600.0
 logger = logging.getLogger('simulation')
 
 
@@ -28,7 +29,7 @@ def get_forecast(initial_time, configurations=None, code=None):
     measurements = MeasurementStorage(env, systems)
     user_function = get_user_function(systems, code)
 
-    forward = 14 * 24 * 3600
+    forward = DEFAULT_FORECAST_INTERVAL
     while forward > 0:
         measurements.take_and_cache()
 
@@ -38,8 +39,8 @@ def get_forecast(initial_time, configurations=None, code=None):
         for system in systems:
             system.step()
 
-        env.now += 120.0
-        forward -= 120.0
+        env.now += env.step_size
+        forward -= env.step_size
 
     return measurements.get()
 
@@ -101,9 +102,11 @@ class DemoSimulation(Thread):
     def __init__(self, initial_time, configurations=None):
         Thread.__init__(self)
         self.daemon = True
-        initial_time = (int(initial_time) / 3600) * 3600.0
+
+        self.speed = 3600.0 / 120
         self.forward = 0
 
+        initial_time = (int(initial_time) / 3600) * 3600.0
         # initialize real-time environment
         self.env = BaseEnvironment(initial_time=initial_time, demo=True)
 
@@ -151,11 +154,11 @@ class DemoSimulation(Thread):
                 system.step()
 
             if self.forward > 0:
-                self.forward -= 120.0
+                self.forward -= self.env.step_size
             else:
-                time.sleep(1 / 3600.0)
+                time.sleep(1.0 / self.speed)
 
-            self.env.now += 120.0
+            self.env.now += self.env.step_size
 
     def start(self):
         self.running = True
