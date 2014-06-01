@@ -185,7 +185,10 @@ def handle_threshold(request):
 def list_sensor_values(request, start, accuracy='hour'):
 
     if start is None:
-        start = get_past_time(months=1, use_view=True)
+        if accuracy == 'hour':
+            start = get_past_time(months=1, use_view=True)
+        else:
+            start = get_past_time(years=1, use_view=True)
     else:
         start = datetime.utcfromtimestamp(int(start)).replace(tzinfo=utc)
     output = []
@@ -195,7 +198,7 @@ def list_sensor_values(request, start, accuracy='hour'):
             filter(timestamp__gte=start, sensor__in_diagram=True).\
             select_related(
                 'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
-    elif accuracy == 'day':
+    else:
         sensor_values = SensorValueDaily.objects.\
             filter(date__gte=datetime.date(start), sensor__in_diagram=True).\
             select_related(
@@ -215,7 +218,10 @@ def list_sensor_values(request, start, accuracy='hour'):
                 'key': value.sensor.key,
             }
         # Save sensor values
-        values[value.sensor.id].append((value.timestamp, value.value))
+        if accuracy == 'hour':
+            values[value.sensor.id].append((value.timestamp, value.value))
+        else:
+            values[value.sensor.id].append((value.date, value.value))
 
     for sensor_id in output.keys():
         output[sensor_id]['data'] = values[sensor_id]

@@ -1,6 +1,7 @@
 var diagram_initialized = false;
 var plotline_timestamp = null;
 var sensor_count = 0;
+var live_diagram_detailed = true;
 
 // READY
 function technician_overview_ready() {
@@ -21,7 +22,7 @@ function initialize_technician_diagram() {
     });
 
     var series = [];
-    $.getJSON(api_base_url + 'data/', function(data) {
+    $.getJSON(api_base_url + 'data' + (live_diagram_detailed ? '' : 'daily/'), function(data) {
         var table_headlines = ['Sensor', 'Device', 'Value'];
         var table_rows = [];
         var latest_date = 0;
@@ -131,6 +132,17 @@ function initialize_technician_diagram() {
         });
     });
 
+    $('#live_data_granularity li a').click(function(event) {
+        event.preventDefault();
+        if ($(this).attr('data-value') == 'year') {
+            live_diagram_detailed = false;
+        } else {
+            live_diagram_detailed = false;
+        }
+        $('#live_data_granularity_selection').html($(this).text());
+        refresh_technician_diagram(false);
+    });
+
     $('#tech_live_data_export_button').click(function(event) {
         event.preventDefault();
         export_table($('#tech_live_data_table_container'));
@@ -140,7 +152,7 @@ function initialize_technician_diagram() {
 function refresh_technician_diagram(repeat) {
     var chart = $('#tech_live_diagram').highcharts();
     var series_data = []
-    $.getJSON(api_base_url + 'data/', function(data) {
+    $.getJSON(api_base_url + 'data/' + (live_diagram_detailed ? '' : 'daily/'), function(data) {
         var table_rows = [];
         var latest_date = 0;
         $.each(data, function(index, sensor) {
