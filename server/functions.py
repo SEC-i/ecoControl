@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
 from django.utils.timezone import utc
 
-from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly
+from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueDaily
 
 from forecasting.helpers import parse_value
 
@@ -87,7 +87,7 @@ def get_device_configurations(tunable=None):
 
 def get_past_time(years=0, months=0, days=0, use_view=False):
     if use_view:
-        _class = SensorValueHourly
+        _class = SensorValueDaily
     else:
         _class = SensorValue
 

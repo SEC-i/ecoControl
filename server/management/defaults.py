@@ -143,28 +143,34 @@ def initialize_views():
     try:
         len(SensorValueHourly.objects.all())
     except ProgrammingError:
-        cursor.execute('''CREATE MATERIALIZED VIEW public.server_sensorvaluehourly AS
+        cursor.execute('''CREATE VIEW public.server_sensorvaluehourly AS
             SELECT row_number() OVER (ORDER BY t1.timestamp) AS id,
                 t1.sensor_id,
                 t1.timestamp,
                 avg(t1.value) AS value
-               FROM ( SELECT             server_sensorvalue.sensor_id,
+               FROM ( SELECT server_sensorvalue.sensor_id,
                         '1970-01-01 00:00:00'::timestamp without time zone + '01:00:00'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 3600)::double precision AS timestamp,
                         server_sensorvalue.value
-                       FROM server_sensorvalue) t1
+                        FROM server_sensorvalue
+                        WHERE timestamp >= (SELECT timestamp from server_sensorvalue ORDER BY timestamp DESC LIMIT 1) - INTERVAL '1 month'
+                    ) t1
               GROUP BY  t1.timestamp, t1.sensor_id
-              ORDER BY t1.timestamp
-             WITH DATA;''')
+              ORDER BY t1.timestamp''')
 
     try:
         len(SensorValueDaily.objects.all())
     except ProgrammingError:
         cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluedaily AS
                     SELECT row_number() OVER (ORDER BY timestamp) AS id,
-                        sensor_id, AVG(value) AS value,
-                        date_trunc('day', server_sensorvaluehourly.timestamp)::timestamp::date AS date
-                    FROM server_sensorvaluehourly INNER JOIN server_sensor ON server_sensor.id=server_sensorvaluehourly.sensor_id
-                    GROUP BY sensor_id, timestamp;''')
+                        sensor_id,
+                        date_trunc('day', timestamp)::timestamp::date AS date,
+                        avg(value) AS value
+                    FROM ( SELECT server_sensorvalue.sensor_id,
+                        '1970-01-01 00:00:00'::timestamp without time zone + '1 day'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 86400)::double precision AS timestamp,
+                        server_sensorvalue.value
+                        FROM server_sensorvalue) t1
+                    GROUP BY  t1.timestamp, t1.sensor_id
+                    ORDER BY t1.timestamp;''')
         cursor.execute('''CREATE INDEX server_sensorvaluedaily_date ON server_sensorvaluedaily (date);''')
 
     try:
