@@ -226,25 +226,18 @@ def handle_threshold(request):
     return create_json_response({"status": "failed"}, request)
 
 
-def list_sensor_values(request, start, accuracy='hour'):
+def list_sensor_values(request, interval='month'):
     if not request.user.is_superuser:
         raise PermissionDenied
 
-    if start is None:
-        if accuracy == 'hour':
-            start = get_past_time(months=1, use_view=True)
-        else:
-            start = get_past_time(years=1, use_view=True)
-    else:
-        start = datetime.utcfromtimestamp(int(start)).replace(tzinfo=utc)
     output = []
-
-    if accuracy == 'hour':
+    if interval == 'month':
         sensor_values = SensorValueHourly.objects.\
             filter(sensor__in_diagram=True).\
             select_related(
                 'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
     else:
+        start = get_past_time(years=1, use_view=True)
         sensor_values = SensorValueDaily.objects.\
             filter(date__gte=datetime.date(start), sensor__in_diagram=True).\
             select_related(
@@ -264,7 +257,7 @@ def list_sensor_values(request, start, accuracy='hour'):
                 'key': value.sensor.key,
             }
         # Save sensor values
-        if accuracy == 'hour':
+        if interval == 'month':
             values[value.sensor.id].append((value.timestamp, value.value))
         else:
             values[value.sensor.id].append((value.date, value.value))

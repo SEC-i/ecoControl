@@ -10,11 +10,12 @@ function technician_settings_ready() {
                 var item = $('#' + namespace + '_panel .panel-body');
                 if (item.length) {
                     var view = {
+                        datatype: get_mapped_type(config_data.type),
                         device: device_id,
                         id: namespace + '_' + key,
-                        key: get_text(key),
+                        key: key,
+                        name: get_text(key),
                         type: config_data.type,
-                        datatype: get_mapped_type(config_data.type),
                         unit: config_data.unit,
                         value: config_data.value,
                     };

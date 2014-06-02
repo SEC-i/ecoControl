@@ -1,27 +1,23 @@
 var status_data = null;
 
 $(function() {
+    $.address.change(function(event) {
+        load_page(event.value.replace('/', ''));
+    });
+
     $.getJSON(api_base_url + 'status/', function(data) {
         status_data = data;
         if (is_logged_in()) {
             initialize_page(function() {
-                if (status_data['admin'] && status_data['system_status'] == 'init') {
+                if ((status_data['admin'] && status_data['system_status'] == 'init')) {
                     $.address.value('settings');
                 } else {
-                    load_page(get_current_page());
+                    $.address.value(get_current_page());
                 }
             });
         } else {
-            load_page('login'); 
+            $.address.value('login');
         }
-    }).done(function() {
-        $.address.change(function(event) {
-            selected_page = event.value.replace('/', '');
-            if (selected_page == '') {
-                selected_page = 'overview';
-            }
-            load_page(selected_page);
-        });
     });
 
     $('.navbar-brand').click(function(event) {
@@ -29,9 +25,9 @@ $(function() {
         if (is_logged_in()) {
             $('.nav li').removeClass('active');
             $('.nav li').first().addClass('active');
-            load_page('overview')
+            $.address.value('overview');
         } else {
-            load_page('login'); 
+            $.address.value('login');
         }
     });
 });
