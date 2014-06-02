@@ -42,7 +42,7 @@ class SimulatedThermalConsumer(ThermalConsumer):
                              20, 20, 21, 20, 21, 21, 21, 21, 22, 22, 22, 22, 22, 21, 19]
         self.target_temperature = self.daily_demand[0]
 
-        self.consumed = 0
+        self.total_consumed = 0
 
         global weather_forecast
         if weather_forecast == None:
@@ -77,8 +77,7 @@ class SimulatedThermalConsumer(ThermalConsumer):
         self.simulate_consumption()
         consumption = self.get_consumption_energy(
         ) + self.get_warmwater_consumption_energy()
-        print round(self.get_consumption_energy(),2), round(self.get_warmwater_consumption_energy(),2)
-        self.consumed += consumption
+        self.total_consumed += consumption
         self.heat_storage.consume_energy(consumption)
 
     def heat_room(self):
