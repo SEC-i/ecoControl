@@ -47,7 +47,6 @@ def refresh_views():
     logger.debug('Trigger views refresh')
 
     cursor = connection.cursor()
-    cursor.execute('''REFRESH MATERIALIZED VIEW server_sensorvaluehourly;''')
     cursor.execute('''REFRESH MATERIALIZED VIEW server_sensorvaluedaily;''')
     cursor.execute(
         '''REFRESH MATERIALIZED VIEW server_sensorvaluemonthlysum;''')
