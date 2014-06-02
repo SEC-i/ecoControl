@@ -45,6 +45,9 @@ def initialize_default_scenario():
                        key='get_consumption_power', setter='current_power', unit='kWh', in_diagram=True, aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Warm Water Consumption',
                        key='get_warmwater_consumption_power', unit='kWh', in_diagram=True, aggregate_sum=True))
+        #necessary to initialize thermal consumer
+        sensors.append(Sensor(device=tc, name='Room Temperature',
+                        key='temperature_room', setter='temperature_room', unit='°C'))
         sensors.append(Sensor(device=tc, name='Outside Temperature',
                        key='get_outside_temperature', unit='°C', in_diagram=True, aggregate_avg=True))
         sensors.append(Sensor(device=ec, name='Electrical Consumption',
