@@ -101,15 +101,6 @@ class SensorValueHourly(models.Model):
         managed = False
 
 
-class SensorValueHourlyLastMonth(models.Model):
-    sensor = models.ForeignKey('Sensor')
-    timestamp = models.DateTimeField(auto_now=False)
-    value = models.FloatField()
-
-    class Meta:
-        managed = False
-
-
 class SensorValueDaily(models.Model):
     sensor = models.ForeignKey('Sensor')
     date = models.DateField(auto_now=False)
