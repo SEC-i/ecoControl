@@ -186,7 +186,9 @@ function refresh_technician_diagram(repeat) {
             chart.redraw();
 
             if (repeat && get_current_page() == 'overview') {
-                setTimeout(refresh_technician_diagram, 10000);
+                setTimeout(function() {
+                    refresh_technician_diagram(true);
+                }, 10000);
             }
         });
     });
@@ -388,6 +390,7 @@ function apply_changes() {
         }
     }).done(function() {
         cleanup_diagram();
+        refresh_technician_diagram(false);
     });
 }
 
