@@ -6,7 +6,7 @@ from django.db.models import Sum, Avg
 from django.db import connection
 from django.core.exceptions import PermissionDenied
 
-from server.models import Device, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, SensorValueMonthlyAvg
+from server.models import Device, Sensor, SensorValue, SensorValueMonthlySum, SensorValueMonthlyAvg
 from server.functions import get_configuration, get_past_time
 from server.helpers import create_json_response
 import functions
