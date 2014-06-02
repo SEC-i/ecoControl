@@ -68,7 +68,7 @@ class Forecast:
         #forecast all demands.. might take long
         self.forecasted_demands = self.forecast_demands(try_cache=try_cache)
         
-    def forecast_demand(self, demand, index, result_queue):
+    def forecast_demand(self, demand, index, result_dict):
         #seasonality length -- one day
         m = 24
         #forecast_length
@@ -108,7 +108,7 @@ class Forecast:
                 "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_manual, "mase": mase_manual}
             print "use manual HW with RMSE", rmse_manual, " and MASE ", mase_manual, " with index: " , index
         
-        result_queue.put((forecast_values, calculated_parameters, index))
+        result_dict[index] = (forecast_values, calculated_parameters, index)
 
     def forecast_demands(self, try_cache=True):
         split_results = [[] for i in range(7)]
@@ -126,24 +126,27 @@ class Forecast:
             except IOError as e:
                 logger.info(str(e) + " .. creating new cache file")
 
-        #[self.forecast_demand(d, i, result_queue) for i,d in enumerate(self.demands)]
-        
+        #multi processed forecasting
+        ## WARNING: hangups:
+        #v.1 :  pool.map
+        #v.2  use multiple processes instead of pool.map to circumvent a hangup caused
+        # by a multiprocessing/django incompabatility
         #share results in a multiaccess queue
         #note: this queue can not hold unlimited elements and will hang up with no warning if there are too many elements
         #12 weeks 1hourly will work, 20 not
-        result_queue = multiprocessing.Queue()
-        # use multiple processes instead of pool.map to circumvent a hangup caused
-        # by a multiprocessing/django incompabatility
-        #call class as Functor because class methods are not pickeable
+        #result_queue = multiprocessing.Queue()
+        #v.3 now uses a shared multiprocessing dict, to circumvent hang up problems with queue on windows
+        
+        mgr = multiprocessing.Manager()
+        dict_threadsafe = mgr.dict()
 
-        jobs = [Process(target=self, args=(demand,index,result_queue)) for index, demand in enumerate(self.demands)]
+        #call class as Functor because class methods are not pickeable
+        jobs = [Process(target=self, args=(demand,index,dict_threadsafe)) for index, demand in enumerate(self.demands)]
         for job in jobs: job.start()
         for job in jobs: job.join()
          
-        while not result_queue.empty():
-            unordered_forecasts.append(result_queue.get())
-        for fc_triple in unordered_forecasts:
-            split_results[fc_triple[2]] = (fc_triple[0],fc_triple[1])
+        for index in dict_threadsafe.keys():
+            split_results[index] = dict_threadsafe[index]
             
         forecasted_demands = []
         self.calculated_parameters = []
@@ -160,8 +163,8 @@ class Forecast:
 
 
     # callable class
-    def __call__(self, demand, index, result_queue):
-        self.forecast_demand(demand, index, result_queue)
+    def __call__(self, demand, index, result_dict):
+        self.forecast_demand(demand, index, result_dict)
 
     @classmethod
     def split_weekdata(cls, data, samples_per_hour, start_date=None):
@@ -236,3 +239,19 @@ class Forecast:
 
         errors = np.abs(testing_series - prediction_series)
         return errors.mean() / d
+    
+class PredictionSet(object):
+    def __init__(self):
+        super(PredictionSet, self).__init__()
+        self.mgr = multiprocessing.Manager()
+        self.active = self.mgr.list()
+        self.lock = multiprocessing.Lock()
+    def makeActive(self, name):
+        with self.lock:
+            self.active.append(name)
+    def makeInactive(self, name):
+        with self.lock:
+            self.active.remove(name)
+    def __str__(self):
+        with self.lock:
+            return str(self.active)

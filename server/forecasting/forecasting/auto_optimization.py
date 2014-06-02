@@ -34,19 +34,26 @@ def auto_optimize(configurations):
     
     ecosystem = (systems,measurements)
     
-    configurations = namedtuple("configuration", ["target_temperature", "cu_overwrite_workload", "cu_overwrite_workload"])
+    Configurations = namedtuple("configuration", ["target_temperature", "cu_overwrite_workload", "plb_overwrite_workload"])
+    config = Configurations(target_temperature=60, cu_overwrite_workload=100.0, plb_overwrite_workload=0.0)
     
-    price = auto_forecast(initial_time, configurations, systems, prices=prices,rewards=rewards)
+    price = auto_forecast(initial_time, config, systems, prices=prices,rewards=rewards)
     #cProfile.runctx("price = auto_forecast(initial_time, configurations, ecosystem, prices=prices,rewards=rewards)", globals(), locals())
     return {"price" : locals()["price"]}
 
 def auto_forecast(initial_time, configurations, ecosystem, prices, rewards, code=None):
 
     copied_system = copy.deepcopy(ecosystem[0])
-    (systems, measurements) = get_forecast(initial_time,(copied_system,ecosystem[1]),code)
+    [hs,pm,cu,plb,tc,ec] = copied_system
+    ##configure 
+    hs.target_temperature =  configurations.target_temperature
+    cu.overwrite_workload = configurations.cu_overwrite_workload
+    plb.overwrite_workload = configurations.plb_overwrite_workload
+    
+    
+    measurements = get_forecast(initial_time,(copied_system,ecosystem[1]),code)
     #list: [SimulatedHeatStorage,SimulatedPowerMeter, SimulatedCogenerationUnit, SimulatedPeakLoadBoiler, SimulatedThermalConsumer, 
     #SimulatedElectricalConsumer
-    [hs,pm,cu,plb,tc,ec] = systems
     #maintenance_costs = cu.power_on_count
     gas_costs = (cu.total_gas_consumption + plb.total_gas_consumption) * prices["gas_costs"]
     #thermal_production = cu.total_thermal_production +plb.total_thermal_production
@@ -59,13 +66,7 @@ def auto_forecast(initial_time, configurations, ecosystem, prices, rewards, code
 
     return final_price
 
-def set_configurations(systems, configurations):
-    for device in systems:
-        for configuration in configurations:
-            if configuration.device_id == device.id:
-                if configuration.key in dir(device):
-                    setattr(device, configuration.key, configuration.value)
-                break
+
 
 def get_forecast(initial_time, ecosystem, code = None):
     systems = ecosystem[0]
@@ -86,4 +87,4 @@ def get_forecast(initial_time, ecosystem, code = None):
 
         env.now += env.step_size
         forward -= env.step_size
-    return (systems, measurements.get(delete_after=True))
+    return measurements.get(delete_after=True)
