@@ -5,8 +5,7 @@ class SimulatedCogenerationUnit(CogenerationUnit):
 
     def __init__(self, system_id, env):
 
-        super(SimulatedCogenerationUnit, self).__init__(system_id)
-        self.env = env
+        super(SimulatedCogenerationUnit, self).__init__(system_id, env)
 
         self.off_time = self.env.now
 
@@ -125,8 +124,7 @@ class SimulatedCogenerationUnit(CogenerationUnit):
 class SimulatedPeakLoadBoiler(PeakLoadBoiler):
 
     def __init__(self, system_id, env):
-        super(SimulatedPeakLoadBoiler, self).__init__(system_id)
-        self.env = env
+        super(SimulatedPeakLoadBoiler, self).__init__(system_id, env)
 
         self.off_time = self.env.now
 

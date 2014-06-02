@@ -11,10 +11,11 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.utils.timezone import utc
 from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
+from django.core.exceptions import PermissionDenied
 
 import functions
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
-from helpers import create_json_response, is_member
+from helpers import create_json_response
 
 
 logger = logging.getLogger('django')
@@ -54,8 +55,7 @@ def status(request):
     if request.user.is_authenticated():
         output.append(("login", "active"))
         output.append(("user", request.user.get_full_name()))
-        output.append(("technician", is_member(request.user, 'Technician')))
-        output.append(("manager", is_member(request.user, 'Manager')))
+        output.append(("admin", request.user.is_superuser))
     else:
         output.append(("login", "inactive"))
 
@@ -64,6 +64,9 @@ def status(request):
 
 @require_POST
 def export_csv(request):
+    if not request.user.is_authenticated():
+        raise PermissionDenied
+
     response = HttpResponse(content_type='text/csv')
     response[
         'Content-Disposition'] = 'attachment; filename="export_%s.csv"' % time()
@@ -75,6 +78,9 @@ def export_csv(request):
 
 
 def list_settings(request):
+    if not request.user.is_authenticated():
+        raise PermissionDenied
+
     output = []
     output += functions.get_configurations()
     output += functions.get_device_configurations()
@@ -82,6 +88,9 @@ def list_settings(request):
 
 
 def list_sensors(request):
+    if not request.user.is_authenticated():
+        raise PermissionDenied
+
     sensors = Sensor.objects.filter(in_diagram=True).values(
         'id', 'name', 'unit', 'device__name', 'aggregate_sum', 'aggregate_avg')
 
@@ -93,10 +102,13 @@ def list_sensors(request):
 
 
 def list_notifications(request, start, end):
+    if not request.user.is_authenticated():
+        raise PermissionDenied
+
     start = 0 if start is None else start
     end = 25 if end is None else end
 
-    if is_member(request.user, 'Technician'):
+    if request.user.is_superuser:
         notifications = Notification.objects.all()
     else:
         notifications = Notification.objects.filter(show_manager=True)

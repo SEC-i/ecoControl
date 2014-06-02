@@ -1,6 +1,7 @@
 var diagram_initialized = false;
 var plotline_timestamp = null;
 var sensor_count = 0;
+var editor = null;
 var live_diagram_detailed = true;
 
 // READY
@@ -185,7 +186,9 @@ function refresh_technician_diagram(repeat) {
             chart.redraw();
 
             if (repeat && get_current_page() == 'overview') {
-                setTimeout(refresh_technician_diagram, 10000);
+                setTimeout(function() {
+                    refresh_technician_diagram(true);
+                }, 10000);
             }
         });
     });
@@ -325,6 +328,7 @@ function initialize_technician_tuning_form() {
         $('#tuning_button').click(apply_changes);
         $('#tuning_reset_button').click(function() {
             $('#tuning_form')[0].reset();
+            $('#tuning_form').trigger('change');
         })
     });
 }
@@ -333,9 +337,12 @@ function generate_immediate_feedback() {
     $('#immediate_notice').show();
     $('#tuning_button').prop('disabled', true);
 
-    var post_data = [];
+    var post_data = {
+        configurations: [],
+        code: editor.getValue()
+    };
     $('.configuration').each(function () {
-        post_data.push({
+        post_data.configurations.push({
             device: $(this).attr('data-device'),
             key: $(this).attr('data-key'),
             type: $(this).attr('data-type'),
@@ -383,6 +390,7 @@ function apply_changes() {
         }
     }).done(function() {
         cleanup_diagram();
+        refresh_technician_diagram(false);
     });
 }
 
@@ -390,6 +398,9 @@ function update_immediate_forecast(data) {
     var chart = $('#tech_live_diagram').highcharts();
     cleanup_diagram();
     $.each(data, function(index, sensor) {
+        $.each(sensor.data, function(index, value){
+            value[0] = new Date(value[0]).getTime();
+        });
         chart.addSeries({
             name: sensor.name + ' (' + sensor.device + ') (predicted)',
             data: sensor.data,
@@ -491,6 +502,8 @@ function initialize_technician_editor() {
             }
         });
     });
+
+    $("#editor_simulate_button").click(generate_immediate_feedback);
 }
 
 function update_snippet_list() {

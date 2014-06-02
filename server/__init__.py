@@ -1,6 +1,7 @@
 import sys
 
-from server.helpers import start_worker, DemoSimulation
+from server.helpers import start_worker
+from server.forecasting import DemoSimulation
 
 # start demo simulation if neccessary
 if sys.argv[1] == 'runserver':

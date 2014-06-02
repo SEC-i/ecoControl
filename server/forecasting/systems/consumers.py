@@ -35,8 +35,7 @@ class SimulatedThermalConsumer(ThermalConsumer):
 
     def __init__(self, system_id, env):
 
-        super(SimulatedThermalConsumer, self).__init__(system_id)
-        self.env = env
+        super(SimulatedThermalConsumer, self).__init__(system_id, env)
 
         # list of 24 values representing target_temperature per hour
         self.daily_demand = [19, 19, 19, 19, 19, 19, 19, 20, 21,
@@ -160,7 +159,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
     """
     Demand based on pamiru's data (22 residents in a 12 apartment house)
 
-    env - simpy simulation environment
+    env - simulation environment
     power_meter - PowerMeter
     residents - house residents
     """
@@ -168,8 +167,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
     dates = []
 
     def __init__(self, system_id, env):
-        super(SimulatedElectricalConsumer, self).__init__(system_id)
-        self.env = env
+        super(SimulatedElectricalConsumer, self).__init__(system_id, env)
 
         self.power_meter = None
         self.total_consumption = 0.0  # kWh

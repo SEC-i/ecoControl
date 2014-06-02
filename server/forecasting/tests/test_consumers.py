@@ -1,6 +1,6 @@
 import unittest
 
-from server.forecasting.environment import ForwardableRealtimeEnvironment
+from server.systems.base import BaseEnvironment
 from server.forecasting.systems.consumers import SimulatedThermalConsumer
 from server.forecasting.systems.storages import SimulatedHeatStorage
 
@@ -8,7 +8,7 @@ from server.forecasting.systems.storages import SimulatedHeatStorage
 class SimulatedThermalConsumerTests(unittest.TestCase):
 
     def setUp(self):
-        env = ForwardableRealtimeEnvironment()
+        env = BaseEnvironment()
         self.consumer = SimulatedThermalConsumer(0, env)
         self.consumer.heat_storage = SimulatedHeatStorage(1, env)
 
@@ -79,7 +79,7 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         the temperature of warm water and 
         the base_temperatur of the heat_storage'''
         self.consumer.residents = residents
-        env = ForwardableRealtimeEnvironment(initial_time=time_in_seconds)
+        env = BaseEnvironment(initial_time=time_in_seconds)
         self.consumer.env = env
         self.consumer.temperature_warmwater = temperature
 
@@ -183,7 +183,7 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         daily_demand = [19, 19, 3, 19, 6, 19, 19, 20, 21, 20, 20, 21,
                         20, 21, 21, 21, 21, 22, 22, 5, 22, 22, 21, 19]
 
-        env = ForwardableRealtimeEnvironment()
+        env = BaseEnvironment()
         heat_storage = SimulatedHeatStorage(0, env)
         consumer = SimulatedThermalConsumer(1, env)
         consumer.heat_storage = heat_storage
@@ -191,7 +191,7 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
 
         for current_time in range(24):
             time_in_seconds = current_time * 60 * 60
-            env = ForwardableRealtimeEnvironment(initial_time=time_in_seconds)
+            env = BaseEnvironment(initial_time=time_in_seconds)
             consumer.env = env
             consumer.target_temperature = 0
 

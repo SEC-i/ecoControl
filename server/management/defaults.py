@@ -1,29 +1,14 @@
 # -*- coding: utf-8 -*-
 from django.db import connection, ProgrammingError
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 
 from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum
 
 
 def initialize_default_user():
     if len(User.objects.all()) == 0:
-        technician_group = Group(name="Technician")
-        technician_group.save()
-        manager_group = Group(name="Manager")
-        manager_group.save()
-
-        technician = User(username='technician')
-        technician.set_password('techniker')
-        technician.save()
-        technician.groups.add(technician_group)
-        technician.save()
-
-        manager = User(username='manager')
-        manager.set_password('verwaltung')
-        manager.save()
-        manager.groups.add(manager_group)
-        manager.save()
-
+        User.objects.create_superuser('technician', 'bp2013h1@lists.myhpi.de', 'techniker')
+        User.objects.create_user('manager', 'bp2013h1@lists.myhpi.de', 'verwaltung')
 
 def initialize_default_scenario():
     if len(Device.objects.all()) == 0:

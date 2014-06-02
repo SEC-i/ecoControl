@@ -1,6 +1,6 @@
 import unittest
 
-from server.forecasting.environment import ForwardableRealtimeEnvironment
+from server.systems.base import BaseEnvironment
 from server.forecasting.systems.producers import SimulatedCogenerationUnit
 from server.forecasting.systems.storages import SimulatedHeatStorage, SimulatedPowerMeter
 
@@ -13,7 +13,7 @@ gas_price_per_kwh = 0.0655
 class SimulatedCogenerationUnitTest(unittest.TestCase):
 
     def setUp(self):
-        self.env = ForwardableRealtimeEnvironment()
+        self.env = BaseEnvironment()
         self.heat_storage = Mock(spec=SimulatedHeatStorage)()
         self.power_meter = Mock(spec=SimulatedPowerMeter)
         self.cu = SimulatedCogenerationUnit(1, self.env)
@@ -188,7 +188,7 @@ class SimulatedCogenerationUnitTest(unittest.TestCase):
 
 class SimulatedCogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
     def setUp(self):
-        self.env = ForwardableRealtimeEnvironment()
+        self.env = BaseEnvironment()
         self.heat_storage = Mock(spec=SimulatedHeatStorage)
         self.power_meter = SimulatedPowerMeter(0, self.env)
         self.cu = SimulatedCogenerationUnit(1, self.env)
@@ -417,7 +417,7 @@ class SimulatedCogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
     
 class SimulatedCogenerationUnitMethodStepTest(unittest.TestCase):
     def setUp(self):
-        self.env = ForwardableRealtimeEnvironment()
+        self.env = BaseEnvironment()
         self.heat_storage = Mock(spec=SimulatedHeatStorage)()
         self.power_meter = SimulatedPowerMeter(0, self.env)
         self.cu = SimulatedCogenerationUnit(1, self.env)

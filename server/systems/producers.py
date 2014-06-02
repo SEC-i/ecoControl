@@ -3,9 +3,9 @@ from server.systems.base import BaseSystem
 
 class CogenerationUnit(BaseSystem):
 
-    def __init__(self, system_id):
+    def __init__(self, system_id, env):
 
-        super(CogenerationUnit, self).__init__(system_id)
+        super(CogenerationUnit, self).__init__(system_id, env)
         # vaillant ecopower 4.7
         self.max_gas_input = 19.0  # kW
         # % (max 4.7 kW)
@@ -77,8 +77,8 @@ class CogenerationUnit(BaseSystem):
 
 class PeakLoadBoiler(BaseSystem):
 
-    def __init__(self, system_id):
-        super(PeakLoadBoiler, self).__init__(system_id)
+    def __init__(self, system_id, env):
+        super(PeakLoadBoiler, self).__init__(system_id, env)
 
         self.max_gas_input = 45.0  # kW
         self.thermal_efficiency = 80.0  # %
