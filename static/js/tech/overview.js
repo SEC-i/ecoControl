@@ -398,6 +398,9 @@ function update_immediate_forecast(data) {
     var chart = $('#tech_live_diagram').highcharts();
     cleanup_diagram();
     $.each(data, function(index, sensor) {
+        $.each(sensor.data, function(index, value){
+            value[0] = new Date(value[0]).getTime();
+        });
         chart.addSeries({
             name: sensor.name + ' (' + sensor.device + ') (predicted)',
             data: sensor.data,
