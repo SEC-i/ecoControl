@@ -2,7 +2,7 @@
 from django.db import connection, ProgrammingError
 from django.contrib.auth.models import User
 
-from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum
+from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueHourlyLastMonth, SensorValueMonthlyAvg, SensorValueMonthlySum
 
 
 def initialize_default_user():
@@ -152,6 +152,23 @@ def initialize_views():
               GROUP BY  t1.timestamp, t1.sensor_id
               ORDER BY t1.timestamp
              WITH DATA;''')
+
+    try:
+        len(SensorValueHourlyLastMonth.objects.all())
+    except ProgrammingError:
+        cursor.execute('''CREATE VIEW public.server_sensorvaluehourlylastmonth AS
+            SELECT row_number() OVER (ORDER BY t1.timestamp) AS id,
+                t1.sensor_id,
+                t1.timestamp,
+                avg(t1.value) AS value
+               FROM ( SELECT             server_sensorvalue.sensor_id,
+                        '1970-01-01 00:00:00'::timestamp without time zone + '01:00:00'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 3600)::double precision AS timestamp,
+                        server_sensorvalue.value
+                        FROM server_sensorvalue
+                        WHERE timestamp >= (SELECT timestamp from server_sensorvalue ORDER BY timestamp DESC LIMIT 1) - INTERVAL '1 month'
+                    ) t1
+              GROUP BY  t1.timestamp, t1.sensor_id
+              ORDER BY t1.timestamp''')
 
     try:
         len(SensorValueDaily.objects.all())

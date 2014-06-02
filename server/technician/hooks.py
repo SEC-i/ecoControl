@@ -16,7 +16,7 @@ from django.db import connection
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 
-from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
+from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueHourlyLastMonth, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
 from server.helpers import create_json_response
 from server.functions import get_device_configurations, get_past_time
 from server.systems import perform_configuration
@@ -103,7 +103,7 @@ def forecast(request):
         raise PermissionDenied
 
     try:
-        latest_timestamp = get_past_time(use_view=True)
+        latest_timestamp = get_past_time()
         initial_time = calendar.timegm(latest_timestamp.timetuple())
     except SensorValue.DoesNotExist:
         initial_time = time()
@@ -231,8 +231,8 @@ def list_sensor_values(request, start, accuracy='hour'):
     output = []
 
     if accuracy == 'hour':
-        sensor_values = SensorValueHourly.objects.\
-            filter(timestamp__gte=start, sensor__in_diagram=True).\
+        sensor_values = SensorValueHourlyLastMonth.objects.\
+            filter(sensor__in_diagram=True).\
             select_related(
                 'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
     else:
