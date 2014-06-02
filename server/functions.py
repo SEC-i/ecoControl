@@ -95,4 +95,4 @@ def get_past_time(years=0, months=0, days=0, use_view=False):
     except (SensorValue.DoesNotExist, SensorValueDaily.DoesNotExist):
         pass
 
-    return output_time.replace(tzinfo=utc) + dateutil.relativedelta.relativedelta(years=-years, months=-months, days=-days)
+    return output_time + dateutil.relativedelta.relativedelta(years=-years, months=-months, days=-days)
