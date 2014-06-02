@@ -103,7 +103,7 @@ def forecast(request):
         raise PermissionDenied
 
     try:
-        latest_timestamp = get_past_time()
+        latest_timestamp = get_past_time(use_view=True)
         initial_time = calendar.timegm(latest_timestamp.timetuple())
     except SensorValue.DoesNotExist:
         initial_time = time()
