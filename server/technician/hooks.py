@@ -171,7 +171,6 @@ def handle_threshold(request):
             if 'delete' in data:
                 threshold.delete()
             else:
-                print data
                 if 'name' in data:
                     threshold.name = data['name']
                 if 'sensor_id' in data:
@@ -200,7 +199,7 @@ def handle_threshold(request):
                 threshold.save()
             return create_json_response({"status": "success"}, request)
     else:
-        if all(x in data for x in ['name', 'sensor_id', 'min_value', 'max_value', 'category']):
+        if all(x in data for x in ['name', 'sensor_id', 'min_value', 'max_value', 'category', 'show_manager']):
             threshold = Threshold(name=data['name'], sensor_id=int(
                 data['sensor_id']), category=int(data['category']))
             try:
@@ -211,6 +210,7 @@ def handle_threshold(request):
                 threshold.max_value = float(data['max_value'])
             except ValueError:
                 pass
+            threshold.show_manager = True if data['show_manager'] == '1' else False
             threshold.save()
             return create_json_response({"status": "success"}, request)
 
