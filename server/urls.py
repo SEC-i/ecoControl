@@ -21,8 +21,8 @@ urlpatterns = patterns('',
 
     # technician hooks
     (r'^api/configure/$', technician.hooks.configure),
-    (r'^api/data/((?P<start>\d+)/)?$', technician.hooks.list_sensor_values),
-    (r'^api/data/daily/((?P<start>\d+)/)?$', technician.hooks.list_sensor_values, {'accuracy': 'day'}),
+    (r'^api/data/monthly/$', technician.hooks.list_sensor_values),
+    (r'^api/data/yearly/$', technician.hooks.list_sensor_values, {'interval': 'year'}),
     (r'^api/forecast/$', technician.hooks.forecast),
     (r'^api/forward/$', technician.hooks.forward),
     (r'^api/live/$', technician.hooks.live_data),
