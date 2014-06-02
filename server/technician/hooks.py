@@ -19,6 +19,7 @@ from django.core.exceptions import PermissionDenied
 from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
 from server.helpers import create_json_response
 from server.functions import get_device_configurations, get_past_time
+from server.systems import perform_configuration
 from server.forecasting import get_forecast, DemoSimulation
 import functions
 
@@ -60,7 +61,7 @@ def configure(request):
         raise PermissionDenied
 
     cache.clear()
-    functions.perform_configuration(json.loads(request.body))
+    perform_configuration(json.loads(request.body))
     return create_json_response({"status": "success"}, request)
 
 

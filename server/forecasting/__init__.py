@@ -103,7 +103,7 @@ class DemoSimulation(Thread):
         Thread.__init__(self)
         self.daemon = True
 
-        self.speed = 3600.0 / 120
+        self.steps_per_second = 3600.0 / 120
         self.forward = 0
 
         initial_time = (int(initial_time) / 3600) * 3600.0
@@ -156,7 +156,7 @@ class DemoSimulation(Thread):
             if self.forward > 0:
                 self.forward -= self.env.step_size
             else:
-                time.sleep(1.0 / self.speed)
+                time.sleep(1.0 / self.steps_per_second)
 
             self.env.now += self.env.step_size
 

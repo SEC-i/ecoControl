@@ -1,10 +1,13 @@
+import logging
+
 from base import BaseEnvironment
 from producers import CogenerationUnit, PeakLoadBoiler
 from storages import HeatStorage, PowerMeter
 from consumers import ThermalConsumer, ElectricalConsumer
+from server.models import Device, Configuration, DeviceConfiguration
+from django.core.exceptions import ObjectDoesNotExist
 
-from server.models import Device
-
+logger = logging.getLogger('simulation')
 
 def get_initialized_scenario():
         devices = list(Device.objects.all())
@@ -67,7 +70,7 @@ def perform_configuration(data):
 
                     # Make sure that key is present in corresponding system
                     # class
-                    if getattr(system_class(0, BasicEnvironment()), config['key'], None) is not None:
+                    if getattr(system_class(0, BaseEnvironment()), config['key'], None) is not None:
                         try:
                             existing_config = DeviceConfiguration.objects.get(
                                 device=device, key=config['key'])
