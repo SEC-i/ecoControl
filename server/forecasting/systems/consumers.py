@@ -124,8 +124,8 @@ class SimulatedThermalConsumer(ThermalConsumer):
 
     def simulate_consumption(self):
         # Calculate variation using daily demand
-        self.target_temperature = self.daily_demand[
-            time.gmtime(self.env.now).tm_hour]
+        hours = datetime.fromtimestamp(self.env.now).replace(tzinfo=utc).hour
+        self.target_temperature = self.daily_demand[hours]
 
         self.heat_room()
 
@@ -148,7 +148,8 @@ class SimulatedThermalConsumer(ThermalConsumer):
         return (heat_flow_wall + heat_flow_window) / 1000.0  # kW
 
     def get_outside_temperature(self, offset_days=0):
-        return self.weather_forecast.get_temperature_estimate(self.env.now)
+        date = datetime.fromtimestamp(self.env.now).replace(tzinfo=utc)
+        return self.weather_forecast.get_temperature_estimate(date)
 
     def linear_interpolation(self, a, b, x):
         return a * (1 - x) + b * x
