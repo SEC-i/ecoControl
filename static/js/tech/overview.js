@@ -23,7 +23,7 @@ function initialize_technician_diagram() {
     });
 
     var series = [];
-    $.getJSON(api_base_url + 'data' + (live_diagram_detailed ? '' : 'daily/'), function(data) {
+    $.getJSON(api_base_url + 'data/' + (live_diagram_detailed ? 'monthly/' : 'yearly/'), function(data) {
         var table_headlines = ['Sensor', 'Device', 'Value'];
         var table_rows = [];
         var latest_date = 0;
@@ -158,7 +158,7 @@ function initialize_technician_diagram() {
 function refresh_technician_diagram(repeat) {
     var chart = $('#tech_live_diagram').highcharts();
     var series_data = []
-    $.getJSON(api_base_url + 'data/' + (live_diagram_detailed ? '' : 'daily/'), function(data) {
+    $.getJSON(api_base_url + 'data/' + (live_diagram_detailed ? 'monthly/' : 'yearly/'), function(data) {
         var table_rows = [];
         var latest_date = 0;
         $.each(data, function(index, sensor) {

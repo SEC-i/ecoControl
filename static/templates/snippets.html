@@ -2,7 +2,7 @@
     <div class="col-lg-4 col-sm-6">
         <div class="row">
             <div class="col-xs-9">
-                <b>{{key}}</b>:
+                <b>{{name}}</b>:
             </div>
             <div class="col-xs-3 text-right">
                 {{#device}}<a href="#" class="setting_input" data-type="{{datatype}}" data-title="{{title}}" data-pk="{{key}}" data-device="{{device}}" data-unit="{{unit}}" data-type2="{{type}}">{{/device}}{{value}}{{#device}}</a>{{/device}} {{unit}}
@@ -14,7 +14,7 @@
 <div id="snippet_settings_input">
     <div class="col-sm-4">
         <div class="form-group">
-            <label for="{{id}}">{{key}}</label>
+            <label for="{{id}}">{{name}}</label>
             {{#unit}}<div class="input-group">
                 <input type="text" class="configuration form-control" id="{{id}}" data-device="{{device}}" data-key="{{key}}" data-type="{{type}}" data-unit="{{unit}}" value="{{value}}">
                 <span class="input-group-addon">{{unit}}</span>

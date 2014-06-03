@@ -86,17 +86,16 @@ def get_device_configurations(tunable=None):
 
 
 def get_past_time(years=0, months=0, days=0, use_view=False):
+    output_time = datetime.now().replace(tzinfo=utc)
+
     if use_view:
         _class = SensorValueDaily
     else:
         _class = SensorValue
 
     try:
-        latest_value = _class.objects.latest('timestamp')
-        return latest_value.timestamp + \
-            dateutil.relativedelta.relativedelta(
-                years=-years, months=-months, days=-days)
+        output_time = _class.objects.latest('timestamp').timestamp
     except _class.DoesNotExist:
-        return datetime.now().replace(tzinfo=utc) + \
-            dateutil.relativedelta.relativedelta(
-                years=-years, months=-months, days=-days)
+        pass
+
+    return output_time + dateutil.relativedelta.relativedelta(years=-years, months=-months, days=-days)

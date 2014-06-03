@@ -78,22 +78,29 @@ function is_technician() {
 }
 
 function load_page(target) {
-    if (target == '') {
-        target = 'overview';
-    } else if (target == 'logout') {
-        $.address.value('login');
-        target = 'login';
-    }
-    url = 'templates/' + target + '.html .' + role_name();
-    $('#main').load(url, function() {
-        if (role_name() + '_' + target + '_ready' in window) {
-            window[role_name() + '_' + target + '_ready']();
-        } else if (target + '_ready' in window) {
-            window[target + '_ready']();
+    if (status_data == null) {
+        setTimeout(function() {
+            // wait for status_data to be ready
+            load_page(target);
+        }, 100);
+    } else {
+        if (target == '') {
+            target = 'overview';
+        } else if (target == 'logout') {
+            $.address.value('login');
+            target = 'login';
         }
-        $('.nav li').removeClass('active');
-        $('a[href=' + target + ']').parent().addClass('active');
-    });
+        url = 'templates/' + target + '.html .' + role_name();
+        $('#main').load(url, function() {
+            if (role_name() + '_' + target + '_ready' in window) {
+                window[role_name() + '_' + target + '_ready']();
+            } else if (target + '_ready' in window) {
+                window[target + '_ready']();
+            }
+            $('.nav li').removeClass('active');
+            $('a[href=' + target + ']').parent().addClass('active');
+        });
+    }
 }
 
 function role_name() {
@@ -106,10 +113,6 @@ function role_name() {
 function initialize_page(callback) {
     var url = 'templates/navigation.html .' + role_name();
     $('#navbar_container').load(url, function() {
-        $('#navbar_container a').click(function() {
-            $.address.value($(this).attr('href'));
-        });
-
         $('#navbar_container a').address(function() {  
             return $(this).attr('href').replace(/^#/, '');  
         }); 
@@ -124,7 +127,7 @@ function initialize_page(callback) {
                 xhrFields: {
                     withCredentials: true
                 }
-            }).done(load_page('login'));
+            }).done(load_page('login', 'core'));
         });
 
         $('#snippets').load('templates/snippets.html', function() {

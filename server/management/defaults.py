@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
+import datetime
+
+from django.utils.timezone import utc
 from django.db import connection, ProgrammingError
 from django.contrib.auth.models import User
 
-from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum
+from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
+from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum, WeatherValue
 
 
 def initialize_default_user():
@@ -45,6 +49,9 @@ def initialize_default_scenario():
                        key='get_consumption_power', setter='current_power', unit='kWh', in_diagram=True, aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Warm Water Consumption',
                        key='get_warmwater_consumption_power', unit='kWh', in_diagram=True, aggregate_sum=True))
+        #necessary to initialize thermal consumer
+        sensors.append(Sensor(device=tc, name='Room Temperature',
+                        key='temperature_room', setter='temperature_room', unit='°C'))
         sensors.append(Sensor(device=tc, name='Outside Temperature',
                        key='get_outside_temperature', unit='°C', in_diagram=True, aggregate_avg=True))
         sensors.append(Sensor(device=ec, name='Electrical Consumption',
@@ -134,6 +141,37 @@ def initialize_default_scenario():
         print "Default device configurations initialized"
 
 
+def initialize_weathervalues():
+    if len(WeatherValue.objects.all()) == 0:
+        weather_values = []
+        base_time = datetime.datetime.strptime(
+            '2012-01-01 00:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        timestamp = datetime.datetime.strptime(
+            '2013-12-12 23:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        hours = 0
+        for temperature in outside_temperatures_2012:  # every day
+            target_time = base_time + datetime.timedelta(hours=hours)
+            weather_values.append(WeatherValue(timestamp=timestamp,
+                                               target_time=target_time,
+                                               temperature=temperature))
+            hours = hours + 1
+        base_time = datetime.datetime.strptime(
+            '2013-01-01 00:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        timestamp = datetime.datetime.strptime(
+            '2013-12-12 23:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        hours = 0
+        for temperature in outside_temperatures_2013:  # every day
+            target_time = base_time + datetime.timedelta(hours=hours)
+            weather_values.append(WeatherValue(timestamp=timestamp,
+                                               target_time=target_time,
+                                               temperature=temperature))
+            hours = hours + 1
+
+        WeatherValue.objects.bulk_create(weather_values)
+
+        print "Default weather data for 2012 and 2013 initialized"
+
+
 def initialize_views():
     cursor = connection.cursor()
 
@@ -160,7 +198,7 @@ def initialize_views():
         cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluedaily AS
                     SELECT row_number() OVER (ORDER BY timestamp) AS id,
                         sensor_id,
-                        date_trunc('day', timestamp)::timestamp::date AS date,
+                        date_trunc('day', timestamp)::timestamp::date AS timestamp,
                         avg(value) AS value
                     FROM ( SELECT server_sensorvalue.sensor_id,
                         '1970-01-01 00:00:00'::timestamp without time zone + '1 day'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 86400)::double precision AS timestamp,
@@ -168,23 +206,23 @@ def initialize_views():
                         FROM server_sensorvalue) t1
                     GROUP BY  t1.timestamp, t1.sensor_id
                     ORDER BY t1.timestamp;''')
-        cursor.execute('''CREATE INDEX server_sensorvaluedaily_date ON server_sensorvaluedaily (date);''')
+        cursor.execute('''CREATE INDEX server_sensorvaluedaily_date ON server_sensorvaluedaily (timestamp);''')
 
     try:
         len(SensorValueMonthlySum.objects.all())
     except ProgrammingError:
         cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluemonthlysum AS
-                     SELECT row_number() OVER (ORDER BY t1.date) AS id,
+                     SELECT row_number() OVER (ORDER BY t1.timestamp) AS id,
                         t1.sensor_id,
-                        t1.date,
+                        t1.timestamp,
                         sum(t1.value) AS sum
-                       FROM ( SELECT date_trunc('month'::text, server_sensorvalue."timestamp")::timestamp::date AS date,
+                       FROM ( SELECT date_trunc('month'::text, server_sensorvalue."timestamp")::timestamp::date AS timestamp,
                                 server_sensorvalue.sensor_id,
                                 server_sensorvalue.value
                                FROM server_sensorvalue INNER JOIN server_sensor ON server_sensor.id=server_sensorvalue.sensor_id
                                WHERE server_sensor.aggregate_sum=TRUE) t1
-                      GROUP BY t1.date, t1.sensor_id
-                      ORDER BY t1.date
+                      GROUP BY t1.timestamp, t1.sensor_id
+                      ORDER BY t1.timestamp
                     WITH DATA;''')
 
     try:
@@ -192,15 +230,15 @@ def initialize_views():
     except ProgrammingError:
         # could be derived from server_sensorvaluehourly
         cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluemonthlyavg AS
-                     SELECT row_number() OVER (ORDER BY t1.date) AS id,
+                     SELECT row_number() OVER (ORDER BY t1.timestamp) AS id,
                         t1.sensor_id,
-                        t1.date,
+                        t1.timestamp,
                         avg(t1.value) AS avg
-                       FROM ( SELECT date_trunc('month'::text, server_sensorvalue."timestamp")::timestamp::date AS date,
+                       FROM ( SELECT date_trunc('month'::text, server_sensorvalue."timestamp")::timestamp::date AS timestamp,
                                 server_sensorvalue.sensor_id,
                                 server_sensorvalue.value
                                FROM server_sensorvalue INNER JOIN server_sensor ON server_sensor.id=server_sensorvalue.sensor_id
                                WHERE server_sensor.aggregate_avg=TRUE) t1
-                      GROUP BY t1.date, t1.sensor_id
-                      ORDER BY t1.date
+                      GROUP BY t1.timestamp, t1.sensor_id
+                      ORDER BY t1.timestamp
                     WITH DATA;''')
