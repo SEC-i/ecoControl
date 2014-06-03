@@ -135,14 +135,14 @@ class WeatherForecast:
             return self.get_forecast_temperature_daily(date)
             
     def get_temperature_of_passed_date(self, date):
-        entry = WeatherValue.objects.get_closest_and_newest_to_target_time(date)
+        entry = self.get_closest_and_newest_to_target_time(date)
         if (entry.target_time - date).seconds/60 > 15: 
             # if the saved target_time is more than 15 minutes different
             logger.warning("the saved target_time is more than 15 minutes different")
         return float(entry.temperature)        
             
     def get_forecast_temperature_hourly(self, date):
-        entry = WeatherValue.objects.get_closest_and_newest_to_target_time(date)
+        entry = self.get_closest_and_newest_to_target_time(date)
         return float(entry.temperature) 
 
     def get_forecast_temperature_daily(self, date):
@@ -157,3 +157,28 @@ class WeatherForecast:
 
     def get_date(self):
         return time.time()
+
+    def get_closest_and_newest_to_target_time(self, target):
+        closest_greater_qs = WeatherValue.objects.filter(target_time__gte=target).order_by('target_time', '-timestamp')
+        closest_less_qs    = WeatherValue.objects.filter(target_time__lt=target).order_by('-target_time', '-timestamp')
+
+        closest_greater = closest_less = None
+        if len(closest_greater_qs) > 0:
+            closest_greater = closest_greater_qs[0]
+
+        if len(closest_less_qs) > 0:
+            closest_less = closest_less_qs[0]
+
+        if closest_less is None and closest_greater is None:
+            raise WeatherValue.DoesNotExist
+
+        if closest_greater is None and closest_less is not None:
+            return closest_less
+
+        if closest_less is None and closest_greater is not None:
+            return closest_greater
+
+        if closest_greater.target_time - target > target - closest_less.target_time:
+            return closest_less
+        else:
+            return closest_greater

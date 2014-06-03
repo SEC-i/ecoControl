@@ -697,8 +697,3 @@ def get_http_response(content):
 def get_http_response_mock(content):
     extern_information = get_http_response(content)  
     return MagicMock(return_value = extern_information)
-
-
-                
-if __name__ == '__main__':
-    unittest.main()
