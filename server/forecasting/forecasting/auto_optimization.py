@@ -12,8 +12,9 @@ import calendar
 import cProfile
 import copy
 from collections import namedtuple
+from numpy import array
 
-DEFAULT_FORECAST_INTERVAL = 1 * 24 * 3600.0
+DEFAULT_FORECAST_INTERVAL = 2 * 24 * 3600.0
 
 def auto_optimize(configurations):
     prices = {}
@@ -34,24 +35,36 @@ def auto_optimize(configurations):
     
     ecosystem = (systems,measurements)
     
-    Configurations = namedtuple("configuration", ["target_temperature", "cu_overwrite_workload", "plb_overwrite_workload"])
-    config = Configurations(target_temperature=60, cu_overwrite_workload=100.0, plb_overwrite_workload=0.0)
+    #target_temperature, cu_overwrite_workload, plb_overwrite_workload
+    config = [60, 100.0,0.0]
+    boundaries = [(50.0,80.0), (0.0,100.0), (0.0,100.0)]
+    initial_values = array(config)
     
-    price = auto_forecast(initial_time, config, systems, prices=prices,rewards=rewards)
-    #cProfile.runctx("price = auto_forecast(initial_time, configurations, ecosystem, prices=prices,rewards=rewards)", globals(), locals())
-    return {"price" : locals()["price"]}
+    outputs = []
+    arguments = (initial_time, systems, measurements, prices, rewards)
+    
+    parameters = fmin_l_bfgs_b(optim_function, x0 = initial_values, args = arguments, bounds = boundaries, approx_grad = True)
+    
+    
+    named_parameters = {"target_temperature": parameters[0][0], 
+                        "cu_overwrite_workload":parameters[0][1], 
+                        "plb_overwrite_workload":parameters[0][2]}
+    return {"final_bilance" : -parameters[1], "config": named_parameters}
 
-def auto_forecast(initial_time, configurations, ecosystem, prices, rewards, code=None):
+def optim_function(params, *args):
+    (initial_time, systems, measurements, prices, rewards) = args
+    price = auto_forecast(initial_time, params, systems, measurements, prices, rewards)
+    return price
+    
 
-    copied_system = copy.deepcopy(ecosystem[0])
+def auto_forecast(initial_time, configurations, systems, measurements, prices, rewards, code=None):
+
+    copied_system = copy.deepcopy(systems)
     [hs,pm,cu,plb,tc,ec] = copied_system
     ##configure 
-    hs.target_temperature =  configurations.target_temperature
-    cu.overwrite_workload = configurations.cu_overwrite_workload
-    plb.overwrite_workload = configurations.plb_overwrite_workload
+    (hs.target_temperature, cu.overwrite_workload,plb.overwrite_workload) = configurations
     
-    
-    measurements = get_forecast(initial_time,(copied_system,ecosystem[1]),code)
+    get_forecast(initial_time,(copied_system,measurements),code)
     #list: [SimulatedHeatStorage,SimulatedPowerMeter, SimulatedCogenerationUnit, SimulatedPeakLoadBoiler, SimulatedThermalConsumer, 
     #SimulatedElectricalConsumer
     #maintenance_costs = cu.power_on_count
@@ -62,9 +75,10 @@ def auto_forecast(initial_time, configurations, ecosystem, prices, rewards, code
     
     thermal_rewards = tc.total_consumed * rewards["thermal_revenues"]
     
-    final_price = electric_rewards - electric_costs + thermal_rewards - gas_costs
+    final_cost = electric_costs-electric_rewards + gas_costs - thermal_rewards 
+    penalties = hs.undersupplied() * 10000 #big penalty for undersupplied
 
-    return final_price
+    return final_cost + penalties
 
 
 
@@ -77,7 +91,7 @@ def get_forecast(initial_time, ecosystem, code = None):
 
     forward = DEFAULT_FORECAST_INTERVAL
     while forward > 0:
-        measurements.take_and_cache()
+        #measurements.take_and_cache()
 
         user_function(*systems)
 
