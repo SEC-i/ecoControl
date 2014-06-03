@@ -73,6 +73,10 @@ function is_logged_in() {
     return status_data['login'] == 'active';
 }
 
+function is_technician() {
+    return status_data['admin'] == '1';
+}
+
 function load_page(target) {
     if (target == '') {
         target = 'overview';
@@ -93,7 +97,7 @@ function load_page(target) {
 }
 
 function role_name() {
-    if (status_data['admin']) {
+    if (is_technician()) {
         return 'technician';
     }
     return 'manager';

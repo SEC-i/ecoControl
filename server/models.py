@@ -168,6 +168,7 @@ class Threshold(models.Model):
 class Notification(models.Model):
     threshold = models.ForeignKey('Threshold')
     sensor_value = models.ForeignKey('SensorValue')
+    target = models.FloatField()
     read = models.BooleanField(default=False)
 
     def __unicode__(self):
