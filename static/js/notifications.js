@@ -173,7 +173,8 @@ function refresh_thresholds() {
                 {value: 1, text: 'Yes'},
             ]
         });
-        $('.delete_button').click( function () {
+        $('.delete_button').click(function(event) {
+            event.preventDefault();
             delete_threshold($(this).attr('data-threshold'));
         });
     });
