@@ -17,6 +17,7 @@ function update_notifications(start) {
                 '<tr>\
                     <td>' + notification['id'] + '</td>\
                     <td>' + $.format.date(new Date(notification['sensor_value']['timestamp']), "HH:MM dd.MM.yyyy") + '</td>\
+                    <td>' + notification['threshold']['name'] + '</td>\
                     <td>' + get_label(notification['threshold']['category']) + ' Sensor #' + notification['sensor_value']['sensor'] + ' was ' + Math.round(notification['sensor_value']['value'] * 100) / 100 + ' and should\'ve been ' + Math.round(notification['target'] * 100) / 100 + '.</td>\
                 </tr>'
             );
