@@ -142,33 +142,34 @@ def initialize_default_scenario():
 
 
 def initialize_weathervalues():
-    weather_values = []
-    base_time = datetime.datetime.strptime(
-        '2012-01-01 00:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
-    timestamp = datetime.datetime.strptime(
-        '2013-12-12 23:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
-    hours = 0
-    for temperature in outside_temperatures_2012:  # every day
-        target_time = base_time + datetime.timedelta(hours=hours)
-        weather_values.append(WeatherValue(timestamp=timestamp,
-                                           target_time=target_time,
-                                           temperature=temperature))
-        hours = hours + 1
-    base_time = datetime.datetime.strptime(
-        '2013-01-01 00:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
-    timestamp = datetime.datetime.strptime(
-        '2013-12-12 23:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
-    hours = 0
-    for temperature in outside_temperatures_2013:  # every day
-        target_time = base_time + datetime.timedelta(hours=hours)
-        weather_values.append(WeatherValue(timestamp=timestamp,
-                                           target_time=target_time,
-                                           temperature=temperature))
-        hours = hours + 1
+    if len(WeatherValue.objects.all()) == 0:
+        weather_values = []
+        base_time = datetime.datetime.strptime(
+            '2012-01-01 00:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        timestamp = datetime.datetime.strptime(
+            '2013-12-12 23:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        hours = 0
+        for temperature in outside_temperatures_2012:  # every day
+            target_time = base_time + datetime.timedelta(hours=hours)
+            weather_values.append(WeatherValue(timestamp=timestamp,
+                                               target_time=target_time,
+                                               temperature=temperature))
+            hours = hours + 1
+        base_time = datetime.datetime.strptime(
+            '2013-01-01 00:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        timestamp = datetime.datetime.strptime(
+            '2013-12-12 23:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        hours = 0
+        for temperature in outside_temperatures_2013:  # every day
+            target_time = base_time + datetime.timedelta(hours=hours)
+            weather_values.append(WeatherValue(timestamp=timestamp,
+                                               target_time=target_time,
+                                               temperature=temperature))
+            hours = hours + 1
 
-    WeatherValue.objects.bulk_create(weather_values)
+        WeatherValue.objects.bulk_create(weather_values)
 
-    print "Default weather data for 2012 and 2013 initialized"
+        print "Default weather data for 2012 and 2013 initialized"
 
 
 def initialize_views():

@@ -162,21 +162,19 @@ class WeatherForecast:
         closest_greater_qs = WeatherValue.objects.filter(target_time__gte=target).order_by('target_time', '-timestamp')
         closest_less_qs    = WeatherValue.objects.filter(target_time__lt=target).order_by('-target_time', '-timestamp')
 
-        closest_greater = closest_less = None
-        if len(closest_greater_qs) > 0:
-            closest_greater = closest_greater_qs[0]
+        try:
+            try:
+                closest_greater = closest_greater_qs[0]
+            except IndexError:
+                return closest_less_qs[0]
 
-        if len(closest_less_qs) > 0:
-            closest_less = closest_less_qs[0]
-
-        if closest_less is None and closest_greater is None:
-            raise WeatherValue.DoesNotExist
-
-        if closest_greater is None and closest_less is not None:
-            return closest_less
-
-        if closest_less is None and closest_greater is not None:
-            return closest_greater
+            try:
+                closest_less = closest_less_qs[0]
+            except IndexError:
+                return closest_greater_qs[0]
+        except IndexError:
+            raise WeatherValue.DoesNotExist("There is no closest object"
+                                          " because there are no objects.")
 
         if closest_greater.target_time - target > target - closest_less.target_time:
             return closest_less
