@@ -23,7 +23,7 @@ from server.systems import perform_configuration
 from server.forecasting import get_forecast, DemoSimulation
 import functions
 from server.forecasting.forecasting.auto_optimization import auto_forecast,\
-    auto_optimize
+    auto_optimize, simulation_run
 
 logger = logging.getLogger('django')
 
@@ -31,9 +31,10 @@ DEMO_SIMULATION = None
 
 ##testing optimization
 def test_auto(request):
-    config = DeviceConfiguration.objects.all()
-    measurements = auto_optimize(config)
-    return create_json_response(measurements, request)
+    #config = DeviceConfiguration.objects.all()
+    #measurements = auto_optimize(config)
+    simulation_run()
+    return create_json_response("ok", request)
 
 ####
 
