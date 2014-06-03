@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
+import datetime
+
+from django.utils.timezone import utc
 from django.db import connection, ProgrammingError
 from django.contrib.auth.models import User
 
-from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum
+from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
+from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum, WeatherValue
 
 
 def initialize_default_user():
@@ -135,6 +139,37 @@ def initialize_default_scenario():
 
         DeviceConfiguration.objects.bulk_create(device_configurations)
         print "Default device configurations initialized"
+
+
+def initialize_weathervalues():
+    if len(WeatherValue.objects.all()) == 0:
+        weather_values = []
+        base_time = datetime.datetime.strptime(
+            '2012-01-01 00:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        timestamp = datetime.datetime.strptime(
+            '2013-12-12 23:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        hours = 0
+        for temperature in outside_temperatures_2012:  # every day
+            target_time = base_time + datetime.timedelta(hours=hours)
+            weather_values.append(WeatherValue(timestamp=timestamp,
+                                               target_time=target_time,
+                                               temperature=temperature))
+            hours = hours + 1
+        base_time = datetime.datetime.strptime(
+            '2013-01-01 00:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        timestamp = datetime.datetime.strptime(
+            '2013-12-12 23:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
+        hours = 0
+        for temperature in outside_temperatures_2013:  # every day
+            target_time = base_time + datetime.timedelta(hours=hours)
+            weather_values.append(WeatherValue(timestamp=timestamp,
+                                               target_time=target_time,
+                                               temperature=temperature))
+            hours = hours + 1
+
+        WeatherValue.objects.bulk_create(weather_values)
+
+        print "Default weather data for 2012 and 2013 initialized"
 
 
 def initialize_views():
