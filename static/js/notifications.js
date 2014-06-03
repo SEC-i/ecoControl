@@ -6,14 +6,14 @@ function notifications_ready() {
 }
 
 function update_notifications(start) {
-    var url = '/api/notifications/start/' + start + '/end/' + (start + notifications_per_page) + '/';
+    var url = api_base_url + 'notifications/start/' + start + '/end/' + (start + notifications_per_page) + '/';
     $.getJSON(url, function(data) {
         $('#notification_list tbody').empty();
         $.each(data['notifications'], function(index, notification) {
             $('#notification_list tbody').append(
                 '<tr>\
                     <td>' + notification['id'] + '</td>\
-                    <td>' + $.format.date(new Date(parseFloat(notification['timestamp'])), "HH:MM dd.MM.yyyy") + '</td>\
+                    <td>' + $.format.date(new Date(notification['timestamp']), "HH:MM dd.MM.yyyy") + '</td>\
                     <td>' + get_label(notification['category']) + ' ' + notification['message'] + '</td>\
                 </tr>'
             );
@@ -42,10 +42,10 @@ function update_pagination(current, total) {
     );
 
     $('#notification_pagination .pagination li a').click(function(event) {
+        event.preventDefault();
         if (!$(this).parent().hasClass('disabled') && !$(this).parent().hasClass('active')) {
             update_notifications(parseInt($(this).attr('data-start')));
         }
-        event.preventDefault();
     });
 
 }

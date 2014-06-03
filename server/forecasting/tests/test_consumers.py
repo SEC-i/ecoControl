@@ -1,26 +1,24 @@
 import unittest
-import datetime
 import time
-from django.utils import timezone
 
-from server.forecasting.environment import ForwardableRealtimeEnvironment
-from server.forecasting.systems.consumers import ThermalConsumer
-from server.forecasting.systems.storages import HeatStorage
+from server.systems.base import BaseEnvironment
+from server.forecasting.systems.consumers import SimulatedThermalConsumer
+from server.forecasting.systems.storages import SimulatedHeatStorage
 
 
-class ThermalConsumerTests(unittest.TestCase):
+class SimulatedThermalConsumerTests(unittest.TestCase):
 
     def setUp(self):
-        env = ForwardableRealtimeEnvironment()
-        self.consumer = ThermalConsumer(0, env)
-        self.consumer.heat_storage = HeatStorage(1, env)
+        env = BaseEnvironment()
+        self.consumer = SimulatedThermalConsumer(0, env)
+        self.consumer.heat_storage = SimulatedHeatStorage(1, env)
 
 
     '''def test_step(self):
        # pass
         verbrauch wird berechnet 
         total_consumption wird erhoeht
-        energy wird aus dem Heatstorage entnommen
+        energy wird aus dem SimulatedHeatstorage entnommen
         '''
 
     def test_get_warmwater_consumption_power(self):
@@ -82,11 +80,11 @@ class ThermalConsumerTests(unittest.TestCase):
         the temperature of warm water and 
         the base_temperatur of the heat_storage'''
         self.consumer.residents = residents
-        env = ForwardableRealtimeEnvironment(initial_time=time_in_seconds)
+        env = BaseEnvironment(initial_time=time_in_seconds)
         self.consumer.env = env
         self.consumer.temperature_warmwater = temperature
 
-        heat_storage = HeatStorage(0, env)
+        heat_storage = SimulatedHeatStorage(0, env)
         heat_storage.base_temperature = heat_storage_base
         self.consumer.heat_storage = heat_storage
 
@@ -183,30 +181,24 @@ class ThermalConsumerTests(unittest.TestCase):
     def test_target_temperature_simulate_consumption(self):
         '''the target temperature of the consumer should be set
         according to the daily demand'''
-        daily_demand = [19, 19, 3, 19, 6, 19, 19, 20, 21, 20, 20, 21,
-                        20, 21, 21, 21, 21, 22, 22, 5, 22, 22, 21, 19]
+        daily_demand = [x for x in range(24)]
 
-        env = ForwardableRealtimeEnvironment()
-        heat_storage = HeatStorage(0, env)
-        consumer = ThermalConsumer(1, env)
+        env = BaseEnvironment(initial_time=1388530800) # 2014-01-01 00:00:00
+        heat_storage = SimulatedHeatStorage(0, env)
+        consumer = SimulatedThermalConsumer(1, env)
         consumer.heat_storage = heat_storage
         consumer.daily_demand = daily_demand
 
-        base_time = datetime.datetime.strptime('2012-01-01 00:00:00 UTC', '%Y-%m-%d %X %Z')#.replace(tzinfo=timezone.utc)
-        base_timestamp = time.mktime(base_time.timetuple())
-        for current_time in range(24):
-            time_in_seconds = base_timestamp+current_time * 60 * 60
-            env = ForwardableRealtimeEnvironment(initial_time=time_in_seconds)
-            consumer.env = env
+        for index, temperature in enumerate(daily_demand):
             consumer.target_temperature = 0
-
             consumer.simulate_consumption()
 
-            expected_temperature = daily_demand[current_time]
-            self.assertEqual(consumer.target_temperature, expected_temperature,
+            self.assertEqual(consumer.target_temperature, temperature,
                              "current hour: {0} expected: {1} got: {2}".format(
-                                 current_time, consumer.target_temperature,
-                                 expected_temperature))
+                                 index, consumer.target_temperature,
+                                 temperature))
+
+            env.now += 60 * 60
 
         '''def test_heat_room(self):
         # sets the room_temperature with respect to

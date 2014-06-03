@@ -2,20 +2,20 @@ var settings_data = null;
 
 // READY
 function technician_settings_ready() {
-    $.getJSON('/api/settings/', function(data) {
+    $.getJSON(api_base_url + 'settings/', function(data) {
         settings_data = data;
         $.each(settings_data, function(device_id, device_configurations) {
-            console.log(Object.keys(device_configurations).length)
             $.each(device_configurations, function(key, config_data) {
                 var namespace = namespaces[device_id];
                 var item = $('#' + namespace + '_panel .panel-body');
                 if (item.length) {
                     var view = {
+                        datatype: get_mapped_type(config_data.type),
                         device: device_id,
                         id: namespace + '_' + key,
-                        key: get_text(key),
+                        key: key,
+                        name: get_text(key),
                         type: config_data.type,
-                        datatype: get_mapped_type(config_data.type),
                         unit: config_data.unit,
                         value: config_data.value,
                     };
@@ -31,7 +31,7 @@ function technician_settings_ready() {
         });
 
         $('#panels .setting_input').editable({
-            url: '/api/configure/',
+            url: api_base_url + 'configure/',
             params: function(params) {
                 var item = $('a[data-pk="' + params.pk + '"]');
                 var post_data = [{
@@ -68,14 +68,14 @@ function technician_settings_ready() {
                 $.ajax({
                     type: 'POST',
                     contentType: 'application/json',
-                    url: '/api/configure/',
+                    url: api_base_url + 'configure/',
                     data: JSON.stringify(post_data),
                     dataType: 'json'
                 }).done(function(response) {
-                    $.post("/api/start/", {
+                    $.postJSON(api_base_url + "start/", {
                         demo: demo
-                    }).done(function() {
-                        window.location.href = 'index.html';
+                    }, function() {
+                        $.address.value('overview');
                     });
                 });
             });

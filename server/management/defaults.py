@@ -3,7 +3,7 @@ import datetime
 
 from django.utils.timezone import utc
 from django.db import connection, ProgrammingError
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 
 from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
 from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum, WeatherValue
@@ -11,23 +11,8 @@ from server.models import Device, Sensor, Configuration, DeviceConfiguration, Se
 
 def initialize_default_user():
     if len(User.objects.all()) == 0:
-        technician_group = Group(name="Technician")
-        technician_group.save()
-        manager_group = Group(name="Manager")
-        manager_group.save()
-
-        technician = User(username='bp2013h1', email='bp2013h1@lists.myhpi.de')
-        technician.set_password('hirsch')
-        technician.save()
-        technician.groups.add(technician_group)
-        technician.save()
-
-        manager = User(username='witt', password='demo')
-        manager.set_password('demo')
-        manager.save()
-        manager.groups.add(manager_group)
-        manager.save()
-
+        User.objects.create_superuser('technician', 'bp2013h1@lists.myhpi.de', 'techniker')
+        User.objects.create_user('manager', 'bp2013h1@lists.myhpi.de', 'verwaltung')
 
 def initialize_default_scenario():
     if len(Device.objects.all()) == 0:
@@ -43,8 +28,6 @@ def initialize_default_scenario():
         tc.save()
         ec = Device(name='Electrical Consumer', device_type=Device.EC)
         ec.save()
-        ce = Device(name='Code Executer', device_type=Device.CE)
-        ce.save()
         print "Default power systems initialized"
 
         sensors = []
@@ -66,8 +49,9 @@ def initialize_default_scenario():
                        key='get_consumption_power', setter='current_power', unit='kWh', in_diagram=True, aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Warm Water Consumption',
                        key='get_warmwater_consumption_power', unit='kWh', in_diagram=True, aggregate_sum=True))
+        #necessary to initialize thermal consumer
         sensors.append(Sensor(device=tc, name='Room Temperature',
-                       key='temperature_room', setter='temperature_room', unit='°C', aggregate_avg=True))
+                        key='temperature_room', setter='temperature_room', unit='°C'))
         sensors.append(Sensor(device=tc, name='Outside Temperature',
                        key='get_outside_temperature', unit='°C', in_diagram=True, aggregate_avg=True))
         sensors.append(Sensor(device=ec, name='Electrical Consumption',
@@ -193,30 +177,35 @@ def initialize_views():
     try:
         len(SensorValueHourly.objects.all())
     except ProgrammingError:
-        cursor.execute('''CREATE MATERIALIZED VIEW public.server_sensorvaluehourly AS
+        cursor.execute('''CREATE VIEW public.server_sensorvaluehourly AS
             SELECT row_number() OVER (ORDER BY t1.timestamp) AS id,
                 t1.sensor_id,
                 t1.timestamp,
                 avg(t1.value) AS value
-               FROM ( SELECT             server_sensorvalue.sensor_id,
+               FROM ( SELECT server_sensorvalue.sensor_id,
                         '1970-01-01 00:00:00'::timestamp without time zone + '01:00:00'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 3600)::double precision AS timestamp,
                         server_sensorvalue.value
-                       FROM server_sensorvalue) t1
+                        FROM server_sensorvalue
+                        WHERE timestamp >= (SELECT timestamp from server_sensorvalue ORDER BY timestamp DESC LIMIT 1) - INTERVAL '1 month'
+                    ) t1
               GROUP BY  t1.timestamp, t1.sensor_id
-              ORDER BY t1.timestamp
-             WITH DATA;''')
+              ORDER BY t1.timestamp''')
 
     try:
         len(SensorValueDaily.objects.all())
     except ProgrammingError:
         cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluedaily AS
                     SELECT row_number() OVER (ORDER BY timestamp) AS id,
-                        sensor_id, AVG(value) AS value,
-                        date_trunc('day', server_sensorvaluehourly.timestamp)::timestamp::date AS date
-                    FROM server_sensorvaluehourly INNER JOIN server_sensor ON server_sensor.id=server_sensorvaluehourly.sensor_id
-                    GROUP BY sensor_id, timestamp;''')
-        cursor.execute(
-            '''CREATE INDEX server_sensorvaluedaily_idx ON server_sensorvaluedaily (date);''')
+                        sensor_id,
+                        date_trunc('day', timestamp)::timestamp::date AS date,
+                        avg(value) AS value
+                    FROM ( SELECT server_sensorvalue.sensor_id,
+                        '1970-01-01 00:00:00'::timestamp without time zone + '1 day'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 86400)::double precision AS timestamp,
+                        server_sensorvalue.value
+                        FROM server_sensorvalue) t1
+                    GROUP BY  t1.timestamp, t1.sensor_id
+                    ORDER BY t1.timestamp;''')
+        cursor.execute('''CREATE INDEX server_sensorvaluedaily_date ON server_sensorvaluedaily (date);''')
 
     try:
         len(SensorValueMonthlySum.objects.all())

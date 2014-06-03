@@ -1,6 +1,6 @@
 // READY
 function technician_live_setup_ready() {
-    $.get("/static/img/schema.svg", function(data) {
+    $.get("img/schema.svg", function(data) {
         var svg_item = document.importNode(data.documentElement, true);
         $("#schema_container").append(svg_item);
     }, "xml").done(function() {
@@ -9,7 +9,7 @@ function technician_live_setup_ready() {
 }
 
 function refresh_live_setup() {
-    $.getJSON('/api/live/', function(data) {
+    $.getJSON(api_base_url + 'live/', function(data) {
         $.each(data, function(key, value) {
             var item = $('#' + key);
             if (item.length) { // check if item exists

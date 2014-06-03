@@ -76,7 +76,7 @@ function initialize_balance_diagrams() {
 }
 
 function initialize_balance_diagrams_filters() {
-    $.getJSON('/api2/history/', function(history_data) {
+    $.getJSON(api_base_url + 'history/', function(history_data) {
         $.each(history_data, function(index, year) {
             $('#diagram_filters').append(
                 '<label class="btn btn-default">\
@@ -101,7 +101,7 @@ function initialize_balance_diagrams_filters() {
                     });
                 });
                 if (!found) {
-                    $.getJSON("/api2/balance/total/" + year + "/", function(data) {
+                    $.getJSON(api_base_url + "balance/total/" + year + "/", function(data) {
                         cached_data[year] = data;
                         var balances = {
                             name: 'Total Balances in ' + year,
@@ -130,8 +130,6 @@ function initialize_balance_diagrams_filters() {
                         // preselect tables details
                         if ($('#details_container').is(':empty')) {
                             show_month_details(year, data.length - 1);
-                        } else {
-                            update_date_selection();
                         }
                     });
                 }
@@ -227,11 +225,9 @@ function update_balances_table(data, year, month) {
         });
         $('#details_container').html(rendered);
     }).done(function() {
-        $('#export_button').click(function(e) {
-            Highcharts.post('/export/csv/', {
-                csv: $('#table_container').table2CSV({delivery:'value'})
-            });
-            e.preventDefault();
+        $('#export_button').click(function(event) {
+            event.preventDefault();
+            export_table($('#table_container'));
         });
 
         update_date_selection(year, month);
@@ -249,7 +245,6 @@ function update_date_selection(selected_year, selected_month) {
         show_month_details($('#selected_year').val(), $(this).val());
     });
 
-    var selected_year = $('#selected_year').val();
     var year_options = "";
     $.each(cached_data, function(year, data) {
         year_options += '<option' + (year == selected_year ? ' selected': '') + '>' + year + '</option>';

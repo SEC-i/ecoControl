@@ -1,6 +1,6 @@
 // READY
 function technician_statistics_ready() {
-    $.getJSON('/api/statistics/monthly/', function(data) {
+    $.getJSON(api_base_url + 'statistics/monthly/', function(data) {
         var cu_series_data_1 = [{
             type: 'column',
             name: 'Gas Consumption',
@@ -89,20 +89,20 @@ function technician_statistics_ready() {
             yAxis: [{
                 labels: {
                     format: '{value}kWh',
-                    style: { color: Highcharts.getOptions().colors[1] }
+                    style: { color: Highcharts.getOptions().colors[0] }
                 },
                 title: {
                     text: 'Gas Consumption in kWh',
-                    style: { color: Highcharts.getOptions().colors[1] }
+                    style: { color: Highcharts.getOptions().colors[0] }
                 },
             }, {
                 labels: {
                     format: '{value} hours',
-                    style: { color: Highcharts.getOptions().colors[0] }
+                    style: { color: Highcharts.getOptions().colors[1] }
                 },
                 title: {
-                    text: 'Hours of Operations in %',
-                    style: { color: Highcharts.getOptions().colors[0] }
+                    text: 'Hours of Operations in hours',
+                    style: { color: Highcharts.getOptions().colors[1] }
                 },
                 opposite: true
             }],
@@ -128,20 +128,20 @@ function technician_statistics_ready() {
             yAxis: [{
                 labels: {
                     format: '{value}',
-                    style: { color: Highcharts.getOptions().colors[1] }
+                    style: { color: Highcharts.getOptions().colors[0] }
                 },
                 title: {
                     text: 'Power Ons',
-                    style: { color: Highcharts.getOptions().colors[1] }
+                    style: { color: Highcharts.getOptions().colors[0] }
                 },
             }, {
                 labels: {
                     format: '{value}%',
-                    style: { color: Highcharts.getOptions().colors[0] }
+                    style: { color: Highcharts.getOptions().colors[1] }
                 },
                 title: {
                     text: 'Average Workload in %',
-                    style: { color: Highcharts.getOptions().colors[0] }
+                    style: { color: Highcharts.getOptions().colors[1] }
                 },
                 opposite: true
             }],
@@ -167,20 +167,20 @@ function technician_statistics_ready() {
             yAxis: [{
                 labels: {
                     format: '{value}kWh',
-                    style: { color: Highcharts.getOptions().colors[1] }
+                    style: { color: Highcharts.getOptions().colors[0] }
                 },
                 title: {
                     text: 'Gas Consumption in kWh',
-                    style: { color: Highcharts.getOptions().colors[1] }
+                    style: { color: Highcharts.getOptions().colors[0] }
                 },
             }, {
                 labels: {
                     format: '{value} hours',
-                    style: { color: Highcharts.getOptions().colors[0] }
+                    style: { color: Highcharts.getOptions().colors[1] }
                 },
                 title: {
-                    text: 'Hours of Operations in %',
-                    style: { color: Highcharts.getOptions().colors[0] }
+                    text: 'Hours of Operations in hours',
+                    style: { color: Highcharts.getOptions().colors[1] }
                 },
                 opposite: true
             }],
@@ -206,11 +206,11 @@ function technician_statistics_ready() {
             yAxis: [{
                 labels: {
                     format: '{value}',
-                    style: { color: Highcharts.getOptions().colors[1] }
+                    style: { color: Highcharts.getOptions().colors[0] }
                 },
                 title: {
                     text: 'Power Ons',
-                    style: { color: Highcharts.getOptions().colors[1] }
+                    style: { color: Highcharts.getOptions().colors[0] }
                 },
             }],
             tooltip: {
@@ -225,18 +225,14 @@ function technician_statistics_ready() {
         draw_table($('#cu_statistics_table .panel-body'), cu_statistics_table_headlines, cu_statistics_table_data);
         draw_table($('#plb_statistics_table .panel-body'), plb_statistics_table_headlines, plb_statistics_table_data);
 
-        $('#cu_export_button').click(function(e) {
-            Highcharts.post('/export/csv/', {
-                csv: $('#cu_statistics_table .panel-body').table2CSV({delivery:'value'})
-            });
-            e.preventDefault();
+        $('#cu_export_button').click(function(event) {
+            event.preventDefault();
+            export_table($('#cu_statistics_table .panel-body'));
         });
 
-        $('#plb_export_button').click(function(e) {
-            Highcharts.post('/export/csv/', {
-                csv: $('#plb_statistics_table .panel-body').table2CSV({delivery:'value'})
-            });
-            e.preventDefault();
+        $('#plb_export_button').click(function(event) {
+            event.preventDefault();
+            export_table($('#plb_statistics_table .panel-body'));
         });
     });
 }

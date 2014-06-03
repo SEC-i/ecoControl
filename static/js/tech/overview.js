@@ -1,6 +1,8 @@
 var diagram_initialized = false;
 var plotline_timestamp = null;
 var sensor_count = 0;
+var editor = null;
+var live_diagram_detailed = true;
 
 // READY
 function technician_overview_ready() {
@@ -21,12 +23,16 @@ function initialize_technician_diagram() {
     });
 
     var series = [];
-    $.getJSON('/api/data/', function(data) {
+    $.getJSON(api_base_url + 'data/' + (live_diagram_detailed ? 'monthly/' : 'yearly/'), function(data) {
         var table_headlines = ['Sensor', 'Device', 'Value'];
         var table_rows = [];
         var latest_date = 0;
         $.each(data, function(index, sensor) {
+            $.each(sensor.data, function(index, value){
+                value[0] = new Date(value[0]).getTime();
+            });
             series.push({
+                id: index,
                 name: sensor.name + ' (' + sensor.device + ')',
                 data: sensor.data,
                 color: colors_past[index],
@@ -41,14 +47,19 @@ function initialize_technician_diagram() {
         update_now_table(table_rows, latest_date);
         sensor_count = series.length;
     }).done(function () {
-        $.getJSON('/api/forecast/', function(forecast_data) {
+        $.getJSON(api_base_url + 'forecast/', function(forecast_data) {
             $.each(forecast_data, function(index, sensor) {
-                $.merge(series[index].data, sensor.data);
+                $.each(sensor.data, function(index, value){
+                    value[0] = new Date(value[0]).getTime();
+                });
+                if (index < series.length) {
+                    $.merge(series[index].data, sensor.data);
+                }
             });
             plotline_timestamp = forecast_data[0].data[0][0];
         }).done(function () {
             // Create the chart
-            $('#simulation_diagram').highcharts('StockChart', {
+            $('#tech_live_diagram').highcharts('StockChart', {
                 chart: {
                     height: 500,
                     zoomType: 'xy',
@@ -56,9 +67,6 @@ function initialize_technician_diagram() {
                         load: update_now_line,
                         setExtremes: update_now_line
                     }
-                },
-                legend: {
-                    enabled: true
                 },
                 rangeSelector: {
                     buttons: [{
@@ -121,6 +129,8 @@ function initialize_technician_diagram() {
                 credits: {
                     enabled: false
                 }
+            }, function(chart) {
+                initialize_tech_live_diagram_filters(series);
             });
 
             setTimeout(function() {
@@ -129,21 +139,32 @@ function initialize_technician_diagram() {
         });
     });
 
-    $('#live_data_export_button').click(function(e) {
-        Highcharts.post('/export/csv/', {
-            csv: $('#live_data_table_container').table2CSV({delivery:'value'})
-        });
-        e.preventDefault();
+    $('#live_data_month').click(function() {
+        live_diagram_detailed = true;
+        refresh_technician_diagram(false);
+    });
+
+    $('#live_data_year').click(function() {
+        live_diagram_detailed = false;
+        refresh_technician_diagram(false);
+    });
+
+    $('#tech_live_data_export_button').click(function(event) {
+        event.preventDefault();
+        export_table($('#tech_live_data_table_container'));
     });
 }
 
 function refresh_technician_diagram(repeat) {
-    var chart = $('#simulation_diagram').highcharts();
+    var chart = $('#tech_live_diagram').highcharts();
     var series_data = []
-    $.getJSON('/api/data/', function(data) {
+    $.getJSON(api_base_url + 'data/' + (live_diagram_detailed ? 'monthly/' : 'yearly/'), function(data) {
         var table_rows = [];
         var latest_date = 0;
         $.each(data, function(index, sensor) {
+            $.each(sensor.data, function(index, value){
+                value[0] = new Date(value[0]).getTime();
+            });
             series_data.push(sensor.data);
             latest_value = Math.round(sensor.data[sensor.data.length - 1][1] * 100) / 100;
             latest_date = sensor.data[sensor.data.length - 1][0];
@@ -151,25 +172,71 @@ function refresh_technician_diagram(repeat) {
         });
         update_now_table(table_rows, latest_date);
     }).done(function () {
-        $.getJSON('/api/forecast/', function(forecast_data) {
+        $.getJSON(api_base_url + 'forecast/', function(forecast_data) {
             $.each(forecast_data, function(index, sensor) {
-                chart.series[index].setData($.merge(series_data[index], sensor.data), false);
+                $.each(sensor.data, function(index, value){
+                    value[0] = new Date(value[0]).getTime();
+                });
+                if (index < series_data.length) {
+                    chart.series[index].setData($.merge(series_data[index], sensor.data), false);
+                }
             });
             plotline_timestamp = forecast_data[0].data[0][0];
         }).done(function () {
             chart.redraw();
 
             if (repeat && get_current_page() == 'overview') {
-                setTimeout(refresh_technician_diagram, 10000);
+                setTimeout(function() {
+                    refresh_technician_diagram(true);
+                }, 10000);
             }
         });
     });
 }
 
+function initialize_tech_live_diagram_filters(series) {
+    var rows = [{filters: []}];
+    $.each(series, function(index, series_data) {
+        var row = Math.floor(series_data.id / 4);
+        if (rows[row] == undefined) {
+            rows.push({filters: []});
+        }
+        rows[row].filters.push({
+            id: series_data.id,
+            name: series_data.name,
+            color: series_data.color});
+    });
+    var output = Mustache.render($('#snippet_tech_live_diagram_filters').html(), { rows: rows });
+    $('#tech_live_diagram_filters').html(output);
+    $('.tech_live_data_filter_button').change(function() {
+        var chart = $('#tech_live_diagram').highcharts();
+
+        var check_selected = false;
+        $('#tech_live_diagram_filters .tech_live_data_filter_button').each(function(index, item) {
+            var series_index = $(item).val();
+            var visible = $(this).is(":checked");
+            check_selected = check_selected || visible;
+            chart.series[series_index].setVisible(visible, false);
+            var simulated_index = series.length + parseInt(series_index) + 1;
+            if (simulated_index < chart.series.length) {
+                chart.series[simulated_index].setVisible(visible, false);
+            }
+        });
+
+        if (!check_selected) {
+            $.each(chart.series, function(index, series) {
+                series.setVisible(true, false);
+            });
+        }
+
+        chart.redraw();
+    });
+}
+
 function update_now_table(rows, date) {
     var headlines = ['Sensor', 'Device', 'Value'];
-    draw_table($('#live_data_table_container'), headlines, rows);
-    $('#live_data_table_container').prepend('<h3>' + $.format.date(new Date(date), "dd.MM.yyyy HH:MM") + '</h3>');
+    draw_table($('#tech_live_data_table_container'), headlines, rows);
+    $('#tech_live_data_table_container').prepend('<h3>' + $.format.date(new Date(date), "dd.MM.yyyy HH:MM") + '</h3>');
 }
 
 function update_now_line() {
@@ -234,7 +301,7 @@ function initialize_forward_buttons() {
         $.ajax({
             type: 'POST',
             contentType: 'application/json',
-            url: '/api/forward/',
+            url: api_base_url + 'forward/',
             data: JSON.stringify({
                 forward_time: $(this).val()
             }),
@@ -249,7 +316,7 @@ function initialize_forward_buttons() {
 
 // Tuning
 function initialize_technician_tuning_form() {
-    $.getJSON('/api/settings/tunable/', function(data) {
+    $.getJSON(api_base_url + 'settings/tunable/', function(data) {
         var item = $('#tuning_form');
         $.each(data, function(device_id, device_configurations) {
             $.each(device_configurations, function(key, config_data) {
@@ -261,6 +328,7 @@ function initialize_technician_tuning_form() {
         $('#tuning_button').click(apply_changes);
         $('#tuning_reset_button').click(function() {
             $('#tuning_form')[0].reset();
+            $('#tuning_form').trigger('change');
         })
     });
 }
@@ -269,9 +337,12 @@ function generate_immediate_feedback() {
     $('#immediate_notice').show();
     $('#tuning_button').prop('disabled', true);
 
-    var post_data = [];
+    var post_data = {
+        configurations: [],
+        code: editor.getValue()
+    };
     $('.configuration').each(function () {
-        post_data.push({
+        post_data.configurations.push({
             device: $(this).attr('data-device'),
             key: $(this).attr('data-key'),
             type: $(this).attr('data-type'),
@@ -282,7 +353,7 @@ function generate_immediate_feedback() {
     $.ajax({
         type: 'POST',
         contentType: 'application/json',
-        url: '/api/forecast/',
+        url: api_base_url + 'forecast/',
         data: JSON.stringify(post_data),
         dataType: 'json',
         success: function(data) {
@@ -308,7 +379,7 @@ function apply_changes() {
     $.ajax({
         type: 'POST',
         contentType: 'application/json',
-        url: '/api/configure/',
+        url: api_base_url + 'configure/',
         data: JSON.stringify(post_data),
         dataType: 'json',
         success: function(data) {
@@ -319,15 +390,17 @@ function apply_changes() {
         }
     }).done(function() {
         cleanup_diagram();
+        refresh_technician_diagram(false);
     });
 }
 
 function update_immediate_forecast(data) {
-    var chart = $('#simulation_diagram').highcharts();
-
+    var chart = $('#tech_live_diagram').highcharts();
     cleanup_diagram();
-
     $.each(data, function(index, sensor) {
+        $.each(sensor.data, function(index, value){
+            value[0] = new Date(value[0]).getTime();
+        });
         chart.addSeries({
             name: sensor.name + ' (' + sensor.device + ') (predicted)',
             data: sensor.data,
@@ -335,14 +408,15 @@ function update_immediate_forecast(data) {
             dashStyle: 'shortdot',
             tooltip: {
                 valueSuffix: ' ' + sensor.unit
-            }
+            },
+            visible: chart.series[index].visible
         }, false);
     });
     chart.redraw();
 }
 
 function cleanup_diagram(chart) {
-    var chart = $('#simulation_diagram').highcharts();
+    var chart = $('#tech_live_diagram').highcharts();
     var i = 0
     while(chart.series.length > sensor_count + 1) {
         if (chart.series[i].name.indexOf('predicted') != -1) {
@@ -357,8 +431,8 @@ function cleanup_diagram(chart) {
 function get_input_field_code(namespace, key, data) {
     var device_id = namespaces.indexOf(namespace);
     var output =
-            '<div class="col-sm-4"><div class="form-group">' +
-                '<label for="' + namespace + '_' + key + '">' + get_text(key) + ' (Device #' + device_id + ')</label>';
+            '<div class="col-sm-6"><div class="form-group">' +
+                '<label for="' + namespace + '_' + key + '">' + get_text(key) + ' (' + data.device + ')</label>';
     if (data.unit == '') {
         output +=
                 '<input type="text" class="configuration form-control" id="' + namespace + '_' + key + '" data-device="' + device_id + '" data-key="' + key + '" data-type="' + data.type + '" data-unit="' + data.unit + '"  value="' + data.value + '">';
@@ -391,5 +465,58 @@ function initialize_technician_editor() {
                 snippetManager.register(m.snippets, m.scope);
             }
         });
+    });
+
+    update_snippet_list();
+    update_user_code();
+
+    $("#save_snippet").submit(function(event) {
+        event.preventDefault();
+        $.postJSON(api_base_url + "snippets/", {
+            name: $("#snippet_name").val(),
+            code: editor.getValue()
+        }, function(data) {
+            editor.setValue(data['code'], 1);
+            update_snippet_list();
+        });
+    });
+
+    $("#load_snippet").submit(function(event) {
+        event.preventDefault();
+        $.postJSON(api_base_url + "snippets/", {
+            name: $("#code_snippets").val()
+        }, function(data) {
+            editor.setValue(data['code'], 1);
+        });
+        $('#snippet_name').val($("#code_snippets").val());
+    });
+
+    $("#editor_apply_button").click(function() {
+        $.postJSON(api_base_url + "code/", {
+            code: editor.getValue()
+        }, function(data) {
+            if (data['status'] == '1') {
+                editor.setValue(data['code'], 1);
+            } else {
+                console.log('Failed to apply');
+            }
+        });
+    });
+
+    $("#editor_simulate_button").click(generate_immediate_feedback);
+}
+
+function update_snippet_list() {
+    $("#code_snippets").empty();
+    $.getJSON(api_base_url + 'snippets/', function(data) {
+        $.each(data, function(index, snippet) {
+             $("#code_snippets").append('<option>' + snippet + '</option>');
+        });
+    });
+}
+
+function update_user_code() {
+    $.getJSON(api_base_url + 'code/', function(data) {
+        editor.setValue(data['code'], 1);
     });
 }

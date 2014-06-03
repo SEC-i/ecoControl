@@ -5,7 +5,8 @@ function technician_thresholds_ready() {
     refresh_thresholds();
     initialize_sensor_list();
 
-    $('#add_threshold_form').submit( function ( event ) {
+    $('#add_threshold_form').submit(function(event) {
+        event.preventDefault();
         var post_data = {
             'name': $('#add_threshold_form input[name=threshold_name]').val(),
             'sensor_id': $('#add_threshold_form select[name=sensor_id]').val(),
@@ -17,7 +18,7 @@ function technician_thresholds_ready() {
         $.ajax({
             type: 'POST',
             contentType: 'application/json',
-            url: '/api/manage/thresholds/',
+            url: api_base_url + 'manage/thresholds/',
             data: JSON.stringify(post_data),
             dataType: 'json'
         }).done( function () {
@@ -26,22 +27,21 @@ function technician_thresholds_ready() {
               this.reset();
             });
         });
-        event.preventDefault();
     });
 }
 
 function initialize_sensor_list() {
-    $.getJSON('/api/sensors/', function(data) {
+    $.getJSON(api_base_url + 'sensors/', function(data) {
         $('#sensor_list').html('<option value="">Select Sensor</option>');
         $.each(data, function(index, sensor) {
-            $('#sensor_list').append('<option value="' + sensor.id + '">' + sensor.name + ' #' + sensor.id + '</option>');
-            x_editable_sensor_list.push({value: sensor.id, text: sensor.name + ' #' + sensor.id});
+            $('#sensor_list').append('<option value="' + sensor.id + '">' + sensor.name + ' #' + sensor.id + ' (' + sensor.device + ')</option>');
+            x_editable_sensor_list.push({value: sensor.id, text: sensor.name + ' #' + sensor.id + ' (' + sensor.device + ')'});
         });
     });
 }
 
 function refresh_thresholds() {
-    $.getJSON('/api/thresholds/', function(data) {
+    $.getJSON(api_base_url + 'thresholds/', function(data) {
         $('#threshold_list tbody').empty();
         $.each(data, function(index, threshold) {
             $('#threshold_list tbody').append(
@@ -52,13 +52,13 @@ function refresh_thresholds() {
                     <td><a href="#" class="x_editable_values" data-type="text" data-pk="' + threshold.id + '" data-name="min_value" data-title="Enter minimal value">' + threshold.min_value + '</a></td>\
                     <td><a href="#" class="x_editable_values" data-type="text" data-pk="' + threshold.id + '" data-name="max_value" data-title="Enter maximal value">' + threshold.max_value + '</a></td>\
                     <td><a href="#" class="x_editable_category editable editable-click editable-open" data-type="select" data-pk="' + threshold.id + '" data-name="category" data-value="' + threshold.category + '" data-title="Select type of notification">' + get_label(threshold.category) + '</a></td>\
-                    <td><a href="#" class="x_editable_show_manager editable editable-click editable-open" data-type="select" data-pk="' + threshold.id + '" data-name="show_manager" data-value="' + (threshold.show_manager == true ? '1' : '0') + '" data-title="Show Managers?">' + (threshold.show_manager == true ? 'Yes' : 'No') + '</a></td>\
+                    <td><a href="#" class="x_editable_show_manager editable editable-click editable-open" data-type="select" data-pk="' + threshold.id + '" data-name="show_manager" data-value="' + (threshold.show_manager == true ? '1' : '0') + '" data-title="Show to Managers?">' + (threshold.show_manager == true ? 'Yes' : 'No') + '</a></td>\
                     <td><a href="#" class="edit_button"><a href="#" class="delete_button" data-threshold="' + threshold.id + '"><span class="glyphicon glyphicon-trash"></span></a></td>\
                 </tr>'
             );
         });
         $('.x_editable_name').editable({
-            url: '/api/manage/thresholds/',
+            url: api_base_url + 'manage/thresholds/',
             params: function(params) {
                 var post_data = {'id': params.pk};
                 post_data[params.name] = params.value;
@@ -69,7 +69,7 @@ function refresh_thresholds() {
             }
         });
         $('.x_editable_sensor_list').editable({
-            url: '/api/manage/thresholds/',
+            url: api_base_url + 'manage/thresholds/',
             params: function(params) {
                 var post_data = {'id': params.pk};
                 post_data[params.name] = params.value;
@@ -78,7 +78,7 @@ function refresh_thresholds() {
             source: x_editable_sensor_list
         });
         $('.x_editable_values').editable({
-            url: '/api/manage/thresholds/',
+            url: api_base_url + 'manage/thresholds/',
             params: function(params) {
                 var post_data = {'id': params.pk};
                 post_data[params.name] = params.value;
@@ -89,7 +89,7 @@ function refresh_thresholds() {
             }
         });
         $('.x_editable_category').editable({
-            url: '/api/manage/thresholds/',
+            url: api_base_url + 'manage/thresholds/',
             params: function(params) {
                 var post_data = {'id': params.pk};
                 post_data[params.name] = params.value;
@@ -105,7 +105,7 @@ function refresh_thresholds() {
             ]
         });
         $('.x_editable_show_manager').editable({
-            url: '/api/manage/thresholds/',
+            url: api_base_url + 'manage/thresholds/',
             params: function(params) {
                 var post_data = {'id': params.pk};
                 post_data[params.name] = params.value;
@@ -126,7 +126,7 @@ function delete_threshold(threshold_id) {
     $.ajax({
         type: 'POST',
         contentType: 'application/json',
-        url: '/api/manage/thresholds/',
+        url: api_base_url + 'manage/thresholds/',
         data: JSON.stringify({
             'id': threshold_id,
             'delete': true

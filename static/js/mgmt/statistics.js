@@ -8,7 +8,7 @@ function manager_statistics_ready() {
         table_data.push([month, 0, 0]);
     });
 
-    $.getJSON('/api/sensors/', function(data) {
+    $.getJSON(api_base_url + 'sensors/', function(data) {
         sensor_list = data;
         $.each(sensor_list, function(index, sensor) {
             if (sensor.sum) {
@@ -23,7 +23,7 @@ function manager_statistics_ready() {
             }
         });
 
-        $.getJSON('/api2/history/', function(history_data) {
+        $.getJSON(api_base_url + 'history/', function(history_data) {
             $.each(history_data, function(index, year) {
                 $('.years_list').append(
                     '<option value="' + year + '">' + year + '</option>'
@@ -36,10 +36,11 @@ function manager_statistics_ready() {
                 var sensor = get_sensor(sensor_id);
                 var target = $(this).attr('data-target');
                 var year = $('#years_' + target).val();
+                var aggregation_type = $(this).find(":selected").attr('data-aggregation');
 
-                var url = '/api2/avgs/sensor/' + sensor_id + '/year/' + year + '/';
-                if ($(this).find(":selected").attr('data-aggregation') == 'sum') {
-                    var url = '/api2/sums/sensor/' + sensor_id + '/year/' + year + '/';
+                var url = api_base_url + 'avgs/sensor/' + sensor_id + '/year/' + year + '/';
+                if (aggregation_type == 'sum') {
+                    var url = api_base_url + 'sums/sensor/' + sensor_id + '/year/' + year + '/';
                 }
 
                 $.getJSON(url, function(data) {
@@ -66,7 +67,13 @@ function manager_statistics_ready() {
                     }, false);
                     chart.series[series_id].setData(series_data,true);
 
-                    update_table(data, sensor.name + ' in ' + sensor.unit, target == 'right');
+                    var title = sensor.name + ' in ' + sensor.unit + ' - ' + year;
+                    if (aggregation_type == 'sum') {
+                        title = 'SUM ' + title;
+                    } else {
+                        title = 'AVG ' + title;
+                    }
+                    update_table(data, title, target == 'right');
                 });
             });
 
@@ -82,11 +89,9 @@ function manager_statistics_ready() {
         });
     });
 
-    $('#export_button').click(function(e) {
-        Highcharts.post('/export/csv/', {
-            csv: $('#table_container').table2CSV({delivery:'value'})
-        });
-        e.preventDefault();
+    $('#export_button').click(function(event) {
+        event.preventDefault();
+        export_table($('#mgmt_statistics_table_container'));
     });
 }
 
@@ -166,6 +171,6 @@ function update_table(data, col_title, right) {
         table_data[index][offset] = Math.round(row.total * 100) / 100;
     });
 
-    draw_table($('#table_container'), headlines, table_data);
+    draw_table($('#mgmt_statistics_table_container'), headlines, table_data);
 
 }
