@@ -97,7 +97,7 @@ function technician_statistics_ready() {
                 },
             }, {
                 labels: {
-                    format: '{value} hours',
+                    format: '{value}h',
                     style: { color: Highcharts.getOptions().colors[1] }
                 },
                 title: {
@@ -175,7 +175,7 @@ function technician_statistics_ready() {
                 },
             }, {
                 labels: {
-                    format: '{value} hours',
+                    format: '{value}h',
                     style: { color: Highcharts.getOptions().colors[1] }
                 },
                 title: {
