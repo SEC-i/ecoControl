@@ -14,7 +14,7 @@ from django.db import connection
 from django.core.exceptions import PermissionDenied
 
 import functions
-from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
+from models import Device, Configuration, DeviceConfiguration, Sensor, Notification
 from helpers import create_json_response
 
 

@@ -85,17 +85,17 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
             consumptions_monthly_sum = SensorValueMonthlySum.objects.filter(
                 sensor=sensor_consumption)
             if start is not None:
-                workloads = workloads.filter(date__gte=start)
+                workloads = workloads.filter(timestamp__gte=start)
                 workloads_monthly_avg = workloads_monthly_avg.filter(
-                    date__gte=start)
+                    timestamp__gte=start)
                 consumptions_monthly_sum = consumptions_monthly_sum.filter(
-                    date__gte=start)
+                    timestamp__gte=start)
             if end is not None:
-                workloads = workloads.filter(date__lte=end)
+                workloads = workloads.filter(timestamp__lte=end)
                 workloads_monthly_avg = workloads_monthly_avg.filter(
-                    date__lte=end)
+                    timestamp__lte=end)
                 consumptions_monthly_sum = consumptions_monthly_sum.filter(
-                    date__lte=end)
+                    timestamp__lte=end)
 
             hours_of_operation = workloads.filter(
                 value__gt=0).count() * 24
@@ -171,17 +171,17 @@ def get_statistics_for_peak_load_boiler(start=None, end=None):
             consumptions_monthly_sum = SensorValueMonthlySum.objects.filter(
                 sensor=sensor_consumption)
             if start is not None:
-                workloads = workloads.filter(date__gte=start)
+                workloads = workloads.filter(timestamp__gte=start)
                 workloads_monthly_avg = workloads_monthly_avg.filter(
-                    date__gte=start)
+                    timestamp__gte=start)
                 consumptions_monthly_sum = consumptions_monthly_sum.filter(
-                    date__gte=start)
+                    timestamp__gte=start)
             if end is not None:
-                workloads = workloads.filter(date__lte=end)
+                workloads = workloads.filter(timestamp__lte=end)
                 workloads_monthly_avg = workloads_monthly_avg.filter(
-                    date__lte=end)
+                    timestamp__lte=end)
                 consumptions_monthly_sum = consumptions_monthly_sum.filter(
-                    date__lte=end)
+                    timestamp__lte=end)
 
             hours_of_operation = workloads.filter(
                 value__gt=0).count() * 24
@@ -244,9 +244,9 @@ def get_statistics_for_thermal_consumer(start=None, end=None):
 
             sensor_values = SensorValueDaily.objects.all()
             if start is not None:
-                sensor_values = sensor_values.filter(date__gte=start)
+                sensor_values = sensor_values.filter(timestamp__gte=start)
             if end is not None:
-                sensor_values = sensor_values.filter(date__lte=end)
+                sensor_values = sensor_values.filter(timestamp__lte=end)
 
             thermal_consumption = 0
             warmwater_consumption = 0
@@ -286,9 +286,9 @@ def get_statistics_for_electrical_consumer(start=None, end=None):
 
             sensor_values = SensorValueMonthlySum.objects.all()
             if start is not None:
-                sensor_values = sensor_values.filter(date__gte=start)
+                sensor_values = sensor_values.filter(timestamp__gte=start)
             if end is not None:
-                sensor_values = sensor_values.filter(date__lte=end)
+                sensor_values = sensor_values.filter(timestamp__lte=end)
 
             electrical_consumption = 0
 
@@ -320,9 +320,9 @@ def get_statistics_for_power_meter(start=None, end=None):
 
             sensor_values = SensorValueMonthlySum.objects.all()
             if start is not None:
-                sensor_values = sensor_values.filter(date__gte=start)
+                sensor_values = sensor_values.filter(timestamp__gte=start)
             if end is not None:
-                sensor_values = sensor_values.filter(date__lte=end)
+                sensor_values = sensor_values.filter(timestamp__lte=end)
 
             total_purchased = 0
             total_fed_in_electricity = 0
@@ -421,7 +421,7 @@ def get_operating_costs(system, start):
     workload = Sensor.objects.get(device=system, key='workload')
     max_gas_input = get_device_configuration(system, 'max_gas_input')
     total_gas_consumption = 0
-    for value in SensorValueDaily.objects.filter(sensor=workload, date__gte=start):
+    for value in SensorValueDaily.objects.filter(sensor=workload, timestamp__gte=start):
         step = (value.value / 100.0) * (120 / 3600.0)
         total_gas_consumption += max_gas_input * step
     return '%s Euro' % round(total_gas_consumption * get_configuration('gas_costs'), 2)

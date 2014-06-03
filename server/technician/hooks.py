@@ -230,7 +230,7 @@ def list_sensor_values(request, interval='month'):
     else:
         start = get_past_time(years=1, use_view=True)
         sensor_values = SensorValueDaily.objects.\
-            filter(date__gte=datetime.date(start), sensor__in_diagram=True).\
+            filter(timestamp__gte=start, sensor__in_diagram=True).\
             select_related(
                 'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
 
@@ -247,11 +247,7 @@ def list_sensor_values(request, interval='month'):
                 'unit': value.sensor.unit,
                 'key': value.sensor.key,
             }
-        # Save sensor values
-        if interval == 'month':
-            values[value.sensor.id].append((value.timestamp, value.value))
-        else:
-            values[value.sensor.id].append((value.date, value.value))
+        values[value.sensor.id].append((value.timestamp, value.value))
 
     for sensor_id in output.keys():
         output[sensor_id]['data'] = values[sensor_id]
@@ -284,7 +280,7 @@ def get_monthly_statistics(request):
     start = end + dateutil.relativedelta.relativedelta(years=-1)
 
     sensor_values = SensorValueMonthlySum.objects.filter(
-        date__gte=start, date__lte=end)
+        timestamp__gte=start, timestamp__lte=end)
 
     months = sensor_values.extra({'month': "date_trunc('month', date)"}).values(
         'month').annotate(count=Count('id'))
