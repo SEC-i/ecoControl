@@ -150,7 +150,13 @@ class WeatherForecast:
                 target_time = date.replace(hour= 0,
                                         minute=0, second=0, microsecond=0)
                 ).order_by('-timestamp')
-        return float(entries[0].temperature)
+        try:
+            temperature = float(entries[0].temperature)
+        except IndexError:
+            entry = self.get_closest_and_newest_to_target_time(date)
+            temperature = float(entry.temperature)
+            logger.warning("No forecast weather value saved. Used nearest weather value.")
+        return temperature
             
     def mix(self, a, b, x):
         return a * (1 - x) + b * x
