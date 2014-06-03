@@ -1,9 +1,10 @@
 from datetime import datetime
-from scipy.optimize import fmin_l_bfgs_b
+from scipy.optimize import fmin_l_bfgs_b, fmin, fmin_tnc, basinhopping
 import calendar
 import cProfile
 import copy
 from collections import namedtuple
+import numpy as np
 from numpy import array
 
 from server.systems.base import BaseEnvironment
@@ -28,7 +29,7 @@ def simulation_run(code=None):
     
     user_function = get_user_function(systems, code)
 
-    forward = 10 * 24 * 3600.0 #month
+    forward = 30 * 24 * 3600.0 #month
     next_auto_optim = 0.0
     while forward > 0:
         measurements.take_and_cache()
@@ -40,17 +41,17 @@ def simulation_run(code=None):
             system.step()
             
         if next_auto_optim <= 0.0:
-            values = auto_optimize(env.now, configurations)
+            values = auto_optimize(env.now, systems, configurations)
             optimized_config = values["config"]
             
-            hs.target_temperature = optimized_config["target_temperature"]
-            cu.overwrite_workload = optimized_config["cu_overwrite_workload"]
-            plb.overwrite_workload = optimized_config["plb_overwrite_workload"]
+            #hs.target_temperature = optimized_config["target_temperature"]
+            cu.overwrite_workload = float(optimized_config["cu_overwrite_workload"])
             
-            print optimized_config, values["final_bilance"]
+            print "optimization round: ", optimized_config
             
             next_auto_optim = 12 * 3600.0
-            
+        plb.overwrite_workload = 0
+        #print hs.get_temperature()
 
         env.now += env.step_size
         forward -= env.step_size
@@ -62,7 +63,7 @@ def simulation_run(code=None):
 
 
 
-def auto_optimize(initial_time, configurations):
+def auto_optimize(initial_time, systems, configurations):
     prices = {}
     prices["gas_costs"] = get_configuration('gas_costs')
     prices["electrical_costs"] = get_configuration('electrical_costs')
@@ -72,13 +73,9 @@ def auto_optimize(initial_time, configurations):
     rewards["warmwater_revenues"] = get_configuration('warmwater_revenues')
     rewards["electrical_revenues"] = get_configuration('electrical_revenues')
     rewards["feed_in_reward"] = get_configuration('feed_in_reward')
-    
-    
-    env = BaseEnvironment(initial_time)
-    systems = get_initialized_scenario(env, configurations)
 
     #target_temperature, cu_overwrite_workload, plb_overwrite_workload
-    boundaries = [(50.0,80.0), (0.0,100.0), (0.0,0.0)]
+    boundaries = [(0.0,100.0),]
     arguments = (initial_time, systems, prices, rewards)
     
     #find initial approximation for parameters
@@ -90,8 +87,9 @@ def auto_optimize(initial_time, configurations):
             return repr((self.costs, self.params))
     
     results = []
-    for cu_load in [0.0,80.0,100.0]:
-        config = [60.0,cu_load,0.0]
+    for cu_load in range(0,100,10):
+        #print "testing load ", cu_load
+        config = [cu_load,]
         results.append( bilance_result(optim_function(config, *arguments), config))
     results = sorted(results,key=lambda result: result.costs)
         
@@ -100,14 +98,15 @@ def auto_optimize(initial_time, configurations):
     
     parameters = fmin_l_bfgs_b(optim_function, x0 = initial_values, 
                                args = arguments, bounds = boundaries, 
-                               approx_grad = True, factr=10**4, iprint=-1,
-                               epsilon=5)
+                               approx_grad = True, factr=10**6, iprint=-1,
+                               epsilon=5, maxfun =50)
     
+    #parameters = fmin_tnc(optim_function, x0 = initial_values, args = arguments, bounds = boundaries,epsilon=5, approx_grad = True)
     
-    named_parameters = {"target_temperature": parameters[0][0], 
-                        "cu_overwrite_workload":parameters[0][1], 
-                        "plb_overwrite_workload":parameters[0][2]}
-    return {"final_bilance" : -parameters[1], "config": named_parameters}
+
+    named_parameters = {"cu_overwrite_workload":parameters[0][0]}
+    
+    return {"config": named_parameters}
 
 def optim_function(params, *args):
     (initial_time, systems, prices, rewards) = args
@@ -119,10 +118,11 @@ def auto_forecast(initial_time, configurations, systems, prices, rewards, code=N
 
     copied_system = copy.deepcopy(systems)
     [hs,pm,cu,plb,tc,ec] = copied_system
+    #hs.input_energy = 1000
     ##configure 
-    (hs.target_temperature, cu.overwrite_workload,plb.overwrite_workload) = configurations
+    cu.overwrite_workload, = configurations
     
-    get_forecast(initial_time,copied_system,code)
+    weighted_temperature = get_forecast(initial_time,copied_system,code)
     #list: [SimulatedHeatStorage,SimulatedPowerMeter, SimulatedCogenerationUnit, SimulatedPeakLoadBoiler, SimulatedThermalConsumer, 
     #SimulatedElectricalConsumer
     #maintenance_costs = cu.power_on_count
@@ -134,31 +134,34 @@ def auto_forecast(initial_time, configurations, systems, prices, rewards, code=N
     thermal_rewards = tc.total_consumed * rewards["thermal_revenues"]
     
     final_cost = electric_costs-electric_rewards + gas_costs - thermal_rewards 
-    temp = hs.get_temperature()
-    big_penalties = (int(temp > hs.critical_temperature)) * 10000 + hs.undersupplied() * 10000#big penalty
-    small_penalties = (temp > hs.target_temperature+5) * 10 + (temp < hs.target_temperature-5) * 10
-    #print penalties
-    #print configurations
-    return final_cost + big_penalties + small_penalties
+    temp = weighted_temperature
+    above_penalty = abs(min(hs.critical_temperature - temp, 0) * 1000)
+    below_penalty = abs(max(hs.min_temperature - temp, 0) * 1000)
+    
+    small_penalties = (temp > hs.target_temperature+5) * 15 + (temp < hs.target_temperature-5) * 5
+    
+    return final_cost + above_penalty + below_penalty + small_penalties
 
 
 def get_forecast(initial_time, systems, code = None):
     env = systems[0].env
-    
+    [hs,pm,cu,plb,tc,ec] = systems
+    #print hs.get_temperature()
     #user_function = get_user_function(systems, code)
 
     forward = DEFAULT_FORECAST_INTERVAL
+    steps = 0
+    temperatures = []
     while forward > 0:
-        #measurements.take_and_cache()
-
-        #user_function(*systems)
-
         # call step function for all systems
         for system in systems:
             system.step()
 
         env.now += env.step_size
         forward -= env.step_size
+        steps += 1
+        temperatures.append(hs.get_temperature())
+    return np.average(temperatures, weights = range(steps))
         
  
         
@@ -190,3 +193,36 @@ def plot_dataset(sensordata,forecast_start=0,block=True):
     plt.xticks(rotation=90)
     plt.grid(True)
     plt.show()
+    
+
+
+#     def accept_test(**kwargs):
+#         #f_new=f_new, x_new=x_new, f_old=fold, x_old=x_old
+#         return kwargs["x_new"] < 10.0
+#     
+#     class RandomDisplacementBounds(object):
+#         """random displacement with bounds"""
+#         def __init__(self, xmin, xmax, stepsize=20):
+#             self.xmin = xmin
+#             self.xmax = xmax
+#             self.stepsize = stepsize
+#     
+#         def __call__(self, x):
+#             """take a random step but ensure the new position is within the bounds"""
+#             while True:
+#                 # this could be done in a much more clever way, but it will work for example purposes
+#                 xnew = x + np.random.uniform(-self.stepsize, self.stepsize, np.shape(x))
+#                 if xnew < self.xmax and xnew > self.xmin:
+#                     break
+#             return xnew
+
+    # define the new step taking routine and pass it to basinhopping
+    #take_step = RandomDisplacementBounds(0.0, 100.0)
+    #minimizer_kwargs = {"method": "L-BFGS-B", "bounds": boundaries, 
+    #                    "args":arguments}
+    #optimize_result = basinhopping(optim_function, x0 = initial_values,
+    #                               stepsize=40,# accept_test=accept_test,
+    #                               T = 10,
+    #                               disp=True, niter=10, take_step=take_step,
+    #                                minimizer_kwargs=minimizer_kwargs)
+    
