@@ -31,17 +31,13 @@ def auto_optimize(configurations):
     
     env = BaseEnvironment(initial_time)
     systems = get_initialized_scenario(env, configurations)
-    measurements = MeasurementStorage(env, systems)
-    
-    ecosystem = (systems,measurements)
-    
+
     #target_temperature, cu_overwrite_workload, plb_overwrite_workload
     config = [60, 100.0,0.0]
     boundaries = [(50.0,80.0), (0.0,100.0), (0.0,100.0)]
     initial_values = array(config)
-    
-    outputs = []
-    arguments = (initial_time, systems, measurements, prices, rewards)
+
+    arguments = (initial_time, systems, prices, rewards)
     
     parameters = fmin_l_bfgs_b(optim_function, x0 = initial_values, args = arguments, bounds = boundaries, approx_grad = True)
     
@@ -52,19 +48,19 @@ def auto_optimize(configurations):
     return {"final_bilance" : -parameters[1], "config": named_parameters}
 
 def optim_function(params, *args):
-    (initial_time, systems, measurements, prices, rewards) = args
-    price = auto_forecast(initial_time, params, systems, measurements, prices, rewards)
+    (initial_time, systems, prices, rewards) = args
+    price = auto_forecast(initial_time, params, systems, prices, rewards)
     return price
     
 
-def auto_forecast(initial_time, configurations, systems, measurements, prices, rewards, code=None):
+def auto_forecast(initial_time, configurations, systems, prices, rewards, code=None):
 
     copied_system = copy.deepcopy(systems)
     [hs,pm,cu,plb,tc,ec] = copied_system
     ##configure 
     (hs.target_temperature, cu.overwrite_workload,plb.overwrite_workload) = configurations
     
-    get_forecast(initial_time,(copied_system,measurements),code)
+    get_forecast(initial_time,copied_system,code)
     #list: [SimulatedHeatStorage,SimulatedPowerMeter, SimulatedCogenerationUnit, SimulatedPeakLoadBoiler, SimulatedThermalConsumer, 
     #SimulatedElectricalConsumer
     #maintenance_costs = cu.power_on_count
@@ -82,9 +78,7 @@ def auto_forecast(initial_time, configurations, systems, measurements, prices, r
 
 
 
-def get_forecast(initial_time, ecosystem, code = None):
-    systems = ecosystem[0]
-    measurements = ecosystem[1]
+def get_forecast(initial_time, systems, code = None):
     env = systems[0].env
     
     user_function = get_user_function(systems, code)
@@ -101,4 +95,3 @@ def get_forecast(initial_time, ecosystem, code = None):
 
         env.now += env.step_size
         forward -= env.step_size
-    return measurements.get(delete_after=True)
