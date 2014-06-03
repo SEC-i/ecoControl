@@ -2,6 +2,7 @@ import sys
 import logging
 from time import time
 import json
+from django.forms.models import model_to_dict
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
@@ -111,11 +112,23 @@ def list_notifications(request, start, end):
     if request.user.is_superuser:
         notifications = Notification.objects.all()
     else:
-        notifications = Notification.objects.filter(show_manager=True)
+        notifications = Notification.objects.filter(threshold__show_manager=True)
+
+    notifications = notifications.select_related()
 
     output = {
         'total': len(notifications),
-        'notifications': list(notifications.order_by('-timestamp')[int(start):int(end)].values())
+        'notifications': []
     }
+
+    for notification in notifications.order_by('-sensor_value__timestamp')[int(start):int(end)]:
+        output['notifications'].append({
+            'id': notification.id,
+            'threshold': model_to_dict(notification.threshold),
+            'sensor_value': model_to_dict(notification.sensor_value),
+            'read': notification.read,
+            'target': notification.target,
+        })
+
 
     return create_json_response(output, request)
