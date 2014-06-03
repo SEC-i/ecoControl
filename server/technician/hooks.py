@@ -282,7 +282,7 @@ def get_monthly_statistics(request):
     sensor_values = SensorValueMonthlySum.objects.filter(
         timestamp__gte=start, timestamp__lte=end)
 
-    months = sensor_values.extra({'month': "date_trunc('month', date)"}).values(
+    months = sensor_values.extra({'month': "date_trunc('month', timestamp)"}).values(
         'month').annotate(count=Count('id'))
     output = []
     for month in months:

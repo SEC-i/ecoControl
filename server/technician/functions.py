@@ -104,7 +104,7 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
                 ('hours_of_operation', round(hours_of_operation, 2)))
 
             system_output.append(
-                ('average_workload', round(workloads_monthly_avg.latest('date').avg, 2)))
+                ('average_workload', round(workloads_monthly_avg.latest('timestamp').avg, 2)))
 
             thermal_efficiency = get_device_configuration(
                 system, 'thermal_efficiency')
@@ -112,7 +112,7 @@ def get_statistics_for_cogeneration_unit(start=None, end=None):
                 system, 'electrical_efficiency')
             max_gas_input = get_device_configuration(system, 'max_gas_input')
 
-            total_gas_consumption = consumptions_monthly_sum.latest('date').sum
+            total_gas_consumption = consumptions_monthly_sum.latest('timestamp').sum
             total_electrical_production = total_gas_consumption * \
                 electrical_efficiency
             total_thermal_production = total_gas_consumption * \
@@ -190,13 +190,13 @@ def get_statistics_for_peak_load_boiler(start=None, end=None):
                 ('hours_of_operation', round(hours_of_operation, 2)))
 
             system_output.append(
-                ('average_workload', round(workloads_monthly_avg.latest('date').avg, 2)))
+                ('average_workload', round(workloads_monthly_avg.latest('timestamp').avg, 2)))
 
             thermal_efficiency = get_device_configuration(
                 system, 'thermal_efficiency')
             max_gas_input = get_device_configuration(system, 'max_gas_input')
 
-            total_gas_consumption = consumptions_monthly_sum.latest('date').sum
+            total_gas_consumption = consumptions_monthly_sum.latest('timestamp').sum
             total_thermal_production = total_gas_consumption * \
                 thermal_efficiency
             system_output.append(

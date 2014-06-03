@@ -89,9 +89,9 @@ def get_past_time(years=0, months=0, days=0, use_view=False):
     output_time = datetime.now().replace(tzinfo=utc)
 
     if use_view:
-        _class = SensorValue
-    else:
         _class = SensorValueDaily
+    else:
+        _class = SensorValue
 
     try:
         output_time = _class.objects.latest('timestamp').timestamp
