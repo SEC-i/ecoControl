@@ -30,4 +30,10 @@ $(function() {
             $.address.value('login');
         }
     });
+
+    $('.language_selection').click(function(event){
+        event.preventDefault();
+        $.cookie('selected_language', $(this).attr('data-value'), { expires: 7 });
+        location.reload();
+    });
 });

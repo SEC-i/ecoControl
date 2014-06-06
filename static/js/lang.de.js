@@ -40,4 +40,8 @@ var lang_de = {
     navbar_notifications: 'Benachrichtigungen',
     navbar_live_setup: 'Live Aufbau',
     navbar_balances: 'Bilanzen',
+    login_notice: 'Bitte loggen Sie sich ein',
+    login_button: 'Einloggen',
+    username: 'Benutzername',
+    password: 'Passwort',
 };

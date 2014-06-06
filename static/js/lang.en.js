@@ -40,4 +40,8 @@ var lang_en = {
     navbar_notifications: 'Notifications',
     navbar_live_setup: 'Live Setup',
     navbar_balances: 'Balances',
+    login_notice: 'Please sign in',
+    login_button: 'Login',
+    username: 'Username',
+    password: 'Password',
 };

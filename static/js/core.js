@@ -140,13 +140,6 @@ function role_name() {
 }
 
 function initialize_page(callback) {
-    $('.language_selection').click(function(event){
-        event.preventDefault();
-        console.log($(this).attr('data-value'))
-        $.cookie('selected_language', $(this).attr('data-value'), { expires: 7 });
-        location.reload();
-    });
-
     $.get('templates/navigation.html', function(data) {
         var navigation_template = $("<div>").append( $.parseHTML( data ) ).find( '.' + role_name() );
         var rendered = Mustache.render(navigation_template.html(), get_language());
