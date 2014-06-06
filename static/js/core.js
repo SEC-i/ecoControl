@@ -101,11 +101,10 @@ function load_page(target) {
             load_page(target);
         }, 100);
     } else {
-        if (target == '') {
-            target = 'overview';
-        } else if (target == 'logout') {
-            $.address.value('login');
+        if (!is_logged_in()) {
             target = 'login';
+        } else if (target == '') {
+            target = 'overview';
         }
         url = 'templates/' + target + '.html';
         $.ajax({
@@ -148,30 +147,32 @@ function render_template(template, view_extension) {
 }
 
 function initialize_page(callback) {
-    $.get('templates/navigation.html', function(data) {
-        var navigation_template = $("<div>").append( $.parseHTML( data ) ).find( '.' + role_name() );
-        var rendered = render_template(navigation_template.html());
-        $('#navbar_container').html(rendered);
+    if (is_logged_in()) {
+        $.get('templates/navigation.html', function(data) {
+            var navigation_template = $("<div>").append( $.parseHTML( data ) ).find( '.' + role_name() );
+            var rendered = render_template(navigation_template.html());
+            $('#navbar_container').html(rendered);
 
-        $('#navbar_container a').address(function() {  
-            return $(this).attr('href').replace(/^#/, '');  
-        }); 
+            $('#navbar_container a').address(function() {  
+                return $(this).attr('href').replace(/^#/, '');  
+            }); 
 
-        $('#logout_button').click(function(event) {
-            event.preventDefault();
-            $('#navbar_container').empty();
-            $.ajax({
-                type: "POST",
-                url: api_base_url + "logout/",
-                crossDomain: true,
-                xhrFields: {
-                    withCredentials: true
-                }
-            }).done(load_page('login'));
+            $('#logout_button').click(function(event) {
+                event.preventDefault();
+                $('#navbar_container').empty();
+                $.ajax({
+                    type: "POST",
+                    url: api_base_url + "logout/",
+                    crossDomain: true,
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                }).done(load_page('login'));
+            });
+
+            $('#snippets').load('templates/snippets.html', function() {
+                callback();
+            });
         });
-
-        $('#snippets').load('templates/snippets.html', function() {
-            callback();
-        });
-    });
+    }
 }
