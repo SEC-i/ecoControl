@@ -33,7 +33,7 @@ function technician_settings_ready() {
         $('#panels .setting_input').editable({
             url: api_base_url + 'configure/',
             params: function(params) {
-                var item = $('a[data-pk="' + params.pk + '"]');
+                var item = $('a[data-name="' + params.name + '"]');
                 var post_data = [{
                     device: item.attr('data-device'),
                     key: params.pk,

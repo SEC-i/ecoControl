@@ -12,7 +12,8 @@ class CogenerationUnit(BaseSystem):
         self.electrical_efficiency = 24.7
         self.thermal_efficiency = 65.0  # % (max 12.5 kW)
         self.max_efficiency_loss = 0.15  # %
-        self.maintenance_interval = 4000  # hours
+        self.maintenance_interval_hours = 0  # hours
+        self.maintenance_interval_powerons = 0
 
         self.minimal_workload = 40.0  # %
 
@@ -28,6 +29,8 @@ class CogenerationUnit(BaseSystem):
         self.total_gas_consumption = 0  # kWh
         self.total_thermal_production = 0.0  # kWh
 
+        self.purchase_price = 0 # Euro
+        self.purchase_date = '01.01.2013'
         self.gas_costs = 0.0655  # Euro
 
         self.power_meter = None
