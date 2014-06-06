@@ -42,7 +42,7 @@ function initialize_balance_diagrams() {
                     style: { color: Highcharts.getOptions().colors[1] }
                 },
                 title: {
-                    text: 'Balances in €',
+                    text: get_text('chart_balances_in') + '€',
                     style: { color: Highcharts.getOptions().colors[1] }
                 },
             }],
@@ -104,17 +104,17 @@ function initialize_balance_diagrams_filters() {
                     $.getJSON(api_base_url + "balance/total/" + year + "/", function(data) {
                         cached_data[year] = data;
                         var balances = {
-                            name: 'Total Balances in ' + year,
+                            name: get_text('chart_total_balances_in') + year,
                             type: 'column',
                             data: []
                         };
                         var rewards = {
-                            name: 'Total Rewards in ' + year,
+                            name: get_text('chart_total_rewards_in') + year,
                             type: 'column',
                             data: []
                         };
                         var costs = {
-                            name: 'Total Costs in ' + year,
+                            name: get_text('chart_total_costs_in') + year,
                             type: 'column',
                             data: [],
                         };

@@ -112,7 +112,7 @@ function initialize_technician_diagram() {
                     valueDecimals: 2
                 },
                 lang: {
-                    noData: "Loading data..."
+                    noData: get_text('chart_loading')
                 },
                 plotOptions: {
                     series: {
@@ -249,7 +249,7 @@ function update_now_line() {
         to: plotline_timestamp + 14 * 24 * 60 * 60 * 1000,
         color: '#F0F0F0',
         label: {
-            text: 'Forecast',
+            text: get_text('overview_chart_forecast'),
             rotation: 0,
             align: 'center',
             y: 32,
@@ -263,7 +263,7 @@ function update_now_line() {
         width: 2,
         color: 'red',
         label: {
-            text: get_text('now'),
+            text: get_text('overview_chart_now'),
             align: 'right',
             y: 32,
             x: 6
@@ -281,16 +281,16 @@ function initialize_forward_buttons() {
         buttons: [
         {
             value: 1,
-            text: '1' + get_text('day')
+            text: '1' + get_text('overview_chart_day')
         }, {
             value: 7,
-            text: '1 Week'
+            text: '1' + get_text('overview_chart_week')
         }, {
             value: 14,
-            text: '2 Weeks'
+            text: '2' + get_text('overview_chart_weeks')
         }, {
             value: 4 * 7,
-            text: '1 Month'
+            text: '1' + get_text('overview_chart_month')
         }]
     };
 
@@ -321,7 +321,7 @@ function initialize_technician_tuning_form() {
         $.each(data, function(device_id, device_configurations) {
             $.each(device_configurations, function(key, config_data) {
                 var namespace = namespaces[device_id];
-                item.append(get_input_field_code(namespace, key, config_data));
+                item.append(get_input_field_tuning(namespace, key, config_data));
             });
         });
         $('#tuning_form').change(generate_immediate_feedback);
@@ -428,7 +428,7 @@ function cleanup_diagram(chart) {
     return true;
 }
 
-function get_input_field_code(namespace, key, data) {
+function get_input_field_tuning(namespace, key, data) {
     var device_id = namespaces.indexOf(namespace);
     var output =
             '<div class="col-sm-6"><div class="form-group">' +

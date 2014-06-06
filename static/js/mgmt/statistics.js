@@ -119,7 +119,7 @@ function initialize_diagram() {
             text: ''
         },
         xAxis: {
-            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            categories: get_text('months_short')
         },
         yAxis: [{
             labels: {

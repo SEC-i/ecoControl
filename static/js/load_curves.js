@@ -25,7 +25,6 @@ function initialize_load_diagrams(loads_data) {
                 type: 'datetime'
             },
             plotOptions: {
-
                 spline: {
                     lineWidth: 2,
                     states: {
