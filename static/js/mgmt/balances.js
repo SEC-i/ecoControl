@@ -181,7 +181,7 @@ function show_month_details(year, month) {
 
 function update_balances_table(data, year, month) {
     $.get('templates/balances_table.html', function(template) {
-        var rendered = Mustache.render(template, {
+        var rendered = render_template(template, {
             title: $.format.date(new Date(year, month, 1), "MMMM yyyy"),
             thermal_revenues: {
                 text: get_text('thermal_revenues'),

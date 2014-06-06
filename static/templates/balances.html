@@ -15,7 +15,7 @@
           <ul class="nav nav-tabs">
             <li class="active"><a href="#balances_container" data-toggle="tab">{{monthly_balance}}</a></li>
             <li><a href="#rewards_container" data-toggle="tab">{{monthly_rewards}}</a></li>
-            <li><a href="#costs_container" data-toggle="tab">Monthly Costs</a></li>
+            <li><a href="#costs_container" data-toggle="tab">{{monthly_costs}}</a></li>
           </ul>
 
           <!-- Tab panes -->
@@ -25,7 +25,7 @@
             <div class="tab-pane" id="costs_container"></div>
           </div>
           <br>
-          <div id="notice_container"><div class="alert alert-info">Click on a bar in the diagram to show detailed information below!</div></div>
+          <div id="notice_container"><div class="alert alert-info">{{balances_notice}}</div></div>
           <div id="details_container"></div>
         </div>
       </div>

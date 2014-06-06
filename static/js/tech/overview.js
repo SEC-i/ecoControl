@@ -206,7 +206,7 @@ function initialize_tech_live_diagram_filters(series) {
             name: series_data.name,
             color: series_data.color});
     });
-    var output = Mustache.render($('#snippet_tech_live_diagram_filters').html(), { rows: rows });
+    var output = render_template($('#snippet_tech_live_diagram_filters').html(), { rows: rows });
     $('#tech_live_diagram_filters').html(output);
     $('.tech_live_data_filter_button').change(function() {
         var chart = $('#tech_live_diagram').highcharts();
@@ -294,7 +294,7 @@ function initialize_forward_buttons() {
         }]
     };
 
-    var output = Mustache.render($('#snippet_forward_buttons').html(), forward_options);
+    var output = render_template($('#snippet_forward_buttons').html(), forward_options);
     $('#live_diagram_header').append(output);
 
     $('#live_diagram_header button').click(function() {

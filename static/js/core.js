@@ -117,7 +117,7 @@ function load_page(target) {
                 $.each(template_data, function(index, container){
                     template += container.innerHTML;
                 });
-                var rendered = Mustache.render(template, get_language());
+                var rendered = render_template(template);
                 $('#main').html(rendered);
 
                 if (role_name() + '_' + target + '_ready' in window) {
@@ -139,10 +139,18 @@ function role_name() {
     return 'manager';
 }
 
+function render_template(template, view_extension) {
+    var view = $.extend({}, get_language());
+    if (arguments.length > 1) {
+        $.extend(view, view_extension);
+    }
+    return Mustache.render(template, view);
+}
+
 function initialize_page(callback) {
     $.get('templates/navigation.html', function(data) {
         var navigation_template = $("<div>").append( $.parseHTML( data ) ).find( '.' + role_name() );
-        var rendered = Mustache.render(navigation_template.html(), get_language());
+        var rendered = render_template(navigation_template.html());
         $('#navbar_container').html(rendered);
 
         $('#navbar_container a').address(function() {  
