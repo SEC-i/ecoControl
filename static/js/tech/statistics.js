@@ -3,7 +3,7 @@ function technician_statistics_ready() {
     $.getJSON(api_base_url + 'statistics/monthly/', function(data) {
         var cu_series_data_1 = [{
             type: 'column',
-            name: 'Gas Consumption',
+            name: get_text('gas_consumption'),
             yAxis: 0,
             data: [],
         }, {

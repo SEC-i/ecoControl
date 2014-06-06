@@ -28,7 +28,7 @@ function login_user() {
             });
         } else {
             var login_button = $('#login_button');
-            login_button.text('Login incorrect. Please try again!').removeClass('btn-primary').addClass('btn-danger');
+            login_button.text(get_text('login_incorrect')).removeClass('btn-primary').addClass('btn-danger');
             setTimeout(function() {
                 login_button.text('Login').removeClass('btn-danger').addClass('btn-primary');
             }, 2000);

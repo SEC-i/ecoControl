@@ -7,6 +7,23 @@ var colors_modified = ['#225999', '#000000', '#5c7d16', '#520000', '#13788f', '#
 var namespaces = ['general', 'hs', 'pm', 'cu', 'plb'];
 var categories = ['default', 'primary', 'success', 'info', 'warning', 'danger'];
 
+function get_text(key) {
+    
+    if (key in get_language()) {
+        return get_language()[key];
+    }
+    return key;
+}
+
+function get_language() {
+    if ($.cookie('selected_language')  != undefined) {
+        if ($.cookie('selected_language') == 'de') {
+           return lang_de;
+        }
+    }
+    return lang_en;
+}
+
 function get_label(category_id) {
     return '<span class="label label-' + categories[category_id] + '">' + categories[category_id] + '</span>'
 }
@@ -84,21 +101,32 @@ function load_page(target) {
             load_page(target);
         }, 100);
     } else {
-        if (target == '') {
-            target = 'overview';
-        } else if (target == 'logout') {
-            $.address.value('login');
+        if (!is_logged_in()) {
             target = 'login';
+        } else if (target == '') {
+            target = 'overview';
         }
-        url = 'templates/' + target + '.html .' + role_name();
-        $('#main').load(url, function() {
-            if (role_name() + '_' + target + '_ready' in window) {
-                window[role_name() + '_' + target + '_ready']();
-            } else if (target + '_ready' in window) {
-                window[target + '_ready']();
+        url = 'templates/' + target + '.html';
+        $.ajax({
+            url: url,
+            dataType: "html",
+            success: function(data) {
+                var template_data = $("<div>").append( $.parseHTML( data ) ).find( '.' + role_name() );
+                var template = "";
+                $.each(template_data, function(index, container){
+                    template += container.innerHTML;
+                });
+                var rendered = render_template(template);
+                $('#main').html(rendered);
+
+                if (role_name() + '_' + target + '_ready' in window) {
+                    window[role_name() + '_' + target + '_ready']();
+                } else if (target + '_ready' in window) {
+                    window[target + '_ready']();
+                }
+                $('.nav li').removeClass('active');
+                $('a[href=' + target + ']').parent().addClass('active');
             }
-            $('.nav li').removeClass('active');
-            $('a[href=' + target + ']').parent().addClass('active');
         });
     }
 }
@@ -110,28 +138,41 @@ function role_name() {
     return 'manager';
 }
 
+function render_template(template, view_extension) {
+    var view = $.extend({}, get_language());
+    if (arguments.length > 1) {
+        $.extend(view, view_extension);
+    }
+    return Mustache.render(template, view);
+}
+
 function initialize_page(callback) {
-    var url = 'templates/navigation.html .' + role_name();
-    $('#navbar_container').load(url, function() {
-        $('#navbar_container a').address(function() {  
-            return $(this).attr('href').replace(/^#/, '');  
-        }); 
+    if (is_logged_in()) {
+        $.get('templates/navigation.html', function(data) {
+            var navigation_template = $("<div>").append( $.parseHTML( data ) ).find( '.' + role_name() );
+            var rendered = render_template(navigation_template.html());
+            $('#navbar_container').html(rendered);
 
-        $('#logout_button').click(function(event) {
-            event.preventDefault();
-            $('#navbar_container').empty();
-            $.ajax({
-                type: "POST",
-                url: api_base_url + "logout/",
-                crossDomain: true,
-                xhrFields: {
-                    withCredentials: true
-                }
-            }).done(load_page('login', 'core'));
-        });
+            $('#navbar_container a').address(function() {  
+                return $(this).attr('href').replace(/^#/, '');  
+            }); 
 
-        $('#snippets').load('templates/snippets.html', function() {
-            callback();
+            $('#logout_button').click(function(event) {
+                event.preventDefault();
+                $('#navbar_container').empty();
+                $.ajax({
+                    type: "POST",
+                    url: api_base_url + "logout/",
+                    crossDomain: true,
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                }).done(load_page('login'));
+            });
+
+            $('#snippets').load('templates/snippets.html', function() {
+                callback();
+            });
         });
-    });
+    }
 }

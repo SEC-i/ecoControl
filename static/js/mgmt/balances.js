@@ -42,7 +42,7 @@ function initialize_balance_diagrams() {
                     style: { color: Highcharts.getOptions().colors[1] }
                 },
                 title: {
-                    text: 'Balances in €',
+                    text: get_text('chart_balances_in') + '€',
                     style: { color: Highcharts.getOptions().colors[1] }
                 },
             }],
@@ -104,17 +104,17 @@ function initialize_balance_diagrams_filters() {
                     $.getJSON(api_base_url + "balance/total/" + year + "/", function(data) {
                         cached_data[year] = data;
                         var balances = {
-                            name: 'Total Balances in ' + year,
+                            name: get_text('chart_total_balances_in') + year,
                             type: 'column',
                             data: []
                         };
                         var rewards = {
-                            name: 'Total Rewards in ' + year,
+                            name: get_text('chart_total_rewards_in') + year,
                             type: 'column',
                             data: []
                         };
                         var costs = {
-                            name: 'Total Costs in ' + year,
+                            name: get_text('chart_total_costs_in') + year,
                             type: 'column',
                             data: [],
                         };
@@ -181,7 +181,7 @@ function show_month_details(year, month) {
 
 function update_balances_table(data, year, month) {
     $.get('templates/balances_table.html', function(template) {
-        var rendered = Mustache.render(template, {
+        var rendered = render_template(template, {
             title: $.format.date(new Date(year, month, 1), "MMMM yyyy"),
             thermal_revenues: {
                 text: get_text('thermal_revenues'),

@@ -1,16 +1,16 @@
 <div class="technician manager">
   <div class="panel panel-default">
     <div class="panel-heading">
-      <h4 class="panel-title">Notification History</h4>
+      <h4 class="panel-title">{{notification_history}}</h4>
     </div>
     <div class="panel-body">
       <table class="table" id="notification_list">
         <thead>
           <tr>
             <th>ID</th>
-            <th>Time</th>
-            <th>Threshold</th>
-            <th>Message</th>
+            <th>{{time}}</th>
+            <th>{{threshold}}</th>
+            <th>{{message}}</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -25,19 +25,19 @@
 <div class="technician">
   <div class="panel panel-default">
     <div class="panel-heading">
-      <h4 class="panel-title">Threshold List</h4>
+      <h4 class="panel-title">{{threshold_list}}</h4>
     </div>
     <div class="panel-body">
       <table class="table" id="threshold_list">
         <thead>
           <tr>
             <th>#</th>
-            <th>Name</th>
-            <th>Sensor</th>
-            <th>Min</th>
-            <th>Max</th>
-            <th>Type</th>
-            <th>Show Managers</th>
+            <th>{{name}}</th>
+            <th>{{sensor}}</th>
+            <th>{{threshold_min}}</th>
+            <th>{{threshold_max}}</th>
+            <th>{{threshold_type}}</th>
+            <th>{{threshold_show_managers}}</th>
             <th></th>
           </tr>
         </thead>
@@ -48,7 +48,7 @@
   </div>
   <div class="panel panel-default">
     <div class="panel-heading">
-      <h4 class="panel-title">Add New Threshold</h4>
+      <h4 class="panel-title">{{add_new_threshold}}</h4>
     </div>
     <div class="panel-body">
 
@@ -56,7 +56,7 @@
         <div class="row">
           <div class="col-sm-3">
             <div class="form-group">
-                <input type="text" class="form-control" name="threshold_name" placeholder="Enter name for Threshold" required="required">
+                <input type="text" class="form-control" name="threshold_name" placeholder="{{threshold_enter_name}}" required="required">
             </div>
           </div>
           <div class="col-sm-2">
@@ -66,38 +66,38 @@
           </div>
           <div class="col-sm-1">
             <div class="form-group">
-                <input type="text" class="form-control" name="min_value" placeholder="Min.">
+                <input type="text" class="form-control" name="min_value" placeholder="{{threshold_min}}">
             </div>
           </div>
           <div class="col-sm-1">
             <div class="form-group">
-                <input type="text" class="form-control" name="max_value" placeholder="Max.">
+                <input type="text" class="form-control" name="max_value" placeholder="{{threshold_max}}">
             </div>
           </div>
           <div class="col-sm-2">
             <div class="form-group">
                 <select name="category" class="form-control" required="required">
-                  <option value="">Select Type</option>
-                  <option value="0">Default</option>
-                  <option value="1">Primary</option>
-                  <option value="2">Success</option>
-                  <option value="3">Info</option>
-                  <option value="4">Warning</option>
-                  <option value="5">Danger</option>
+                  <option value="">{{threshold_select_type}}</option>
+                  <option value="0">{{bootstrap_default}}</option>
+                  <option value="1">{{bootstrap_primary}}</option>
+                  <option value="2">{{bootstrap_success}}</option>
+                  <option value="3">{{bootstrap_info}}</option>
+                  <option value="4">{{bootstrap_warning}}</option>
+                  <option value="5">{{bootstrap_danger}}</option>
                 </select>
             </div>
           </div>
           <div class="col-sm-2">
             <div class="form-group">
                 <select name="show_manager" class="form-control">
-                  <option value="0">Technicians only</option>
-                  <option value="1">Technicians and Managers</option>
+                  <option value="0">{{threshold_technicians_only}}</option>
+                  <option value="1">{{threshold_technicians_and_managers}}</option>
                 </select>
             </div>
           </div>
           <div class="col-sm-1">
             <div class="form-group">
-                <button type="submit" class="btn btn-primary">Add</button>
+                <button type="submit" class="btn btn-primary">{{add}}</button>
             </div>
           </div>
         </div>
