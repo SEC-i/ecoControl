@@ -28,7 +28,7 @@ class SimulatedCogenerationUnitTest(unittest.TestCase):
         self.assertTrue(0 <=  self.cu.thermal_efficiency/100.0 <= 1)
         
         self.assertTrue(0 <= self.cu.max_efficiency_loss <= 1)
-        self.assertGreater(self.cu.maintenance_interval, 0)
+        self.assertGreaterEqual(self.cu.maintenance_interval_hours, 0)
         
         self.assertTrue(0 <= self.cu.minimal_workload <= 100)
 
@@ -432,8 +432,8 @@ class SimulatedCogenerationUnitMethodStepTest(unittest.TestCase):
         self.cu.thermal_efficiency = self.thermal_efficiency * 100
         self.max_efficiency_loss = 0.10
         self.cu.max_efficiency_loss = self.max_efficiency_loss
-        self.maintenance_interval = 2000
-        self.cu.maintenance_interval = self.maintenance_interval
+        self.maintenance_interval_hours = 2000
+        self.cu.maintenance_interval_hours = self.maintenance_interval_hours
         self.minimal_workload = 40.0
         self.cu.minimal_workload = self.minimal_workload
         self.cu.minimal_off_time = 5.0 * 60.0
