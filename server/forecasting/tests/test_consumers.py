@@ -26,7 +26,7 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         consumption dependent from week and weekend
         .. and a consumer class own interpolation method.
         '''
-        # self.consumer.residents
+        # self.consumer.config['residents']
         # current time aka self.env.now
         # self.consumer.temperature_warmwater
         # heat_storage.base_temperature
@@ -79,7 +79,7 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         the current time aka self.env.now
         the temperature of warm water and 
         the base_temperatur of the heat_storage'''
-        self.consumer.residents = residents
+        self.consumer.config['residents'] = residents
         env = BaseEnvironment(initial_time=time_in_seconds)
         self.consumer.env = env
         self.consumer.temperature_warmwater = temperature
@@ -94,7 +94,7 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         '''the current_power should be increased if the current temperature 
         is below the target temperature'''
         self.consumer.temperature_room = 0
-        self.consumer.target_temperature = 30
+        self.consumer.config['target_temperature'] = 30
         last_current_power = 20
         self.consumer.current_power = last_current_power
 
@@ -107,7 +107,7 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         the current_power should be decreased if the current temperature 
         is below the target temperature'''
         self.consumer.temperature_room = 30
-        self.consumer.target_temperature = 0
+        self.consumer.config['target_temperature'] = 0
         last_current_power = 20
         self.consumer.current_power = last_current_power
 
@@ -190,12 +190,12 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         consumer.daily_demand = daily_demand
 
         for index, temperature in enumerate(daily_demand):
-            consumer.target_temperature = 0
+            consumer.config['target_temperature'] = 0
             consumer.simulate_consumption()
 
-            self.assertEqual(consumer.target_temperature, temperature,
+            self.assertEqual(consumer.config['target_temperature'], temperature,
                              "current hour: {0} expected: {1} got: {2}".format(
-                                 index, consumer.target_temperature,
+                                 index, consumer.config['target_temperature'],
                                  temperature))
 
             env.now += 60 * 60

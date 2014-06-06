@@ -66,8 +66,8 @@ def get_initialized_scenario(env, configurations):
             for configuration in configurations:
                 if configuration.device_id == device.id:
                     value = parse_value(configuration)
-                    if configuration.key in dir(device):
-                        setattr(device, configuration.key, value)
+                    if configuration.key in device.config:
+                        device.config[configuration.key] = value
 
             # load latest sensor values
             try:
