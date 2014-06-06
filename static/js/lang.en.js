@@ -1,4 +1,4 @@
-var lang = {
+var lang_en = {
     apartments: 'Apartments',
     avg_electrical_consumption: 'Avg. Electrical Consumption',
     avg_rooms_per_apartment: 'Avg. Rooms per Apartment',
@@ -33,12 +33,11 @@ var lang = {
     type_of_residents: 'Type of Residents',
     type_of_windows: 'Type of Windows',
     warmwater_revenues: 'Warmwater Revenues',
-    months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    navbar_overview: 'Overview',
+    navbar_statistics: 'Statistics',
+    navbar_load_curves: 'Load Curves',
+    navbar_notifications: 'Notifications',
+    navbar_live_setup: 'Live Setup',
+    navbar_balances: 'Balances',
 };
-
-function get_text(key) {
-    if (key in lang) {
-        return lang[key]
-    }
-    return key;
-}

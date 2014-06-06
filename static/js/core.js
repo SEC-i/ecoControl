@@ -7,6 +7,23 @@ var colors_modified = ['#225999', '#000000', '#5c7d16', '#520000', '#13788f', '#
 var namespaces = ['general', 'hs', 'pm', 'cu', 'plb'];
 var categories = ['default', 'primary', 'success', 'info', 'warning', 'danger'];
 
+function get_text(key) {
+    
+    if (key in get_language()) {
+        return get_language()[key];
+    }
+    return key;
+}
+
+function get_language() {
+    if ($.cookie('selected_language')  != undefined) {
+        if ($.cookie('selected_language') == 'de') {
+           return lang_de;
+        }
+    }
+    return lang_en;
+}
+
 function get_label(category_id) {
     return '<span class="label label-' + categories[category_id] + '">' + categories[category_id] + '</span>'
 }
@@ -90,15 +107,27 @@ function load_page(target) {
             $.address.value('login');
             target = 'login';
         }
-        url = 'templates/' + target + '.html .' + role_name();
-        $('#main').load(url, function() {
-            if (role_name() + '_' + target + '_ready' in window) {
-                window[role_name() + '_' + target + '_ready']();
-            } else if (target + '_ready' in window) {
-                window[target + '_ready']();
+        url = 'templates/' + target + '.html';
+        $.ajax({
+            url: url,
+            dataType: "html",
+            success: function(data) {
+                var template_data = $("<div>").append( $.parseHTML( data ) ).find( '.' + role_name() );
+                var template = "";
+                $.each(template_data, function(index, container){
+                    template += container.innerHTML;
+                });
+                var rendered = Mustache.render(template, get_language());
+                $('#main').html(rendered);
+
+                if (role_name() + '_' + target + '_ready' in window) {
+                    window[role_name() + '_' + target + '_ready']();
+                } else if (target + '_ready' in window) {
+                    window[target + '_ready']();
+                }
+                $('.nav li').removeClass('active');
+                $('a[href=' + target + ']').parent().addClass('active');
             }
-            $('.nav li').removeClass('active');
-            $('a[href=' + target + ']').parent().addClass('active');
         });
     }
 }
@@ -111,8 +140,18 @@ function role_name() {
 }
 
 function initialize_page(callback) {
-    var url = 'templates/navigation.html .' + role_name();
-    $('#navbar_container').load(url, function() {
+    $('.language_selection').click(function(event){
+        event.preventDefault();
+        console.log($(this).attr('data-value'))
+        $.cookie('selected_language', $(this).attr('data-value'), { expires: 7 });
+        location.reload();
+    });
+
+    $.get('templates/navigation.html', function(data) {
+        var navigation_template = $("<div>").append( $.parseHTML( data ) ).find( '.' + role_name() );
+        var rendered = Mustache.render(navigation_template.html(), get_language());
+        $('#navbar_container').html(rendered);
+
         $('#navbar_container a').address(function() {  
             return $(this).attr('href').replace(/^#/, '');  
         }); 
@@ -127,7 +166,7 @@ function initialize_page(callback) {
                 xhrFields: {
                     withCredentials: true
                 }
-            }).done(load_page('login', 'core'));
+            }).done(load_page('login'));
         });
 
         $('#snippets').load('templates/snippets.html', function() {

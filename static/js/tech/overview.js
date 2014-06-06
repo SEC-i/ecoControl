@@ -80,7 +80,7 @@ function initialize_technician_diagram() {
                     }, {
                         count: 1,
                         type: 'day',
-                        text: '1D'
+                        text: '1'+get_text('day_abbr'),
                     }, {
                         count: 1,
                         type: 'week',
@@ -95,7 +95,7 @@ function initialize_technician_diagram() {
                         text: '1M'
                     }, {
                         type: 'all',
-                        text: 'All'
+                        text: get_text('all')
                     }],
                     selected: 4,
                     inputEnabled: false
@@ -263,7 +263,7 @@ function update_now_line() {
         width: 2,
         color: 'red',
         label: {
-            text: 'Now',
+            text: get_text('now'),
             align: 'right',
             y: 32,
             x: 6
@@ -281,7 +281,7 @@ function initialize_forward_buttons() {
         buttons: [
         {
             value: 1,
-            text: '1 Day'
+            text: '1' + get_text('day')
         }, {
             value: 7,
             text: '1 Week'

@@ -7,9 +7,13 @@ function manager_settings_ready() {
                 var item = $('#' + namespace + '_panel .panel-body');
                 if (item.length) {
                     var output = Mustache.render($('#snippet_settings_plain').html(), {
-                        key: get_text(key),
+                        datatype: get_mapped_type(config_data.type),
+                        id: namespace + '_' + key,
+                        key: key,
+                        name: get_text(key),
+                        type: config_data.type,
+                        unit: config_data.unit,
                         value: config_data.value,
-                        unit: config_data.unit
                     });
                     item.append(output);
                 }
