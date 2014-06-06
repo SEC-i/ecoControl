@@ -115,7 +115,7 @@ class SimulatedThermalConsumer(ThermalConsumer):
                 warm_water_demand_workday[(hour + 1) % 24], weight)
 
         power_demand = demand_liters_per_hour * \
-            (self.temperature_warmwater - self.heat_storage.base_temperature) * \
+            (self.temperature_warmwater - self.heat_storage.config['base_temperature']) * \
             specific_heat_capacity_water
         return power_demand * self.config['residents']
 
