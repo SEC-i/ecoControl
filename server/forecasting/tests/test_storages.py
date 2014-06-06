@@ -14,15 +14,15 @@ class SimulatedHeatStorageTests(unittest.TestCase):
         self.hs = SimulatedHeatStorage(0, env=self.env)
 
     def test_heat_storage_creation(self):
-        self.assertGreater(self.hs.capacity, 0)
-        self.assertGreater(self.hs.base_temperature, 0)
-        self.assertGreater(self.hs.min_temperature, 0)
+        self.assertGreater(self.hs.config['capacity'], 0)
+        self.assertGreater(self.hs.config['base_temperature'], 0)
+        self.assertGreater(self.hs.config['min_temperature'], 0)
 
-        self.assertGreater(self.hs.target_temperature, self.hs.min_temperature)
+        self.assertGreater(self.hs.config['target_temperature'], self.hs.config['min_temperature'])
         self.assertGreater(
-            self.hs.critical_temperature, self.hs.target_temperature)
+            self.hs.config['critical_temperature'], self.hs.config['target_temperature'])
 
-        self.assertGreater(self.hs.specific_heat_capacity, 0)
+        self.assertGreater(self.hs.config['specific_heat_capacity'], 0)
 
         self.assertEqual(self.hs.input_energy, 0)
         self.assertEqual(self.hs.output_energy, 0)
@@ -44,10 +44,10 @@ class SimulatedHeatStorageTests(unittest.TestCase):
 
         # get energy needed to get the energy needed to reach the
         # target_temperature from zero
-        self.hs.base_temperature = 0
-        self.hs.target_temperature = 70
-        self.hs.specific_heat_capacity = 0.002
-        self.hs.capacity = 2500
+        self.hs.config['base_temperature'] = 0
+        self.hs.config['target_temperature'] = 70
+        self.hs.config['specific_heat_capacity'] = 0.002
+        self.hs.config['capacity'] = 2500
         target_energy = 0.002 * 70 * 2500
 
         # get energy needed to fill storage from the stored enrgy to its target
@@ -80,12 +80,12 @@ class SimulatedHeatStorageTests(unittest.TestCase):
 
     def test_get_temperatur(self):
         base_temperature = 1
-        self.hs.base_temperature = base_temperature
+        self.hs.config['base_temperature'] = base_temperature
         self.hs.input_energy = 1
         self.hs.ouput_energy = 0
         energy_stored = 1
-        self.hs.capacity = 2500
-        self.hs.specific_heat_capacity = 0.002
+        self.hs.config['capacity'] = 2500
+        self.hs.config['specific_heat_capacity'] = 0.002
 
         # temperature = energy/capacity
         added_temperature = energy_stored / (2500 * 0.002)
@@ -96,28 +96,28 @@ class SimulatedHeatStorageTests(unittest.TestCase):
     def test_get_energy_capacity(self):
         # max energy the storage can hold:
         # energy = capacity*TemperatureDiff
-        max_temperature_diff = self.hs.critical_temperature - \
-            self.hs.base_temperature
-        max_energy = self.hs.specific_heat_capacity * \
-            self.hs.capacity * max_temperature_diff
+        max_temperature_diff = self.hs.config['critical_temperature'] - \
+            self.hs.config['base_temperature']
+        max_energy = self.hs.config['specific_heat_capacity'] * \
+            self.hs.config['capacity'] * max_temperature_diff
 
         self.assertEqual(max_energy, self.hs.get_energy_capacity())
 
     def test_undersupplied(self):
-        self.hs.base_temperature = 0
+        self.hs.config['base_temperature'] = 0
         self.hs.input_energy = 0
-        self.hs.min_temperature = 20
+        self.hs.config['min_temperature'] = 20
 
         self.assertTrue(self.hs.undersupplied())
 
-        self.hs.base_temperature = 20
+        self.hs.config['base_temperature'] = 20
 
         self.assertFalse(self.hs.undersupplied())
 
     def test_step(self):
         self.hs.temperature_loss = 3.0 / 24.0   # per hour
-        self.hs.capacity = 2500
-        self.hs.specific_heat_capacity = 0.002
+        self.hs.config['capacity'] = 2500
+        self.hs.config['specific_heat_capacity'] = 0.002
         self.env.step_size = 120  # 20 measurements per hour
         self.hs.output_energy = 0
 

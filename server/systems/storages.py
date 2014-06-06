@@ -7,13 +7,14 @@ class HeatStorage(BaseSystem):
         super(HeatStorage, self).__init__(system_id, env)
 
         # default data from pamiru48
-        self.capacity = 2500  # liters
-        self.base_temperature = 20.0  # assume no lower temperature
-        self.min_temperature = 55.0  # degree Celsius
-        self.target_temperature = 70.0  # degree Celsius
-        self.critical_temperature = 90.0  # degree Celsius
-
-        self.specific_heat_capacity = 4.19 / 3600.0  # kWh/(kg*K)
+        self.config = {
+            'capacity': 2500,  # liters
+            'base_temperature': 20.0,  # assume no lower temperature
+            'min_temperature': 55.0,  # degree Celsius
+            'target_temperature': 70.0,  # degree Celsius
+            'critical_temperature': 90.0,  # degree Celsius
+            'specific_heat_capacity': 4.19 / 3600.0  # kWh/(kg*K)
+        }
 
     def attach_to_cogeneration_unit(self, system):
         system.heat_storage = self
@@ -28,21 +29,21 @@ class HeatStorage(BaseSystem):
         return self.input_energy - self.output_energy
 
     def get_target_energy(self):
-        return self.specific_heat_capacity * self.capacity * (self.target_temperature - self.base_temperature)
+        return self.config['specific_heat_capacity'] * self.config['capacity'] * (self.config['target_temperature'] - self.config['base_temperature'])
 
     def get_require_energy(self):
         return self.get_target_energy() - self.energy_stored()
 
     def get_temperature(self):
-        return self.base_temperature + self.energy_stored() / (self.capacity * self.specific_heat_capacity)
+        return self.config['base_temperature'] + self.energy_stored() / (self.config['capacity'] * self.config['specific_heat_capacity'])
 
     def get_energy_capacity(self):
-        return self.capacity * \
-            (self.critical_temperature - self.base_temperature) * \
-            self.specific_heat_capacity
+        return self.config['capacity'] * \
+            (self.critical_temperature - self.config['base_temperature']) * \
+            self.config['specific_heat_capacity']
 
     def undersupplied(self):
-        return self.get_temperature() < self.min_temperature
+        return self.get_temperature() < self.config['min_temperature']
 
 
 class PowerMeter(BaseSystem):

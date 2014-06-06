@@ -4,20 +4,22 @@ from server.systems.base import BaseSystem
 class CogenerationUnit(BaseSystem):
 
     def __init__(self, system_id, env):
-
         super(CogenerationUnit, self).__init__(system_id, env)
-        # vaillant ecopower 4.7
-        self.max_gas_input = 19.0  # kW
-        # % (max 4.7 kW)
-        self.electrical_efficiency = 24.7
-        self.thermal_efficiency = 65.0  # % (max 12.5 kW)
+
+        # Vaillant ecoPOWER 4.7
+        self.config = {
+            'max_gas_input': 19.0,  # kW
+            'thermal_efficiency': 65.0,  # % (max 12.5 kW)
+            'electrical_efficiency': 24.7,  # % (max 4.7 kW)
+            'minimal_workload': 40.0,  # %
+            'minimal_off_time': 600.0,  # seconds
+            'purchase_price': 15000.0,  # Euro
+            'purchase_date': '01.01.2013',
+            'maintenance_interval_hours': 8000.0,  # hours
+            'maintenance_interval_powerons': 2000.0,
+        }
+
         self.max_efficiency_loss = 0.15  # %
-        self.maintenance_interval_hours = 0  # hours
-        self.maintenance_interval_powerons = 0
-
-        self.minimal_workload = 40.0  # %
-
-        self.minimal_off_time = 10.0 * 60.0
         self.off_time = 0  # self.env.now
 
         self.heat_storage = None
@@ -29,8 +31,6 @@ class CogenerationUnit(BaseSystem):
         self.total_gas_consumption = 0  # kWh
         self.total_thermal_production = 0.0  # kWh
 
-        self.purchase_price = 0 # Euro
-        self.purchase_date = '01.01.2013'
         self.gas_costs = 0.0655  # Euro
 
         self.power_meter = None
@@ -83,8 +83,11 @@ class PeakLoadBoiler(BaseSystem):
     def __init__(self, system_id, env):
         super(PeakLoadBoiler, self).__init__(system_id, env)
 
-        self.max_gas_input = 45.0  # kW
-        self.thermal_efficiency = 80.0  # %
+        self.config = {
+            'max_gas_input': 45.0,  # kW
+            'thermal_efficiency': 91.0,  # %
+        }
+
         self.off_time = 0  # self.env.now
 
         self.heat_storage = None

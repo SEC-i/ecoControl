@@ -19,6 +19,15 @@ def get_initialized_scenario():
                     system_class = globals()[class_name]
                     system_list.append(system_class(device.id, env))
 
+        configurations = DeviceConfiguration.objects.all()
+        for device in system_list:
+            # configure systems
+            for configuration in configurations:
+                if configuration.device_id == device.id:
+                    value = parse_value(configuration)
+                    if configuration.key in device.config:
+                        device.config[configuration.key] = value
+
         return system_list
 
 
@@ -70,7 +79,7 @@ def perform_configuration(data):
 
                     # Make sure that key is present in corresponding system
                     # class
-                    if getattr(system_class(0, BaseEnvironment()), config['key'], None) is not None:
+                    if config['key'] in system_class(0, BaseEnvironment()).config:
                         try:
                             existing_config = DeviceConfiguration.objects.get(
                                 device=device, key=config['key'])
