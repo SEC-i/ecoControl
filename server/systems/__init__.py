@@ -1,11 +1,12 @@
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
+
 from base import BaseEnvironment
 from producers import CogenerationUnit, PeakLoadBoiler
 from storages import HeatStorage, PowerMeter
 from consumers import ThermalConsumer, ElectricalConsumer
 from server.models import Device, Configuration, DeviceConfiguration
-from django.core.exceptions import ObjectDoesNotExist
 
 logger = logging.getLogger('simulation')
 
@@ -19,14 +20,14 @@ def get_initialized_scenario():
                     system_class = globals()[class_name]
                     system_list.append(system_class(device.id, env))
 
-        configurations = DeviceConfiguration.objects.all()
-        for device in system_list:
-            # configure systems
-            for configuration in configurations:
-                if configuration.device_id == device.id:
-                    value = parse_value(configuration)
-                    if configuration.key in device.config:
-                        device.config[configuration.key] = value
+        # configurations = DeviceConfiguration.objects.all()
+        # for device in system_list:
+        #     # configure systems
+        #     for configuration in configurations:
+        #         if configuration.device_id == device.id:
+        #             value = parse_value(configuration)
+        #             if configuration.key in device.config:
+        #                 device.config[configuration.key] = value
 
         return system_list
 
