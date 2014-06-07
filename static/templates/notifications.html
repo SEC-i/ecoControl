@@ -3,18 +3,7 @@
     <div class="panel-heading">
       <h4 class="panel-title">{{notification_history}}</h4>
     </div>
-    <div class="panel-body">
-      <table class="table" id="notification_list">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>{{time}}</th>
-            <th>{{threshold}}</th>
-            <th>{{message}}</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    <div class="panel-body" id="notification_list">
       <div class="row text-center">
         <div class="col-sm-12" id="notification_pagination"></div>
       </div>
@@ -27,24 +16,7 @@
     <div class="panel-heading">
       <h4 class="panel-title">{{threshold_list}}</h4>
     </div>
-    <div class="panel-body">
-      <table class="table" id="threshold_list">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>{{name}}</th>
-            <th>{{sensor}}</th>
-            <th>{{threshold_min}}</th>
-            <th>{{threshold_max}}</th>
-            <th>{{threshold_type}}</th>
-            <th>{{threshold_show_managers}}</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-
-    </div>
+    <div class="panel-body" id="threshold_list"></div>
   </div>
   <div class="panel panel-default">
     <div class="panel-heading">
