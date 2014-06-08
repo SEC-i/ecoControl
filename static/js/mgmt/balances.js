@@ -65,7 +65,8 @@ function initialize_balance_diagrams() {
                 }
             },
             tooltip: {
-                valueDecimals: 2
+                valueDecimals: 2,
+                shared: true
             },
             series: [],
             credits: {

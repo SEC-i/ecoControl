@@ -109,7 +109,8 @@ function initialize_technician_diagram() {
                     }]
                 },
                 tooltip: {
-                    valueDecimals: 2
+                    valueDecimals: 2,
+                    shared: true
                 },
                 lang: {
                     noData: get_text('chart_loading')

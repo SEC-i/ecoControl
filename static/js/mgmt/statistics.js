@@ -140,8 +140,8 @@ function initialize_diagram() {
             opposite: true
         }],
         tooltip: {
-            shared: true,
-            valueDecimals: 2
+            valueDecimals: 2,
+            shared: true
         },
         series: [{
             type: 'column',

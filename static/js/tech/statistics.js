@@ -146,6 +146,7 @@ function technician_statistics_ready() {
                 opposite: true
             }],
             tooltip: {
+                valueDecimals: 2,
                 shared: true
             },
             series: cu_series_data_2,

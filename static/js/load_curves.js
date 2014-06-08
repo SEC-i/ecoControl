@@ -39,7 +39,8 @@ function initialize_load_diagrams(loads_data) {
             },
             yAxis: diagram_data.yaxis,
             tooltip: {
-                valueDecimals: 2
+                valueDecimals: 2,
+                shared: true
             },
             series: diagram_data.series,
             credits: {

@@ -77,7 +77,7 @@ function draw_table(target, headlines, rows) {
 }
 
 function export_table(target) {
-    Highcharts.post('/api/export/', {
+    Highcharts.post('api/export/', {
         csv: target.table2CSV({delivery:'value'})
     });
 }
