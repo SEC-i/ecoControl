@@ -80,7 +80,7 @@ function initialize_technician_diagram() {
                     }, {
                         count: 1,
                         type: 'day',
-                        text: '1'+get_text('day_abbr'),
+                        text: '1D',
                     }, {
                         count: 1,
                         type: 'week',
@@ -325,8 +325,9 @@ function initialize_technician_tuning_form() {
                 item.append(get_input_field_tuning(namespace, key, config_data));
             });
         });
-        $('#tuning_form').change(generate_immediate_feedback);
         $('#tuning_button').click(apply_changes);
+        $('#tuning_form').change(generate_immediate_feedback);
+        $('#tuning_simulate_button').click(generate_immediate_feedback);
         $('#tuning_reset_button').click(function() {
             $('#tuning_form')[0].reset();
             $('#tuning_form').trigger('change');
@@ -335,6 +336,7 @@ function initialize_technician_tuning_form() {
 }
 
 function generate_immediate_feedback() {
+    $('#data_container').hide();
     $('#immediate_notice').show();
     $('#tuning_button').prop('disabled', true);
 
@@ -403,7 +405,7 @@ function update_immediate_forecast(data) {
             value[0] = new Date(value[0]).getTime();
         });
         chart.addSeries({
-            name: sensor.name + ' (' + sensor.device + ') (predicted)',
+            name: sensor.name + ' (' + sensor.device + ') (simulated)',
             data: sensor.data,
             color: colors_modified[index],
             dashStyle: 'shortdot',
@@ -420,7 +422,7 @@ function cleanup_diagram(chart) {
     var chart = $('#tech_live_diagram').highcharts();
     var i = 0
     while(chart.series.length > sensor_count + 1) {
-        if (chart.series[i].name.indexOf('predicted') != -1) {
+        if (chart.series[i].name.indexOf('simulated') != -1) {
             chart.series[i].remove(false);
         } else {
             i++;
