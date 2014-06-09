@@ -125,7 +125,7 @@ function load_page(target) {
                     window[target + '_ready']();
                 }
                 $('.nav li').removeClass('active');
-                $('a[href=' + target + ']').parent().addClass('active');
+                $('a[href=\'/' + target + '\']').parent().addClass('active');
             }
         });
     }
