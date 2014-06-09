@@ -8,16 +8,16 @@ import numpy as np
 from numpy import array
 
 from server.systems.base import BaseEnvironment
-from server.models import DeviceConfiguration
-from server.forecasting import get_initialized_scenario,\
-    DEFAULT_FORECAST_INTERVAL
-from server.forecasting.helpers import MeasurementStorage
-from server.systems import get_user_function
 from server.functions import get_configuration
 
 DEFAULT_FORECAST_INTERVAL = 12 * 3600.0
 
 def simulation_run(code=None):
+    from server.forecasting import get_initialized_scenario
+    from server.forecasting.helpers import MeasurementStorage
+    from server.models import DeviceConfiguration
+    from server.systems import get_user_function
+    
     
     initial_time = calendar.timegm(datetime(year=2013,month=5,day=15).timetuple())
     env = BaseEnvironment(initial_time)
@@ -41,13 +41,13 @@ def simulation_run(code=None):
             system.step()
             
         if next_auto_optim <= 0.0:
-            values = auto_optimize(env.now, systems, configurations)
+            values = find_optimal_config(env.now, systems, configurations)
             optimized_config = values["config"]
             
             #hs.target_temperature = optimized_config["target_temperature"]
             cu.overwrite_workload = float(optimized_config["cu_overwrite_workload"])
             
-            print "optimization round: ", optimized_config
+            print "optimization round at time: ",datetime.fromtimestamp(env.now),":", optimized_config
             
             next_auto_optim = 12 * 3600.0
         plb.overwrite_workload = 0
@@ -59,8 +59,21 @@ def simulation_run(code=None):
         
     plot_dataset(measurements.get(), 0, True)
 
+def auto_optimize(env, systems, configurations):
+    values = find_optimal_config(env.now, systems, configurations)
+    [hs,pm,cu,plb,tc,ec] = systems
+    optimized_config = values["config"]
+    
+    #hs.target_temperature = optimized_config["target_temperature"]
+    cu.overwrite_workload = float(optimized_config["cu_overwrite_workload"])
+    #plb.overwrite_workload = float(optimized_config["cu_overwrite_workload"])
+    
+    print "optimization round at time: ",datetime.fromtimestamp(env.now),":", optimized_config
+    plb.overwrite_workload = 0
+    
 
-def auto_optimize(initial_time, systems, configurations):
+
+def find_optimal_config(initial_time, systems, configurations):
     prices = {}
     prices["gas_costs"] = get_configuration('gas_costs')
     prices["electrical_costs"] = get_configuration('electrical_costs')
@@ -76,13 +89,6 @@ def auto_optimize(initial_time, systems, configurations):
     arguments = (initial_time, systems, prices, rewards)
     
     #find initial approximation for parameters
-    class bilance_result:
-        def __init__(self, costs, params):
-            self.costs = costs
-            self.params = params
-        def __repr__(self):
-            return repr((self.costs, self.params))
-    
     results = []
     for cu_load in range(0,100,10):
         #print "testing load ", cu_load
@@ -135,7 +141,7 @@ def auto_forecast(initial_time, configurations, systems, prices, rewards, code=N
     above_penalty = abs(min(hs.config["critical_temperature"] - temp, 0) * 1000)
     below_penalty = abs(max(hs.config["min_temperature"] - temp, 0) * 1000)
     
-    small_penalties = (temp > hs.config["target_temperature"]+5) * 15 + (temp < hs.config["target_temperature"]-5) * 5
+    small_penalties = (temp > hs.config["target_temperature"]+5) * 15 + (temp < hs.config["target_temperature"]-5) * 5 + (plb.workload > 0) * 10
     
     return final_cost + above_penalty + below_penalty + small_penalties
 
@@ -159,7 +165,14 @@ def get_forecast(initial_time, systems, code = None):
         steps += 1
         temperatures.append(hs.get_temperature())
     return np.average(temperatures, weights = range(steps))
-        
+
+
+class bilance_result:
+    def __init__(self, costs, params):
+        self.costs = costs
+        self.params = params
+    def __repr__(self):
+        return repr((self.costs, self.params))     
  
         
 
