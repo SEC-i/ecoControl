@@ -1,5 +1,6 @@
-var diagram_types = ['balances', 'rewards', 'costs'];
-var cached_data = {};
+var balances_diagram_types = ['balances', 'rewards', 'costs'];
+var balances_cached_data = {};
+var balances_cached_history = [];
 
 // READY
 function manager_balances_ready() {
@@ -7,6 +8,11 @@ function manager_balances_ready() {
     initialize_balance_diagrams_filters();
 
     resize_diagrams();
+
+    // fix active tab issue
+    setTimeout(function() {
+        $('#balances_tabs a:first').tab('show');
+    }, 100);
 }
 
 $(window).resize(function() {
@@ -17,16 +23,16 @@ $(window).resize(function() {
 
 function resize_diagrams() {
     // resize charts in tabs
-    $.each(diagram_types, function(index, type) {
-        var container = $('#' + type + '_container');
+    $.each(balances_diagram_types, function(index, type) {
+        var container = $('#balances_' + type + '_container');
         var chart = container.highcharts();
         chart.setSize(container.parent().width(), container.parent().height(), false);
     });
 }
 
 function initialize_balance_diagrams() {
-    $.each(diagram_types, function(index, type) {
-        $('#' + type + '_container').highcharts({
+    $.each(balances_diagram_types, function(index, type) {
+        $('#balances_' + type + '_container').highcharts({
             chart: {
                 zoomType: 'xy'
             },
@@ -52,7 +58,7 @@ function initialize_balance_diagrams() {
                     point: {
                         events: {
                             click: function (e) {
-                                $('#notice_container').empty();
+                                $('#balances_notice_container').empty();
                                 var month = get_text('months').indexOf(e.currentTarget.category);
                                 var year = get_year_from_string(this.series.name);
                                 show_month_details(year, month);
@@ -78,106 +84,115 @@ function initialize_balance_diagrams() {
 
 function initialize_balance_diagrams_filters() {
     $.getJSON(api_base_url + 'history/', function(history_data) {
+        balances_cached_history = history_data;
         $.each(history_data, function(index, year) {
-            $('#diagram_filters').append(
+            $('#balances_diagram_filters').append(
                 '<label class="btn btn-default">\
-                <input class="btn diagram_filter" type="checkbox" value="' + year + '">\
+                <input class="btn balances_diagram_filter" type="checkbox" value="' + year + '">\
                 ' + year + '</label>');
         });
-        $('.diagram_filter').change(function () {
-
-            charts = [];
-            $.each(diagram_types, function(index, type) {
-                charts.push($('#' + type + '_container').highcharts());
-            });
-            var year = parseInt($(this).val());
-            if ($(this).is(":checked")) {
-                var found = false;
-                $.each(charts, function(index, chart) {
-                    $.each(chart.series, function(index2, series) {
-                        if (series['name'].substr(series['name'].length - 4) == year) {
-                            series.show(false);
-                            found = true;
-                        }
-                    });
-                });
-                if (!found) {
-                    $.getJSON(api_base_url + "balance/total/" + year + "/", function(data) {
-                        cached_data[year] = data;
-                        var balances = {
-                            name: get_text('chart_total_balances_in') + year,
-                            type: 'column',
-                            data: []
-                        };
-                        var rewards = {
-                            name: get_text('chart_total_rewards_in') + year,
-                            type: 'column',
-                            data: []
-                        };
-                        var costs = {
-                            name: get_text('chart_total_costs_in') + year,
-                            type: 'column',
-                            data: [],
-                        };
-                        $.each(data, function(index, monthly_data) {
-                            balances['data'].push(monthly_data.balance);
-                            rewards['data'].push(monthly_data.rewards);
-                            costs['data'].push(monthly_data.costs);
-                        });
-                        charts[0].addSeries(balances);
-                        charts[1].addSeries(rewards);
-                        charts[2].addSeries(costs);
-
-                        // preselect tables details
-                        if ($('#details_container').is(':empty')) {
-                            show_month_details(year, data.length - 1);
-                        }
-                    });
-                }
-            } else {
-                $.each(charts, function(index, chart) {
-                    $.each(chart.series, function(index, series) {
-                        if (get_year_from_string(series['name']) == year) {
-                            series.hide(false);
-                        }
-                    });
-                });
-            }
-
-            // if all series are unchecked, show all
-            var all_unchecked = true;
-            $(".diagram_filter").each(function() {
-                if ($(this).is(":checked")) {
-                    all_unchecked = false;
-                }
-            });
-            if (all_unchecked) {
-                $.each(charts, function(index, chart) {
-                    $.each(chart.series, function(index, series) {
-                        series.setVisible(true, false);
-                    });
-                });
-            }
-
-            // finally redraw all charts
-            $.each(charts, function(index, chart) {
-                chart.redraw();
-            });
+        $('.balances_diagram_filter').change(function () {
+            balances_load_year(parseInt($(this).val()), false);
         });
 
         // preselect first filter
-        $('.diagram_filter').first().parent().button('toggle');
+        $('.balances_diagram_filter').first().parent().button('toggle');
+    });
+}
+
+function balances_load_year(year, check_button) {
+    var corresponding_button = $('.balances_diagram_filter[value=\'' + year + '\']');
+
+    if (check_button) {
+        corresponding_button.attr('checked', 'checked');
+        corresponding_button.parent().addClass('active');
+    }
+
+    charts = [];
+    $.each(balances_diagram_types, function(index, type) {
+        charts.push($('#balances_' + type + '_container').highcharts());
+    });
+    if (corresponding_button.is(':checked')) {
+        var found = false;
+        $.each(charts, function(index, chart) {
+            $.each(chart.series, function(index2, series) {
+                if (series['name'].substr(series['name'].length - 4) == year) {
+                    series.show(false);
+                    found = true;
+                }
+            });
+        });
+        if (!found) {
+            $.getJSON(api_base_url + "balance/total/" + year + "/", function(data) {
+                balances_cached_data[year] = data;
+                var balances = {
+                    name: get_text('chart_total_balances_in') + year,
+                    type: 'column',
+                    data: []
+                };
+                var rewards = {
+                    name: get_text('chart_total_rewards_in') + year,
+                    type: 'column',
+                    data: []
+                };
+                var costs = {
+                    name: get_text('chart_total_costs_in') + year,
+                    type: 'column',
+                    data: [],
+                };
+                $.each(data, function(index, monthly_data) {
+                    balances['data'].push(monthly_data.balance);
+                    rewards['data'].push(monthly_data.rewards);
+                    costs['data'].push(monthly_data.costs);
+                });
+                charts[0].addSeries(balances);
+                charts[1].addSeries(rewards);
+                charts[2].addSeries(costs);
+
+                show_month_details(year, data.length - 1);
+            });
+        }
+    } else {
+        $.each(charts, function(index, chart) {
+            $.each(chart.series, function(index, series) {
+                if (get_year_from_string(series['name']) == year) {
+                    series.hide(false);
+                }
+            });
+        });
+    }
+
+    // if all series are unchecked, show all
+    var all_unchecked = true;
+    $(".balances_diagram_filter").each(function() {
+        if ($(this).is(':checked')) {
+            all_unchecked = false;
+        }
+    });
+    if (all_unchecked) {
+        $.each(charts, function(index, chart) {
+            $.each(chart.series, function(index, series) {
+                series.setVisible(true, false);
+            });
+        });
+    }
+
+    // finally redraw all charts
+    $.each(charts, function(index, chart) {
+        chart.redraw();
     });
 }
 
 function show_month_details(year, month) {
-    $.each(cached_data[year], function(index, monthly_data) {
-        if (month == index) {
-            update_balances_table(monthly_data, year, month);
-            $('#selected_year').val(year);
-            $('#selected_month').val(month);
-        }
-    });
+    if (year in balances_cached_data) {
+        $.each(balances_cached_data[year], function(index, monthly_data) {
+            if (month == index) {
+                update_balances_table(monthly_data, year, month);
+                $('#balances_selected_year').val(year);
+                $('#balances_selected_month').val(month);
+            }
+        });
+    }
 }
 
 function update_balances_table(data, year, month) {
@@ -224,11 +239,11 @@ function update_balances_table(data, year, month) {
             costs: data['costs'],
             balance: data['balance'],
         });
-        $('#details_container').html(rendered);
+        $('#balances_details_container').html(rendered);
     }).done(function() {
-        $('#export_button').click(function(event) {
+        $('#balances_export_button').click(function(event) {
             event.preventDefault();
-            export_table($('#table_container'));
+            export_table($('#balances_table_container'));
         });
 
         update_date_selection(year, month);
@@ -240,23 +255,24 @@ function update_date_selection(selected_year, selected_month) {
     $.each(get_text('months'), function(index, month) {
         month_options += '<option value="' + index + '" ' + (index == selected_month ? ' selected': '') + '>' + month + '</option>';
     });
-    $('#selected_month').html(month_options);
+    $('#balances_selected_month').html(month_options);
 
-    $('#selected_month').change(function() {
-        show_month_details($('#selected_year').val(), $(this).val());
+    $('#balances_selected_month').change(function() {
+        show_month_details($('#balances_selected_year').val(), $(this).val());
     });
 
     var year_options = "";
-    $.each(cached_data, function(year, data) {
+    $.each(balances_cached_history, function(index, year) {
         year_options += '<option' + (year == selected_year ? ' selected': '') + '>' + year + '</option>';
     });
-    $('#selected_year').html(year_options);
+    $('#balances_selected_year').html(year_options);
 
-    $('#selected_year').change(function() {
-        show_month_details($(this).val(), $('#selected_month').val());
+    $('#balances_selected_year').change(function() {
+        balances_load_year($(this).val(), true);
+        show_month_details($(this).val(), $('#balances_selected_month').val());
     });
 }
 
 function get_year_from_string(string) {
-    return string.substr(string.length - 4);
+    return parseInt(string.substr(string.length - 4));
 }
