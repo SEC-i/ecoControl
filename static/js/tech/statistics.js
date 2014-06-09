@@ -3,7 +3,7 @@ function technician_statistics_ready() {
     $.getJSON(api_base_url + 'statistics/monthly/', function(data) {
         var cu_series_data_1 = [{
             type: 'column',
-            name: 'Gas Consumption',
+            name: get_text('gas_consumption'),
             yAxis: 0,
             data: [],
         }, {
@@ -97,7 +97,7 @@ function technician_statistics_ready() {
                 },
             }, {
                 labels: {
-                    format: '{value} hours',
+                    format: '{value}h',
                     style: { color: Highcharts.getOptions().colors[1] }
                 },
                 title: {
@@ -146,6 +146,7 @@ function technician_statistics_ready() {
                 opposite: true
             }],
             tooltip: {
+                valueDecimals: 2,
                 shared: true
             },
             series: cu_series_data_2,
@@ -175,7 +176,7 @@ function technician_statistics_ready() {
                 },
             }, {
                 labels: {
-                    format: '{value} hours',
+                    format: '{value}h',
                     style: { color: Highcharts.getOptions().colors[1] }
                 },
                 title: {

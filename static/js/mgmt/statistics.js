@@ -119,7 +119,7 @@ function initialize_diagram() {
             text: ''
         },
         xAxis: {
-            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            categories: get_text('months_short')
         },
         yAxis: [{
             labels: {
@@ -140,8 +140,8 @@ function initialize_diagram() {
             opposite: true
         }],
         tooltip: {
-            shared: true,
-            valueDecimals: 2
+            valueDecimals: 2,
+            shared: true
         },
         series: [{
             type: 'column',

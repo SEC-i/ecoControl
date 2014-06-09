@@ -7,24 +7,24 @@
         <br>
         <div class="row">
             <div class="col-sm-6">
-                <select id="selected_month" class="form-control">
+                <select id="balances_selected_month" class="form-control">
                 </select>
             </div>
             <div class="col-sm-6">
-                <select id="selected_year" class="form-control">
+                <select id="balances_selected_year" class="form-control">
                 </select>
             </div>
         </div>
     </div>
 </div>
 </div>
-<table id="table_container" class="table">
+<table id="balances_table_container" class="table">
   <thead>
     <tr>
-      <th>Description</th>
-      <th>Price per Unit</th>
-      <th>Amount</th>
-      <th>Price <a href="#" id="export_button"><span class="glyphicon glyphicon-export pull-right"></span></a></th>
+      <th>{{description}}</th>
+      <th>{{price_per_unit}}</th>
+      <th>{{amount}}</th>
+      <th>{{price}} <a href="#" id="export_button"><span class="glyphicon glyphicon-export pull-right"></span></a></th>
     </tr>
   </thead>
   <tbody>
@@ -76,13 +76,13 @@
     <tr>
       <td></td>
       <td></td>
-      <td><b>Revenues</b></td>
+      <td><b>{{revenues}}</b></td>
       <td>{{rewards}} €</td>
     </tr>
     <tr>
       <td></td>
       <td></td>
-      <td><b>Costs</b></td>
+      <td><b>{{costs}}</b></td>
       <td>{{costs}} €</td>
     </tr>
     <tr>

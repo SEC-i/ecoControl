@@ -16,22 +16,20 @@ def check_thresholds():
             latest_sensorvalue = SensorValue.objects.filter(
                 sensor=threshold.sensor).latest('timestamp')
 
-            if threshold.min_value is not None:
-                if latest_sensorvalue.value < threshold.min_value:
-                    message = 'Threshold "%s" triggered (%s < %s)' % (
-                        threshold.name, latest_sensorvalue.value, threshold.min_value)
-                    Notification(threshold=threshold, message=message,
-                                 category=Notification.Danger, show_manager=threshold.show_manager).save()
-                    logger.debug(message)
+            min_threshold_triggered = threshold.min_value is not None and latest_sensorvalue.value < threshold.min_value
+            max_threshold_triggered = threshold.max_value is not None and latest_sensorvalue.value > threshold.max_value
 
-            if threshold.max_value is not None:
-                if latest_sensorvalue.value > threshold.max_value:
-                    message = 'Threshold "%s" triggered (%s > %s)' % (
-                        threshold.name, latest_sensorvalue.value, threshold.max_value)
-                    Notification(threshold=threshold, message=message,
-                                 category=Notification.Danger, show_manager=threshold.show_manager).save()
-                    logger.debug(message)
-
+            if min_threshold_triggered or max_threshold_triggered:
+                    try:
+                        Notification.objects.get(
+                            sensor_value=latest_sensorvalue)
+                    except Notification.DoesNotExist:
+                        if min_threshold_triggered:
+                            target = threshold.min_value
+                        elif max_threshold_triggered:
+                            target = threshold.max_value
+                        Notification.objects.create(
+                            threshold=threshold, sensor_value=latest_sensorvalue, target=target)
         except SensorValue.DoesNotExist:
             logger.debug('No SensorValue found for Sensor #%s' %
                          threshold.sensor_id)

@@ -14,7 +14,6 @@ function initialize_load_diagrams(loads_data) {
     var types = ['thermal', 'warmwater', 'electrical'];
     $.each(types, function (index, type) {
         var diagram_data = get_diagram_data(type, loads_data[type]);
-        console.log(diagram_data);
         $('#' + type + '_container').highcharts({
             chart: {
                 type: 'spline'
@@ -26,7 +25,6 @@ function initialize_load_diagrams(loads_data) {
                 type: 'datetime'
             },
             plotOptions: {
-
                 spline: {
                     lineWidth: 2,
                     states: {
@@ -41,7 +39,8 @@ function initialize_load_diagrams(loads_data) {
             },
             yAxis: diagram_data.yaxis,
             tooltip: {
-                valueDecimals: 2
+                valueDecimals: 2,
+                shared: true
             },
             series: diagram_data.series,
             credits: {

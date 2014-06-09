@@ -40,7 +40,7 @@ class SimulatedThermalConsumer(ThermalConsumer):
         # list of 24 values representing target_temperature per hour
         self.daily_demand = [19, 19, 19, 19, 19, 19, 19, 20, 21,
                              20, 20, 21, 20, 21, 21, 21, 21, 22, 22, 22, 22, 22, 21, 19]
-        self.target_temperature = self.daily_demand[0]
+        self.config['target_temperature'] = self.daily_demand[0]
 
         self.total_consumed = 0
 
@@ -58,20 +58,20 @@ class SimulatedThermalConsumer(ThermalConsumer):
     def calculate(self):
 
         self.current_power = 0
-        self.total_heated_volume = self.total_heated_floor * self.room_height
-        self.avg_room_volume = self.total_heated_volume / \
-            (self.apartments * self.avg_rooms_per_apartment)
+        self.total_heated_volume = self.config['total_heated_floor'] * self.room_height
+        self.config['avg_room_volume'] = self.total_heated_volume / \
+            (self.config['apartments'] * self.config['avg_rooms_per_apartment'])
         # Assume 3 walls per room to not count multiple
-        avg_wall_size = self.avg_room_volume / self.room_height * 3
+        avg_wall_size = self.config['avg_room_volume'] / self.room_height * 3
         # Assume each appartment have an average of 0.8 outer walls per
         # apartment
-        self.outer_wall_surface = avg_wall_size * self.apartments * 0.8
-        self.max_power = self.total_heated_floor * \
+        self.outer_wall_surface = avg_wall_size * self.config['apartments'] * 0.8
+        self.max_power = self.config['total_heated_floor'] * \
             float(self.heating_constant)
 
         # Assume a window size of 2 square meters
-        self.window_surface = 2 * self.avg_windows_per_room * \
-            self.avg_rooms_per_apartment * self.apartments
+        self.window_surface = 2 * self.config['avg_windows_per_room'] * \
+            self.config['avg_rooms_per_apartment'] * self.config['apartments']
 
     def step(self):
         self.simulate_consumption()
@@ -86,7 +86,7 @@ class SimulatedThermalConsumer(ThermalConsumer):
         room_power = self.get_consumption_power() - self.heat_loss_power()
         room_energy = room_power * (self.env.step_size / 3600.0)
         temp_delta = room_energy / \
-            (self.avg_room_volume * specific_heat_capacity_air)
+            (self.config['avg_room_volume'] * specific_heat_capacity_air)
         self.temperature_room += temp_delta
 
     def get_consumption_power(self):
@@ -115,23 +115,23 @@ class SimulatedThermalConsumer(ThermalConsumer):
                 warm_water_demand_workday[(hour + 1) % 24], weight)
 
         power_demand = demand_liters_per_hour * \
-            (self.temperature_warmwater - self.heat_storage.base_temperature) * \
+            (self.temperature_warmwater - self.heat_storage.config['base_temperature']) * \
             specific_heat_capacity_water
-        return power_demand * self.residents
+        return power_demand * self.config['residents']
 
     def get_warmwater_consumption_energy(self):
         return self.get_warmwater_consumption_power() * (self.env.step_size / 3600.0)
 
     def simulate_consumption(self):
         # Calculate variation using daily demand
-        self.target_temperature = self.daily_demand[
-            time.gmtime(self.env.now).tm_hour]
+        hours = datetime.fromtimestamp(self.env.now).replace(tzinfo=utc).hour
+        self.config['target_temperature'] = self.daily_demand[hours]
 
         self.heat_room()
 
         # The heating powers to full capacity in 60 min
         slope = self.max_power * (self.env.step_size / (60 * 60.0))
-        if self.temperature_room > self.target_temperature:
+        if self.temperature_room > self.config['target_temperature']:
             self.current_power -= slope
         else:
             self.current_power += slope
@@ -148,7 +148,8 @@ class SimulatedThermalConsumer(ThermalConsumer):
         return (heat_flow_wall + heat_flow_window) / 1000.0  # kW
 
     def get_outside_temperature(self, offset_days=0):
-        return self.weather_forecast.get_temperature_estimate(self.env.now)
+        date = datetime.fromtimestamp(self.env.now).replace(tzinfo=utc)
+        return self.weather_forecast.get_temperature_estimate(date)
 
     def linear_interpolation(self, a, b, x):
         return a * (1 - x) + b * x
@@ -182,9 +183,6 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
                 self.env, hourly_data, samples_per_hour=1)
         self.electrical_forecast = electrical_forecast
 
-        # list of 24 values representing relative demand per hour
-        self.demand_variation = [1 for i in range(24)]
-
         self.new_data_interval = 24 * 60 * 60  # append data each day
         self.last_forecast_update = self.env.now
 
@@ -207,10 +205,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
 
     def get_consumption_power(self):
         time_tuple = time.gmtime(self.env.now)
-        demand = self.electrical_forecast.get_forecast_at(self.env.now)
-        # demand = 1
-        # calculate variation using demand and variation
-        return demand * self.demand_variation[time_tuple.tm_hour]
+        return self.electrical_forecast.get_forecast_at(self.env.now)
 
     def get_consumption_energy(self):
         return self.get_consumption_power() * (self.env.step_size / 3600.0)

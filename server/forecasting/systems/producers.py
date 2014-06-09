@@ -64,14 +64,14 @@ class SimulatedCogenerationUnit(CogenerationUnit):
         # given efficiency is reached only on maximum workload
         # at minumum workload the efficiency is decreased with
         # max_efficiency_loss
-        relative_loss = 1.0 - (self.workload - self.minimal_workload) \
-            / (99.0 - self.minimal_workload)
+        relative_loss = 1.0 - (self.workload - self.config['minimal_workload']) \
+            / (99.0 - self.config['minimal_workload'])
         return 1.0 - self.max_efficiency_loss / 100.0 * relative_loss
 
     def get_calculated_workload_thermal(self):
-        max_thermal_power = self.thermal_efficiency / \
-            100.0 * self.max_gas_input
-        min_thermal_power = max_thermal_power * (self.minimal_workload / 100.0)
+        max_thermal_power = self.config['thermal_efficiency'] / \
+            100.0 * self.config['max_gas_input']
+        min_thermal_power = max_thermal_power * (self.config['minimal_workload'] / 100.0)
         calculated_power = self.heat_storage.get_require_energy()
         return min(calculated_power / max_thermal_power, 1) * 99.0
 
@@ -79,8 +79,8 @@ class SimulatedCogenerationUnit(CogenerationUnit):
         if self.heat_storage.get_temperature() >= \
             self.heat_storage.target_temperature:
             return 0.0
-        max_electric_power = self.electrical_efficiency / \
-            100.0 * self.max_gas_input
+        max_electric_power = self.config['electrical_efficiency'] / \
+            100.0 * self.config['max_gas_input']
         return min(max(self.power_meter.current_power_consum,
                        self.electrical_driven_minimal_production)
                    / max_electric_power, 1) * 99.0
@@ -88,9 +88,9 @@ class SimulatedCogenerationUnit(CogenerationUnit):
     def update_parameters(self, calculated_workload):
         old_workload = self.workload
 
-        # make sure that minimal_workload <= workload <= 99.0 or workload =
+        # make sure that config['minimal_workload'] <= workload <= 99.0 or workload =
         # 0
-        if calculated_workload >= self.minimal_workload:
+        if calculated_workload >= self.config['minimal_workload']:
             # detect if power has been turned on
             if old_workload == 0:
                 self.power_on_count += 1
@@ -100,17 +100,17 @@ class SimulatedCogenerationUnit(CogenerationUnit):
         else:
             self.workload = 0.0
             if self.off_time <= self.env.now:
-                self.off_time = self.env.now + self.minimal_off_time
+                self.off_time = self.env.now + self.config['minimal_off_time']
 
         # calulate current consumption and production values
         self.current_gas_consumption = self.workload / \
-            99.0 * self.max_gas_input
+            99.0 * self.config['max_gas_input']
 
         self.current_electrical_production = self.current_gas_consumption * \
-            self.electrical_efficiency / 100.0 * \
+            self.config['electrical_efficiency'] / 100.0 * \
             self.get_efficiency_loss_factor()
         self.current_thermal_production = self.current_gas_consumption * \
-            self.thermal_efficiency / 100.0 * self.get_efficiency_loss_factor()
+            self.config['thermal_efficiency'] / 100.0 * self.get_efficiency_loss_factor()
 
     def consume_gas(self):
         self.total_gas_consumption += self.current_gas_consumption * \
@@ -176,9 +176,9 @@ class SimulatedPeakLoadBoiler(PeakLoadBoiler):
 
         # calulate current consumption and production values
         self.current_gas_consumption = float(self.workload) / \
-            99.0 * self.max_gas_input
+            99.0 * self.config['max_gas_input']
         self.current_thermal_production = self.current_gas_consumption * \
-            self.thermal_efficiency / 100.0
+            self.config['thermal_efficiency'] / 100.0
 
     def consume_gas(self):
         self.total_gas_consumption += self.current_gas_consumption * \

@@ -59,7 +59,7 @@
         Highcharts.getOptions().exporting.buttons.contextButton.menuItems.push({
             text: Highcharts.getOptions().lang.downloadCSV || "Download CSV",
             onclick: function () {
-                Highcharts.post('/export/csv/', {
+                Highcharts.post('api/export/', {
                     csv: this.getCSV()
                 });
             }

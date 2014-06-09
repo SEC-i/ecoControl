@@ -18,6 +18,7 @@
     <link href="libs/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet">
     <!-- Custom styles -->
     <link rel="stylesheet" href="css/basic.css">
+    <link rel="stylesheet" href="css/flags.css">
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -51,7 +52,17 @@
 
       <hr>
       <footer>
-        <p>&copy; BP2013H1 2013-2014</p>
+        <div class="row">
+          <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+            <p>&copy; BP2013H1 2013-2014</p>
+          </div>
+          <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 text-right">
+            <p>
+              <a class="language_selection" data-value="en" href="#"><img src="img/blank.gif" class="flag flag-um" alt="US"></a>
+              <a class="language_selection" data-value="de" href="#"><img src="img/blank.gif" class="flag flag-de" alt="DE"></a>
+            </p>
+          </div>
+        </div>
       </footer>
     </div> <!-- /container -->
 
@@ -59,6 +70,7 @@
 
     <script src="libs/jquery/jquery.min.js"></script>
     <script src="libs/jquery-address/jquery.address.js"></script>
+    <script src="libs/jquery-cookie/jquery.cookie-1.4.1.min.js"></script>
     <script src="libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
     <script src="libs/jquery-table2csv/jquery.table2csv.js"></script>
 
@@ -82,7 +94,8 @@
     <script src="libs/ace/snippets/python.js"></script>
     
     <script src="js/core.js"></script>
-    <script src="js/lang.js"></script>
+    <script src="js/lang.en.js"></script>
+    <script src="js/lang.de.js"></script>
     <script src="js/login.js"></script>
     <script src="js/load_curves.js"></script>
     <script src="js/notifications.js"></script>
@@ -96,7 +109,6 @@
     <script src="js/tech/overview.snippets.js"></script>
     <script src="js/tech/settings.js"></script>
     <script src="js/tech/statistics.js"></script>
-    <script src="js/tech/thresholds.js"></script>
     <script src="js/ready.js"></script>
   </body>
 </html>
