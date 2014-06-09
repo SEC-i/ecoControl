@@ -6,11 +6,12 @@ import cProfile
 from django.utils.timezone import utc
 
 from server.systems.consumers import ThermalConsumer, ElectricalConsumer
-from data import warm_water_demand_workday, warm_water_demand_weekend
+from server.forecasting.systems.data.old_demands import warm_water_demand_workday, warm_water_demand_weekend
 from server.forecasting.forecasting.weather import WeatherForecast
 from server.forecasting.forecasting import Forecast
 from server.forecasting.forecasting.dataloader import DataLoader
 from server.forecasting.forecasting.helpers import approximate_index
+from server.settings import BASE_DIR
 
 
 electrical_forecast = None
@@ -214,15 +215,14 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         #! TODO: reading data from csv will have to be replaced by live/fake data from database
         date = datetime.utcfromtimestamp(timestamp).replace(tzinfo=utc)
         if self.__class__.dataset == [] or self.__class__.dates == []:
-            path = os.path.join(
-                os.path.realpath('server'), "forecasting/tools/Electricity_2013.csv")
+            sep = os.path.sep
+            path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_2013.csv")
             raw_dataset = DataLoader.load_from_file(
                 path, "Strom - Verbrauchertotal (Aktuell)", "\t")
             dates = DataLoader.load_from_file(path, "Datum", "\t")
 
             if date.year == 2014:
-                path = os.path.join(
-                    os.path.realpath('server'), "forecasting/tools/Electricity_until_may_2014.csv")
+                path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_until_may_2014.csv")
                 raw_dataset += DataLoader.load_from_file(
                     path, "Strom - Verbrauchertotal (Aktuell)", "\t")
                 dates += DataLoader.load_from_file(path, "Datum", "\t")

@@ -2,6 +2,7 @@ import os
 import pickle
 import time
 from datetime import date,datetime,timedelta
+from server.settings import BASE_DIR
 
 
 def perdelta(start, end, delta):
@@ -48,7 +49,7 @@ def cache_data(name, data):
         pickle.dump(data, file)
 
 def cachefile(filename):
-        return os.path.join('cache', filename)
+        return os.path.join(BASE_DIR,'cache', filename)
 
 def cached_data_age(name):
     cache_path = cachefile('%s.cache' % name)

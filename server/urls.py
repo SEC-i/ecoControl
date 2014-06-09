@@ -34,7 +34,7 @@ urlpatterns = patterns('',
     (r'^api/statistics/$', technician.hooks.get_statistics),
     (r'^api/statistics/monthly/$', technician.hooks.get_monthly_statistics),
     (r'^api/thresholds/$', technician.hooks.list_thresholds),
-    
+    #TEST
     (r'^api/auto_forecast/$', technician.hooks.test_auto),
 
     # manager hooks

@@ -27,14 +27,14 @@ def simulation_run(code=None):
     [hs,pm,cu,plb,tc,ec] = systems
     measurements = MeasurementStorage(env, systems)
     
-    user_function = get_user_function(systems, code)
+    #user_function = get_user_function(systems, code)
 
     forward = 30 * 24 * 3600.0 #month
     next_auto_optim = 0.0
     while forward > 0:
         measurements.take_and_cache()
 
-        user_function(*systems)
+        #user_function(*systems)
 
         # call step function for all systems
         for system in systems:
@@ -95,8 +95,8 @@ def auto_optimize(initial_time, systems, configurations):
     
     parameters = fmin_l_bfgs_b(optim_function, x0 = initial_values, 
                                args = arguments, bounds = boundaries, 
-                               approx_grad = True, factr=10**6, iprint=-1,
-                               epsilon=5, maxfun =50)
+                               approx_grad = True, factr=10**4, iprint=0,
+                               epsilon=2, maxfun =50)
     
     #parameters = fmin_tnc(optim_function, x0 = initial_values, args = arguments, bounds = boundaries,epsilon=5, approx_grad = True)
     
@@ -132,10 +132,10 @@ def auto_forecast(initial_time, configurations, systems, prices, rewards, code=N
     
     final_cost = electric_costs-electric_rewards + gas_costs - thermal_rewards 
     temp = weighted_temperature
-    above_penalty = abs(min(hs.critical_temperature - temp, 0) * 1000)
-    below_penalty = abs(max(hs.min_temperature - temp, 0) * 1000)
+    above_penalty = abs(min(hs.config["critical_temperature"] - temp, 0) * 1000)
+    below_penalty = abs(max(hs.config["min_temperature"] - temp, 0) * 1000)
     
-    small_penalties = (temp > hs.target_temperature+5) * 15 + (temp < hs.target_temperature-5) * 5
+    small_penalties = (temp > hs.config["target_temperature"]+5) * 15 + (temp < hs.config["target_temperature"]-5) * 5
     
     return final_cost + above_penalty + below_penalty + small_penalties
 
