@@ -92,6 +92,12 @@ class SensorValue(models.Model):
         return str(self.pk) + " (" + self.sensor.name + ")"
 
 
+class WeatherValue(models.Model):
+    temperature = models.CharField(max_length = 20) # in degree celsius
+    timestamp = models.DateTimeField(auto_now = False) # time when the value was taken
+    target_time = models.DateTimeField(auto_now = False) # time the temperature should be effective
+    
+
 class SensorValueHourly(models.Model):
     sensor = models.ForeignKey('Sensor')
     timestamp = models.DateTimeField(auto_now=False)
@@ -103,7 +109,7 @@ class SensorValueHourly(models.Model):
 
 class SensorValueDaily(models.Model):
     sensor = models.ForeignKey('Sensor')
-    date = models.DateField(auto_now=False)
+    timestamp = models.DateTimeField(auto_now=False)
     value = models.FloatField()
 
     class Meta:
@@ -115,7 +121,7 @@ class SensorValueDaily(models.Model):
 
 class SensorValueMonthlySum(models.Model):
     sensor = models.ForeignKey('Sensor')
-    date = models.DateField(auto_now=False)
+    timestamp = models.DateTimeField(auto_now=False)
     sum = models.FloatField()
 
     class Meta:
@@ -127,7 +133,7 @@ class SensorValueMonthlySum(models.Model):
 
 class SensorValueMonthlyAvg(models.Model):
     sensor = models.ForeignKey('Sensor')
-    date = models.DateField(auto_now=False)
+    timestamp = models.DateTimeField(auto_now=False)
     avg = models.FloatField()
 
     class Meta:
@@ -166,27 +172,9 @@ class Threshold(models.Model):
 
 
 class Notification(models.Model):
-    Default = 0
-    Primary = 1
-    Success = 2
-    Info = 3
-    Warning = 4
-    Danger = 5
-
-    TYPES = (
-        (Default, 'Default'),
-        (Primary, 'Primary'),
-        (Success, 'Success'),
-        (Info, 'Info'),
-        (Warning, 'Warning'),
-        (Danger, 'Danger'),
-    )
-
     threshold = models.ForeignKey('Threshold')
-    message = models.CharField(max_length=200)
-    timestamp = models.DateTimeField(auto_now=True)
-    category = models.PositiveSmallIntegerField(choices=TYPES, default=Default)
-    show_manager = models.BooleanField(default=False)
+    sensor_value = models.ForeignKey('SensorValue')
+    target = models.FloatField()
     read = models.BooleanField(default=False)
 
     def __unicode__(self):

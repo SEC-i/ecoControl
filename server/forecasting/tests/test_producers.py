@@ -23,16 +23,16 @@ class SimulatedCogenerationUnitTest(unittest.TestCase):
         
     def test_creation(self):
         self.assertGreaterEqual(self.cu.workload, 0)
-        self.assertGreater(self.cu.max_gas_input, 0)
-        self.assertTrue(0 <= self.cu.electrical_efficiency/100.0 <= 1)
-        self.assertTrue(0 <=  self.cu.thermal_efficiency/100.0 <= 1)
+        self.assertGreater(self.cu.config['max_gas_input'], 0)
+        self.assertTrue(0 <= self.cu.config['electrical_efficiency']/100.0 <= 1)
+        self.assertTrue(0 <=  self.cu.config['thermal_efficiency']/100.0 <= 1)
         
         self.assertTrue(0 <= self.cu.max_efficiency_loss <= 1)
-        self.assertGreater(self.cu.maintenance_interval, 0)
+        self.assertGreaterEqual(self.cu.config['maintenance_interval_hours'], 0)
         
-        self.assertTrue(0 <= self.cu.minimal_workload <= 100)
+        self.assertTrue(0 <= self.cu.config['minimal_workload'] <= 100)
 
-        self.assertGreaterEqual(self.cu.minimal_off_time, 0)
+        self.assertGreaterEqual(self.cu.config['minimal_off_time'], 0)
         
         self.assertEqual(self.cu.off_time, self.env.now)
 
@@ -124,7 +124,7 @@ class SimulatedCogenerationUnitTest(unittest.TestCase):
         # max_efficiency_loss
         # the method returns the remaining efficiency
         self.cu.workload = 40
-        self.cu.minimal_workload = 40
+        self.cu.config['minimal_workload'] = 40
         self.cu.max_efficiency_loss = 5
         
         calculated_loss = self.cu.get_efficiency_loss_factor()
@@ -139,8 +139,8 @@ class SimulatedCogenerationUnitTest(unittest.TestCase):
         thermal_efficiency = 0.6
         
         self.heat_storage.get_require_energy.return_value = required_energy
-        self.cu.max_gas_input = gas_input
-        self.cu.thermal_efficiency = thermal_efficiency * 100
+        self.cu.config['max_gas_input'] = gas_input
+        self.cu.config['thermal_efficiency'] = thermal_efficiency * 100
         
         max_energy = thermal_efficiency*gas_input
         expected_workload = required_energy/max_energy *99.0 
@@ -161,8 +161,8 @@ class SimulatedCogenerationUnitTest(unittest.TestCase):
         minimal_workload = 20.0
         
         self.power_meter.current_power_consum = required_energy
-        self.cu.max_gas_input = gas_input
-        self.cu.electrical_efficiency = electrical_efficiency * 100
+        self.cu.config['max_gas_input'] = gas_input
+        self.cu.config['electrical_efficiency'] = electrical_efficiency * 100
         
         max_energy = electrical_efficiency*gas_input
         expected_workload = required_energy/max_energy   
@@ -179,8 +179,8 @@ class SimulatedCogenerationUnitTest(unittest.TestCase):
         self.heat_storage.temperature = 100
         
         self.power_meter.current_power_consum = 5.0
-        self.cu.max_gas_input = 20.0 # unit is energy: kWh
-        self.cu.electrical_efficiency = 60
+        self.cu.config['max_gas_input'] = 20.0 # unit is energy: kWh
+        self.cu.config['electrical_efficiency'] = 60
     
         calculated_result = self.cu.get_calculated_workload_electric()
         
@@ -195,14 +195,14 @@ class SimulatedCogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         self.cu.heat_storage = self.heat_storage
         self.cu.power_meter = self.power_meter
 
-        self.cu.minimal_workload = 20
+        self.cu.config['minimal_workload'] = 20
         self.cu.off_time = self.env.now - 1
         self.gas_input = 20.0
-        self.cu.max_gas_input = self.gas_input
+        self.cu.config['max_gas_input'] = self.gas_input
         self.electrical_efficiency = 0.25
-        self.cu.electrical_efficiency = self.electrical_efficiency * 100
+        self.cu.config['electrical_efficiency'] = self.electrical_efficiency * 100
         self.thermal_efficiency = 0.7
-        self.cu.thermal_efficiency = self.thermal_efficiency * 100
+        self.cu.config['thermal_efficiency'] = self.thermal_efficiency * 100
         self.total_hours_of_operation = 1
         self.cu.total_hours_of_operation = self.total_hours_of_operation
     
@@ -425,18 +425,18 @@ class SimulatedCogenerationUnitMethodStepTest(unittest.TestCase):
         self.cu.power_meter = self.power_meter
         
         self.max_gas_input = 19.0
-        self.cu.max_gas_input = self.max_gas_input
+        self.cu.config['max_gas_input'] = self.max_gas_input
         self.electrical_efficiency = 0.25
-        self.cu.electrical_efficiency = self.electrical_efficiency * 100
+        self.cu.config['electrical_efficiency'] = self.electrical_efficiency * 100
         self.thermal_efficiency = 0.6
-        self.cu.thermal_efficiency = self.thermal_efficiency * 100
+        self.cu.config['thermal_efficiency'] = self.thermal_efficiency * 100
         self.max_efficiency_loss = 0.10
         self.cu.max_efficiency_loss = self.max_efficiency_loss
-        self.maintenance_interval = 2000
-        self.cu.maintenance_interval = self.maintenance_interval
+        self.maintenance_interval_hours = 2000
+        self.cu.config['maintenance_interval_hours'] = self.maintenance_interval_hours
         self.minimal_workload = 40.0
-        self.cu.minimal_workload = self.minimal_workload
-        self.cu.minimal_off_time = 5.0 * 60.0
+        self.cu.config['minimal_workload'] = self.minimal_workload
+        self.cu.config['minimal_off_time'] = 5.0 * 60.0
         self.off_time = self.env.now
         self.cu.off_time = self.off_time
         self.current_electrical_production = 0.0 
@@ -617,7 +617,6 @@ class SimulatedCogenerationUnitMethodStepTest(unittest.TestCase):
         
         expected_energy_produced = self.cu.get_electrical_energy_production()
         expected_input_energy = self.cu.get_thermal_energy_production() 
-         
         self.assertAlmostEqual(self.cu.workload, expected_workload, 
             "wrong workload " + 
             values_comparison(self.cu.workload, expected_workload))
@@ -771,7 +770,7 @@ class SimulatedCogenerationUnitMethodStepTest(unittest.TestCase):
         required_energy = 0.0
         self.heat_storage.get_require_energy.return_value = required_energy
         minimal_off_time = 40.0 * 60.0
-        self.cu.minimal_off_time = minimal_off_time
+        self.cu.config['minimal_off_time'] = minimal_off_time
         
         self.cu.step()
         

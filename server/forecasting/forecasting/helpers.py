@@ -2,6 +2,7 @@ import os
 import pickle
 import time
 from datetime import date,datetime,timedelta
+from server.settings import BASE_DIR
 
 
 def perdelta(start, end, delta):
@@ -30,9 +31,6 @@ def approximate_index(dataset, findvalue):
             i+=1
     return -1
 
-
-
-
 def cached_data(name, data_function=None, max_age=60):
     cache_path = cachefile('%s.cache' % name)
     age = cached_data_age(name)
@@ -44,15 +42,14 @@ def cached_data(name, data_function=None, max_age=60):
     data = data_function()
     cache_data(name, data)
     return data
-
-
+    
 def cache_data(name, data):
     cache_path = cachefile('%s.cache' % name)
     with open(cache_path, 'wb') as file:
         pickle.dump(data, file)
 
 def cachefile(filename):
-        return os.path.join('cache', filename)
+        return os.path.join(BASE_DIR,'cache', filename)
 
 def cached_data_age(name):
     cache_path = cachefile('%s.cache' % name)

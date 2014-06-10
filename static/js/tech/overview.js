@@ -80,7 +80,7 @@ function initialize_technician_diagram() {
                     }, {
                         count: 1,
                         type: 'day',
-                        text: '1D'
+                        text: '1D',
                     }, {
                         count: 1,
                         type: 'week',
@@ -95,7 +95,7 @@ function initialize_technician_diagram() {
                         text: '1M'
                     }, {
                         type: 'all',
-                        text: 'All'
+                        text: get_text('all')
                     }],
                     selected: 4,
                     inputEnabled: false
@@ -109,10 +109,11 @@ function initialize_technician_diagram() {
                     }]
                 },
                 tooltip: {
-                    valueDecimals: 2
+                    valueDecimals: 2,
+                    shared: true
                 },
                 lang: {
-                    noData: "Loading data..."
+                    noData: get_text('chart_loading')
                 },
                 plotOptions: {
                     series: {
@@ -206,7 +207,7 @@ function initialize_tech_live_diagram_filters(series) {
             name: series_data.name,
             color: series_data.color});
     });
-    var output = Mustache.render($('#snippet_tech_live_diagram_filters').html(), { rows: rows });
+    var output = render_template($('#snippet_tech_live_diagram_filters').html(), { rows: rows });
     $('#tech_live_diagram_filters').html(output);
     $('.tech_live_data_filter_button').change(function() {
         var chart = $('#tech_live_diagram').highcharts();
@@ -249,7 +250,7 @@ function update_now_line() {
         to: plotline_timestamp + 14 * 24 * 60 * 60 * 1000,
         color: '#F0F0F0',
         label: {
-            text: 'Forecast',
+            text: get_text('overview_chart_forecast'),
             rotation: 0,
             align: 'center',
             y: 32,
@@ -263,7 +264,7 @@ function update_now_line() {
         width: 2,
         color: 'red',
         label: {
-            text: 'Now',
+            text: get_text('overview_chart_now'),
             align: 'right',
             y: 32,
             x: 6
@@ -281,20 +282,20 @@ function initialize_forward_buttons() {
         buttons: [
         {
             value: 1,
-            text: '1 Day'
+            text: '1' + get_text('overview_chart_day')
         }, {
             value: 7,
-            text: '1 Week'
+            text: '1' + get_text('overview_chart_week')
         }, {
             value: 14,
-            text: '2 Weeks'
+            text: '2' + get_text('overview_chart_weeks')
         }, {
             value: 4 * 7,
-            text: '1 Month'
+            text: '1' + get_text('overview_chart_month')
         }]
     };
 
-    var output = Mustache.render($('#snippet_forward_buttons').html(), forward_options);
+    var output = render_template($('#snippet_forward_buttons').html(), forward_options);
     $('#live_diagram_header').append(output);
 
     $('#live_diagram_header button').click(function() {
@@ -321,11 +322,12 @@ function initialize_technician_tuning_form() {
         $.each(data, function(device_id, device_configurations) {
             $.each(device_configurations, function(key, config_data) {
                 var namespace = namespaces[device_id];
-                item.append(get_input_field_code(namespace, key, config_data));
+                item.append(get_input_field_tuning(namespace, key, config_data));
             });
         });
-        $('#tuning_form').change(generate_immediate_feedback);
         $('#tuning_button').click(apply_changes);
+        $('#tuning_form').change(generate_immediate_feedback);
+        $('#tuning_simulate_button').click(generate_immediate_feedback);
         $('#tuning_reset_button').click(function() {
             $('#tuning_form')[0].reset();
             $('#tuning_form').trigger('change');
@@ -334,6 +336,7 @@ function initialize_technician_tuning_form() {
 }
 
 function generate_immediate_feedback() {
+    $('#data_container').hide();
     $('#immediate_notice').show();
     $('#tuning_button').prop('disabled', true);
 
@@ -402,7 +405,7 @@ function update_immediate_forecast(data) {
             value[0] = new Date(value[0]).getTime();
         });
         chart.addSeries({
-            name: sensor.name + ' (' + sensor.device + ') (predicted)',
+            name: sensor.name + ' (' + sensor.device + ') (simulated)',
             data: sensor.data,
             color: colors_modified[index],
             dashStyle: 'shortdot',
@@ -419,7 +422,7 @@ function cleanup_diagram(chart) {
     var chart = $('#tech_live_diagram').highcharts();
     var i = 0
     while(chart.series.length > sensor_count + 1) {
-        if (chart.series[i].name.indexOf('predicted') != -1) {
+        if (chart.series[i].name.indexOf('simulated') != -1) {
             chart.series[i].remove(false);
         } else {
             i++;
@@ -428,7 +431,7 @@ function cleanup_diagram(chart) {
     return true;
 }
 
-function get_input_field_code(namespace, key, data) {
+function get_input_field_tuning(namespace, key, data) {
     var device_id = namespaces.indexOf(namespace);
     var output =
             '<div class="col-sm-6"><div class="form-group">' +

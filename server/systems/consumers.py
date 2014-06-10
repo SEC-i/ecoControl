@@ -8,8 +8,19 @@ weather_forecast = None
 class ThermalConsumer(BaseSystem):
 
     def __init__(self, system_id, env):
-
         super(ThermalConsumer, self).__init__(system_id, env)
+
+        self.config = {
+            'apartments' : 12,
+            'avg_rooms_per_apartment': 4,
+            'residents': 22,
+            'avg_thermal_consumption': 0,
+            'type_of_housing': 0,
+            'avg_windows_per_room': 3,
+            'total_heated_floor': 650,
+            'type_of_residents': 0,
+            'type_of_windows': 0,
+        }
 
         self.heat_storage = None
 
@@ -24,10 +35,6 @@ class ThermalConsumer(BaseSystem):
 
         self.total_heated_floor = 650
         self.room_height = 2.5  # constant
-        self.residents = 22
-        self.apartments = 12
-        self.avg_rooms_per_apartment = 4
-        self.avg_windows_per_room = 3
         self.heating_constant = 100
         # heat transfer coefficient normal glas window in W/(m^2 * K)
         # normal glas 5.9, isolated 1.1
@@ -81,12 +88,15 @@ class ElectricalConsumer(BaseSystem):
     def __init__(self, system_id, env):
         super(ElectricalConsumer, self).__init__(system_id, env)
 
-        self.power_meter = None
-        self.residents = 22
-        self.total_consumption = 0.0  # kWh
+        self.config = {
+            'apartments' : 12,
+            'residents': 22,
+            'avg_electrical_consumption': 0,
+            'type_of_residents': 0,
+        }
 
-        # list of 24 values representing relative demand per hour
-        self.demand_variation = [1 for i in range(24)]
+        self.power_meter = None
+        self.total_consumption = 0.0  # kWh
 
         self.new_data_interval = 24 * 60 * 60  # append data each day
         self.last_forecast_update = 0  # self.env.now

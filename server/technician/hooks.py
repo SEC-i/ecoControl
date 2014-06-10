@@ -181,7 +181,6 @@ def handle_threshold(request):
             if 'delete' in data:
                 threshold.delete()
             else:
-                print data
                 if 'name' in data:
                     threshold.name = data['name']
                 if 'sensor_id' in data:
@@ -210,7 +209,7 @@ def handle_threshold(request):
                 threshold.save()
             return create_json_response({"status": "success"}, request)
     else:
-        if all(x in data for x in ['name', 'sensor_id', 'min_value', 'max_value', 'category']):
+        if all(x in data for x in ['name', 'sensor_id', 'min_value', 'max_value', 'category', 'show_manager']):
             threshold = Threshold(name=data['name'], sensor_id=int(
                 data['sensor_id']), category=int(data['category']))
             try:
@@ -221,6 +220,7 @@ def handle_threshold(request):
                 threshold.max_value = float(data['max_value'])
             except ValueError:
                 pass
+            threshold.show_manager = True if data['show_manager'] == '1' else False
             threshold.save()
             return create_json_response({"status": "success"}, request)
 
@@ -240,7 +240,7 @@ def list_sensor_values(request, interval='month'):
     else:
         start = get_past_time(years=1, use_view=True)
         sensor_values = SensorValueDaily.objects.\
-            filter(date__gte=datetime.date(start), sensor__in_diagram=True).\
+            filter(timestamp__gte=start, sensor__in_diagram=True).\
             select_related(
                 'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
 
@@ -257,11 +257,7 @@ def list_sensor_values(request, interval='month'):
                 'unit': value.sensor.unit,
                 'key': value.sensor.key,
             }
-        # Save sensor values
-        if interval == 'month':
-            values[value.sensor.id].append((value.timestamp, value.value))
-        else:
-            values[value.sensor.id].append((value.date, value.value))
+        values[value.sensor.id].append((value.timestamp, value.value))
 
     for sensor_id in output.keys():
         output[sensor_id]['data'] = values[sensor_id]
@@ -294,9 +290,9 @@ def get_monthly_statistics(request):
     start = end + dateutil.relativedelta.relativedelta(years=-1)
 
     sensor_values = SensorValueMonthlySum.objects.filter(
-        date__gte=start, date__lte=end)
+        timestamp__gte=start, timestamp__lte=end)
 
-    months = sensor_values.extra({'month': "date_trunc('month', date)"}).values(
+    months = sensor_values.extra({'month': "date_trunc('month', timestamp)"}).values(
         'month').annotate(count=Count('id'))
     output = []
     for month in months:

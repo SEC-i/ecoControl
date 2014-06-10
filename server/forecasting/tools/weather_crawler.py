@@ -1,42 +1,71 @@
 from webscraping import download, xpath
-import re
-import time
-import threading
-
+from time import gmtime, strftime
+from urllib2 import urlopen
 
 day_values = []
 
+def find_location(name):
 
-def iterate(start, end):
-    t0 = 1325376000 + 60 * 60 * 24 * start  # 1.1.2013
+    url = "http://freemeteo.de/wetter/search/?q=%s&language=german&country=germany"
+    D = download.Download()
+    html = D.get(url % name)
+    first_result = None
+    result = {}
+    for entry in xpath.search(html, "//div[@class='today table']//table/tbody/tr"):
+        country = xpath.search(entry, "/td")[2]
+        first_column = xpath.search(entry, "/td")[0]
+        name = xpath.search(first_column,"//a[1]")[0]
+        path = "http://freemeteo.de" + xpath.search(first_column,"//a[1]/@href")[0]
+        path = path.replace("&amp;","&")
+        # Follow Temp Redirect (307) to find right url
+        request = urlopen(path)
+        path = request.geturl()
+        path = path.replace("Aktuelles-Wetter/Ort","Historie/taglicher-wetterruckblick")
+
+        result[path] = {'country':country, 'name':name}
+
+        if first_result is None:
+            first_result = result.items()[0]
+    return (first_result, result)
+
+def crawl(url, start, end):
+
+    t0 = 1325376000 + 60 * 60 * 24 * (start-1)  # 1.1.2012
     D = download.Download()
     for i in range(start, end):
-        start1 = time.gmtime(t0)
+        start1 = gmtime(t0)
 
-        print(start1.tm_mday, start1.tm_mon, start1.tm_year)
-        html = D.get(
-            "http://freemeteo.com/default.asp?pid=20&gid=2950159&la=3&sid=103850&lc=1&ndate=%s/%s/%s" %
-            (start1.tm_mday, start1.tm_mon, start1.tm_year))
-        # temp_index =  html.find("<!-- Temperatur -->")
-        # weather_index = html.find("<!-- Wetter -->")
-        # html = html[temp_index:weather_index]
+        #url = "http://freemeteo.de/wetter/potsdam/Historie/taglicher-wetterruckblick/?gid=2852458&station=3306&date=%s&language=german&country=germany"
 
+        html = D.get(url + "&date=" + strftime("%Y-%m-%d",start1))
         vals = []
-        for row in xpath.search(html, "//td[@class='tbl_stations_content_r']"):
+        for row in xpath.search(html,"//table[@class='daily-history']/tbody/tr"):
             try:
-                vals.append(int(row[:-11]))
+                # temperature is in second column
+                b_tag = xpath.search(row,"/td")[1]
+                vals.append(int(b_tag[3:-7]))
+            except ValueError:
+                print "value error"
             except:
-                pass
+                print "error in xpath "
+
 
         t0 += 60 * 60 * 24
-        if len(vals) != 24 and len(vals) != 0:
+        if len(vals) < 24 and len(vals) != 0:
+            print "error found %d values " %len(vals)
             vals += [vals[-1] for i in range(24 - len(vals))]
+        if len(vals) > 24:
+            vals = vals[:24]
         elif len(vals) == 0:
+            print "no values found, use yesterday data"
             vals = day_values[-24:]
         day_values.extend(vals)
+    return day_values
 
 
-iterate(0, 365)
+cities =  find_location("Potsdam")
+print "Found %s cities." % len(cities[1])
 
-print len(day_values)
-print day_values
+crawl(cities[0][0],1,3)
+
+print "Found %s temperature values: %s" % (len(day_values), day_values)

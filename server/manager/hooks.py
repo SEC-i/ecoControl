@@ -26,16 +26,16 @@ def get_sums(request, sensor_id=None, year=None):
         end = date(int(year), 12, 31)
 
     sensorvaluemonthlysum = SensorValueMonthlySum.objects.filter(
-        date__gte=start, date__lte=end)
+        timestamp__gte=start, timestamp__lte=end)
 
     if sensor_id is None:
         output = {}
         for sensor in Sensor.objects.all().values_list('id', flat=True):
             output[sensor] = list(sensorvaluemonthlysum.filter(
-                sensor_id=sensor).values('date').annotate(total=Sum('sum')).order_by('date'))
+                sensor_id=sensor).values('timestamp').annotate(total=Sum('sum')).order_by('timestamp'))
     else:
         output = list(sensorvaluemonthlysum.filter(
-            sensor_id=sensor_id).values('date').annotate(total=Sum('sum')).order_by('date'))
+            sensor_id=sensor_id).values('timestamp').annotate(total=Sum('sum')).order_by('timestamp'))
 
     return create_json_response(output, request)
 
@@ -52,16 +52,16 @@ def get_avgs(request, sensor_id=None, year=None):
         end = date(int(year), 12, 31)
 
     sensorvaluemonthlyavg = SensorValueMonthlyAvg.objects.filter(
-        date__gte=start, date__lte=end)
+        timestamp__gte=start, timestamp__lte=end)
 
     if sensor_id is None:
         output = {}
         for sensor in Sensor.objects.all().values_list('id', flat=True):
             output[sensor] = list(sensorvaluemonthlyavg.filter(
-                sensor_id=sensor).values('date').annotate(total=Avg('avg')).order_by('date'))
+                sensor_id=sensor).values('timestamp').annotate(total=Avg('avg')).order_by('timestamp'))
     else:
         output = list(sensorvaluemonthlyavg.filter(
-            sensor_id=sensor_id).values('date').annotate(total=Avg('avg')).order_by('date'))
+            sensor_id=sensor_id).values('timestamp').annotate(total=Avg('avg')).order_by('timestamp'))
 
     return create_json_response(output, request)
 
@@ -72,7 +72,7 @@ def get_sensorvalue_history_list(request):
 
     cursor = connection.cursor()
     cursor.execute(
-        '''SELECT DISTINCT date_part('year', server_sensorvaluemonthlysum.date) as year FROM server_sensorvaluemonthlysum ORDER BY year DESC''')
+        '''SELECT DISTINCT date_part('year', server_sensorvaluemonthlysum.timestamp) as year FROM server_sensorvaluemonthlysum ORDER BY year DESC''')
 
     output = [int(x[0]) for x in cursor.fetchall()]
     return create_json_response(output, request)

@@ -2,21 +2,48 @@ import urllib2
 import json
 import time
 import logging
+import calendar
 
-from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
+from server.forecasting.systems.data.old_demands import outside_temperatures_2013, outside_temperatures_2012
 from server.forecasting.forecasting.helpers import cached_data
 
 logger = logging.getLogger('simulation')
 
 class WeatherForecast:
-
-    def __init__(self, env=None):
+    def __init__(self, env=None, city="Berlin"):
         self.env = env
 
         self.forecast_query_date = None
         self.forecast_temperatures_3hourly = []
         self.forecast_temperatures_daily = []
         self.hourly = True
+
+        self.city_id = self.find_city(city)['default']
+
+    """
+    returns a dictionary with city id, names and country based on the given search name
+    the first search result is returnd as 'default' too
+    """
+    def find_city(self, name):
+        url = "http://api.openweathermap.org/data/2.5/find?q=" + name + "&mode=json"
+        cities = {}
+        first_city = None
+        try:
+            result = urllib2.urlopen(url)
+            jsondata = result.read()
+            data = json.loads(jsondata)
+
+            for data_set in data["list"]:
+                if first_city is None:
+                    first_city = data_set['id']
+                cities[data_set['id']] = {'name':data_set['name'],
+                                          'country':data_set['sys']['country']}
+        except urllib2.URLError, KeyError:
+            print "error in weatherforecast"
+            print "use default city 'Berlin'"
+            return {'default':2950159, 'cities':{}}
+
+        return {'default':first_city, 'cities':cities}
 
     def get_weather_forecast(self, hourly=True):
         self.hourly = hourly
@@ -46,9 +73,9 @@ class WeatherForecast:
     def get_openweathermapdata(self):
         if self.hourly:
             # 3-hourly forecast for 5 days for Berlin
-            url = "http://api.openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5&mode=json"
+            url = "http://openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5&mode=json"
         else:
-            url = "http://api.openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"
+            url = "http://openweathermap.org/data/2.5/forecast/city?q=Berlin&units=metric&APPID=b180579fb094bd498cdeab9f909870a5?mode=daily_compact"
         try:
             return urllib2.urlopen(url).read()
         except urllib2.URLError, e:
@@ -63,7 +90,7 @@ class WeatherForecast:
     def get_temperature_estimate(self, date):
         """get most accurate forecast for given date
         that can be derived from 5 days forecast, 14 days forecast or from history data"""
-        time_passed = (date - self.get_date()) / (60.0 * 60.0 * 24)  # in days
+        time_passed = (calendar.timegm(date.timetuple()) - self.env.now) / (60.0 * 60.0 * 24)  # in days
         if time_passed < 0.0 or time_passed > 13.0:
             history_data = self.get_average_outside_temperature(date)
             return history_data
@@ -78,7 +105,7 @@ class WeatherForecast:
     def get_forecast_temperature_hourly(self, date):
         self.forecast_temperatures_3hourly = self.get_weather_forecast(
             hourly=True)
-        time_passed = int((date - self.get_date()) / (60.0 * 60.0))  # in hours
+        time_passed = int((calendar.timegm(date.timetuple()) - self.env.now) / (60.0 * 60.0))  # in hours
         weight = (time_passed % 3) / 3.0
         t0 = min(int(time_passed / 3), len(
             self.forecast_temperatures_3hourly) - 1)
@@ -90,7 +117,7 @@ class WeatherForecast:
     def get_forecast_temperature_daily(self, date):
         self.forecast_temperatures_daily = self.get_weather_forecast(
             hourly=False)
-        time_passed = int((date - self.get_date()) / (60.0 * 60.0))  # in days
+        time_passed = int((calendar.timegm(date.timetuple()) - self.env.now) / (60.0 * 60.0))  # in days
         weight = (time_passed % 24) / 24.0
         t0 = min(int(time_passed / 24), len(
             self.forecast_temperatures_daily) - 1)
@@ -100,7 +127,8 @@ class WeatherForecast:
         return self.mix(a0, a1, weight)
 
     def get_average_outside_temperature(self, date, offset_days=0):
-        day = (time.gmtime(date).tm_yday + offset_days) % 365
+        date = int(calendar.timegm(date.timetuple()))
+        day = int(time.gmtime(date).tm_yday + offset_days) % 365
         hour = time.gmtime(date).tm_hour
         d0 = outside_temperatures_2013[day * 24 + hour]
         d1 = outside_temperatures_2012[day * 24 + hour]

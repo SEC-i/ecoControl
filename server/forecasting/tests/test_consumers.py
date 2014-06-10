@@ -1,4 +1,5 @@
 import unittest
+import time
 
 from server.systems.base import BaseEnvironment
 from server.forecasting.systems.consumers import SimulatedThermalConsumer
@@ -25,10 +26,10 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         consumption dependent from week and weekend
         .. and a consumer class own interpolation method.
         '''
-        # self.consumer.residents
+        # self.consumer.config['residents']
         # current time aka self.env.now
         # self.consumer.temperature_warmwater
-        # heat_storage.base_temperature
+        # heat_storage.config['base_temperature']
 
     def test_get_warmwater_consumption_power_considers_heat_storage_base(self):
         '''
@@ -78,13 +79,13 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         the current time aka self.env.now
         the temperature of warm water and 
         the base_temperatur of the heat_storage'''
-        self.consumer.residents = residents
+        self.consumer.config['residents'] = residents
         env = BaseEnvironment(initial_time=time_in_seconds)
         self.consumer.env = env
         self.consumer.temperature_warmwater = temperature
 
         heat_storage = SimulatedHeatStorage(0, env)
-        heat_storage.base_temperature = heat_storage_base
+        heat_storage.config['base_temperature'] = heat_storage_base
         self.consumer.heat_storage = heat_storage
 
         return self.consumer.get_warmwater_consumption_power()
@@ -93,7 +94,7 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         '''the current_power should be increased if the current temperature 
         is below the target temperature'''
         self.consumer.temperature_room = 0
-        self.consumer.target_temperature = 30
+        self.consumer.config['target_temperature'] = 30
         last_current_power = 20
         self.consumer.current_power = last_current_power
 
@@ -106,7 +107,7 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         the current_power should be decreased if the current temperature 
         is below the target temperature'''
         self.consumer.temperature_room = 30
-        self.consumer.target_temperature = 0
+        self.consumer.config['target_temperature'] = 0
         last_current_power = 20
         self.consumer.current_power = last_current_power
 
@@ -180,28 +181,24 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
     def test_target_temperature_simulate_consumption(self):
         '''the target temperature of the consumer should be set
         according to the daily demand'''
-        daily_demand = [19, 19, 3, 19, 6, 19, 19, 20, 21, 20, 20, 21,
-                        20, 21, 21, 21, 21, 22, 22, 5, 22, 22, 21, 19]
+        daily_demand = [x for x in range(24)]
 
-        env = BaseEnvironment()
+        env = BaseEnvironment(initial_time=1388530800) # 2014-01-01 00:00:00
         heat_storage = SimulatedHeatStorage(0, env)
         consumer = SimulatedThermalConsumer(1, env)
         consumer.heat_storage = heat_storage
         consumer.daily_demand = daily_demand
 
-        for current_time in range(24):
-            time_in_seconds = current_time * 60 * 60
-            env = BaseEnvironment(initial_time=time_in_seconds)
-            consumer.env = env
-            consumer.target_temperature = 0
-
+        for index, temperature in enumerate(daily_demand):
+            consumer.config['target_temperature'] = 0
             consumer.simulate_consumption()
 
-            expected_temperature = daily_demand[current_time]
-            self.assertEqual(consumer.target_temperature, expected_temperature,
+            self.assertEqual(consumer.config['target_temperature'], temperature,
                              "current hour: {0} expected: {1} got: {2}".format(
-                                 current_time, consumer.target_temperature,
-                                 expected_temperature))
+                                 index, consumer.config['target_temperature'],
+                                 temperature))
+
+            env.now += 60 * 60
 
         '''def test_heat_room(self):
         # sets the room_temperature with respect to

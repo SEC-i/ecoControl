@@ -1,11 +1,13 @@
 import logging
+import os
+from django.core.exceptions import ObjectDoesNotExist
 
 from base import BaseEnvironment
 from producers import CogenerationUnit, PeakLoadBoiler
 from storages import HeatStorage, PowerMeter
 from consumers import ThermalConsumer, ElectricalConsumer
 from server.models import Device, Configuration, DeviceConfiguration
-from django.core.exceptions import ObjectDoesNotExist
+from server.settings import BASE_DIR
 
 logger = logging.getLogger('simulation')
 
@@ -19,6 +21,15 @@ def get_initialized_scenario():
                     system_class = globals()[class_name]
                     system_list.append(system_class(device.id, env))
 
+        # configurations = DeviceConfiguration.objects.all()
+        # for device in system_list:
+        #     # configure systems
+        #     for configuration in configurations:
+        #         if configuration.device_id == device.id:
+        #             value = parse_value(configuration)
+        #             if configuration.key in device.config:
+        #                 device.config[configuration.key] = value
+
         return system_list
 
 
@@ -26,7 +37,7 @@ def get_user_function(systems, code=None):
     local_names = ['device_%s' % system.id for system in systems]
 
     if code is None:
-        with open('server/user_code.py', "r") as code_file:
+        with open(os.path.join(BASE_DIR,'server','user_code.py'), "r") as code_file:
             code = code_file.read()
 
     lines = []
@@ -70,7 +81,7 @@ def perform_configuration(data):
 
                     # Make sure that key is present in corresponding system
                     # class
-                    if getattr(system_class(0, BaseEnvironment()), config['key'], None) is not None:
+                    if config['key'] in system_class(0, BaseEnvironment()).config:
                         try:
                             existing_config = DeviceConfiguration.objects.get(
                                 device=device, key=config['key'])
