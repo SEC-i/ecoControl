@@ -28,6 +28,16 @@
     </div>
 </div>
 
+<div id="snippet_tuning_input">
+    <div class="col-sm-6">
+        <label>{{name}}: <span id="{{id}}_text">{{value}}</span> {{unit}}</label>
+        <div class="tuning_slider" data-target="{{id}}"></div>
+        
+        <input type="hidden" class="configuration form-control" id="{{id}}" data-device="{{device}}" data-key="{{key}}" data-type="{{type}}" data-unit="{{unit}}" value="{{value}}" data-old-value="{{value}}">
+        <br>
+    </div>
+</div>
+
 <div id="snippet_settings_notice">
     <div class="alert alert-warning fade in">
         <h4>{{configure_notice}}</h4>

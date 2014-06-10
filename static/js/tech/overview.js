@@ -322,15 +322,50 @@ function initialize_technician_tuning_form() {
         $.each(data, function(device_id, device_configurations) {
             $.each(device_configurations, function(key, config_data) {
                 var namespace = namespaces[device_id];
-                item.append(get_input_field_tuning(namespace, key, config_data));
+                var output = render_template($('#snippet_tuning_input').html(), {
+                    device: device_id,
+                    id: namespace + '_' + key,
+                    key: key,
+                    name: get_text(key),
+                    type: config_data.type,
+                    unit: config_data.unit,
+                    value: config_data.value,
+                })
+                item.append(output);
             });
         });
+
+        $('.tuning_slider').slider({
+            min: 0,
+            max: 100,
+            value: 50,
+            step: 0.1,
+            animate: "fast",
+            slide: function( event, ui ) {
+                var item = $('#' + $(this).attr('data-target'));
+                var current_value = parseFloat(item.attr('data-old-value'));
+                var delta = Math.round(current_value * (ui.value-50)/10)/10;
+                var new_value = current_value + delta;
+                item.val(new_value);
+                $('#' + $(this).attr('data-target') + '_text').text(new_value);
+            },
+            stop: function( event, ui ) {
+                // fire change event
+                $('#' + $(this).attr('data-target')).change();
+            }
+        });
+
         $('#tuning_button').click(apply_changes);
         $('#tuning_form').change(generate_immediate_feedback);
         $('#tuning_simulate_button').click(generate_immediate_feedback);
         $('#tuning_reset_button').click(function() {
-            $('#tuning_form')[0].reset();
-            $('#tuning_form').trigger('change');
+            $('.tuning_slider').slider('value', 50);
+            $('#tuning_form .configuration').each(function(){
+                var old_value = $(this).attr('data-old-value');
+                $(this).val(old_value);
+                $('#' + $(this).attr('id') + '_text').text(old_value);
+            });
+            cleanup_diagram();
         })
     });
 }
@@ -339,12 +374,14 @@ function generate_immediate_feedback() {
     $('#data_container').hide();
     $('#immediate_notice').show();
     $('#tuning_button').prop('disabled', true);
+    $('#tuning_reset_button').prop('disabled', true);
+    $('.tuning_slider').slider('disable');
 
     var post_data = {
         configurations: [],
         code: editor.getValue()
     };
-    $('.configuration').each(function () {
+    $('#tuning_form .configuration').each(function () {
         post_data.configurations.push({
             device: $(this).attr('data-device'),
             key: $(this).attr('data-key'),
@@ -363,6 +400,8 @@ function generate_immediate_feedback() {
             update_immediate_forecast(data);
             $('#immediate_notice').hide();
             $('#tuning_button').prop('disabled', false);
+            $('#tuning_reset_button').prop('disabled', false);
+            $('.tuning_slider').slider('enable');
         }
     });
 }
@@ -370,7 +409,7 @@ function generate_immediate_feedback() {
 function apply_changes() {
     $('#tuning_button').removeClass('btn-primary').addClass('btn-success');
     var post_data = [];
-    $('.configuration').each(function () {
+    $('#tuning_form .configuration').each(function () {
         post_data.push({
             device: $(this).attr('data-device'),
             key: $(this).attr('data-key'),
@@ -418,7 +457,7 @@ function update_immediate_forecast(data) {
     chart.redraw();
 }
 
-function cleanup_diagram(chart) {
+function cleanup_diagram() {
     var chart = $('#tech_live_diagram').highcharts();
     var i = 0
     while(chart.series.length > sensor_count + 1) {
@@ -429,25 +468,6 @@ function cleanup_diagram(chart) {
         }
     };
     return true;
-}
-
-function get_input_field_tuning(namespace, key, data) {
-    var device_id = namespaces.indexOf(namespace);
-    var output =
-            '<div class="col-sm-6"><div class="form-group">' +
-                '<label for="' + namespace + '_' + key + '">' + get_text(key) + ' (' + data.device + ')</label>';
-    if (data.unit == '') {
-        output +=
-                '<input type="text" class="configuration form-control" id="' + namespace + '_' + key + '" data-device="' + device_id + '" data-key="' + key + '" data-type="' + data.type + '" data-unit="' + data.unit + '"  value="' + data.value + '">';
-    } else {
-        output +=
-                '<div class="input-group">' +
-                    '<input type="text" class="configuration form-control" id="' + namespace + '_' + key + '" data-device="' + device_id + '" data-key="' + key + '" data-type="' + data.type + '" data-unit="' + data.unit + '"  value="' + data.value + '">' +
-                    '<span class="input-group-addon">' + data.unit + '</span>' +
-                '</div>';
-    }
-    output += '</div></div>';
-    return output;
 }
 
 // Code Editor
