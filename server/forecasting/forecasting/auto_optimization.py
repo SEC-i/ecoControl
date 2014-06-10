@@ -10,7 +10,7 @@ from numpy import array
 from server.systems.base import BaseEnvironment
 from server.models import DeviceConfiguration
 from server.forecasting import get_initialized_scenario,\
-    DEFAULT_FORECAST_INTERVAL
+    DEFAULT_FORECAST_INTERVAL, get_forecast
 from server.forecasting.helpers import MeasurementStorage
 from server.systems import get_user_function
 from server.functions import get_configuration
@@ -57,6 +57,10 @@ def simulation_run(code=None):
         forward -= env.step_size
         next_auto_optim -= env.step_size
         
+    plot_dataset(measurements.get(), 0, False)
+    
+    values = get_forecast(forward=forward)
+    
     plot_dataset(measurements.get(), 0, True)
         
     
@@ -122,7 +126,7 @@ def auto_forecast(initial_time, configurations, systems, prices, rewards, code=N
     ##configure 
     cu.overwrite_workload, = configurations
     
-    weighted_temperature = get_forecast(initial_time,copied_system,code)
+    weighted_temperature = simplified_forecast(initial_time,copied_system,code)
     #list: [SimulatedHeatStorage,SimulatedPowerMeter, SimulatedCogenerationUnit, SimulatedPeakLoadBoiler, SimulatedThermalConsumer, 
     #SimulatedElectricalConsumer
     #maintenance_costs = cu.power_on_count
@@ -143,7 +147,7 @@ def auto_forecast(initial_time, configurations, systems, prices, rewards, code=N
     return final_cost + above_penalty + below_penalty + small_penalties
 
 
-def get_forecast(initial_time, systems, code = None):
+def simplified_forecast(initial_time, systems, code = None):
     env = systems[0].env
     [hs,pm,cu,plb,tc,ec] = systems
     #print hs.get_temperature()
@@ -193,36 +197,3 @@ def plot_dataset(sensordata,forecast_start=0,block=True):
     plt.xticks(rotation=90)
     plt.grid(True)
     plt.show()
-    
-
-
-#     def accept_test(**kwargs):
-#         #f_new=f_new, x_new=x_new, f_old=fold, x_old=x_old
-#         return kwargs["x_new"] < 10.0
-#     
-#     class RandomDisplacementBounds(object):
-#         """random displacement with bounds"""
-#         def __init__(self, xmin, xmax, stepsize=20):
-#             self.xmin = xmin
-#             self.xmax = xmax
-#             self.stepsize = stepsize
-#     
-#         def __call__(self, x):
-#             """take a random step but ensure the new position is within the bounds"""
-#             while True:
-#                 # this could be done in a much more clever way, but it will work for example purposes
-#                 xnew = x + np.random.uniform(-self.stepsize, self.stepsize, np.shape(x))
-#                 if xnew < self.xmax and xnew > self.xmin:
-#                     break
-#             return xnew
-
-    # define the new step taking routine and pass it to basinhopping
-    #take_step = RandomDisplacementBounds(0.0, 100.0)
-    #minimizer_kwargs = {"method": "L-BFGS-B", "bounds": boundaries, 
-    #                    "args":arguments}
-    #optimize_result = basinhopping(optim_function, x0 = initial_values,
-    #                               stepsize=40,# accept_test=accept_test,
-    #                               T = 10,
-    #                               disp=True, niter=10, take_step=take_step,
-    #                                minimizer_kwargs=minimizer_kwargs)
-    

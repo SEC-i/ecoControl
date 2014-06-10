@@ -18,7 +18,7 @@ DEFAULT_FORECAST_INTERVAL = 14 * 24 * 3600.0
 logger = logging.getLogger('simulation')
 
 
-def get_forecast(initial_time, configurations=None, code=None):
+def get_forecast(initial_time, configurations=None, code=None, forward=None):
     env = BaseEnvironment(initial_time)
 
     if configurations is None:
@@ -28,8 +28,9 @@ def get_forecast(initial_time, configurations=None, code=None):
 
     measurements = MeasurementStorage(env, systems)
     user_function = get_user_function(systems, code)
-
-    forward = DEFAULT_FORECAST_INTERVAL
+    
+    if forward == None:
+        forward = DEFAULT_FORECAST_INTERVAL
     while forward > 0:
         measurements.take_and_cache()
 
