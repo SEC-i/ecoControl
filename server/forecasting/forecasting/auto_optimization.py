@@ -22,7 +22,7 @@ def simulation_run(code=None):
     from server.forecasting import get_forecast
     
     
-    initial_time = calendar.timegm(datetime(year=2013,month=5,day=15).timetuple())
+    initial_time = calendar.timegm(datetime(year=2013,month=2,day=1).timetuple())
     env = BaseEnvironment(initial_time)
     configurations = DeviceConfiguration.objects.all()
     
@@ -62,7 +62,7 @@ def simulation_run(code=None):
         
     plot_dataset(measurements.get(), 0, False)
     
-    values = get_forecast(forward=forward)
+    values = get_forecast(initial_time, forward=forward)
     
     plot_dataset(measurements.get(), 0, True)
 
@@ -183,7 +183,10 @@ class bilance_result:
         
 
 def plot_dataset(sensordata,forecast_start=0,block=True):
-    import matplotlib.pyplot as plt
+    try:
+        import matplotlib.pyplot as plt
+    except:
+        pass
     #from pylab import *
     fig, ax = plt.subplots()
     for index, dataset in enumerate(sensordata):

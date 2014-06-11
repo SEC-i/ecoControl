@@ -1,8 +1,11 @@
 import numpy as np
-from matplotlib.widgets import Slider, Button, RadioButtons
+try:
+    from matplotlib.widgets import Slider, Button, RadioButtons
+    import matplotlib.pyplot as plt
+    from pylab import *
+except:
+    pass
 from datetime import date, datetime, timedelta
-import matplotlib.pyplot as plt
-from pylab import *
 
 
 

@@ -29,15 +29,6 @@ logger = logging.getLogger('django')
 
 DEMO_SIMULATION = None
 
-##testing optimization
-def test_auto(request):
-    #config = DeviceConfiguration.objects.all()
-    #measurements = auto_optimize(config)
-    simulation_run()
-    return create_json_response("ok", request)
-
-####
-
 def handle_snippets(request):
     if not request.user.is_superuser:
         raise PermissionDenied
