@@ -1,6 +1,7 @@
 from datetime import datetime
 from io import BytesIO
 import logging
+import array
 
 from django.utils.timezone import utc
 from django.db import connection
@@ -17,19 +18,19 @@ class MeasurementStorage():
         self.devices = devices
         self.sensors = Sensor.objects.filter(
             device_id__in=[x.id for x in devices])
-        self.demo = demo
 
-        # initialize for forecasting
-        self.forecast_data = []
-        for i in self.sensors:
-            self.forecast_data.append([])
-        # initialize for demo
-        self.device_map = []
-        self.sensor_values = []
-        for device in self.devices:
-            for sensor in self.sensors:
-                if device.id == sensor.device.id:
-                    self.device_map.append((sensor, device))
+        if demo:
+            # initialize for demo
+            self.device_map = []
+            self.sensor_values = []
+            for device in self.devices:
+                for sensor in self.sensors:
+                    if device.id == sensor.device.id:
+                        self.device_map.append((sensor, device))
+        else:
+            # initialize for forecasting
+            self.forecast_data = [array.array('f') for i in self.sensors]
+
 
     def take_and_save(self):
         # save demo values every 15mins
@@ -50,9 +51,6 @@ class MeasurementStorage():
             self.flush_data()
 
     def take_and_cache(self):
-        if self.env.now % 3600 != 0:
-            return
-
         for index, sensor in enumerate(self.sensors):
             for device in self.devices:
                 if device.id == sensor.device.id and sensor.in_diagram:
@@ -62,10 +60,9 @@ class MeasurementStorage():
                         if hasattr(value, '__call__'):
                             value = value()
 
-                        self.forecast_data[index].append(
-                            [datetime.fromtimestamp(self.env.now).isoformat(), round(float(value), 2)])
+                        self.forecast_data[index].append(float(value))
 
-    def get(self):
+    def get_cached(self):
         output = []
         for index, sensor in enumerate(self.sensors):
             if sensor.in_diagram:
@@ -76,7 +73,7 @@ class MeasurementStorage():
                     'name': sensor.name,
                     'unit': sensor.unit,
                     'key': sensor.key,
-                    'data': self.forecast_data[index]
+                    'data': self.forecast_data[index].tolist()
                 })
         return output
 

@@ -15,6 +15,7 @@ from django.db.models import Count, Min, Sum, Avg
 from django.db import connection
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
+from django.views.decorators.gzip import gzip_page
 
 from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
 from server.helpers import create_json_response
@@ -97,7 +98,7 @@ def get_tunable_device_configurations(request):
     output = dict(get_device_configurations(tunable=True))
     return create_json_response(output, request)
 
-
+@gzip_page
 def forecast(request):
     if not request.user.is_superuser:
         raise PermissionDenied
@@ -216,7 +217,7 @@ def handle_threshold(request):
 
     return create_json_response({"status": "failed"}, request)
 
-
+@gzip_page
 def list_sensor_values(request, interval='month'):
     if not request.user.is_superuser:
         raise PermissionDenied

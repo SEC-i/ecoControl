@@ -1,6 +1,7 @@
 import time
 import logging
 import calendar
+from datetime import datetime
 from threading import Thread
 
 from server.models import Device, DeviceConfiguration, Configuration, Sensor, SensorValue
@@ -15,11 +16,12 @@ from server.forecasting.systems.storages import SimulatedHeatStorage, SimulatedP
 from server.forecasting.systems.consumers import SimulatedThermalConsumer, SimulatedElectricalConsumer
 
 DEFAULT_FORECAST_INTERVAL = 14 * 24 * 3600.0
+DEFAULT_FORECAST_STEP_SIZE = 15 * 60.0
 logger = logging.getLogger('simulation')
 
 
 def get_forecast(initial_time, configurations=None, code=None):
-    env = BaseEnvironment(initial_time)
+    env = BaseEnvironment(initial_time=initial_time, step_size=DEFAULT_FORECAST_STEP_SIZE)
 
     if configurations is None:
         configurations = DeviceConfiguration.objects.all()
@@ -31,18 +33,23 @@ def get_forecast(initial_time, configurations=None, code=None):
 
     forward = DEFAULT_FORECAST_INTERVAL
     while forward > 0:
-        measurements.take_and_cache()
-
         user_function(*systems)
 
         # call step function for all systems
         for system in systems:
             system.step()
 
+        measurements.take_and_cache()
+
         env.now += env.step_size
         forward -= env.step_size
 
-    return measurements.get()
+    return {
+        'start': datetime.fromtimestamp(initial_time).isoformat(),
+        'step': DEFAULT_FORECAST_STEP_SIZE,
+        'end': datetime.fromtimestamp(env.now).isoformat(),
+        'sensors': measurements.get_cached()
+    }
 
 
 def get_initialized_scenario(env, configurations):
@@ -145,13 +152,13 @@ class DemoSimulation(Thread):
 
     def run(self):
         while self.running:
-            self.measurements.take_and_save()
-
             self.user_function(*self.systems)
 
             # call step function for all systems
             for system in self.systems:
                 system.step()
+
+            self.measurements.take_and_save()
 
             if self.forward > 0:
                 self.forward -= self.env.step_size

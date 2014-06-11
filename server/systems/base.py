@@ -30,14 +30,14 @@ class BaseSystem(object):
 
 class BaseEnvironment(object):
 
-    def __init__(self, initial_time=None, demo=False):
+    def __init__(self, initial_time=None, step_size=120, demo=False):
         if initial_time is None:
             self.now = time.time()
         else:
-            self.now = (int(initial_time) / 3600) * 3600.0
+            self.now = initial_time
 
+        self.step_size = step_size
         self.demo = demo
-        self.step_size = 120
 
     def get_day_of_year(self):
         return time.gmtime(self.now).tm_yday
