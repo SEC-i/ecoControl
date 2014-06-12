@@ -184,7 +184,7 @@ def initialize_views():
                 t1.timestamp,
                 avg(t1.value) AS value
                FROM ( SELECT server_sensorvalue.sensor_id,
-                        '1970-01-01 00:00:00'::timestamp without time zone + '01:00:00'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 3600)::double precision AS timestamp,
+                        '1970-01-01 00:00:00'::timestamp with time zone + '01:00:00'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 3600)::double precision AS timestamp,
                         server_sensorvalue.value
                         FROM server_sensorvalue
                         WHERE timestamp >= (SELECT timestamp from server_sensorvalue ORDER BY timestamp DESC LIMIT 1) - INTERVAL '1 month'
@@ -201,7 +201,7 @@ def initialize_views():
                         date_trunc('day', timestamp)::timestamp::date AS timestamp,
                         avg(value) AS value
                     FROM ( SELECT server_sensorvalue.sensor_id,
-                        '1970-01-01 00:00:00'::timestamp without time zone + '1 day'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 86400)::double precision AS timestamp,
+                        '1970-01-01 00:00:00'::timestamp with time zone + '1 day'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 86400)::double precision AS timestamp,
                         server_sensorvalue.value
                         FROM server_sensorvalue) t1
                     GROUP BY  t1.timestamp, t1.sensor_id
