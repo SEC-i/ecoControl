@@ -41,7 +41,7 @@ class ThermalConsumer(BaseSystem):
         self.heat_transfer_window = 2.2
         self.heat_transfer_wall = 0.5
 
-        self.consumed = 0
+        self.total_consumed = 0
 
         # global weather_forecast
         # if weather_forecast == None:

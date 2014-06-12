@@ -22,11 +22,12 @@ from server.functions import get_device_configurations, get_past_time
 from server.systems import perform_configuration
 from server.forecasting import get_forecast, DemoSimulation
 import functions
+from server.forecasting.forecasting.auto_optimization import auto_forecast,\
+    auto_optimize, simulation_run
 
 logger = logging.getLogger('django')
 
 DEMO_SIMULATION = None
-
 
 def handle_snippets(request):
     if not request.user.is_superuser:

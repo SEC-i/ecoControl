@@ -65,7 +65,7 @@ class MeasurementStorage():
                         self.forecast_data[index].append(
                             [datetime.fromtimestamp(self.env.now).isoformat(), round(float(value), 2)])
 
-    def get(self):
+    def get(self,delete_after=False):
         output = []
         for index, sensor in enumerate(self.sensors):
             if sensor.in_diagram:
@@ -78,6 +78,8 @@ class MeasurementStorage():
                     'key': sensor.key,
                     'data': self.forecast_data[index]
                 })
+            if delete_after:
+                self.forecast_data[index] = []
         return output
 
     def get_last(self, value):

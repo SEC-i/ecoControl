@@ -13,12 +13,13 @@ from server.systems.base import BaseEnvironment
 from server.forecasting.systems.producers import SimulatedCogenerationUnit, SimulatedPeakLoadBoiler
 from server.forecasting.systems.storages import SimulatedHeatStorage, SimulatedPowerMeter
 from server.forecasting.systems.consumers import SimulatedThermalConsumer, SimulatedElectricalConsumer
+from server.forecasting.forecasting.auto_optimization import auto_optimize
 
 DEFAULT_FORECAST_INTERVAL = 14 * 24 * 3600.0
 logger = logging.getLogger('simulation')
 
 
-def get_forecast(initial_time, configurations=None, code=None):
+def get_forecast(initial_time, configurations=None, code=None, forward=None):
     env = BaseEnvironment(initial_time)
 
     if configurations is None:
@@ -28,8 +29,10 @@ def get_forecast(initial_time, configurations=None, code=None):
 
     measurements = MeasurementStorage(env, systems)
     user_function = get_user_function(systems, code)
-
-    forward = DEFAULT_FORECAST_INTERVAL
+    
+    if forward == None:
+        forward = DEFAULT_FORECAST_INTERVAL
+    next_auto_optim = 0.0
     while forward > 0:
         measurements.take_and_cache()
 
@@ -38,9 +41,14 @@ def get_forecast(initial_time, configurations=None, code=None):
         # call step function for all systems
         for system in systems:
             system.step()
+        
+        if next_auto_optim <= 0.0:  
+            auto_optimize(env,systems,configurations)
+            next_auto_optim = 12 * 3600.0
 
         env.now += env.step_size
         forward -= env.step_size
+        next_auto_optim -= env.step_size
 
     return measurements.get()
 

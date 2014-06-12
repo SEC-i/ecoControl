@@ -5,6 +5,9 @@ class BaseSystem(object):
     def __init__(self, system_id, env):
         self.id = system_id
         self.env = env
+                
+        
+
 
     def calculate(self):
         pass

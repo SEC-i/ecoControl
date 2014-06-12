@@ -1,20 +1,46 @@
 import numpy as np
-from matplotlib.widgets import Slider, Button, RadioButtons
+try:
+    from matplotlib.widgets import Slider, Button, RadioButtons
+    import matplotlib.pyplot as plt
+    from pylab import *
+except:
+    pass
 from datetime import date, datetime, timedelta
-import matplotlib.pyplot as plt
-from pylab import *
 
-from server.forecasting.forecasting.dataloader import DataLoader
-from server.forecasting.forecasting.forecasting.holt_winters import additive, multiplicative
 
+
+def RMSE(input, forecast):
+    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(input, forecast[:-1])]) / len(input))
+    #penalty = mean_below_penalty(np.array(forecast[:-1]))
+    
+    return rmse# + penalty
+
+def perdelta(start, end, delta):
+    curr = start
+    while curr < end:
+        yield curr
+        curr += delta
+        
+        
+def make_hourly(data, samples_per_hour):
+    def avg(hour):
+        sum = 0
+        for i in range(samples_per_hour):
+            sum += data[hour * samples_per_hour + i]
+        return sum / samples_per_hour
+
+    hours = len(data) / samples_per_hour
+    return [avg(i) for i in range(hours)]
 
 def plot_dataset(sensordata,forecast_start=0,block=True):
     fig, ax = plt.subplots()
-    forecast_plot, = ax.plot(range(forecast_start,len(sensordata["forcasting"])+forecast_start), sensordata["forcasting"], label="forcasting")
-    sim_plot, = ax.plot(range(len(sensordata["simulation"])), sensordata["simulation"], label="simulation")
+    start = datetime.datetime(year=2014,month=1,day=1)
+    dates = [date for date in perdelta(start,start+timedelta(hours=len(sensordata["measured"])), timedelta(hours=1)) ]
+    forecast_plot, = ax.plot(dates[forecast_start:], sensordata["forecasting"], label="forecasting", linewidth=1.5) #range(forecast_start,len(sensordata["forecasting"])+forecast_start)
+    sim_plot, = ax.plot(dates, sensordata["measured"], label="measured", linewidth=1.5)
     
     # Now add the legend with some customizations.
-    legend = ax.legend(loc='upper center', shadow=True)
+    legend = ax.legend(loc='upper center', shadow=True,prop={'size':18})
     
     # The frame is matplotlib.patches.Rectangle instance surrounding the legend.
     frame = legend.get_frame()
@@ -22,14 +48,16 @@ def plot_dataset(sensordata,forecast_start=0,block=True):
     
     # Set the fontsize
     for label in legend.get_texts():
-        label.set_fontsize('medium')
+        label.set_fontsize('large')
     
     for label in legend.get_lines():
-        label.set_linewidth(1.5)
+        label.set_linewidth(5.5)
     
     plt.subplots_adjust(bottom=0.2)
-    plt.xlabel('Simulated time in seconds')
-    plt.xticks(rotation=90)
+    #plt.xlabel('Simulated time in seconds')
+    #plt.xticks(rotation=90)
+    plt.tick_params(axis='both', which='major', labelsize=16)
+    plt.tick_params(axis='both', which='minor', labelsize=14)
     plt.grid(True)
     
     
@@ -38,29 +66,29 @@ def plot_dataset(sensordata,forecast_start=0,block=True):
 
 """ a tool for finding the right alpha, beta and gamma parameter for holt winters"""
 def value_changer():
-    raw_data = DataLoader.load_from_file("../tools/Electricity_2013.csv", "Strom - Verbrauchertotal (Aktuell)",delim="\t")
+    from dataloader import DataLoader
+    from holt_winters import additive, multiplicative
+    raw_data = DataLoader.load_from_file("../systems/data/Electricity_2013.csv", "Strom - Verbrauchertotal (Aktuell)",delim="\t")
     ind = len(raw_data) / 2
     kW_data = [float(val) / 1000.0 for val in raw_data] #cast to float and convert to kW
-    input = Forecast.make_hourly(kW_data,6)
-    input = Forecast.split_weekdata(input,1)[1]
+    input = make_hourly(kW_data,6)[-24*7:]
+    #input = Forecast.split_weekdata(input,1)[1]
     training_data = input[:len(input)/2]
-    testing_data = input[len(input)/4 * 3:]
-    
-    data = np.array(training_data)
-    print data, len(data)
-    
-    
+    testing_data = input[len(input)/2:]
+      
+
     alpha = 0.0000001
     beta = 0.0
     gamma = 1.0
     #plot_dataset(values)
     m = 24
     #forecast length
-    fc = int(len(data))
-    (forecast_values, alpha, beta, gamma, rmse) = multiplicative(testing_data, m,fc, alpha, beta, gamma)
-    values ={ 'forcasting':forecast_values, 'simulation':input}
+    fc = int(len(testing_data))
+    (forecast_values, alpha, beta, gamma, rmse) = multiplicative(training_data, m,fc, alpha, beta, gamma)
+    print forecast_values
+    values ={ 'forecasting':forecast_values, 'measured':input}
     
-    (fig, sim_plot,forecast_plot) = plot_dataset(values)
+    (fig, sim_plot,forecast_plot) = plot_dataset(values, forecast_start=len(training_data))
     
     axcolor = 'lightgoldenrodyellow'
     axalpa = axes([0.25, 0.02, 0.65, 0.02], axisbg=axcolor)
@@ -75,14 +103,16 @@ def value_changer():
         alpha = alpha_slider.val
         beta = beta_slider.val
         gamma = gamma_slider.val
-        print alpha, beta, gamma
         
-        (forecast_values, alpha, beta, gamma, rmse) = multiplicative(testing_data, m,fc, alpha, beta, gamma)
-        values ={ 'forcasting':forecast_values, 'simulation':input}
+        
+        (forecast_values, alpha, beta, gamma, rmse) = multiplicative(training_data, m,fc, alpha, beta, gamma)
+        values ={ 'forecasting':forecast_values, 'measured':input}
         
         forecast_plot.set_ydata(forecast_values)
         sim_plot.set_ydata(input)
         fig.canvas.draw_idle()
+        
+        print alpha, beta, gamma, RMSE(testing_data, forecast_values)
         
         
     alpha_slider.on_changed(update_hw)

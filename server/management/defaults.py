@@ -5,7 +5,7 @@ from django.utils.timezone import utc
 from django.db import connection, ProgrammingError
 from django.contrib.auth.models import User
 
-from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
+from server.forecasting.systems.data.old_demands import outside_temperatures_2013, outside_temperatures_2012
 from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum, WeatherValue
 
 

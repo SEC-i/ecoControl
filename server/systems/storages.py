@@ -5,7 +5,6 @@ class HeatStorage(BaseSystem):
 
     def __init__(self, system_id, env):
         super(HeatStorage, self).__init__(system_id, env)
-
         # default data from pamiru48
         self.config = {
             'capacity': 2500,  # liters
@@ -15,6 +14,7 @@ class HeatStorage(BaseSystem):
             'critical_temperature': 90.0,  # degree Celsius
             'specific_heat_capacity': 4.19 / 3600.0  # kWh/(kg*K)
         }
+
 
     def attach_to_cogeneration_unit(self, system):
         system.heat_storage = self

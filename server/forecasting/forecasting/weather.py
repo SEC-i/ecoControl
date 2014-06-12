@@ -4,7 +4,7 @@ import time
 import logging
 import calendar
 
-from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
+from server.forecasting.systems.data.old_demands import outside_temperatures_2013, outside_temperatures_2012
 from server.forecasting.forecasting.helpers import cached_data
 
 logger = logging.getLogger('simulation')
