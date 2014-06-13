@@ -16,7 +16,8 @@ from server.forecasting.systems.storages import SimulatedHeatStorage, SimulatedP
 from server.forecasting.systems.consumers import SimulatedThermalConsumer, SimulatedElectricalConsumer
 
 DEFAULT_FORECAST_INTERVAL = 14 * 24 * 3600.0
-DEFAULT_FORECAST_STEP_SIZE = 15 * 60.0
+DEFAULT_FORECAST_STEP_SIZE = 3 * 60.0
+DEFAULT_FORECAST_MEASUREMENT_INTERVAL = 15 * 60.0 # has to be multiple of DEFAULT_FORECAST_STEP_SIZE
 logger = logging.getLogger('simulation')
 
 
@@ -32,6 +33,7 @@ def get_forecast(initial_time, configurations=None, code=None):
     user_function = get_user_function(systems, code)
 
     forward = DEFAULT_FORECAST_INTERVAL
+    measurement = 0
     while forward > 0:
         user_function(*systems)
 
@@ -39,14 +41,18 @@ def get_forecast(initial_time, configurations=None, code=None):
         for system in systems:
             system.step()
 
-        measurements.take_and_cache()
+        if measurement == 0:
+            measurements.take_and_cache()
+            measurement = DEFAULT_FORECAST_MEASUREMENT_INTERVAL
+        else:
+            measurement -= env.step_size
 
         env.now += env.step_size
         forward -= env.step_size
 
     return {
         'start': datetime.fromtimestamp(initial_time).isoformat(),
-        'step': DEFAULT_FORECAST_STEP_SIZE,
+        'step': DEFAULT_FORECAST_MEASUREMENT_INTERVAL,
         'end': datetime.fromtimestamp(env.now).isoformat(),
         'sensors': measurements.get_cached()
     }
