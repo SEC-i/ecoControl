@@ -93,7 +93,7 @@ class ForecastTests(unittest.TestCase):
     def test_append_data(self):
         print "\n--------- test append_values ------------------"
         self.setup_forecast()
-        path = os.path.join(BASE_DIR, "server/forecasting/systems/data/Electricity_until_may_2014.csv")
+        path = os.path.join(BASE_DIR, "server/forecasting/systems/data/Electricity_1.1-12.6.2014.csv")
         raw_dataset_2014 = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
 
         # cast to float and convert to kW

@@ -18,12 +18,12 @@ def linear_interpolation(a,b,x):
 def approximate_index(dataset, findvalue):
     length = len(dataset)
     #aproximate index
-    i = min(int(findvalue - dataset[0]), length -1)
+    diff = (dataset[1] - dataset[0])
+    i = min(int((findvalue - dataset[0])/diff), length -1)
     while i < length and i >= 0:
         if i == length -1:
             return i if dataset[i] == findvalue else -1
-        
-        if dataset[i] < findvalue and dataset[i+1] > findvalue:
+        if  dataset[i] == findvalue or (dataset[i] < findvalue and dataset[i+1] > findvalue):
             return i
         elif dataset[i] > findvalue:
             i-=1

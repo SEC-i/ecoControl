@@ -150,7 +150,11 @@ class SimulatedThermalConsumer(ThermalConsumer):
 
     def get_outside_temperature(self, offset_days=0):
         date = datetime.fromtimestamp(self.env.now).replace(tzinfo=utc)
-        return self.weather_forecast.get_temperature_estimate(date)
+        if self.env.forecast:
+            temp = self.weather_forecast.get_temperature_estimate(date)
+        else:
+            temp = self.weather_forecast.get_temperature(date)
+        return float(temp)
 
     def linear_interpolation(self, a, b, x):
         return a * (1 - x) + b * x
@@ -186,6 +190,10 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
 
         self.new_data_interval = 24 * 60 * 60  # append data each day
         self.last_forecast_update = self.env.now
+        
+        if self.env.demo and not self.env.forecast:
+            self.all_data = self.get_all_data2014()
+
 
     def step(self):
         consumption = self.get_consumption_energy()
@@ -193,8 +201,18 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         self.power_meter.consume_energy(consumption)
         self.power_meter.current_power_consum = self.get_consumption_power()
         # copyconstructed means its running a forecasting
-        if self.env.demo and self.env.now - self.last_forecast_update > self.new_data_interval:
+        if self.env.demo and not self.env.forecast and self.env.now - self.last_forecast_update > self.new_data_interval:
             self.update_forecast_data()
+            
+    def get_all_data2014(self):
+        sep = os.path.sep
+        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
+        raw_dataset = DataLoader.load_from_file(
+            path, "Strom - Verbrauchertotal (Aktuell)", "\t")
+        dates = DataLoader.load_from_file(path, "Datum", "\t")
+        dates = [int(date) for date in dates]
+        raw_dataset = [float(val) / 1000.0 for val in raw_dataset]
+        return {"dates" : dates, "dataset" : raw_dataset}
 
     def update_forecast_data(self):
         raw_dataset = self.get_data_until(
@@ -206,7 +224,12 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
 
     def get_consumption_power(self):
         time_tuple = time.gmtime(self.env.now)
-        return self.electrical_forecast.get_forecast_at(self.env.now)
+        if self.env.forecast:
+            return self.electrical_forecast.get_forecast_at(self.env.now)
+        else:
+            date_index = approximate_index(self.all_data["dates"], self.env.now)
+            return float(self.all_data["dataset"][date_index])
+            
 
     def get_consumption_energy(self):
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
@@ -222,7 +245,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
             dates = DataLoader.load_from_file(path, "Datum", "\t")
 
             if date.year == 2014:
-                path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_until_may_2014.csv")
+                path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
                 raw_dataset += DataLoader.load_from_file(
                     path, "Strom - Verbrauchertotal (Aktuell)", "\t")
                 dates += DataLoader.load_from_file(path, "Datum", "\t")

@@ -32,8 +32,7 @@ class MeasurementStorage():
                     self.device_map.append((sensor, device))
 
     def take_and_save(self):
-        # save demo values every 15mins
-        if self.env.now % 60 * 60 != 0:
+        if self.env.now % 60  != 0:
             return
         timestamp = datetime.utcfromtimestamp(
             self.env.now).replace(tzinfo=utc)

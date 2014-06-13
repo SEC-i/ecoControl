@@ -1,4 +1,6 @@
 import time
+from datetime import datetime
+from django.utils.timezone import utc
 
 class BaseSystem(object):
 
@@ -33,7 +35,7 @@ class BaseSystem(object):
 
 class BaseEnvironment(object):
 
-    def __init__(self, initial_time=None, demo=False):
+    def __init__(self, initial_time=None, demo=False, forecast=False):
         if initial_time is None:
             self.now = time.time()
         else:
@@ -41,6 +43,8 @@ class BaseEnvironment(object):
 
         self.demo = demo
         self.step_size = 120
+        self.initial_date = datetime.fromtimestamp(self.now).replace(tzinfo=utc)
+        self.forecast = forecast
 
     def get_day_of_year(self):
         return time.gmtime(self.now).tm_yday

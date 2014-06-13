@@ -20,7 +20,7 @@ logger = logging.getLogger('simulation')
 
 
 def get_forecast(initial_time, configurations=None, code=None, forward=None):
-    env = BaseEnvironment(initial_time)
+    env = BaseEnvironment(initial_time,forecast=True)
 
     if configurations is None:
         configurations = DeviceConfiguration.objects.all()
@@ -135,19 +135,19 @@ class DemoSimulation(Thread):
         if neccessary and it makes sure that only
         one demo simulation can run at once
         """
-        if not write_pidfile_or_fail("/tmp/simulation.pid"):
-            # Start demo simulation if in demo mode
-            system_mode = Configuration.objects.get(key='system_mode')
-            if system_mode.value == 'demo':
-                if print_visible:
-                    print 'Starting demo simulation...'
-                else:
-                    logger.debug('Starting demo simulation...')
+        #if not write_pidfile_or_fail("/tmp/simulation.pid"):
+        # Start demo simulation if in demo mode
+        system_mode = Configuration.objects.get(key='system_mode')
+        if system_mode.value == 'demo':
+            if print_visible:
+                print 'Starting demo simulation...'
+            else:
+                logger.debug('Starting demo simulation...')
 
-                simulation = DemoSimulation(get_initial_time())
-                simulation.start()
-                cls.stored_simulation = simulation
-                return simulation
+            simulation = DemoSimulation(get_initial_time())
+            simulation.start()
+            cls.stored_simulation = simulation
+            return simulation
         if cls.stored_simulation != None:
             return cls.stored_simulation
 
