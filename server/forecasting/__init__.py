@@ -5,8 +5,8 @@ from datetime import datetime
 from threading import Thread
 
 from server.models import Device, DeviceConfiguration, Configuration, Sensor, SensorValue
-from server.systems import get_user_function
-from server.helpers import write_pidfile_or_fail
+from server.systems import get_user_function, execute_user_function
+from server.helpers_thread import write_pidfile_or_fail
 
 from helpers import MeasurementStorage, parse_value
 
@@ -21,8 +21,8 @@ DEFAULT_FORECAST_MEASUREMENT_INTERVAL = 15 * 60.0 # has to be multiple of DEFAUL
 logger = logging.getLogger('simulation')
 
 
-def get_forecast(initial_time, configurations=None, code=None):
-    env = BaseEnvironment(initial_time=initial_time, step_size=DEFAULT_FORECAST_STEP_SIZE)
+def get_forecast(initial_time, interval=DEFAULT_FORECAST_INTERVAL, step_size=DEFAULT_FORECAST_STEP_SIZE, measurement_interval=DEFAULT_FORECAST_MEASUREMENT_INTERVAL, configurations=None, code=None):
+    env = BaseEnvironment(initial_time=initial_time, step_size=step_size)
 
     if configurations is None:
         configurations = DeviceConfiguration.objects.all()
@@ -30,31 +30,35 @@ def get_forecast(initial_time, configurations=None, code=None):
     systems = get_initialized_scenario(env, configurations)
 
     measurements = MeasurementStorage(env, systems)
-    user_function = get_user_function(systems, code)
+    user_function = get_user_function(code)
 
-    forward = DEFAULT_FORECAST_INTERVAL
+    forward = interval
     measurement = 0
+    valid = True
     while forward > 0:
-        user_function(*systems)
+        if execute_user_function(user_function, systems, get_forecast):
+            # call step function for all systems
+            for system in systems:
+                system.step()
 
-        # call step function for all systems
-        for system in systems:
-            system.step()
+            if measurement == 0:
+                measurements.take_and_cache()
+                measurement = measurement_interval
+            else:
+                measurement -= env.step_size
 
-        if measurement == 0:
-            measurements.take_and_cache()
-            measurement = DEFAULT_FORECAST_MEASUREMENT_INTERVAL
+            env.now += env.step_size
+            forward -= env.step_size
         else:
-            measurement -= env.step_size
-
-        env.now += env.step_size
-        forward -= env.step_size
+            valid = False
+            break
 
     return {
         'start': datetime.fromtimestamp(initial_time).isoformat(),
-        'step': DEFAULT_FORECAST_MEASUREMENT_INTERVAL,
+        'step': measurement_interval,
         'end': datetime.fromtimestamp(env.now).isoformat(),
-        'sensors': measurements.get_cached()
+        'sensors': measurements.get_cached(),
+        'valid': valid
     }
 
 
@@ -129,7 +133,7 @@ class DemoSimulation(Thread):
         self.systems = get_initialized_scenario(self.env, configurations)
 
         self.measurements = MeasurementStorage(self.env, self.systems)
-        self.user_function = get_user_function(self.systems)
+        self.user_function = get_user_function()
 
         self.running = False
 
@@ -158,20 +162,26 @@ class DemoSimulation(Thread):
 
     def run(self):
         while self.running:
-            self.user_function(*self.systems)
+            if execute_user_function(self.user_function, self.systems, get_forecast):
 
-            # call step function for all systems
-            for system in self.systems:
-                system.step()
+                # call step function for all systems
+                for system in self.systems:
+                    system.step()
 
-            self.measurements.take_and_save()
+                self.measurements.take_and_save()
 
-            if self.forward > 0:
-                self.forward -= self.env.step_size
+                if self.forward > 0:
+                    self.forward -= self.env.step_size
+                else:
+                    time.sleep(1.0 / self.steps_per_second)
+
+                self.env.now += self.env.step_size
             else:
-                time.sleep(1.0 / self.steps_per_second)
+                # poll for new user_function
+                self.user_function = get_user_function()
 
-            self.env.now += self.env.step_size
+                logger.warning('user_function failed')
+                time.sleep(1)
 
     def start(self):
         self.running = True
@@ -184,9 +194,6 @@ class DemoSimulation(Thread):
 
     def is_forwarding(self):
         return self.forward > 0.0
-
-    def update_user_function(self):
-        self.user_function = get_user_function(self.systems)
 
 
 def get_initial_time():
