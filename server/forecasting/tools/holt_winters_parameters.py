@@ -1,4 +1,5 @@
 import numpy as np
+from server.forecasting.tools.plotting import show_plotting
 try:
     from matplotlib.widgets import Slider, Button, RadioButtons
     import matplotlib.pyplot as plt
@@ -39,26 +40,7 @@ def plot_dataset(sensordata,forecast_start=0,block=True):
     forecast_plot, = ax.plot(dates[forecast_start:], sensordata["forecasting"], label="forecasting", linewidth=1.5) #range(forecast_start,len(sensordata["forecasting"])+forecast_start)
     sim_plot, = ax.plot(dates, sensordata["measured"], label="measured", linewidth=1.5)
     
-    # Now add the legend with some customizations.
-    legend = ax.legend(loc='upper center', shadow=True,prop={'size':18})
-    
-    # The frame is matplotlib.patches.Rectangle instance surrounding the legend.
-    frame = legend.get_frame()
-    frame.set_facecolor('0.90')
-    
-    # Set the fontsize
-    for label in legend.get_texts():
-        label.set_fontsize('large')
-    
-    for label in legend.get_lines():
-        label.set_linewidth(5.5)
-    
-    plt.subplots_adjust(bottom=0.2)
-    #plt.xlabel('Simulated time in seconds')
-    #plt.xticks(rotation=90)
-    plt.tick_params(axis='both', which='major', labelsize=16)
-    plt.tick_params(axis='both', which='minor', labelsize=14)
-    plt.grid(True)
+    show_plotting(plt, ax, block)
     
     
     return (fig, sim_plot,forecast_plot)

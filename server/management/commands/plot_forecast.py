@@ -7,6 +7,7 @@ from server.models import SensorValue
 from time import time
 import cProfile
 import dateutil
+from server.forecasting.tools.plotting import show_plotting
 
 
 class Command(BaseCommand):
@@ -42,27 +43,6 @@ class Command(BaseCommand):
                     dates = [dateutil.parser.parse(data_tuple[0]) for data_tuple in dataset["data"]]
                     sim_plot, = ax.plot(dates, data, label=dataset["dataset_name"] + " " + dataset["key"])
             
-        self.show_plotting(plt, ax)
-        
-    def show_plotting(self, plt, ax):
-        # Now add the legend with some customizations.
-        legend = ax.legend(loc='upper center', shadow=True)
-        
-        # The frame is matplotlib.patches.Rectangle instance surrounding the legend.
-        frame = legend.get_frame()
-        frame.set_facecolor('0.90')
-        
-        # Set the fontsize
-        for label in legend.get_texts():
-            label.set_fontsize('medium')
-        
-        for label in legend.get_lines():
-            label.set_linewidth(1.5)
-        
-        plt.subplots_adjust(bottom=0.2)
-        #plt.xlabel('Simulated time in seconds')
-        plt.xticks(rotation=90)
-        plt.grid(True)
-        plt.show()
+        show_plotting(plt, ax, block)
 
         
