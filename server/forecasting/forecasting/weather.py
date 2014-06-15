@@ -9,8 +9,6 @@ from server.forecasting.systems.data.old_demands import outside_temperatures_201
 from server.forecasting.forecasting.helpers import cached_data
 from server.models import WeatherValue, RealWeatherValue
 from django.utils.timezone import utc
-from django.db.models import F
-from django.db.models.query_utils import Q
 
 logger = logging.getLogger('simulation')
 
