@@ -19,8 +19,8 @@ DEFAULT_FORECAST_INTERVAL = 14 * 24 * 3600.0
 logger = logging.getLogger('simulation')
 
 
-def get_forecast(initial_time, configurations=None, code=None, forward=None):
-    env = BaseEnvironment(initial_time,forecast=True)
+def get_forecast(initial_time, configurations=None, code=None, forward=None, forecast=True):
+    env = BaseEnvironment(initial_time,forecast=forecast)
 
     if configurations is None:
         configurations = DeviceConfiguration.objects.all()

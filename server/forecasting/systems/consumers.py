@@ -191,7 +191,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         self.new_data_interval = 24 * 60 * 60  # append data each day
         self.last_forecast_update = self.env.now
         
-        if self.env.demo and not self.env.forecast:
+        if self.env.demo or not self.env.forecast:
             self.all_data = self.get_all_data2014()
 
 
@@ -200,7 +200,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         self.total_consumption += consumption
         self.power_meter.consume_energy(consumption)
         self.power_meter.current_power_consum = self.get_consumption_power()
-        # copyconstructed means its running a forecasting
+        # if this is not a forecast consumer, update the statistical forecasting periodically
         if self.env.demo and not self.env.forecast and self.env.now - self.last_forecast_update > self.new_data_interval:
             self.update_forecast_data()
             

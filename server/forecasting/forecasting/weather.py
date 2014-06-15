@@ -6,7 +6,8 @@ import calendar
 from datetime import datetime, timedelta
 
 from server.forecasting.systems.data.old_demands import outside_temperatures_2013, outside_temperatures_2012
-from server.forecasting.forecasting.helpers import cached_data
+from server.forecasting.forecasting.helpers import cached_data,\
+    approximate_index
 from server.models import WeatherValue, RealWeatherValue
 from django.utils.timezone import utc
 
@@ -22,7 +23,7 @@ class WeatherForecast:
         self.hourly = True
         
         self.cache_day = {}
-        self.cache_real_values = {}
+        self.cache_real_values = [[],[]]
         self.error_day_cache = {}
         
     def get_temperature_estimate(self, date_time):
@@ -81,14 +82,15 @@ class WeatherForecast:
 
     
     def get_temperature(self,date):
-        if not self.cache_real_values.has_key(date.strftime("%Y-%m-%d %H")):
+        if self.cache_real_values == [[],[]]:
             real_temps = RealWeatherValue.objects.all()
             for entry in real_temps:
-                self.cache_real_values[entry.timestamp.strftime("%Y-%m-%d %H")] = float(entry.temperature)
-                
-        return  self.mix(self.cache_real_values[date.strftime("%Y-%m-%d %H")], 
-                         self.cache_real_values[(date + timedelta(hours=1)).strftime("%Y-%m-%d %H")],
-                          date.minute / 60.0)
+                self.cache_real_values[0].append(calendar.timegm(entry.timestamp.utctimetuple()))
+                self.cache_real_values[1].append(float(entry.temperature))
+        
+        g = len(self.cache_real_values)
+        idx = approximate_index(self.cache_real_values[0], calendar.timegm(date.utctimetuple()))
+        return  self.cache_real_values[1][idx]
 
    
         
