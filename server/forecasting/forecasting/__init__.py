@@ -65,7 +65,7 @@ class Forecast:
 
         # demands split into weekdays
         self.demands = Forecast.split_weekdata(input_data, samples_per_hour, start)
-        self.demands = [demand[-self.input_hours:] for demand in self.demands]
+        #self.demands = [demand[-self.input_hours:] for demand in self.demands]
         
         #forecast all demands.. might take long
         self.forecasted_demands = self.forecast_demands(try_cache=try_cache)
@@ -79,21 +79,19 @@ class Forecast:
         # cost-expensive, so only do this once..
         (alpha, beta, gamma) = self.hw_parameters
         print "find holt winter parameters for day: ", index
-        if None not in self.hw_parameters:
-            (forecast_values_manual, alpha, beta, gamma, rmse_manual) = multiplicative(
-                demand, m, fc, alpha, beta, gamma)
-            mase_manual = Forecast.MASE(demand, demand, forecast_values_manual)
-        else:
-            #set to high value, so it will be overwritten 
-            #(if algorithms totally fails, there will be an error though..)
-            mase_manual = 1000 
+
+        (forecast_values_manual, alpha, beta, gamma, rmse_manual) = multiplicative(
+            demand, m, fc, initial_values_optimization= [0.01, 0.9,0.2], optimization_type="RMSE")
+        mase_manual = Forecast.MASE(demand, demand, forecast_values_manual)
+        #set to high value, so it will be overwritten 
+        #(if algorithms totally fails, there will be an error though..)
         rmse_auto = 10 ** 3
         mase_auto = 10 ** 3
         if self.hw_optimization != "None":
             # find values automatically
             # check with MASE error measure
             (forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(
-                demand, m, fc, optimization_type="MASE")
+                demand, m, fc, optimization_type="RMSE")
              
             mase_auto = Forecast.MASE(demand, demand,  forecast_values_auto)
             print mase_auto
@@ -103,7 +101,7 @@ class Forecast:
             forecast_values = forecast_values_auto
             calculated_parameters = {
                 "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_auto, "mase": mase_auto}
-            print "use auto HW with RMSE", rmse_auto, " and MASE ", mase_auto , " with index: " , index
+            print "use auto HW ",calculated_parameters
         else:
             forecast_values = forecast_values_manual
             calculated_parameters = {
@@ -116,7 +114,8 @@ class Forecast:
         split_results = [[] for i in range(7)]
         unordered_forecasts = []
         
-        if try_cache:
+        #TODO: change back
+        if try_cache and False: 
             try:
                 values = pickle.load(open( os.path.join(BASE_DIR,"cache/cached_forecasts.cache"), "rb" ))
                 diff_time = datetime.utcfromtimestamp(values["date"]).replace(tzinfo=utc) - self.time_series_end

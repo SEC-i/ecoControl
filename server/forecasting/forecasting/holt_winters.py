@@ -110,7 +110,7 @@ def MASE(params, *args):
     return errors.mean()/d + penalty
 
 def mean_below_penalty(series, value=0):
-    mean = series.mean()
+    mean = series[len(series) / 2:].mean()
     if mean > value:
         return 0
     else:
