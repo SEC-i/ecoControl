@@ -41,10 +41,9 @@ def exponential_smoothing_step(input, index, (alpha, beta, gamma), (level, trend
         y.append((a[i + 1] + b[i + 1]) * s[i + 1])
         
         
-def parameter_finding(params, *args):
+def onestep_forecasts(params, *args):
     Y = args[0]
     type = args[1]
-    rmse = 0
  
     if type == 0:
  
@@ -90,7 +89,7 @@ def parameter_finding(params, *args):
         
 
 def RMSE(params, *args):
-    (input, forecast) = parameter_finding(params,*args)
+    (input, forecast) = onestep_forecasts(params,*args)
     
     rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(input, forecast[:-1])]) / len(input))
     penalty = mean_below_penalty(np.array(forecast[:-1]))
@@ -98,7 +97,7 @@ def RMSE(params, *args):
     return rmse + penalty
 
 def MASE(params, *args): 
-    (input, forecast) = parameter_finding(params,*args)
+    (input, forecast) = onestep_forecasts(params,*args)
     
     training_series = np.array(input)
     testing_series = np.array(input)
@@ -180,7 +179,7 @@ def additive(x, m, forecast, alpha = None, beta = None, gamma = None,alpha_bound
  
     return Y[-forecast:], alpha, beta, gamma, rmse
  
-def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, initial_values_optimization=[0.0002,0.0003,0.001], optimization_type="RMSE"):
+def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, initial_values_optimization=[0.002, 0.00002, 0.0002], optimization_type="RMSE"):
  
     Y = x[:]
  
@@ -200,10 +199,10 @@ def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, init
     y = [(a[0] + b[0]) * s[0]]
     
     rmse = 0
- 
+    
     for i in range(len(Y) + forecast):
  
-        if i == len(Y):
+        if i >= len(x):
             Y.append((a[-1] + b[-1]) * s[-m])
             
         exponential_smoothing_step(Y, i, (alpha, beta, gamma), (a, b, s, y), 2)
