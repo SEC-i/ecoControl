@@ -50,7 +50,7 @@ class Forecast:
         self.input_weeks = 12
         self.input_hours = self.input_weeks*24*self.samples_per_hour
         #the forecast will cover 8 weeks of future data
-        self.output_weeks = 8
+        self.output_weeks = 2 #TODO: change back to 8
                
         # ending time of input data
         self.time_series_end = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=utc)
@@ -65,24 +65,24 @@ class Forecast:
 
         # demands split into weekdays
         self.demands = Forecast.split_weekdata(input_data, samples_per_hour, start)
-        #self.demands = [demand[-self.input_hours:] for demand in self.demands]
+        self.demands = [demand[-self.input_hours:] for demand in self.demands]
         
         #forecast all demands.. might take long
         self.forecasted_demands = self.forecast_demands(try_cache=try_cache)
         
-    def forecast_demand(self, demand, index, result_dict):
+    def forecast_demand(self, demand, index, result_dict, verbose=False):
         #seasonality length -- one day
         m = 24
         #forecast_length
-        fc = len(demand)
+        fc = self.output_weeks * 24
         # alpha, beta, gamma. if any is None, holt.winters determines them automatically
         # cost-expensive, so only do this once..
         (alpha, beta, gamma) = self.hw_parameters
         print "find holt winter parameters for day: ", index
 
-        (forecast_values_manual, alpha, beta, gamma, rmse_manual) = multiplicative(
-            demand, m, fc, initial_values_optimization= [0.01, 0.9,0.2], optimization_type="RMSE")
-        mase_manual = Forecast.MASE(demand, demand, forecast_values_manual)
+        #(forecast_values_manual, alpha, beta, gamma, rmse_manual) = multiplicative(
+        #    demand, m, fc, initial_values_optimization= [0.01, 0.9,0.2], optimization_type="RMSE")
+        mase_manual = 1000#Forecast.MASE(demand, demand, forecast_values_manual)
         #set to high value, so it will be overwritten 
         #(if algorithms totally fails, there will be an error though..)
         rmse_auto = 10 ** 3
@@ -91,9 +91,9 @@ class Forecast:
             # find values automatically
             # check with MASE error measure
             (forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(
-                demand, m, fc, optimization_type="RMSE")
+                demand, m, fc, optimization_type="MASE")
              
-            mase_auto = Forecast.MASE(demand, demand,  forecast_values_auto)
+            mase_auto = Forecast.MASE(demand, demand[-fc:],  forecast_values_auto)
             print mase_auto
             
             
@@ -101,12 +101,14 @@ class Forecast:
             forecast_values = forecast_values_auto
             calculated_parameters = {
                 "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_auto, "mase": mase_auto}
-            print "use auto HW ",calculated_parameters
+            if verbose:
+                print "use auto HW ",calculated_parameters
         else:
             forecast_values = forecast_values_manual
             calculated_parameters = {
                 "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_manual, "mase": mase_manual}
-            print "use manual HW with RMSE", rmse_manual, " and MASE ", mase_manual, " with index: " , index
+            if verbose:
+                print "use manual HW with RMSE", rmse_manual, " and MASE ", mase_manual, " with index: " , index
         
         result_dict[index] = (forecast_values, calculated_parameters, index)
 

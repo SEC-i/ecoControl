@@ -92,7 +92,7 @@ def RMSE(params, *args):
     (input, forecast) = onestep_forecasts(params,*args)
     
     rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(input, forecast[:-1])]) / len(input))
-    penalty = mean_below_penalty(np.array(forecast[:-1]))
+    penalty = mean_below_penalty(input,24,params,7*24*2)
     
     return rmse + penalty
 
@@ -106,12 +106,15 @@ def MASE(params, *args):
     d = np.abs(  np.diff(training_series) ).sum()/(n-1)
     
     errors = np.abs(testing_series - prediction_series )
-    penalty = mean_below_penalty(prediction_series) 
+    penalty = mean_below_penalty(input,24,params,7*24*2)
     return errors.mean()/d + penalty
 
-def mean_below_penalty(series, value=0):
-    mean = series[len(series) / 2:].mean()
-    if mean > value:
+def mean_below_penalty(input, m, params,fc,value=0):
+    outp = multiplicative(input, m, fc, alpha=params[0], beta=params[1], gamma=params[2])
+    forecast = np.array(outp[0])
+    mean = forecast[len(forecast)/2:].mean()
+    inp_mean = np.array(input).mean()
+    if abs(inp_mean - mean) > inp_mean or mean < value:
         return 0
     else:
         return abs(mean) - value 
@@ -179,7 +182,7 @@ def additive(x, m, forecast, alpha = None, beta = None, gamma = None,alpha_bound
  
     return Y[-forecast:], alpha, beta, gamma, rmse
  
-def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, initial_values_optimization=[0.002, 0.00002, 0.0002], optimization_type="RMSE"):
+def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, initial_values_optimization=[0.002, 0.0, 0.0002], optimization_type="RMSE"):
  
     Y = x[:]
  
