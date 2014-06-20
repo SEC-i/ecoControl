@@ -27,7 +27,8 @@ class Command(BaseCommand):
     help = 'Refresh materialized views for aggregated sensorvalues in the database'
 
     def handle(self, *args, **options):
-        self.error_arrays()
+        self.handle_single_data()
+        #self.error_arrays()
 
         
     def export_rows(self, sensordata, plot_series="all"):
@@ -50,7 +51,7 @@ class Command(BaseCommand):
             import matplotlib.pyplot as plt
         except:
             pass
-        with open(os.path.join(BASE_DIR,name), 'w') as csv:
+        with open(os.path.join("D:\Dropbox\BachelorArbeit\Bachelorarbeiten\Max",name), 'w') as csv:
             w = writer(csv, delimiter='\t')
             if dataset != None:
                 for v in dataset:
@@ -117,8 +118,8 @@ class Command(BaseCommand):
         dates = Forecast.make_hourly([int(d) for d in dates],6)
         demand = Forecast.make_hourly([float(val) / 1000.0 for val in raw_dataset], 6)
         
-        start = calendar.timegm(datetime(year=2014,month=3,day=1).timetuple())
-        end = calendar.timegm(datetime(year=2014,month=5,day=15).timetuple())
+        start = calendar.timegm(datetime(year=2013,month=2,day=15).timetuple())
+        end = calendar.timegm(datetime(year=2014,month=1,day=1).timetuple())
         fc_length = 7*24*2
         
         day_errors = [[0,0] for i in range(7)] #rmse, mase
@@ -168,7 +169,7 @@ class Command(BaseCommand):
         dates = Forecast.make_hourly([int(d) for d in DataLoader.load_from_file(path, "Datum", "\t")],6)
         demand = Forecast.make_hourly([float(val) / 1000.0 for val in raw_dataset], 6)
         
-        start = calendar.timegm(datetime(year=2014,month=2,day=1).timetuple())
+        start = calendar.timegm(datetime(year=2014,month=4,day=1).timetuple())
         start_index = approximate_index(dates, start)
         trainingdata = demand[start_index:-7*24*2]
         testdata = demand[-7*24*2:]
@@ -178,14 +179,15 @@ class Command(BaseCommand):
         electrical_forecast = Forecast(BaseEnvironment(start_forecast, False, False), trainingdata, samples_per_hour=1)
         forecast  = [electrical_forecast.get_forecast_at(timestamp) for timestamp in range(start_forecast,end_forecast,3600)]
         
-        (forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(trainingdata, 7*24, 7*24*2, optimization_type="MASE")
+        #(forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(trainingdata, 7*24, 7*24*2, optimization_type="RMSE")
         #print alpha, beta, gamma, rmse_auto, sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
-        print "normal", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
-        print "split", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast, testdata)]) / len(testdata))
-        #split_testdata = Forecast.split_weekdata(testdata,samples_per_hour=1,start_date=datetime.fromtimestamp(start_forecast))
-        #plot_dataset({"measured": split_testdata[5], "forecasted": electrical_forecast.forecasted_demands[5]}, 0, True)
+        #print "normal", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
+        #print "split", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast, testdata)]) / len(testdata))
+        split_testdata = Forecast.split_weekdata(testdata,samples_per_hour=1,start_date=datetime.fromtimestamp(start_forecast))
+        plot_dataset({"measured": split_testdata[5], "forecasted": electrical_forecast.forecasted_demands[5]}, 0, True)
+        #plot_dataset({"measured":testdata, "forecasted":forecast_values_auto})
         #self.export_rows({"measured": testdata, "forecasted": forecast_values_auto,  "forecasted_split": forecast})
-        self.export_csv(testdata)
+        #self.export_csv(testdata)
            
         
         
