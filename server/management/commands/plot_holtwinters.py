@@ -169,7 +169,7 @@ class Command(BaseCommand):
         dates = Forecast.make_hourly([int(d) for d in DataLoader.load_from_file(path, "Datum", "\t")],6)
         demand = Forecast.make_hourly([float(val) / 1000.0 for val in raw_dataset], 6)
         
-        start = calendar.timegm(datetime(year=2014,month=4,day=1).timetuple())
+        start = calendar.timegm(datetime(year=2014,month=3,day=15).timetuple())
         start_index = approximate_index(dates, start)
         trainingdata = demand[start_index:-7*24*2]
         testdata = demand[-7*24*2:]
@@ -183,9 +183,9 @@ class Command(BaseCommand):
         #print alpha, beta, gamma, rmse_auto, sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
         #print "normal", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
         #print "split", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast, testdata)]) / len(testdata))
-        split_testdata = Forecast.split_weekdata(testdata,samples_per_hour=1,start_date=datetime.fromtimestamp(start_forecast))
-        plot_dataset({"measured": split_testdata[5], "forecasted": electrical_forecast.forecasted_demands[5]}, 0, True)
-        #plot_dataset({"measured":testdata, "forecasted":forecast_values_auto})
+        #split_testdata = Forecast.split_weekdata(testdata,samples_per_hour=1,start_date=datetime.fromtimestamp(start_forecast))
+        #plot_dataset({"measured": split_testdata[5], "forecasted": electrical_forecast.forecasted_demands[5]}, 0, True)
+        plot_dataset({"measured":testdata, "forecasted":forecast})
         #self.export_rows({"measured": testdata, "forecasted": forecast_values_auto,  "forecasted_split": forecast})
         #self.export_csv(testdata)
            

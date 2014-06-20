@@ -42,7 +42,7 @@ def exponential_smoothing_step(input, index, (alpha, beta, gamma), (level, trend
         
         
 def onestep_forecasts(params, *args):
-    Y = args[0]
+    Y = args[0][:]
     type = args[1]
     test_data = args[3]
  
@@ -96,9 +96,10 @@ def RMSE(params, *args):
     (input, forecast) = onestep_forecasts(params,*args)
     test_data = args[3]
     rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(test_data, forecast)]) / len(test_data))
-    #penalty = mean_below_penalty(input,24,params,7*24*2)
+    m = args[2]
+    penalty = mean_below_penalty(input,m,params,m*7)
     
-    return rmse #+ penalty
+    return rmse + penalty
 
 def MASE(params, *args): 
     (input, forecast) = onestep_forecasts(params,*args)
@@ -108,17 +109,17 @@ def MASE(params, *args):
     prediction_series = np.array(forecast)
     n = training_series.shape[0]
     d = np.abs(  np.diff(training_series) ).sum()/(n-1)
-    
+    m = args[2]
     errors = np.abs(testing_series - prediction_series )
-    #penalty = mean_below_penalty(input,24,params,7*24*2)
-    return errors.mean()/d #+ penalty
+    penalty = mean_below_penalty(input,m,params,m*7)
+    return errors.mean()/d + penalty
 
 def mean_below_penalty(input, m, params,fc,value=0):
-    outp = multiplicative(input, m, fc, alpha=params[0], beta=params[1], gamma=params[2])
-    forecast = np.array(outp[0])
-    mean = forecast[len(forecast)/2:].mean()
-    inp_mean = np.array(input).mean()
-    if abs(inp_mean - mean) > inp_mean or mean < value:
+#     outp = multiplicative(input, m, fc, alpha=params[0], beta=params[1], gamma=params[2])
+#     forecast = np.array(outp[0])
+#     mean = forecast[len(forecast)/2:].mean()
+    mean = np.array(input).mean()
+    if mean < value:
         return 0
     else:
         return abs(mean) - value 
@@ -189,21 +190,23 @@ def additive(x, m, forecast, alpha = None, beta = None, gamma = None,alpha_bound
 def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, initial_values_optimization=[0.002, 0.0, 0.0002], optimization_type="RMSE"):
  
     Y = x[:]
- 
+    test = []
     if (alpha == None or beta == None or gamma == None):
  
         initial_values = array(initial_values_optimization)
-        boundaries = [(0, 1), (0, 0), (0, 1)]
+        boundaries = [(0, 1), (0, 0.05), (0, 1)]
         type = 2 #'multiplicative'
         optimization_criterion = RMSE if optimization_type == "RMSE" else MASE
         
         train = Y[:-m*2]
         test = Y[-m*2:]
         
+        Y = train
+
         parameters = fmin_l_bfgs_b(optimization_criterion, x0 = initial_values, args = (train, type, m, test), bounds = boundaries, approx_grad = True,factr=10**3)
         alpha, beta, gamma = parameters[0]
     
-    Y = train
+
  
     a = [sum(Y[0:m]) / float(m)]
     b = [(sum(Y[m:2 * m]) - sum(Y[0:m])) / m ** 2]
@@ -211,10 +214,10 @@ def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, init
     y = [(a[0] + b[0]) * s[0]]
     
     rmse = 0
-    
-    for i in range(len(Y) + forecast):
+
+    for i in range(len(Y) + forecast+len(test)):
  
-        if i >= len(x):
+        if i >= len(Y):
             Y.append((a[-1] + b[-1]) * s[-m])
             
         exponential_smoothing_step(Y, i, (alpha, beta, gamma), (a, b, s, y), 2)
