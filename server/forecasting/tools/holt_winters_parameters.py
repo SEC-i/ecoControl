@@ -66,7 +66,7 @@ def value_changer():
     m = 24
     #forecast length
     fc = int(len(testing_data))
-    (forecast_values, alpha, beta, gamma, rmse) = multiplicative(training_data, m,fc, alpha, beta, gamma)
+    (forecast_values, alpha, beta, gamma) = multiplicative(training_data, m,fc, alpha, beta, gamma)
     print forecast_values
     values ={ 'forecasting':forecast_values, 'measured':input}
     
@@ -87,7 +87,7 @@ def value_changer():
         gamma = gamma_slider.val
         
         
-        (forecast_values, alpha, beta, gamma, rmse) = multiplicative(training_data, m,fc, alpha, beta, gamma)
+        (forecast_values, alpha, beta, gamma) = multiplicative(training_data, m,fc, alpha, beta, gamma)
         values ={ 'forecasting':forecast_values, 'measured':input}
         
         forecast_plot.set_ydata(forecast_values)

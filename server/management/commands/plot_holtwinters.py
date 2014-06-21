@@ -27,8 +27,9 @@ class Command(BaseCommand):
     help = 'Refresh materialized views for aggregated sensorvalues in the database'
 
     def handle(self, *args, **options):
-        self.handle_single_data()
-        #self.error_arrays()
+        #self.strom_real()
+        #self.handle_single_data()
+        self.error_arrays()
 
         
     def export_rows(self, sensordata, plot_series="all"):
@@ -101,9 +102,7 @@ class Command(BaseCommand):
             hour_errors[hour][0] += self.rmse(hour_values_forecast, hour_values_test)
             hour_errors[hour][1] += Forecast.MASE(hour_values_train, hour_values_test, hour_values_forecast)
             
-
-                
-    def error_arrays(self):
+    def strom_real(self):
         sep = os.path.sep
         path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_2013.csv")
         raw_dataset = DataLoader.load_from_file(
@@ -116,7 +115,50 @@ class Command(BaseCommand):
         dates += DataLoader.load_from_file(path, "Datum", "\t")
         
         dates = Forecast.make_hourly([int(d) for d in dates],6)
-        demand = Forecast.make_hourly([float(val) / 1000.0 for val in raw_dataset], 6)
+        demand = Forecast.make_hourly([float(val) / 1000.0 for val in raw_dataset], 6)  
+        
+        
+        hourly_weekday = [[0,0] for i in range(24)]
+        hourly_weekend = [[0,0] for i in range(24)]
+        
+        start = calendar.timegm(datetime(year=2013,month=1,day=1).timetuple())
+        end = calendar.timegm(datetime(year=2014,month=1,day=1).timetuple())
+        
+        day = datetime(year=2013,month=1,day=1).weekday()
+        for i,h in enumerate(demand):
+            if day in [5,6]:
+                hourly_weekend[i%24][0] += h
+                hourly_weekend[i%24][1] += 1
+            else:
+                hourly_weekday[i%24][0] += h
+                hourly_weekday[i%24][1] += 1
+                
+            if i %24 == 0:
+                day = (day+1) % 7
+        hourly_weekend = [r/l for r,l in hourly_weekend]
+        hourly_weekday = [r/l for r,l in hourly_weekday]
+        
+        self.export_csv(datasets=[("weekday",hourly_weekday),("weekend", hourly_weekend)],name="avg.csv")
+                
+    def error_arrays(self):
+        sep = os.path.sep
+        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_2013-6.2014Reger.csv")
+        raw_dataset1 = DataLoader.load_from_file(
+            path, "Energie DG Leistung", "\t")
+        raw_dataset2 = DataLoader.load_from_file(
+            path, "Energie EG Leistung", "\t")
+        
+        dates = DataLoader.load_from_file(path, "Datum", "\t")
+
+#         path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
+#         raw_dataset += DataLoader.load_from_file(
+#             path, "Strom - Verbrauchertotal (Aktuell)", "\t")
+#         dates += DataLoader.load_from_file(path, "Datum", "\t")
+        transf = lambda v: min(float(v) / 1000.0,500)
+        demand = [transf(v1) + transf(v2) for v1,v2 in zip(raw_dataset1,raw_dataset2)]
+        
+        dates = Forecast.make_hourly([int(d) for d in dates],6)
+        demand = Forecast.make_hourly(demand,6)#[float(val) / 1000.0 for val in raw_dataset], 6)
         
         start = calendar.timegm(datetime(year=2013,month=2,day=15).timetuple())
         end = calendar.timegm(datetime(year=2014,month=1,day=1).timetuple())
@@ -145,7 +187,7 @@ class Command(BaseCommand):
         period_errors = [[r/l,m/l] for r,m in period_errors]
             
 
-        #(forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(trainingdata, 7*24, 7*24*2, optimization_type="MASE")
+        #(forecast_values_auto, alpha, beta, gamma) = multiplicative(trainingdata, 7*24, 7*24*2, optimization_type="MASE")
         #print alpha, beta, gamma, rmse_auto, sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
         #print "normal", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
         #print "split", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast, testdata)]) / len(testdata))
@@ -159,7 +201,8 @@ class Command(BaseCommand):
         
         self.export_csv(datasets=[("day_errors_rmse", zip(*day_errors)[0]), ("day_errors_mase", zip(*day_errors)[1]),
                           ("hour_errors_rmse", zip(*hour_errors)[0]), ("hour_errors_mase", zip(*hour_errors)[1]), 
-                          ("period_errors_rmse", zip(*period_errors)[0]), ("hour_errors_mase", zip(*period_errors)[1])])
+                          ("period_errors_rmse", zip(*period_errors)[0]), ("hour_errors_mase", zip(*period_errors)[1])],
+                        name="eval_reger.csv")
                 
     def handle_single_data(self):
         sep = os.path.sep
@@ -179,7 +222,7 @@ class Command(BaseCommand):
         electrical_forecast = Forecast(BaseEnvironment(start_forecast, False, False), trainingdata, samples_per_hour=1)
         forecast  = [electrical_forecast.get_forecast_at(timestamp) for timestamp in range(start_forecast,end_forecast,3600)]
         
-        #(forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(trainingdata, 7*24, 7*24*2, optimization_type="RMSE")
+        #(forecast_values_auto, alpha, beta, gamma) = multiplicative(trainingdata, 7*24, 7*24*2, optimization_type="RMSE")
         #print alpha, beta, gamma, rmse_auto, sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
         #print "normal", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
         #print "split", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast, testdata)]) / len(testdata))

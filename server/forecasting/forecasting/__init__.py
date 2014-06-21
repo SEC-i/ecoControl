@@ -90,26 +90,20 @@ class Forecast:
         if self.hw_optimization != "None":
             # find values automatically
             # check with MASE error measure
-            (forecast_values_auto, alpha, beta, gamma, rmse_auto) = multiplicative(
+            (forecast_values_auto, alpha, beta, gamma) = multiplicative(
                 demand, m, fc, optimization_type="MASE")
              
             mase_auto = Forecast.MASE(demand, demand[-fc:],  forecast_values_auto)
             print mase_auto
             
             
-        if mase_manual > mase_auto:
-            forecast_values = forecast_values_auto
-            calculated_parameters = {
-                "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_auto, "mase": mase_auto}
-            if verbose:
-                print "use auto HW ",calculated_parameters
-        else:
-            forecast_values = forecast_values_manual
-            calculated_parameters = {
-                "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_manual, "mase": mase_manual}
-            if verbose:
-                print "use manual HW with RMSE", rmse_manual, " and MASE ", mase_manual, " with index: " , index
-        
+
+        forecast_values = forecast_values_auto
+        calculated_parameters = {
+            "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": rmse_auto, "mase": mase_auto}
+        if verbose:
+            print "use auto HW ",calculated_parameters
+
         result_dict[index] = (forecast_values, calculated_parameters, index)
 
     def forecast_demands(self, try_cache=True):

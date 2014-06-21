@@ -41,83 +41,54 @@ def exponential_smoothing_step(input, index, (alpha, beta, gamma), (level, trend
         y.append((a[i + 1] + b[i + 1]) * s[i + 1])
         
         
-def onestep_forecasts(params, *args):
-    Y = args[0][:]
+def _holt_winters(params, *args):
+    train = args[0][:]
     type = args[1]
+    m = args[2]
     test_data = args[3]
  
     if type == 0:
- 
+
         alpha, beta = params
-        a = [Y[0]]
-        b = [Y[1] - Y[0]]
-        y = [a[0] + b[0]]
- 
-        for i in range(len(Y)):
-            
-            exponential_smoothing_step(Y, i, (alpha, beta, None), (a, b, None, y), 0)
- 
+        linear(train, len(test_data), alpha, beta)
     else:
  
         alpha, beta, gamma = params
-        m = args[2]        
-        a = [sum(Y[0:m]) / float(m)]
-        b = [(sum(Y[m:2 * m]) - sum(Y[0:m])) / m ** 2]
- 
+        
         if type == 1:
- 
-            s = [Y[i] - a[0] for i in range(m)]
-            y = [a[0] + b[0] + s[0]]
- 
-            for i in range(len(Y)):
-                
-                exponential_smoothing_step(Y, i, (alpha, beta, gamma), (a, b, s, y), 1)
- 
+            forecast,a,b,c = additive(train, m, len(test_data), alpha=alpha,beta=beta,gamma=gamma)
         elif type == 2:
- 
-            s = [Y[i] / a[0] for i in range(m)]
-            y = [(a[0] + b[0]) * s[0]]
- 
-            for i in range(len(Y) + len(test_data)):
-         
-                if i >= len(Y):
-                    Y.append((a[-1] + b[-1]) * s[-m])
-                    
-                exponential_smoothing_step(Y, i, (alpha, beta, gamma), (a, b, s, y), 2)
- 
+            forecast,a,b,c = multiplicative(train, m, len(test_data), alpha=alpha,beta=beta,gamma=gamma)
         else:
  
             exit('Type must be either linear, additive or multiplicative')
-            
-        return (Y[:-len(test_data)],Y[-len(test_data):])
+    
+    return forecast
         
 
 def RMSE(params, *args):
-    (input, forecast) = onestep_forecasts(params,*args)
+    forecast = _holt_winters(params,*args)
     test_data = args[3]
     rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(test_data, forecast)]) / len(test_data))
-    m = args[2]
-    penalty = mean_below_penalty(input,m,params,m*7)
+    penalty = mean_below_penalty(input)
     
     return rmse + penalty
 
 def MASE(params, *args): 
-    (input, forecast) = onestep_forecasts(params,*args)
+    input = args[0]
+    forecast = _holt_winters(params,*args)
     
     training_series = np.array(input)
     testing_series = np.array(args[3])
     prediction_series = np.array(forecast)
     n = training_series.shape[0]
     d = np.abs(  np.diff(training_series) ).sum()/(n-1)
-    m = args[2]
+    
     errors = np.abs(testing_series - prediction_series )
-    penalty = mean_below_penalty(input,m,params,m*7)
+    penalty = mean_below_penalty(input)
     return errors.mean()/d + penalty
 
-def mean_below_penalty(input, m, params,fc,value=0):
-#     outp = multiplicative(input, m, fc, alpha=params[0], beta=params[1], gamma=params[2])
-#     forecast = np.array(outp[0])
-#     mean = forecast[len(forecast)/2:].mean()
+def mean_below_penalty(input, value=0):
     mean = np.array(input).mean()
     if mean < value:
         return 0
@@ -157,14 +128,14 @@ def linear(x, forecast, alpha = None, beta = None):
  
     return Y[-forecast:], alpha, beta, rmse
  
-def additive(x, m, forecast, alpha = None, beta = None, gamma = None,alpha_bound=0.01):
+def additive(x, m, forecast, alpha = None, beta = None, gamma = None):
  
     Y = x[:]
  
     if (alpha == None or beta == None or gamma == None):
  
         initial_values = array([0.3, 0.1, 0.1])
-        boundaries = [(0, alpha_bound), (0, 1), (0, 1)]
+        boundaries = [(0, 1), (0, 1), (0, 1)]
         type = 1#'additive'
  
         parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, type, m), bounds = boundaries, approx_grad = True,factr=10**6)
@@ -174,7 +145,6 @@ def additive(x, m, forecast, alpha = None, beta = None, gamma = None,alpha_bound
     b = [(sum(Y[m:2 * m]) - sum(Y[0:m])) / m ** 2]
     s = [Y[i] - a[0] for i in range(m)]
     y = [a[0] + b[0] + s[0]]
-    rmse = 0
  
     for i in range(len(Y) + forecast):
  
@@ -190,7 +160,7 @@ def additive(x, m, forecast, alpha = None, beta = None, gamma = None,alpha_bound
 def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, initial_values_optimization=[0.002, 0.0, 0.0002], optimization_type="RMSE"):
  
     Y = x[:]
-    test = []
+    test_series = []
     if (alpha == None or beta == None or gamma == None):
  
         initial_values = array(initial_values_optimization)
@@ -198,33 +168,28 @@ def multiplicative(x, m, forecast, alpha = None, beta = None, gamma = None, init
         type = 2 #'multiplicative'
         optimization_criterion = RMSE if optimization_type == "RMSE" else MASE
         
-        train = Y[:-m*2]
-        test = Y[-m*2:]
+        train_series = Y[:-m*2]
+        test_series = Y[-m*2:]
         
-        Y = train
+        Y = train_series
 
-        parameters = fmin_l_bfgs_b(optimization_criterion, x0 = initial_values, args = (train, type, m, test), bounds = boundaries, approx_grad = True,factr=10**3)
+        parameters = fmin_l_bfgs_b(optimization_criterion, x0 = initial_values, args = (train_series, type, m, test_series), bounds = boundaries, approx_grad = True,factr=10**3)
         alpha, beta, gamma = parameters[0]
     
 
- 
     a = [sum(Y[0:m]) / float(m)]
     b = [(sum(Y[m:2 * m]) - sum(Y[0:m])) / m ** 2]
     s = [Y[i] / a[0] for i in range(m)]
     y = [(a[0] + b[0]) * s[0]]
     
-    rmse = 0
 
-    for i in range(len(Y) + forecast+len(test)):
+    for i in range(len(Y) + forecast+len(test_series)):
  
         if i >= len(Y):
             Y.append((a[-1] + b[-1]) * s[-m])
             
         exponential_smoothing_step(Y, i, (alpha, beta, gamma), (a, b, s, y), 2)
         
- 
-    rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y[:-forecast], y[:-forecast - 1])]) / len(Y[:-forecast]))
- 
-    return Y[-forecast:], alpha, beta, gamma, rmse
+    return Y[-forecast:], alpha, beta, gamma
 
 
