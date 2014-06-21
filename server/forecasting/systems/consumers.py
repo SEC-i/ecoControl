@@ -179,20 +179,20 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         self.total_consumption = 0.0  # kWh
         # ! TODO: this will have to replaced by a database"
         global electrical_forecast
-        if electrical_forecast == None:
+        if electrical_forecast == None and False: #TODO: change back
             raw_dataset = self.get_data_until(self.env.now)
             # cast to float and convert to kW
             dataset = [float(val) / 1000.0 for val in raw_dataset]
             hourly_data = Forecast.make_hourly(dataset, 6)
             electrical_forecast = Forecast(
                 self.env, hourly_data, samples_per_hour=1)
-        self.electrical_forecast = electrical_forecast
+        #self.electrical_forecast = electrical_forecast
 
         self.new_data_interval = 24 * 60 * 60  # append data each day
         self.last_forecast_update = self.env.now
         
-        if self.env.demo or not self.env.forecast:
-            self.all_data = self.get_all_data2014()
+        #if self.env.demo or not self.env.forecast:
+        #    self.all_data = self.get_all_data2014()
 
 
     def step(self):
@@ -201,8 +201,8 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         self.power_meter.consume_energy(consumption)
         self.power_meter.current_power_consum = self.get_consumption_power()
         # if this is not a forecast consumer, update the statistical forecasting periodically
-        if self.env.demo and not self.env.forecast and self.env.now - self.last_forecast_update > self.new_data_interval:
-            self.update_forecast_data()
+        #if self.env.demo and not self.env.forecast and self.env.now - self.last_forecast_update > self.new_data_interval:
+        #    self.update_forecast_data()
             
     def get_all_data2014(self):
         sep = os.path.sep
@@ -224,6 +224,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
 
     def get_consumption_power(self):
         time_tuple = time.gmtime(self.env.now)
+        return 1
         if self.env.forecast:
             return self.electrical_forecast.get_forecast_at(self.env.now)
         else:

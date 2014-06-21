@@ -13,6 +13,9 @@ from server.functions import get_past_time
 from server.forecasting.tools.plotting import show_plotting
 from server.settings import BASE_DIR
 from server.forecasting.forecasting.holt_winters import multiplicative
+from datetime import datetime, timedelta
+from math import sqrt
+from server.forecasting.forecasting.helpers import approximate_index
 
 
 class Command(BaseCommand):
@@ -24,19 +27,50 @@ class Command(BaseCommand):
             initial_time = calendar.timegm(latest_timestamp.timetuple())
         except SensorValue.DoesNotExist:
             initial_time = time()
+            
+        try:
+            import matplotlib.pyplot as plt
+        except:
+            pass
         
-        forecasted = get_forecast(initial_time)
-        for dataset in forecasted:
-            dataset["dataset_name"] = "forecasted"
-        measured = get_forecast(initial_time, forecast=False)
-        for dataset in measured:
-            dataset["dataset_name"] = "measured"
+        start = int(initial_time)
+        end = int(initial_time + timedelta(days=30).total_seconds())
+        fc_length = 7*24*2
+        
+        day_errors = [0 for i in range(10)] #rmse
+        
+        for timestamp in range(start, end, 24*3600):
+            forecasted = get_forecast(timestamp)
+            measured = get_forecast(timestamp, forecast=False)
+
+            get_dataset =  lambda data, k: next((x["data"] for x in data if x["key"] == k), None)
+            convert_dataset = lambda data: [(v,calendar.timegm(dateutil.parser.parse(date).timetuple())) for date,v in data]
+            temp_m = convert_dataset( get_dataset(measured,"get_outside_temperature"))
+            temp_f = convert_dataset( get_dataset(forecasted,"get_outside_temperature"))
+            
+            temp_m = convert_dataset( get_dataset(measured,"get_outside_temperature"))
+            temp_f = convert_dataset( get_dataset(forecasted,"get_outside_temperature"))
+            
+            horizon = int(timedelta(days=10).total_seconds())    
+            for i, current_time in enumerate(range(timestamp, timestamp+horizon, 24*3600)):
+                
+                slice = lambda data: [val for val, date in data if date >= current_time and date < current_time + 24*3600]
+                measured_slice = slice(temp_m)
+                forecast_sclice = slice(temp_f)
+                day_errors[i] += self.rmse(forecast_sclice, measured_slice)
+                
+        l = 30    
+        day_errors = [r/l for r in day_errors]
         #self.plot_simulations([measured, forecasted], 0, plot_series=["Thermal Consumerget_outside_temperature", "Heat Storageget_temperature"], block=True)
         
         
         
+        self.export_csv_dataset(datasets=[("day_errors_rmse",  day_errors)])
+        #self.export_rows([measured, forecasted], plot_series=["Thermal Consumerget_outside_temperature"])
         
-        self.export_rows([measured, forecasted], plot_series=["Thermal Consumerget_outside_temperature", "Heat Storageget_temperature"])
+    def rmse(self, forecast, testdata):
+        return sqrt(sum([(m - n) ** 2 for m, n in zip(forecast, testdata)]) / len(testdata))
+         
         
         #cProfile.runctx("get_forecast(initial_time)",globals(),locals(),filename="profile.profile")
     def plot_simulations(self, sensordata_sets,forecast_start=0, plot_series="all", block=True):
@@ -102,6 +136,30 @@ class Command(BaseCommand):
                         output += "\n\n\n"
             _file.write(output)
             print "finito"
+    
+    def export_csv_dataset(self, datasets=[], dataset=None,name='evaluation_weather.csv', plot_series="all"):
+        try:
+            import matplotlib.pyplot as plt
+        except:
+            pass
+        with open(os.path.join("D:\Dropbox\BachelorArbeit\Bachelorarbeiten\Max",name), 'w') as csv:
+            w = writer(csv, delimiter='\t')
+            if dataset != None:
+                for v in dataset:
+                    w.writerow([v])
+            if datasets != []:
+                labels = zip(*datasets)[0]
+                w.writerow(labels)
+                
+                for index in range(24):
+                    row = []
+                    for label,dataset in datasets:
+                        if len(dataset) > index:
+                            row.append(dataset[index])
+                        else:
+                            row.append("")
+
+                    w.writerow(row)
         
                     
             
