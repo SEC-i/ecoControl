@@ -33,8 +33,29 @@ class Command(BaseCommand):
         except:
             pass
         
+        
+#         forecasted = get_forecast(initial_time)
+#         for dataset in forecasted:
+#             dataset["dataset_name"] = "forecasted"
+#         measured = get_forecast(initial_time, forecast=False)
+#         for dataset in measured:
+#             dataset["dataset_name"] = "measured"
+        #self.plot_simulations([measured, forecasted], 0, plot_series=["Thermal Consumerget_outside_temperature", "Heat Storageget_temperature"], block=True)
+        
+        
+        
+        self.day_errors()
+        #self.export_csv([measured, forecasted], plot_series=["Thermal Consumerget_outside_temperature", "Heat Storageget_temperature"])
+        #self.export_csv_dataset(datasets=[("day_errors_rmse",  day_errors)])
+    
+    def day_errors(self):
+        try:
+            latest_timestamp = get_past_time()
+            initial_time = calendar.timegm(latest_timestamp.timetuple())
+        except SensorValue.DoesNotExist:
+            initial_time = time()
         start = int(initial_time)
-        end = int(initial_time + timedelta(days=30).total_seconds())
+        end = int(initial_time + timedelta(days=20).total_seconds())
         fc_length = 7*24*2
         
         day_errors = [0 for i in range(10)] #rmse
@@ -54,10 +75,10 @@ class Command(BaseCommand):
             horizon = int(timedelta(days=10).total_seconds())    
             for i, current_time in enumerate(range(timestamp, timestamp+horizon, 24*3600)):
                 
-                slice = lambda data: [val for val, date in data if date >= current_time and date < current_time + 24*3600]
+                slice = lambda data: [(val,date) for val, date in data if date >= current_time and date < current_time + 24*3600]
                 measured_slice = slice(temp_m)
-                forecast_sclice = slice(temp_f)
-                day_errors[i] += self.rmse(forecast_sclice, measured_slice)
+                forecast_sclice = [self.approximate_value(temp_f,date) for val, date in measured_slice]
+                day_errors[i] += self.rmse(forecast_sclice, zip(*measured_slice)[0])
                 
         l = 30    
         day_errors = [r/l for r in day_errors]
@@ -70,7 +91,23 @@ class Command(BaseCommand):
         
     def rmse(self, forecast, testdata):
         return sqrt(sum([(m - n) ** 2 for m, n in zip(forecast, testdata)]) / len(testdata))
-         
+    
+    def approximate_value(self, dataset_tuples, findvalue):
+        values, dates = zip(*dataset_tuples)
+        length = len(dates)
+        #aproximate index
+        diff = (dates[1] - dates[0])
+        i = min(int((findvalue - dates[0])/diff), length -1)
+        while i < length and i >= 0:
+            if i == length -1:
+                return values[i] if dates[i] == findvalue else None
+            if  dates[i] == findvalue or (dates[i] < findvalue and dates[i+1] > findvalue):
+                return values[i]
+            elif dates[i] > findvalue:
+                i-=1
+            else:
+                i+=1
+        return None   
         
         #cProfile.runctx("get_forecast(initial_time)",globals(),locals(),filename="profile.profile")
     def plot_simulations(self, sensordata_sets,forecast_start=0, plot_series="all", block=True):

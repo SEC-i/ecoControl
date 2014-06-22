@@ -10,7 +10,7 @@ class HeatStorage(BaseSystem):
             'capacity': 2500,  # liters
             'base_temperature': 20.0,  # assume no lower temperature
             'min_temperature': 55.0,  # degree Celsius
-            'target_temperature': 70.0,  # degree Celsius
+            'target_temperature': 85.0,  # degree Celsius
             'critical_temperature': 90.0,  # degree Celsius
             'specific_heat_capacity': 4.19 / 3600.0  # kWh/(kg*K)
         }
