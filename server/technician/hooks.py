@@ -140,12 +140,12 @@ def forward(request):
 
     demo_sim = DemoSimulation.start_or_get()
 
-    if demo_sim.env.forward > 0:
-        return create_json_response(request, "simulation is still forwarding", request)
+    if demo_sim.forward > 0:
+        return create_json_response("simulation is still forwarding", request)
 
-    demo_sim.forward_demo(forward_time)
+    demo_sim.forward = forward_time
 
-    return create_json_response(request, "ok", request)
+    return create_json_response("ok", request)
 
 
 def list_thresholds(request):

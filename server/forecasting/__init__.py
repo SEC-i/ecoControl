@@ -121,7 +121,7 @@ class DemoSimulation(Thread):
         self.daemon = True
 
         self.steps_per_second = 3600.0 / 120
-        self.forward = 0
+        self.forward = 3600 * 24 * 30
 
         initial_time = (int(initial_time) / 3600) * 3600.0
         # initialize real-time environment
@@ -132,7 +132,7 @@ class DemoSimulation(Thread):
 
         self.systems = get_initialized_scenario(self.env, configurations)
 
-        self.measurements = MeasurementStorage(self.env, self.systems)
+        self.measurements = MeasurementStorage(self.env, self.systems, demo=True)
         self.user_function = get_user_function()
 
         self.running = False
