@@ -224,7 +224,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
 
     def get_consumption_power(self):
         time_tuple = time.gmtime(self.env.now)
-        return 1
+        return 20
         if self.env.forecast:
             return self.electrical_forecast.get_forecast_at(self.env.now)
         else:
