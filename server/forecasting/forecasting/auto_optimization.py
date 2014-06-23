@@ -12,9 +12,13 @@ from server.systems.base import BaseEnvironment
 from server.functions import get_configuration
 import multiprocessing
 from multiprocessing.process import Process
+import os
+from server.settings import BASE_DIR
+from csv import writer
+import dateutil
 
 
-DEFAULT_FORECAST_INTERVAL = 12 * 3600.0
+DEFAULT_FORECAST_INTERVAL = 1 * 3600.0
 
 def simulation_run(code=None):
     from server.forecasting import get_initialized_scenario
@@ -24,7 +28,11 @@ def simulation_run(code=None):
     from server.forecasting import get_forecast
     
     
-    initial_time = calendar.timegm(datetime(year=2013,month=2,day=1).timetuple())
+    initial_time = calendar.timegm(datetime(year=2014,month=3,day=15).timetuple())
+    
+
+    
+    
     env = BaseEnvironment(initial_time)
     configurations = DeviceConfiguration.objects.all()
     
@@ -32,8 +40,8 @@ def simulation_run(code=None):
     [hs,pm,cu,plb,tc,ec] = systems
     measurements = MeasurementStorage(env, systems)
 
-
-    forward = 4 * 24 * 3600.0 #month
+    days = 7
+    forward = days * 24 * 3600.0 #month
     next_auto_optim = 0.0
     while forward > 0:
         measurements.take_and_cache()
@@ -50,12 +58,17 @@ def simulation_run(code=None):
         forward -= env.step_size
         next_auto_optim -= env.step_size
     
-    
-    plot_dataset(measurements.get(), 0, False)
-    plb.overwrite_workload = None
-    cu.overwrite_workload = None
-    values = get_forecast(initial_time, forward=forward)
-    plot_dataset(measurements.get(), 0, True)
+    values_norm = get_forecast(initial_time, forward=days * 24 * 3600.0, forecast=False)
+    #plot_dataset(values_norm, 0, True)
+
+
+    values_optim = measurements.get()
+    #plot_dataset(values_optim, 0, False)
+    #plb.overwrite_workload = None
+    #cu.overwrite_workload = None
+    #values = get_forecast(initial_time, forward=forward, forecast=False)
+    #plot_dataset(values, 0, True)
+    return (values_norm, values_optim)
 
 def auto_optimize(env, systems, configurations):
     optimized_config = find_optimal_config(env.now, systems, configurations)
@@ -143,9 +156,6 @@ def total_costs(systems, prices, rewards):
 def multiprocess_map(target,params, *args):
         mgr = multiprocessing.Manager()
         dict_threadsafe = mgr.dict()
-        
-        
-
 
         jobs = [Process(target=target_wrapper, args=(target,param,index,dict_threadsafe,args)) for index, param in enumerate(params)]
         for job in jobs: job.start()

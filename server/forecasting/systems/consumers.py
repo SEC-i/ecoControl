@@ -16,7 +16,7 @@ from server.settings import BASE_DIR
 
 electrical_forecast = None
 weather_forecast = None
-
+all_data = None
 
 class SimulatedThermalConsumer(ThermalConsumer):
 
@@ -193,7 +193,9 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         
         #if self.env.demo or not self.env.forecast:
         #    self.all_data = self.get_all_data2014()
-
+        global all_data
+        if all_data == None:
+            all_data = self.get_all_data2014()
 
     def step(self):
         consumption = self.get_consumption_energy()
@@ -224,7 +226,12 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
 
     def get_consumption_power(self):
         time_tuple = time.gmtime(self.env.now)
-        return 20
+        
+        
+        date_index = approximate_index(all_data["dates"], self.env.now)
+        return float(all_data["dataset"][date_index])
+        
+        
         if self.env.forecast:
             return self.electrical_forecast.get_forecast_at(self.env.now)
         else:
