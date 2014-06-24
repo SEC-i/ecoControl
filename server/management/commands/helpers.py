@@ -55,3 +55,5 @@ def export_rows(sensordata_sets,name="evaluation.txt", plot_series="all"):
                     output += "\n\n\n"
         _file.write(output)
         print "finito"
+        
+        

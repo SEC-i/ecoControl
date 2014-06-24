@@ -14,12 +14,13 @@ from server.forecasting import get_forecast
 from server.functions import get_past_time
 from server.forecasting.tools.plotting import show_plotting, plot_dataset
 from server.settings import BASE_DIR
-from server.forecasting.forecasting.holt_winters import multiplicative
+from server.forecasting.forecasting.holt_winters import multiplicative, linear
 from server.forecasting.forecasting.helpers import approximate_index
 from server.forecasting.forecasting.dataloader import DataLoader
 from server.forecasting.forecasting import Forecast
 from math import sqrt
 from server.systems.base import BaseEnvironment
+from server.forecasting.tools.holt_winters_parameters_linear_removethis import value_changer
 
 
 
@@ -28,8 +29,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         #self.strom_real()
-        #self.handle_single_data()
-        self.error_arrays()
+        self.handle_single_data()
+        #value_changer()
+        #self.error_arrays()
 
         
     def export_rows(self, sensordata, plot_series="all"):
@@ -104,7 +106,7 @@ class Command(BaseCommand):
             
     def strom_real(self):
         sep = os.path.sep
-        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_2013.csv")
+        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_2012Reger.csv")
         raw_dataset = DataLoader.load_from_file(
             path, "Strom - Verbrauchertotal (Aktuell)", "\t")
         dates = DataLoader.load_from_file(path, "Datum", "\t")
@@ -209,27 +211,27 @@ class Command(BaseCommand):
         path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
         raw_dataset = DataLoader.load_from_file(
             path, "Strom - Verbrauchertotal (Aktuell)", "\t")
-        dates = Forecast.make_hourly([int(d) for d in DataLoader.load_from_file(path, "Datum", "\t")],6)
-        demand = Forecast.make_hourly([float(val) / 1000.0 for val in raw_dataset], 6)
+        dates = [int(d) for d in DataLoader.load_from_file(path, "Datum", "\t")]#Forecast.make_hourly([int(d) for d in DataLoader.load_from_file(path, "Datum", "\t")],6)
+        demand =[float(val) / 1000.0 for val in raw_dataset]# Forecast.make_hourly([float(val) / 1000.0 for val in raw_dataset], 6)
         
         start = calendar.timegm(datetime(year=2014,month=3,day=15).timetuple())
         start_index = approximate_index(dates, start)
-        trainingdata = demand[start_index:-7*24*2]
+        trainingdata = demand[start_index:start_index+24*6]
         testdata = demand[-7*24*2:]
         start_forecast = start+len(trainingdata)*3600
         end_forecast = start_forecast + len(testdata) * 3600
         
-        electrical_forecast = Forecast(BaseEnvironment(start_forecast, False, False), trainingdata, samples_per_hour=1)
-        forecast  = [electrical_forecast.get_forecast_at(timestamp) for timestamp in range(start_forecast,end_forecast,3600)]
+        #electrical_forecast = Forecast(BaseEnvironment(start_forecast, False, False), trainingdata, samples_per_hour=1)
+        #forecast  = [electrical_forecast.get_forecast_at(timestamp) for timestamp in range(start_forecast,end_forecast,3600)]
         
-        #(forecast_values_auto, alpha, beta, gamma) = multiplicative(trainingdata, 7*24, 7*24*2, optimization_type="RMSE")
+        (forecast, alpha, beta, smoothing) = linear(trainingdata, 24*6,alpha=0.4,beta=0.1)
         #print alpha, beta, gamma, rmse_auto, sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
         #print "normal", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
         #print "split", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast, testdata)]) / len(testdata))
         #split_testdata = Forecast.split_weekdata(testdata,samples_per_hour=1,start_date=datetime.fromtimestamp(start_forecast))
         #plot_dataset({"measured": split_testdata[5], "forecasted": electrical_forecast.forecasted_demands[5]}, 0, True)
-        plot_dataset({"measured":testdata, "forecasted":forecast})
-        #self.export_rows({"measured": testdata, "forecasted": forecast_values_auto,  "forecasted_split": forecast})
+        plot_dataset({"measured":trainingdata, "forecasted":smoothing[1:]})
+        self.export_rows({"measured": trainingdata, "forecasted": smoothing[1:]})#,  "forecasted_split": forecast})
         #self.export_csv(testdata)
            
         
