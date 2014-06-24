@@ -20,18 +20,19 @@ import dateutil
 
 DEFAULT_FORECAST_INTERVAL = 1 * 3600.0
 
-def simulation_run(code=None):
+def simulation_run(start=None,code=None):
     from server.forecasting import get_initialized_scenario
     from server.forecasting.helpers import MeasurementStorage
     from server.models import DeviceConfiguration
     from server.systems import get_user_function
     from server.forecasting import get_forecast
     
-    
-    initial_time = calendar.timegm(datetime(year=2014,month=3,day=15).timetuple())
+    if start==None:
+        initial_time = calendar.timegm(datetime(year=2014,month=4,day=20).timetuple())
+    else:
+        initial_time = start
     
 
-    
     
     env = BaseEnvironment(initial_time)
     configurations = DeviceConfiguration.objects.all()
@@ -39,10 +40,16 @@ def simulation_run(code=None):
     systems = get_initialized_scenario(env, configurations)
     [hs,pm,cu,plb,tc,ec] = systems
     measurements = MeasurementStorage(env, systems)
+    
 
-    days = 7
+    days = 30
     forward = days * 24 * 3600.0 #month
     next_auto_optim = 0.0
+    
+    #values = get_forecast(initial_time, forward=forward, forecast=False)
+    #plot_dataset(values, 0, True)
+    
+    
     while forward > 0:
         measurements.take_and_cache()
 

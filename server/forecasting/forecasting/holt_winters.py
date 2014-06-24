@@ -126,7 +126,7 @@ def linear(x, forecast, alpha = None, beta = None):
     rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(Y[:-forecast], y[:-forecast - 1])]) / len(Y[:-forecast]))
 
  
-    return Y[-forecast:], alpha, beta, rmse
+    return Y[-forecast:], alpha, beta, y[:-forecast]
  
 def additive(x, m, forecast, alpha = None, beta = None, gamma = None):
  
