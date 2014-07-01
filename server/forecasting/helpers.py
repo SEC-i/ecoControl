@@ -17,7 +17,7 @@ class MeasurementStorage():
         self.env = env
         self.devices = devices
         self.sensors = Sensor.objects.filter(
-            device_id__in=[x.id for x in devices])
+            device_id__in=[x.id for x in self.devices])
 
         if demo:
             # initialize for demo

@@ -15,8 +15,8 @@ class Worker(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.daemon = True
-        self.user_function = get_user_function()
         (self.env, self.systems) = get_initialized_scenario()
+        self.user_function = get_user_function(self.systems)
 
     def run(self):
         step = 0

@@ -27,10 +27,10 @@ def get_forecast(initial_time, interval=DEFAULT_FORECAST_INTERVAL, step_size=DEF
     if configurations is None:
         configurations = DeviceConfiguration.objects.all()
 
-    systems = get_initialized_scenario(env, configurations)
+    (env, systems) = get_initialized_scenario(env, configurations)
 
     measurements = MeasurementStorage(env, systems)
-    user_function = get_user_function(code)
+    user_function = get_user_function(systems, code)
 
     forward = interval
     measurement = 0
@@ -133,7 +133,7 @@ class DemoSimulation(Thread):
         (self.env, self.systems) = get_initialized_scenario(env, configurations)
 
         self.measurements = MeasurementStorage(self.env, self.systems, demo=True)
-        self.user_function = get_user_function()
+        self.user_function = get_user_function(self.systems)
 
         self.running = False
 
@@ -178,7 +178,7 @@ class DemoSimulation(Thread):
                 self.env.now += self.env.step_size
             else:
                 # poll for new user_function
-                self.user_function = get_user_function()
+                self.user_function = get_user_function(self.systems)
 
                 logger.warning('user_function failed')
                 time.sleep(1)

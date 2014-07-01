@@ -32,8 +32,8 @@ def get_initialized_scenario():
         return (env, systems)
 
 
-def get_user_function(code=None):
-    local_names = ['systems', 'forecast', 'env']
+def get_user_function(systems, code=None):
+    local_names = ['env', 'forecast'] + ['device_%s' % x.id for x in systems]
 
     if code is None:
         with open('server/user_code.py', "r") as code_file:
@@ -56,7 +56,7 @@ def get_user_function(code=None):
 
 def execute_user_function(user_function, env, systems, forecast):
     try:
-        user_function(env, systems, forecast)
+        user_function(env, forecast, *systems)
         return True
     except:
         return False
