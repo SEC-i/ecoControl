@@ -1,7 +1,13 @@
 import time
 from threading import Thread
+import logging
+
+from server.forecasting import get_forecast
+from server.systems import get_initialized_scenario, get_user_function, execute_user_function
 
 import functions
+
+logger = logging.getLogger('worker')
 
 
 class Worker(Thread):
@@ -9,13 +15,17 @@ class Worker(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.daemon = True
+        self.user_function = get_user_function()
+        self.systems = get_initialized_scenario()
 
     def run(self):
         step = 0
         while True:
             # every minute
             functions.check_thresholds()
-            functions.execute_user_code()
+
+            if not execute_user_function(self.user_function, self.systems, get_forecast):
+                logger.warning('user_function failed')
 
             # every 10 minutes
             if step % 10 == 0:

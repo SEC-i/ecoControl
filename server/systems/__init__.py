@@ -32,8 +32,8 @@ def get_initialized_scenario():
         return system_list
 
 
-def get_user_function(systems, code=None):
-    local_names = ['device_%s' % system.id for system in systems]
+def get_user_function(code=None):
+    local_names = ['systems', 'forecast']
 
     if code is None:
         with open('server/user_code.py', "r") as code_file:
@@ -52,6 +52,14 @@ def get_user_function(systems, code=None):
     exec source in namespace  # execute code in namespace
 
     return namespace['user_function']
+
+
+def execute_user_function(user_function, systems, forecast):
+    try:
+        user_function(systems, forecast)
+        return True
+    except:
+        return False
 
 
 def perform_configuration(data):
