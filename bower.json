@@ -28,7 +28,7 @@
     "jquery": "~2.1.1",
     "jquery-address": "*",
     "jquery-cookie": "~1.4.1",
-    "jquery-dateFormat": "4f48a013410bb434a6ad237b77ec879e7afe051a",
+    "jquery-dateFormat": "~1.0.1",
     "jquery-ui": "~1.11.0",
     "mustache": "~0.8.2",
     "TableCSVExport": "BP2013H1/TableCSVExport",
