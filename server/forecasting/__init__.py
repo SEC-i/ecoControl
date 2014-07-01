@@ -36,7 +36,7 @@ def get_forecast(initial_time, interval=DEFAULT_FORECAST_INTERVAL, step_size=DEF
     measurement = 0
     valid = True
     while forward > 0:
-        if execute_user_function(user_function, systems, get_forecast):
+        if execute_user_function(user_function, env, systems, get_forecast):
             # call step function for all systems
             for system in systems:
                 system.step()
@@ -64,16 +64,16 @@ def get_forecast(initial_time, interval=DEFAULT_FORECAST_INTERVAL, step_size=DEF
 
 def get_initialized_scenario(env, configurations):
         devices = list(Device.objects.all())
-        system_list = []
+        systems = []
         for device in devices:
             for device_type, class_name in Device.DEVICE_TYPES:
                 if device.device_type == device_type:
                     system_class = globals()['Simulated%s' % class_name]
-                    system_list.append(system_class(device.id, env))
+                    systems.append(system_class(device.id, env))
 
-        for device in system_list:
+        for device in systems:
             # connect power systems
-            device.find_dependent_devices_in(system_list)
+            device.find_dependent_devices_in(systems)
             if not device.connected():
                 logger.error(
                     "Simulation: Device %s is not connected" % device.name)
@@ -110,7 +110,7 @@ def get_initialized_scenario(env, configurations):
             # re-calculate values
             device.calculate()
 
-        return system_list
+        return (env, systems)
 
 
 class DemoSimulation(Thread):
@@ -124,13 +124,13 @@ class DemoSimulation(Thread):
         self.forward = 3600 * 24 * 30
 
         initial_time = (int(initial_time) / 3600) * 3600.0
-        # initialize real-time environment
-        self.env = BaseEnvironment(initial_time=initial_time, demo=True)
+
+        env = BaseEnvironment(initial_time=initial_time, demo=True)
 
         if configurations is None:
             configurations = DeviceConfiguration.objects.all()
 
-        self.systems = get_initialized_scenario(self.env, configurations)
+        (self.env, self.systems) = get_initialized_scenario(env, configurations)
 
         self.measurements = MeasurementStorage(self.env, self.systems, demo=True)
         self.user_function = get_user_function()
@@ -162,7 +162,7 @@ class DemoSimulation(Thread):
 
     def run(self):
         while self.running:
-            if execute_user_function(self.user_function, self.systems, get_forecast):
+            if execute_user_function(self.user_function, self.env, self.systems, get_forecast):
 
                 # call step function for all systems
                 for system in self.systems:

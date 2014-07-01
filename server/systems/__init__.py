@@ -12,16 +12,16 @@ logger = logging.getLogger('simulation')
 
 def get_initialized_scenario():
         devices = list(Device.objects.all())
-        system_list = []
+        systems = []
         env = BaseEnvironment()
         for device in devices:
             for device_type, class_name in Device.DEVICE_TYPES:
                 if device.device_type == device_type:
                     system_class = globals()[class_name]
-                    system_list.append(system_class(device.id, env))
+                    systems.append(system_class(device.id, env))
 
         # configurations = DeviceConfiguration.objects.all()
-        # for device in system_list:
+        # for device in systems:
         #     # configure systems
         #     for configuration in configurations:
         #         if configuration.device_id == device.id:
@@ -29,11 +29,11 @@ def get_initialized_scenario():
         #             if configuration.key in device.config:
         #                 device.config[configuration.key] = value
 
-        return system_list
+        return (env, systems)
 
 
 def get_user_function(code=None):
-    local_names = ['systems', 'forecast']
+    local_names = ['systems', 'forecast', 'env']
 
     if code is None:
         with open('server/user_code.py', "r") as code_file:
@@ -54,9 +54,9 @@ def get_user_function(code=None):
     return namespace['user_function']
 
 
-def execute_user_function(user_function, systems, forecast):
+def execute_user_function(user_function, env, systems, forecast):
     try:
-        user_function(systems, forecast)
+        user_function(env, systems, forecast)
         return True
     except:
         return False

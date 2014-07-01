@@ -16,7 +16,7 @@ class Worker(Thread):
         Thread.__init__(self)
         self.daemon = True
         self.user_function = get_user_function()
-        self.systems = get_initialized_scenario()
+        (self.env, self.systems) = get_initialized_scenario()
 
     def run(self):
         step = 0
@@ -24,7 +24,7 @@ class Worker(Thread):
             # every minute
             functions.check_thresholds()
 
-            if not execute_user_function(self.user_function, self.systems, get_forecast):
+            if not execute_user_function(self.user_function, self.env, self.systems, get_forecast):
                 logger.warning('user_function failed')
 
             # every 10 minutes
