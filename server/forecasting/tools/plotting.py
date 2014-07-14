@@ -55,7 +55,7 @@ def show_plotting(plt, ax, block):
     plt.tick_params(axis='both', which='major', labelsize=16)
     plt.tick_params(axis='both', which='minor', labelsize=14)
     plt.grid(True)
-    plt.show(True)
+    plt.show(block)
         
 class Plotting(object):
 

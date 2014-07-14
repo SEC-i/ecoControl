@@ -81,7 +81,7 @@ class Command(BaseCommand):
                 
     def one_forecast(self, trainingdata, testdata, start_forecast, end_forecast, period_errors):
         
-        #electrical_forecast = Forecast(BaseEnvironment(start_forecast, False, False), trainingdata, samples_per_hour=1)
+        #electrical_forecast = DayTypeForecast(BaseEnvironment(start_forecast, False, False), trainingdata, samples_per_hour=1)
         #forecast  = [electrical_forecast.get_forecast_at(timestamp) for timestamp in range(start_forecast,end_forecast,3600)]
         forecast_nodaysplit, (alpha, beta, gamma, delta,autocorr), insample = double_seasonal(trainingdata,24,24*7,len(testdata) ,optimization_type="RMSE")
         
@@ -91,9 +91,9 @@ class Command(BaseCommand):
         
         
 #         for day, day_data in enumerate(electrical_forecast.forecasted_demands):
-#             split_testdata = Forecast.split_weekdata(testdata,samples_per_hour=1,start_date=datetime.fromtimestamp(start_forecast))
+#             split_testdata = DayTypeForecast.split_weekdata(testdata,samples_per_hour=1,start_date=datetime.fromtimestamp(start_forecast))
 #             day_errors[day][0] += self.rmse(day_data, split_testdata[day])
-#             day_errors[day][1] += Forecast.MASE(electrical_forecast.demands[day], split_testdata[day], electrical_forecast.forecasted_demands[day])
+#             day_errors[day][1] += DayTypeForecast.MASE(electrical_forecast.demands[day], split_testdata[day], electrical_forecast.forecasted_demands[day])
 #             
             
 #         hour_maker = lambda data,hour: [val for i, val in enumerate(data) if i % 24  == hour]
@@ -103,7 +103,7 @@ class Command(BaseCommand):
 #             hour_values_forecast = hour_maker(forecast, hour)
 #             
 #             hour_errors[hour][0] += self.rmse(hour_values_forecast, hour_values_test)
-#             hour_errors[hour][1] += Forecast.MASE(hour_values_train, hour_values_test, hour_values_forecast)
+#             hour_errors[hour][1] += DayTypeForecast.MASE(hour_values_train, hour_values_test, hour_values_forecast)
             
     def strom_real(self):
         sep = os.path.sep
@@ -130,8 +130,8 @@ class Command(BaseCommand):
         
         
 
-        #split_testdata1 = Forecast.split_weekdata(demand1,samples_per_hour=1,start_date=datetime.fromtimestamp(dates1[0]))
-        #split_testdata2 = Forecast.split_weekdata(demand2,samples_per_hour=1,start_date=datetime.fromtimestamp(dates2[0]))
+        #split_testdata1 = DayTypeForecast.split_weekdata(demand1,samples_per_hour=1,start_date=datetime.fromtimestamp(dates1[0]))
+        #split_testdata2 = DayTypeForecast.split_weekdata(demand2,samples_per_hour=1,start_date=datetime.fromtimestamp(dates2[0]))
         #for index, dataset in enumerate(split_testdata1):
         #    print self.rmse(split_testdata2[index], dataset)#Forecast.MASE(dataset, dataset[:len(split_testdata2[index])],split_testdata2[index][:len(dataset)])
         t3 = time()
@@ -206,7 +206,7 @@ class Command(BaseCommand):
         #print alpha, beta, gamma, rmse_auto, sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
         #print "normal", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
         #print "split", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast, testdata)]) / len(testdata))
-        #split_testdata = Forecast.split_weekdata(testdata,samples_per_hour=1,start_date=datetime.fromtimestamp(start_forecast))
+        #split_testdata = DayTypeForecast.split_weekdata(testdata,samples_per_hour=1,start_date=datetime.fromtimestamp(start_forecast))
         #plot_dataset({"measured": split_testdata[5], "forecasted": electrical_forecast.forecasted_demands[5]}, 0, True)
         #self.export_rows({"measured": testdata, "forecasted": forecast_values_auto,  "forecasted_split": forecast})
         
@@ -234,7 +234,7 @@ class Command(BaseCommand):
         start_forecast = test_start*3600
         end_forecast = start_forecast + len(testdata) * 3600
         
-        #electrical_forecast = Forecast(BaseEnvironment(start_forecast, False, False), trainingdata, samples_per_hour=1)
+        #electrical_forecast = DayTypeForecast(BaseEnvironment(start_forecast, False, False), trainingdata, samples_per_hour=1)
         #forecast  = [electrical_forecast.get_forecast_at(timestamp) for timestamp in range(start_forecast,end_forecast,3600)]
         
         #(forecast, alpha, beta, smoothing) = linear(trainingdata, 24*6,alpha=0.4,beta=0.1)
@@ -244,7 +244,7 @@ class Command(BaseCommand):
         #print alpha, beta, gamma, rmse_auto, sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
         #print "normal", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
         #print "split", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast, testdata)]) / len(testdata))
-        #split_testdata = Forecast.split_weekdata(testdata,samples_per_hour=1,start_date=datetime.fromtimestamp(start_forecast))
+        #split_testdata = DayTypeForecast.split_weekdata(testdata,samples_per_hour=1,start_date=datetime.fromtimestamp(start_forecast))
         #plot_dataset({"measured": split_testdata[5], "forecasted": electrical_forecast.forecasted_demands[5]}, 0, True)
         plot_dataset({"measured":testdata, "forecasted":forecast_nodaysplit})
         #self.export_rows({"measured": testdata, "forecasted daysplit": forecast, "nodaysplit": forecast_nodaysplit})#,  "forecasted_split": forecast})

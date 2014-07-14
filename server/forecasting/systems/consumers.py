@@ -8,7 +8,8 @@ from django.utils.timezone import utc
 from server.systems.consumers import ThermalConsumer, ElectricalConsumer
 from server.forecasting.systems.data.old_demands import warm_water_demand_workday, warm_water_demand_weekend
 from server.forecasting.forecasting.weather import WeatherForecast
-from server.forecasting.forecasting import Forecast
+from server.forecasting.forecasting import Forecast, DayTypeForecast,\
+    DSHWForecast
 from server.forecasting.forecasting.dataloader import DataLoader
 from server.forecasting.forecasting.helpers import approximate_index
 from server.settings import BASE_DIR
@@ -179,12 +180,12 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         self.total_consumption = 0.0  # kWh
         # ! TODO: this will have to replaced by a database"
         global electrical_forecast
-        if electrical_forecast == None and False: #TODO: change back
+        if electrical_forecast == None:
             raw_dataset = self.get_data_until(self.env.now)
             # cast to float and convert to kW
             dataset = [float(val) / 1000.0 for val in raw_dataset]
             hourly_data = Forecast.make_hourly(dataset, 6)
-            electrical_forecast = Forecast(
+            electrical_forecast = DSHWForecast(
                 self.env, hourly_data, samples_per_hour=1)
         #self.electrical_forecast = electrical_forecast
 

@@ -199,14 +199,14 @@ def multiplicative(x, m, forecast, alpha=None, beta=None, gamma=None, initial_va
 
 #m = intraday, m2 = intraweek seasonality
 def double_seasonal(x, m, m2, forecast, alpha = None, beta = None, gamma = None,delta=None,
-                    autocorrelation=None, initial_values_optimization=[0.1, 0.0, 0.2, 0.2, 0.9], optimization_type="RMSE"):
+                    autocorrelation=None, initial_values_optimization=[0.1, 0.0, 0.2, 0.2, 0.9], optimization_type="RMSE", beta_bound=0.0):
  
     Y = x[:]
     test_series = []
     if (alpha == None or beta == None or gamma == None):
  
         initial_values = array(initial_values_optimization)
-        boundaries = [(0, 1), (0, 0.0), (0, 1), (0,1), (0,1)]
+        boundaries = [(0, 1), (0, beta_bound), (0, 1), (0,1), (0,1)]
         hw_type = 3 #'double seasonal
         optimization_criterion = RMSE if optimization_type == "RMSE" else MASE
         
