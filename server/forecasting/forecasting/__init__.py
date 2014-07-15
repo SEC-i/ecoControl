@@ -23,7 +23,7 @@ class Forecast:
     @param start: start date of input data
     @param hw_parameters: tuple with (alpha, beta, gamma)
     @param hw_optimisation: "None" --> given hw_parameters are always used (fastest, hw_parameters required)
-                            "RMSE" --> Root Mean Square Error used as optimization parameter for Holt-Winters (slow)
+                            "MSE" --> Mean Square Error used as optimization parameter for Holt-Winters
                             "MASE" --> Mean Absolute Scaled Error is used. Yields most accurate results (slowest)
     """
 
@@ -49,7 +49,7 @@ class Forecast:
         
         #only forecast with this many weeks of data, approx 3 months
         self.input_weeks = 12
-        self.input_hours = self.input_weeks*24*self.samples_per_hour
+        self.input_hours = self.input_weeks*24*7*self.samples_per_hour
         #the forecast will cover 8 weeks of future data
         self.output_weeks = 8
                
@@ -143,7 +143,8 @@ class DSHWForecast(Forecast):
     def forecast_at(self, timestamp):
         date = datetime.utcfromtimestamp(timestamp).replace(tzinfo=utc)
         delta = (date - self.time_series_end).total_seconds()
-        return self.forecasted_demands[int(delta / 3600 * self.samples_per_hour)]
+        print int(delta / 3600 * self.samples_per_hour)
+        return [self.forecasted_demands[int(delta / 3600 * self.samples_per_hour)]]
     
     def process_inputdata(self, data, samples_per_hour,start):
         return [data]
@@ -154,24 +155,24 @@ class DSHWForecast(Forecast):
             return cached
         demand = self.demands[0] #dshw demands only contains one dataset
         sph = self.samples_per_hour
-        fc = self.output_weeks * 24 * self.samples_per_hour #forecast_length
+        fc = self.output_weeks * 24 * 7 * self.samples_per_hour #forecast_length
         if None not in self.hw_parameters:
             (alpha, beta, gamma, delta, autocorr) = self.hw_parameters
         else:
-            (alpha, beta, gamma, delta, autocorr) = (None, None, None, None)
+            (alpha, beta, gamma, delta, autocorr) = (None for i in range(5))
             
-        forecast_values, (alpha, beta, gamma, autocorrelation),in_sample = double_seasonal(self.demands, m=24*sph, m2=24*7*sph,
-                                                                           fc=fc, alpha=alpha, beta=beta, gamma=gamma, delta=delta,
+        forecast_values, (alpha, beta, gamma, delta, autocorrelation),in_sample = double_seasonal(demand, m=24*sph, m2=24*7*sph,
+                                                                           forecast=fc, alpha=alpha, beta=beta, gamma=gamma, delta=delta,
                                                                             autocorrelation=autocorr)
         mase = Forecast.MASE(demand, demand[-fc:],  forecast_values)
         
         calculated_parameters = {
             "alpha": alpha, "beta": beta, "gamma": gamma, "delta":delta, 
-            "autocorrelation":autocorrelation, "rmse": in_sample, "mase": mase}
+            "autocorrelation":autocorrelation, "mse": in_sample, "mase": mase}
         if verbose:
             print "use auto HW ",calculated_parameters
         
-        return forecast_values, calculated_parameters
+        return forecast_values
     
     def append_values(self, data, start_date=None):
         demand = self.demands[0]
@@ -208,7 +209,7 @@ class DayTypeForecast(Forecast):
     def forecast_multiplicative(self, demand, index, result_dict, verbose=False):
         #seasonality length -- one day
         m = 24 * self.samples_per_hour
-        fc = self.output_weeks * 24 * self.samples_per_hour #forecast_length
+        fc = self.output_weeks * 24 * 7 *  self.samples_per_hour #forecast_length
         # alpha, beta, gamma. if any is None, holt.winters determines them automatically
         # cost-expensive, so only do this once..
         (alpha, beta, gamma) = self.hw_parameters
@@ -216,12 +217,12 @@ class DayTypeForecast(Forecast):
 
         # find values automatically
         # check with MASE error measure
-        forecast_values, (alpha, beta, gamma),in_sample = multiplicative(demand, m, fc, optimization_type="RMSE")
+        forecast_values, (alpha, beta, gamma),in_sample = multiplicative(demand, m, fc, optimization_type="MSE")
              
         mase = Forecast.MASE(demand, demand[-fc:],  forecast_values)
 
         calculated_parameters = {
-            "alpha": alpha, "beta": beta, "gamma": gamma, "rmse": in_sample, "mase": mase}
+            "alpha": alpha, "beta": beta, "gamma": gamma, "mse": in_sample, "mase": mase}
         if verbose:
             print "use auto HW ",calculated_parameters
             

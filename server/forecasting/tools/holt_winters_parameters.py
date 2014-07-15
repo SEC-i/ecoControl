@@ -12,7 +12,7 @@ from datetime import date, datetime, timedelta
 import matplotlib.pyplot as plt
 
 
-def RMSE(input, forecast):
+def MSE(input, forecast):
     rmse = sqrt(sum([(m - n) ** 2 for m, n in zip(input, forecast[:-1])]) / len(input))
     #penalty = mean_below_penalty(np.array(forecast[:-1]))
     
@@ -113,7 +113,7 @@ def value_changer():
         sim_plot.set_ydata(testdata)
         fig.canvas.draw_idle()
         
-        print alpha, beta, gamma, RMSE(testdata, forecast_values)
+        print alpha, beta, gamma, MSE(testdata, forecast_values)
         
         
     alpha_slider.on_changed(update_hw)

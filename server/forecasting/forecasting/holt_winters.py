@@ -79,19 +79,19 @@ def _holt_winters(params, *args):
                                                              autocorrelation=autocorrelation)
     else:
     
-        exit('type must be either linear, additive or multiplicative')
+        exit('type must be either linear, additive, multiplicative or double seasonal')
     
     return forecast, onestepfcs
         
 
-def RMSE(params, *args):
+def MSE(params, *args):
     forecast, onestepfcs = _holt_winters(params,*args)
     test_data = args[3]
     train = args[0]
-    rmse_outofsample = sqrt(sum([(m - n) ** 2 for m, n in zip(test_data, forecast)]) / len(test_data))
-    rmse_insample = sqrt(sum([(m - n) ** 2 for m, n in zip(train, onestepfcs)]) / len(train))
+    mse_outofsample = sum([(m - n) ** 2 for m, n in zip(test_data, forecast)]) / len(test_data)
+    mse_insample = sum([(m - n) ** 2 for m, n in zip(train, onestepfcs)]) / len(train)
     
-    return rmse_insample +rmse_outofsample
+    return mse_insample + mse_outofsample
 
 def MASE(params, *args): 
     input = args[0]
@@ -117,7 +117,7 @@ def linear(x, forecast, alpha = None, beta = None):
         boundaries = [(0, 1), (0, 1)]
         hw_type = 0#'linear'
  
-        parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, hw_type), bounds = boundaries, approx_grad = True)
+        parameters = fmin_l_bfgs_b(MSE, x0 = initial_values, args = (Y, hw_type), bounds = boundaries, approx_grad = True)
         alpha, beta = parameters[0]
  
     a = [Y[0]]
@@ -145,7 +145,7 @@ def additive(x, m, forecast, alpha = None, beta = None, gamma = None):
         boundaries = [(0, 1), (0, 1), (0, 1)]
         hw_type = 1#'additive'
  
-        parameters = fmin_l_bfgs_b(RMSE, x0 = initial_values, args = (Y, hw_type, m), bounds = boundaries, approx_grad = True,factr=10**6)
+        parameters = fmin_l_bfgs_b(MSE, x0 = initial_values, args = (Y, hw_type, m), bounds = boundaries, approx_grad = True,factr=10**6)
         alpha, beta, gamma = parameters[0]
  
     a = [sum(Y[0:m]) / float(m)]
@@ -163,7 +163,7 @@ def additive(x, m, forecast, alpha = None, beta = None, gamma = None):
  
     return Y[-forecast:], (alpha, beta, gamma), y[:-forecast]
  
-def multiplicative(x, m, forecast, alpha=None, beta=None, gamma=None, initial_values_optimization=[0.002, 0.0, 0.0002], optimization_type="RMSE"):
+def multiplicative(x, m, forecast, alpha=None, beta=None, gamma=None, initial_values_optimization=[0.002, 0.0, 0.0002], optimization_type="MSE"):
  
     Y = x[:]
     test_series = []
@@ -172,7 +172,7 @@ def multiplicative(x, m, forecast, alpha=None, beta=None, gamma=None, initial_va
         initial_values = array(initial_values_optimization)
         boundaries = [(0, 1), (0, 0.05), (0, 1)]
         hw_type = 2 #'multiplicative'
-        optimization_criterion = RMSE if optimization_type == "RMSE" else MASE
+        optimization_criterion = MSE if optimization_type == "MSE" else MASE
         
         train_series = Y[:-m*2]
         test_series = Y[-m*2:]
@@ -203,7 +203,7 @@ def multiplicative(x, m, forecast, alpha=None, beta=None, gamma=None, initial_va
 
 #m = intraday, m2 = intraweek seasonality
 def double_seasonal(x, m, m2, forecast, alpha = None, beta = None, gamma = None,delta=None,
-                    autocorrelation=None, initial_values_optimization=[0.1, 0.0, 0.2, 0.2, 0.9], optimization_type="RMSE", beta_bound=0.0):
+                    autocorrelation=None, initial_values_optimization=[0.1, 0.0, 0.2, 0.2, 0.9], optimization_type="MSE", beta_bound=0.0):
  
     Y = x[:]
     test_series = []
@@ -212,7 +212,7 @@ def double_seasonal(x, m, m2, forecast, alpha = None, beta = None, gamma = None,
         initial_values = array(initial_values_optimization)
         boundaries = [(0, 1), (0, beta_bound), (0, 1), (0,1), (0,1)]
         hw_type = 3 #'double seasonal
-        optimization_criterion = RMSE if optimization_type == "RMSE" else MASE
+        optimization_criterion = MSE if optimization_type == "MSE" else MASE
         
         train_series = Y[:-m2*1]
         test_series = Y[-m2*1:]

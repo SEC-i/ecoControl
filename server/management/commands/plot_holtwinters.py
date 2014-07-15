@@ -18,7 +18,8 @@ from server.forecasting.forecasting.holt_winters import multiplicative, linear,\
     double_seasonal
 from server.forecasting.forecasting.helpers import approximate_index
 from server.forecasting.forecasting.dataloader import DataLoader
-from server.forecasting.forecasting import Forecast
+from server.forecasting.forecasting import Forecast, DayTypeForecast,\
+    DSHWForecast
 from math import sqrt
 from server.systems.base import BaseEnvironment
 from server.forecasting.tools.holt_winters_parameters import value_changer
@@ -30,9 +31,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         #self.strom_real()
-        #self.handle_single_data()
+        self.handle_single_data()
         #value_changer()
-        self.error_arrays()
+        #self.error_arrays()
 
         
     def export_rows(self, sensordata, plot_series="all"):
@@ -234,19 +235,19 @@ class Command(BaseCommand):
         start_forecast = test_start*3600
         end_forecast = start_forecast + len(testdata) * 3600
         
-        #electrical_forecast = DayTypeForecast(BaseEnvironment(start_forecast, False, False), trainingdata, samples_per_hour=1)
-        #forecast  = [electrical_forecast.get_forecast_at(timestamp) for timestamp in range(start_forecast,end_forecast,3600)]
+        electrical_forecast = DSHWForecast(BaseEnvironment(start_forecast, False, False), trainingdata, samples_per_hour=1)
+        forecast  = [electrical_forecast.get_forecast_at(timestamp) for timestamp in range(start_forecast,end_forecast,3600)]
         
         #(forecast, alpha, beta, smoothing) = linear(trainingdata, 24*6,alpha=0.4,beta=0.1)
         #forecast_nodaysplit, (alpha, beta, gamma), insample = multiplicative(trainingdata,24*7,len(testdata) ,optimization_type="RMSE")
-        forecast_nodaysplit, (alpha, beta, gamma, delta, autocorr), insample = double_seasonal(trainingdata,24,24*7,len(testdata) ,optimization_type="RMSE")
-        print alpha, beta, gamma, delta
+        #forecast_nodaysplit, (alpha, beta, gamma, delta, autocorr), insample = double_seasonal(trainingdata,24,24*7,len(testdata) ,optimization_type="RMSE")
+        #print alpha, beta, gamma, delta
         #print alpha, beta, gamma, rmse_auto, sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
         #print "normal", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast_values_auto, testdata)]) / len(testdata))
         #print "split", sqrt(sum([(m - n) ** 2 for m, n in zip(forecast, testdata)]) / len(testdata))
         #split_testdata = DayTypeForecast.split_weekdata(testdata,samples_per_hour=1,start_date=datetime.fromtimestamp(start_forecast))
         #plot_dataset({"measured": split_testdata[5], "forecasted": electrical_forecast.forecasted_demands[5]}, 0, True)
-        plot_dataset({"measured":testdata, "forecasted":forecast_nodaysplit})
+        plot_dataset({"measured":testdata, "forecasted":forecast})
         #self.export_rows({"measured": testdata, "forecasted daysplit": forecast, "nodaysplit": forecast_nodaysplit})#,  "forecasted_split": forecast})
         #self.export_csv(testdata)
            
