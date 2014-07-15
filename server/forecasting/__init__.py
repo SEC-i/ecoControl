@@ -44,7 +44,7 @@ def get_forecast(initial_time, configurations=None, code=None, forward=None, for
         
 #         if next_auto_optim <= 0.0:  
 #             auto_optimize(env,systems,configurations)
-#             next_auto_optim = 12 * 3600.0
+#             next_auto_optim = 3600.0
 
         env.now += env.step_size
         forward -= env.step_size

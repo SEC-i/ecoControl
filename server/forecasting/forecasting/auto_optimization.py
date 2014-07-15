@@ -66,16 +66,12 @@ def simulation_run(start=None,code=None):
         next_auto_optim -= env.step_size
     
     values_norm = get_forecast(initial_time, forward=days * 24 * 3600.0, forecast=False)
-    #plot_dataset(values_norm, 0, True)
 
 
     values_optim = measurements.get()
-    #plot_dataset(values_optim, 0, False)
-    #plb.overwrite_workload = None
-    #cu.overwrite_workload = None
-    #values = get_forecast(initial_time, forward=forward, forecast=False)
-    #plot_dataset(values, 0, True)
     return (values_norm, values_optim)
+
+
 
 def auto_optimize(env, systems, configurations):
     optimized_config = find_optimal_config(env.now, systems, configurations)
@@ -115,7 +111,6 @@ def find_optimal_config(initial_time, systems, configurations):
                                epsilon=1, maxfun =50)
     cu_workload, = parameters[0]
     
-
     return {"cu_overwrite_workload":cu_workload}
 
 def estimate_cost(params, *args):
