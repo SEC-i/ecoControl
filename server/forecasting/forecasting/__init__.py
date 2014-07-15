@@ -27,7 +27,7 @@ class Forecast:
                             "MASE" --> Mean Absolute Scaled Error is used. Yields most accurate results (slowest)
     """
 
-    def __init__(self, env, input_data, samples_per_hour=1, start=None, hw_parameters=(), hw_optimization="MASE", **kwargs):
+    def __init__(self, env, input_data, samples_per_hour=1, start=None, hw_parameters=(), hw_optimization="MSE", **kwargs):
         if hw_parameters == ():
             self.hw_parameters = (None, None, None)
         else:
@@ -164,11 +164,10 @@ class DSHWForecast(Forecast):
         forecast_values, (alpha, beta, gamma, delta, autocorrelation),in_sample = double_seasonal(demand, m=24*sph, m2=24*7*sph,
                                                                            forecast=fc, alpha=alpha, beta=beta, gamma=gamma, delta=delta,
                                                                             autocorrelation=autocorr)
-        mase = Forecast.MASE(demand, demand[-fc:],  forecast_values)
         
         calculated_parameters = {
             "alpha": alpha, "beta": beta, "gamma": gamma, "delta":delta, 
-            "autocorrelation":autocorrelation, "mse": in_sample, "mase": mase}
+            "autocorrelation":autocorrelation, "mse": in_sample}
         if verbose:
             print "use auto HW ",calculated_parameters
         
@@ -216,13 +215,11 @@ class DayTypeForecast(Forecast):
         print "find holt winter parameters for day: ", index
 
         # find values automatically
-        # check with MASE error measure
         forecast_values, (alpha, beta, gamma),in_sample = multiplicative(demand, m, fc, optimization_type="MSE")
-             
-        mase = Forecast.MASE(demand, demand[-fc:],  forecast_values)
+        
 
         calculated_parameters = {
-            "alpha": alpha, "beta": beta, "gamma": gamma, "mse": in_sample, "mase": mase}
+            "alpha": alpha, "beta": beta, "gamma": gamma, "mse": in_sample}
         if verbose:
             print "use auto HW ",calculated_parameters
             
