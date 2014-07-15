@@ -203,7 +203,7 @@ class DayTypeForecast(Forecast):
         return split_array
         
     def process_inputdata(self, data, samples_per_hour,start):
-        return Forecast.split_weekdata(data, samples_per_hour, start)
+        return DayTypeForecast.split_weekdata(data, samples_per_hour, start)
   
     def forecast_multiplicative(self, demand, index, result_dict, verbose=False):
         #seasonality length -- one day
@@ -280,7 +280,7 @@ class DayTypeForecast(Forecast):
     
     
     def append_values(self, data, start_date=None):
-        new_demands = Forecast.split_weekdata(data, self.samples_per_hour, start_date)
+        new_demands = DayTypeForecast.split_weekdata(data, self.samples_per_hour, start_date)
         
         for index, demand in enumerate(new_demands):
             self.demands[index] += demand
