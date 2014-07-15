@@ -7,7 +7,7 @@ from django.utils.timezone import utc
 
 from server.systems.consumers import ThermalConsumer, ElectricalConsumer
 from server.forecasting.systems.data.old_demands import warm_water_demand_workday, warm_water_demand_weekend
-from server.forecasting.forecasting.weather import WeatherForecast
+from server.forecasting.forecasting.weather import DemoWeather, WeatherForecast
 from server.forecasting.forecasting import Forecast, DayTypeForecast,\
     DSHWForecast
 from server.forecasting.forecasting.dataloader import DataLoader
@@ -48,7 +48,10 @@ class SimulatedThermalConsumer(ThermalConsumer):
 
         global weather_forecast
         if weather_forecast == None:
-            weather_forecast = WeatherForecast(self.env)
+            if self.env.demo:
+                weather_forecast = DemoWeather(self.env)
+            else:
+                weather_forecast = WeatherForecast(self.env)
         self.weather_forecast = weather_forecast
         self.current_power = 0
 
