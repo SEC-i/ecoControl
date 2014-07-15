@@ -9,7 +9,7 @@ from server.forecasting.systems.storages import SimulatedHeatStorage
 class SimulatedThermalConsumerTests(unittest.TestCase):
 
     def setUp(self):
-        env = BaseEnvironment()
+        env = BaseEnvironment(forecast=True)
         self.consumer = SimulatedThermalConsumer(0, env)
         self.consumer.heat_storage = SimulatedHeatStorage(1, env)
 
@@ -80,7 +80,7 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         the temperature of warm water and 
         the base_temperatur of the heat_storage'''
         self.consumer.config['residents'] = residents
-        env = BaseEnvironment(initial_time=time_in_seconds)
+        env = BaseEnvironment(initial_time=time_in_seconds,forecast=True)
         self.consumer.env = env
         self.consumer.temperature_warmwater = temperature
 
@@ -173,7 +173,7 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         self.consumer.current_power = current_power
         self.consumer.env.step_size = step_size
         self.consumer.temperature_room = temperature
-        for i in range(1,100):
+        for i in range(1,1000):
             #self.consumer.heat_room()
             self.consumer.simulate_consumption()
         return self.consumer.temperature_room
@@ -183,7 +183,7 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         according to the daily demand'''
         daily_demand = [x for x in range(24)]
 
-        env = BaseEnvironment(initial_time=1388530800) # 2014-01-01 00:00:00
+        env = BaseEnvironment(initial_time=1388530800,forecast=True) # 2014-01-01 00:00:00
         heat_storage = SimulatedHeatStorage(0, env)
         consumer = SimulatedThermalConsumer(1, env)
         consumer.heat_storage = heat_storage

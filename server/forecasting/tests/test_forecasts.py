@@ -77,7 +77,7 @@ class ForecastTests(unittest.TestCase):
     def test_forecast_at(self):
         print "\n--------- test forecast_at ------------------"
         self.setup_forecast()
-        (at_now, week_index, hour_index) = self.forecast._forecast_at(self.env.now)
+        (at_now, week_index, hour_index) = self.forecast.forecast_at(self.env.now)
         
         self.assertTrue(week_index == 0, "day should be 0 but was " + str(week_index))
         self.assertTrue(hour_index == 0, "day should be 0 but was " + str(hour_index))
@@ -85,7 +85,7 @@ class ForecastTests(unittest.TestCase):
         hour = 60 * 60
         forward = (24 * 7 + 2) * hour
         
-        (at_now, week_index, hour_index) = self.forecast._forecast_at(self.env.now + forward)
+        (at_now, week_index, hour_index) = self.forecast.forecast_at(self.env.now + forward)
         
         self.assertTrue(week_index == 1, "week should be 1 but was " + str(week_index))
         self.assertTrue(hour_index == 2, "hour should be 2 but was " + str(hour_index))
