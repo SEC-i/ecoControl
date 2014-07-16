@@ -17,6 +17,7 @@ from server.forecasting.forecasting.auto_optimization import auto_optimize
 
 DEFAULT_FORECAST_INTERVAL = 14 * 24 * 3600.0
 logger = logging.getLogger('simulation')
+use_auto_optimization=False
 
 
 def get_forecast(initial_time, configurations=None, code=None, forward=None, forecast=True):
@@ -38,13 +39,13 @@ def get_forecast(initial_time, configurations=None, code=None, forward=None, for
 
         user_function(*systems)
 
+        if next_auto_optim <= 0.0 and use_auto_optimization:  
+            auto_optimize(env,systems)
+            next_auto_optim = 3600.0
         # call step function for all systems
         for system in systems:
             system.step()
         
-#         if next_auto_optim <= 0.0:  
-#             auto_optimize(env,systems,configurations)
-#             next_auto_optim = 3600.0
 
         env.now += env.step_size
         forward -= env.step_size
@@ -106,6 +107,7 @@ def get_initialized_scenario(env, configurations):
 
 class DemoSimulation(Thread):
     stored_simulation = None
+    
 
     def __init__(self, initial_time, configurations=None):
         Thread.__init__(self)
@@ -152,10 +154,15 @@ class DemoSimulation(Thread):
             return cls.stored_simulation
 
     def run(self):
+        next_auto_optim = 0.0
         while self.running:
             self.measurements.take_and_save()
 
             self.user_function(*self.systems)
+            
+            if next_auto_optim <= 0.0 and use_auto_optimization:  
+                auto_optimize(self.env,self.systems)
+                next_auto_optim = 3600.0
 
             # call step function for all systems
             for system in self.systems:
@@ -167,6 +174,7 @@ class DemoSimulation(Thread):
                 time.sleep(1.0 / self.steps_per_second)
 
             self.env.now += self.env.step_size
+            next_auto_optim -= self.env.step_size
 
     def start(self):
         self.running = True
@@ -183,6 +191,9 @@ class DemoSimulation(Thread):
     def update_user_function(self):
         self.user_function = get_user_function(self.systems)
 
+def activate_auto_optimzation(state):
+    global use_auto_optimization
+    use_auto_optimization = state
 
 def get_initial_time():
     try:

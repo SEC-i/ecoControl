@@ -58,7 +58,7 @@ def simulation_run(start=None,code=None):
             system.step()
             
         if next_auto_optim <= 0.0:
-            auto_optimize(env, systems, configurations)
+            auto_optimize(env, systems)
             next_auto_optim = DEFAULT_FORECAST_INTERVAL
 
         env.now += env.step_size
@@ -73,8 +73,8 @@ def simulation_run(start=None,code=None):
 
 
 
-def auto_optimize(env, systems, configurations):
-    optimized_config = find_optimal_config(env.now, systems, configurations)
+def auto_optimize(env, systems):
+    optimized_config = find_optimal_config(env.now, systems)
     [hs,pm,cu,plb,tc,ec] = systems
     
     cu.overwrite_workload = float(optimized_config["cu_overwrite_workload"])
@@ -83,7 +83,7 @@ def auto_optimize(env, systems, configurations):
     
 
 
-def find_optimal_config(initial_time, systems, configurations):
+def find_optimal_config(initial_time, systems):
     prices = {}
     prices["gas_costs"] = get_configuration('gas_costs')
     prices["electrical_costs"] = get_configuration('electrical_costs')

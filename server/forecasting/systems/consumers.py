@@ -181,9 +181,10 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
 
         self.power_meter = None
         self.total_consumption = 0.0  # kWh
-        # ! TODO: this will have to replaced by a database"
+
         global electrical_forecast
         if electrical_forecast == None:
+            # ! TODO: this will have to replaced by a database"
             raw_dataset = self.get_data_until(self.env.now)
             # cast to float and convert to kW
             dataset = [float(val) / 1000.0 for val in raw_dataset]
