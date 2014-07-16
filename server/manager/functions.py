@@ -35,6 +35,8 @@ def get_total_balance_by_date(month, year):
     # Calculate electrical purchase
     sensor_ids = Sensor.objects.filter(
         device__device_type=Device.PM).values_list('id', flat=True)
+    sensor_values_sum = SensorValueMonthlySum.objects.filter(
+        timestamp__gte=start, timestamp__lte=end, sensor_id__in=sensor_ids)
     sensor_values = sensor_values_sum.filter(sensor__key='purchased')
 
     total_electrical_purchase = 0
@@ -49,6 +51,8 @@ def get_total_balance_by_date(month, year):
     # thermal consumption
     sensor_ids = Sensor.objects.filter(
         device__device_type=Device.TC).values_list('id', flat=True)
+    sensor_values_sum = SensorValueMonthlySum.objects.filter(
+        timestamp__gte=start, timestamp__lte=end, sensor_id__in=sensor_ids)
     sensor_values = sensor_values_sum.filter(
         sensor__key='get_consumption_power')
 
@@ -60,6 +64,8 @@ def get_total_balance_by_date(month, year):
     rewards = total_thermal_consumption * thermal_revenues
 
     # warmwater consumption
+    sensor_values_sum = SensorValueMonthlySum.objects.filter(
+        timestamp__gte=start, timestamp__lte=end, sensor_id__in=sensor_ids)
     sensor_values = sensor_values_sum.filter(
         sensor__key='get_warmwater_consumption_power')
 
@@ -74,6 +80,8 @@ def get_total_balance_by_date(month, year):
     # electrical consumption
     sensor_ids = Sensor.objects.filter(
         device__device_type=Device.EC).values_list('id', flat=True)
+    sensor_values_sum = SensorValueMonthlySum.objects.filter(
+        timestamp__gte=start, timestamp__lte=end, sensor_id__in=sensor_ids)
     sensor_values = sensor_values_sum.filter(
         sensor__key='get_consumption_power')
 
@@ -87,6 +95,8 @@ def get_total_balance_by_date(month, year):
     # electrical infeed
     sensor_ids = Sensor.objects.filter(
         device__device_type=Device.PM).values_list('id', flat=True)
+    sensor_values_sum = SensorValueMonthlySum.objects.filter(
+        timestamp__gte=start, timestamp__lte=end, sensor_id__in=sensor_ids)
     sensor_values = sensor_values_sum.filter(sensor__key='fed_in_electricity')
 
     total_electrical_infeed = 0

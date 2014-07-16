@@ -35,14 +35,14 @@ class BaseSystem(object):
 
 class BaseEnvironment(object):
 
-    def __init__(self, initial_time=None, demo=False, forecast=False):
+    def __init__(self, initial_time=None, step_size=120, demo=False, forecast=False):
         if initial_time is None:
             self.now = time.time()
         else:
-            self.now = (int(initial_time) / 3600) * 3600.0
+            self.now = initial_time
 
+        self.step_size = step_size
         self.demo = demo
-        self.step_size = 120
         self.initial_date = datetime.fromtimestamp(self.now).replace(tzinfo=utc)
         self.forecast = forecast
 
