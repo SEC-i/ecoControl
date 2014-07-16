@@ -551,6 +551,11 @@ function update_user_code() {
 
 function initialize_technician_auto_optim(){
     $("[name='automoptim_checkbox']").bootstrapSwitch();
+    //deactivate at start
+    $.postJSON(api_base_url + "automoptimize/", {
+            activate: false,
+        });
+
     $("[name='automoptim_checkbox']").on('switchChange.bootstrapSwitch', function(event, state) {
         //dont refresh often 
         refresh_timeout = 180000;
