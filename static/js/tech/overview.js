@@ -567,13 +567,13 @@ function initialize_technician_auto_optim(){
         });
         //auto optimize on
         if (state){  
-            $('#badge_automatic_optimization').addClass("alert-success");
+            $('#badge_automatic_optimization').addClass("badge-success");
             $('#badge_automatic_optimization').text("active");
             $('#calculation_progress').removeClass('hide');
             update_progressbar(0);
         }
         else{
-            $('#badge_automatic_optimization').removeClass("alert-success");
+            $('#badge_automatic_optimization').removeClass("badge-success");
             $('#badge_automatic_optimization').text("deactivated");
             refresh_timeout = 10000;
         }
