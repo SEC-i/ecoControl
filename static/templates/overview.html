@@ -119,7 +119,7 @@
       <h4 class="panel-title">
         <a data-toggle="collapse" href="#auto_optim_container">
           Automatic Optimization
-          <span class="badge badge-warning pull-right">deactivated</span>
+          <span id="badge_automatic_optimization" class="badge badge-warning pull-right">deactivated</span>
         </a>
       </h4>
     </div>
@@ -128,6 +128,15 @@
         <div class="row">
           <div class="col-lg-6">
             <input type="checkbox" name="automoptim_checkbox" >
+            <div id="calculation_progress" class="hide">
+              <hr>
+              Calculation Progress
+              <div id="auto_optim_progress" class="progress progress-striped active ">
+                <div class="progress-bar" style="width: 0%;">
+                    <span class="sr-only">0% Complete</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

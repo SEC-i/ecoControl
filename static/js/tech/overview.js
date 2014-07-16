@@ -552,7 +552,7 @@ function update_user_code() {
 function initialize_technician_auto_optim(){
     $("[name='automoptim_checkbox']").bootstrapSwitch();
     //deactivate at start
-    $.postJSON(api_base_url + "automoptimize/", {
+    $.postJSON(api_base_url + "automoptimize/activate/", {
             activate: false,
         });
 
@@ -560,14 +560,39 @@ function initialize_technician_auto_optim(){
         //dont refresh often 
         refresh_timeout = 180000;
 
-        $.postJSON(api_base_url + "automoptimize/", {
+        $.postJSON(api_base_url + "automoptimize/activate/", {
             activate: state,
         }, function(data) {
             refresh_technician_diagram(false);
         });
-        //auto optimize off
-        if (!state){  
+        //auto optimize on
+        if (state){  
+            $('#badge_automatic_optimization').addClass("alert-success");
+            $('#badge_automatic_optimization').text("active");
+            $('#calculation_progress').removeClass('hide');
+            update_progressbar(0);
+        }
+        else{
+            $('#badge_automatic_optimization').removeClass("alert-success");
+            $('#badge_automatic_optimization').text("deactivated");
             refresh_timeout = 10000;
         }
     });
+}
+
+function update_progressbar(calls){
+    $.getJSON(api_base_url + 'automoptimize/progress/', function(json) {
+        $('#auto_optim_progress').find(".progress-bar").css("width",json.progress.toString() + "%");
+        $('#auto_optim_progress').find(".sr-only").text(json.progress.toString() + "%" + " Complete");
+    
+    if (json.progress < 99 && calls < 200){
+        setTimeout(function(){
+            update_progressbar(calls+1);
+        }, 2000);
+    }
+    else {
+        $('#calculation_progress').addClass('hide');
+    }
+    });
+
 }
