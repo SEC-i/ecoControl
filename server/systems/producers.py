@@ -19,11 +19,10 @@ class CogenerationUnit(BaseSystem):
             'maintenance_interval_powerons': 2000.0,
         }
 
-        self.max_efficiency_loss = 0.15  # %
-        self.off_time = 0  # self.env.now
-
         self.heat_storage = None
+        self.power_meter = None
         self.running = True
+        self.thermal_driven = True
 
         self.workload = 0
         self.current_gas_consumption = 0.0  # kW
@@ -31,13 +30,13 @@ class CogenerationUnit(BaseSystem):
         self.total_gas_consumption = 0  # kWh
         self.total_thermal_production = 0.0  # kWh
 
-        self.gas_costs = 0.0655  # Euro
-
-        self.power_meter = None
-
         self.current_electrical_production = 0.0  # kW
         self.total_electrical_production = 0.0  # kWh
-        self.thermal_driven = True
+
+        self.total_hours_of_operation = 0
+        self.power_on_count = 0
+
+        self.gas_costs = 0.0655  # Euro
 
     def find_dependent_devices_in(self, system_list):
         for system in system_list:
@@ -53,28 +52,16 @@ class CogenerationUnit(BaseSystem):
         self.running = False
 
     def get_electrical_energy_production(self):
-        return self.current_electrical_production * (self.env.step_size / 3600.0)
+        raise NotImplementedError
 
     def get_thermal_energy_production(self):
-        return self.current_thermal_production * (self.env.step_size / 3600.0)
-
-    def get_operating_costs(self):
-        raise NotImplementedError
-
-    def get_efficiency_loss_factor(self):
-        raise NotImplementedError
-
-    def get_calculated_workload_thermal(self):
-        raise NotImplementedError
-
-    def get_calculated_workload_electric(self):
         raise NotImplementedError
 
     def get_operating_costs(self):
-        return self.total_gas_consumption * self.gas_costs
-
-    def update_parameters(self, calculated_workload):
-        raise NotImplementedError
+        gas_costs = self.total_gas_consumption * self.gas_costs
+        maintenance_costs = self.total_electrical_production * \
+            0.05
+        return maintenance_costs + gas_costs
 
 
 class PeakLoadBoiler(BaseSystem):
@@ -86,8 +73,6 @@ class PeakLoadBoiler(BaseSystem):
             'max_gas_input': 45.0,  # kW
             'thermal_efficiency': 91.0,  # %
         }
-
-        self.off_time = 0  # self.env.now
 
         self.heat_storage = None
         self.running = True
@@ -103,7 +88,6 @@ class PeakLoadBoiler(BaseSystem):
 
         self.gas_costs = 0.0655  # Euro
 
-        self.overwrite_workload = None
 
     def find_dependent_devices_in(self, system_list):
         for system in system_list:
@@ -119,7 +103,7 @@ class PeakLoadBoiler(BaseSystem):
         self.running = False
 
     def get_thermal_energy_production(self):
-        return self.current_thermal_production * (self.env.step_size / 3600.0)
+        raise NotImplementedError
 
     def get_operating_costs(self):
         return self.total_gas_consumption * self.gas_costs

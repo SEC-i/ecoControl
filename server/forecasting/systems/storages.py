@@ -58,25 +58,11 @@ class SimulatedPowerMeter(PowerMeter):
     def __init__(self, system_id, env):
         super(SimulatedPowerMeter, self).__init__(system_id, env)
 
-        self.fed_in_electricity = 0.0  # kWh
-        self.purchased = 0  # kWh
-        self.total_fed_in_electricity = 0.0  # kWh
-        self.total_purchased = 0  # kWh
-
-        self.energy_produced = 0.0  # kWh
-        self.energy_consumed = 0.0  # kWh
-
     def add_energy(self, energy):
         self.energy_produced += energy
 
     def consume_energy(self, energy):
         self.energy_consumed += energy
-
-    def get_reward(self):
-        return self.total_fed_in_electricity * self.feed_in_reward
-
-    def get_costs(self):
-        return self.total_purchased * self.electrical_costs
 
     def step(self):
         balance = (self.energy_produced - self.energy_consumed)

@@ -15,3 +15,6 @@ def interpolate_year(day):
     interpolation = cos(day_float * pi * 2)
     # shift to 0-1
     return (interpolation / 2) + 0.5
+
+def linear_interpolation(a, b, x):
+    return a * (1 - x) + b * x

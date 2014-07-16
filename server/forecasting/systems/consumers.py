@@ -11,6 +11,7 @@ from server.forecasting.forecasting.weather import WeatherForecast
 from server.forecasting.forecasting import Forecast
 from server.forecasting.forecasting.dataloader import DataLoader
 from server.forecasting.forecasting.helpers import approximate_index
+from helpers import linear_interpolation
 
 
 electrical_forecast = None
@@ -37,18 +38,10 @@ class SimulatedThermalConsumer(ThermalConsumer):
 
         super(SimulatedThermalConsumer, self).__init__(system_id, env)
 
-        # list of 24 values representing target_temperature per hour
-        self.daily_demand = [19, 19, 19, 19, 19, 19, 19, 20, 21,
-                             20, 20, 21, 20, 21, 21, 21, 21, 22, 22, 22, 22, 22, 21, 19]
-        self.config['target_temperature'] = self.daily_demand[0]
-
-        self.consumed = 0
-
         global weather_forecast
         if weather_forecast == None:
             weather_forecast = WeatherForecast(self.env)
         self.weather_forecast = weather_forecast
-        self.current_power = 0
 
         # only build once, to save lots of time
         #self.warmwater_forecast = Forecast(self.env, input_data, samples_per_hour=1)
@@ -89,10 +82,6 @@ class SimulatedThermalConsumer(ThermalConsumer):
             (self.config['avg_room_volume'] * specific_heat_capacity_air)
         self.temperature_room += temp_delta
 
-    def get_consumption_power(self):
-        # convert to kW
-        return self.current_power / 1000.0
-
     def get_consumption_energy(self):
         # convert to kWh
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
@@ -106,11 +95,11 @@ class SimulatedThermalConsumer(ThermalConsumer):
         wday = time_tuple.tm_wday
         weight = time_tuple.tm_min / 60.0
         if wday in [5, 6]:  # weekend
-            demand_liters_per_hour = self.linear_interpolation(
+            demand_liters_per_hour = linear_interpolation(
                 warm_water_demand_weekend[hour],
                 warm_water_demand_weekend[(hour + 1) % 24], weight)
         else:
-            demand_liters_per_hour = self.linear_interpolation(
+            demand_liters_per_hour = linear_interpolation(
                 warm_water_demand_workday[hour],
                 warm_water_demand_workday[(hour + 1) % 24], weight)
 
@@ -151,9 +140,6 @@ class SimulatedThermalConsumer(ThermalConsumer):
         date = datetime.fromtimestamp(self.env.now).replace(tzinfo=utc)
         return self.weather_forecast.get_temperature_estimate(date)
 
-    def linear_interpolation(self, a, b, x):
-        return a * (1 - x) + b * x
-
 
 class SimulatedElectricalConsumer(ElectricalConsumer):
 
@@ -170,8 +156,6 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
     def __init__(self, system_id, env):
         super(SimulatedElectricalConsumer, self).__init__(system_id, env)
 
-        self.power_meter = None
-        self.total_consumption = 0.0  # kWh
         # ! TODO: this will have to replaced by a database"
         global electrical_forecast
         if electrical_forecast == None:

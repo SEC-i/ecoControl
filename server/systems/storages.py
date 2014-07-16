@@ -6,7 +6,6 @@ class HeatStorage(BaseSystem):
     def __init__(self, system_id, env):
         super(HeatStorage, self).__init__(system_id, env)
 
-        # default data from pamiru48
         self.config = {
             'capacity': 2500,  # liters
             'base_temperature': 20.0,  # assume no lower temperature
@@ -25,25 +24,11 @@ class HeatStorage(BaseSystem):
     def attach_to_thermal_consumer(self, system):
         system.heat_storage = self
 
-    def energy_stored(self):
-        return self.input_energy - self.output_energy
-
-    def get_target_energy(self):
-        return self.config['specific_heat_capacity'] * self.config['capacity'] * (self.config['target_temperature'] - self.config['base_temperature'])
-
-    def get_require_energy(self):
-        return self.get_target_energy() - self.energy_stored()
-
     def get_temperature(self):
-        return self.config['base_temperature'] + self.energy_stored() / (self.config['capacity'] * self.config['specific_heat_capacity'])
-
-    def get_energy_capacity(self):
-        return self.config['capacity'] * \
-            (self.critical_temperature - self.config['base_temperature']) * \
-            self.config['specific_heat_capacity']
+        raise NotImplementedError
 
     def undersupplied(self):
-        return self.get_temperature() < self.config['min_temperature']
+        raise NotImplementedError
 
 
 class PowerMeter(BaseSystem):
@@ -69,6 +54,12 @@ class PowerMeter(BaseSystem):
 
     def attach_to_electrical_consumer(self, system):
         system.power_meter = self
+
+    def add_energy(self, energy):
+        raise NotImplementedError
+
+    def consume_energy(self, energy):
+        raise NotImplementedError
 
     def get_reward(self):
         return self.total_fed_in_electricity * self.feed_in_reward

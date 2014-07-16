@@ -20,18 +20,18 @@ class ThermalConsumer(BaseSystem):
             'total_heated_floor': 650,
             'type_of_residents': 0,
             'type_of_windows': 0,
+            'target_temperature': 20,
         }
 
         self.heat_storage = None
 
         # initial temperature
-        self.temperature_room = 12.0
+        self.temperature_room = 18.0
         self.temperature_warmwater = 40.0
 
         # list of 24 values representing target_temperature per hour
         self.daily_demand = [19, 19, 19, 19, 19, 19, 19, 20, 21,
                              20, 20, 21, 20, 21, 21, 21, 21, 22, 22, 22, 22, 22, 21, 19]
-        self.target_temperature = self.daily_demand[0]
 
         self.total_heated_floor = 650
         self.room_height = 2.5  # constant
@@ -42,11 +42,6 @@ class ThermalConsumer(BaseSystem):
         self.heat_transfer_wall = 0.5
 
         self.consumed = 0
-
-        # global weather_forecast
-        # if weather_forecast == None:
-        #     weather_forecast = WeatherForecast(self.env)
-        # self.weather_forecast = weather_forecast
         self.current_power = 0
 
     def find_dependent_devices_in(self, system_list):
@@ -56,32 +51,15 @@ class ThermalConsumer(BaseSystem):
     def connected(self):
         return self.heat_storage is not None
 
-    def heat_room(self):
-        raise NotImplementedError
-
-    def get_consumption_power(self):
-        # convert to kW
-        return self.current_power / 1000.0
-
-    def get_consumption_energy(self):
-        # convert to kWh
-        return self.get_consumption_power() * (self.env.step_size / 3600.0)
-
     def get_warmwater_consumption_power(self):
-        raise NotImplementedError
-
-    def get_warmwater_consumption_energy(self):
-        return self.get_warmwater_consumption_power() * (self.env.step_size / 3600.0)
-
-    def simulate_consumption(self):
-        raise NotImplementedError
-
-    def heat_loss_power(self):
         raise NotImplementedError
 
     def get_outside_temperature(self, offset_days=0):
         raise NotImplementedError
 
+    def get_consumption_power(self):
+        # convert to kW
+        return self.current_power / 1000.0
 
 class ElectricalConsumer(BaseSystem):
 
@@ -98,9 +76,6 @@ class ElectricalConsumer(BaseSystem):
         self.power_meter = None
         self.total_consumption = 0.0  # kWh
 
-        self.new_data_interval = 24 * 60 * 60  # append data each day
-        self.last_forecast_update = 0  # self.env.now
-
     def find_dependent_devices_in(self, system_list):
         for system in system_list:
             system.attach_to_electrical_consumer(self)
@@ -110,6 +85,3 @@ class ElectricalConsumer(BaseSystem):
 
     def get_consumption_power(self):
         raise NotImplementedError
-
-    def get_consumption_energy(self):
-        return self.get_consumption_power() * (self.env.step_size / 3600.0)
