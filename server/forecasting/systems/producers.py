@@ -9,7 +9,9 @@ class SimulatedCogenerationUnit(CogenerationUnit):
 
         self.off_time = self.env.now
         self.overwrite_workload = None
-
+        # given efficiency is reached only on maximum workload
+        # at minumum workload the efficiency is decreased by
+        # max_efficiency_loss
         self.max_efficiency_loss = 0.15  # %
 
     def step(self):
@@ -47,12 +49,11 @@ class SimulatedCogenerationUnit(CogenerationUnit):
         return maintenance_costs + gas_costs
 
     def get_efficiency_loss_factor(self):
-        # given efficiency is reached only on maximum workload
-        # at minumum workload the efficiency is decreased with
-        # max_efficiency_loss
-        relative_loss = 1.0 - (self.workload - self.config['minimal_workload']) \
+        if self.workload == self.config['minimal_workload']:
+            return 1.0 - self.max_efficiency_loss
+        relative_workload = (self.workload - self.config['minimal_workload']) \
             / (99.0 - self.config['minimal_workload'])
-        return 1.0 - self.max_efficiency_loss / 100.0 * relative_loss
+        return 1.0 - self.max_efficiency_loss * (1 - relative_workload)
 
     def get_calculated_workload_thermal(self):
         max_thermal_power = self.config['thermal_efficiency'] / \
@@ -76,15 +77,15 @@ class SimulatedCogenerationUnit(CogenerationUnit):
     def update_parameters(self, calculated_workload):
         old_workload = self.workload
 
-        # make sure that config['minimal_workload'] <= workload <= 99.0 or workload =
-        # 0
+        # make sure that config['minimal_workload'] <= workload <= 99.0 or workload = 0
         if calculated_workload >= self.config['minimal_workload']:
             # detect if power has been turned on
             if old_workload == 0:
                 self.power_on_count += 1
 
             self.total_hours_of_operation += self.env.step_size / 3600.0
-            self.workload = min(calculated_workload, 99.0)
+            # check range because of external overwrite_workload
+            self.workload = max(min(calculated_workload, 99.0), 0.0)
         else:
             self.workload = 0.0
             if self.off_time <= self.env.now:
@@ -93,7 +94,6 @@ class SimulatedCogenerationUnit(CogenerationUnit):
         # calulate current consumption and production values
         self.current_gas_consumption = self.workload / \
             99.0 * self.config['max_gas_input']
-
         self.current_electrical_production = self.current_gas_consumption * \
             self.config['electrical_efficiency'] / 100.0 * \
             self.get_efficiency_loss_factor()
