@@ -20,7 +20,8 @@ from server.models import Device, Configuration, DeviceConfiguration, Sensor, Se
 from server.helpers import create_json_response
 from server.functions import get_device_configurations, get_past_time
 from server.systems import perform_configuration
-from server.forecasting import get_forecast, DemoSimulation
+from server.forecasting import get_forecast, DemoSimulation,\
+    activate_auto_optimzation
 import functions
 
 logger = logging.getLogger('django')
@@ -62,6 +63,17 @@ def configure(request):
     cache.clear()
     perform_configuration(json.loads(request.body))
     return create_json_response({"status": "success"}, request)
+
+@require_POST
+def auto_optimize(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+    
+    data = json.loads(request.body)
+    activate_auto_optimzation(data["activate"])
+    
+    return create_json_response({"status": "success"}, request) 
+    
 
 
 @require_POST
