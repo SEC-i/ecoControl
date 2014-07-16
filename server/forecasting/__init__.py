@@ -17,7 +17,9 @@ from server.forecasting.forecasting.auto_optimization import auto_optimize
 
 DEFAULT_FORECAST_INTERVAL = 14 * 24 * 3600.0
 logger = logging.getLogger('simulation')
+
 use_auto_optimization=False
+auto_optimize_progress = 0
 
 
 def get_forecast(initial_time, configurations=None, code=None, forward=None, forecast=True):
@@ -33,8 +35,11 @@ def get_forecast(initial_time, configurations=None, code=None, forward=None, for
     
     if forward == None:
         forward = DEFAULT_FORECAST_INTERVAL
+    time_remaining = forward
+    
     next_auto_optim = 0.0
-    while forward > 0:
+    
+    while time_remaining > 0:
         measurements.take_and_cache()
 
         user_function(*systems)
@@ -42,13 +47,16 @@ def get_forecast(initial_time, configurations=None, code=None, forward=None, for
         if next_auto_optim <= 0.0 and use_auto_optimization:  
             auto_optimize(env,systems)
             next_auto_optim = 3600.0
+            global auto_optimize_progress
+            auto_optimize_progress = 100.0 - (time_remaining/float(forward)) * 100
+            print auto_optimize_progress
         # call step function for all systems
         for system in systems:
             system.step()
         
 
         env.now += env.step_size
-        forward -= env.step_size
+        time_remaining -= env.step_size
         next_auto_optim -= env.step_size
 
     return measurements.get()
@@ -191,9 +199,14 @@ class DemoSimulation(Thread):
     def update_user_function(self):
         self.user_function = get_user_function(self.systems)
 
-def activate_auto_optimzation(state):
+def activate_auto_optimization(state):
     global use_auto_optimization
     use_auto_optimization = state
+    global auto_optimize_progress
+    auto_optimize_progress = 0
+    
+def get_auto_optimize_progress():
+    return auto_optimize_progress
 
 def get_initial_time():
     try:

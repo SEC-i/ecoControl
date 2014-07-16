@@ -21,7 +21,7 @@ from server.helpers import create_json_response
 from server.functions import get_device_configurations, get_past_time
 from server.systems import perform_configuration
 from server.forecasting import get_forecast, DemoSimulation,\
-    activate_auto_optimzation
+    activate_auto_optimization, get_auto_optimize_progress
 import functions
 
 logger = logging.getLogger('django')
@@ -70,10 +70,16 @@ def auto_optimize(request):
         raise PermissionDenied
     
     data = json.loads(request.body)
-    activate_auto_optimzation(data["activate"])
+    activate_auto_optimization(data["activate"])
     
     return create_json_response({"status": "success"}, request) 
+
+def progress(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
     
+    return create_json_response({"progress": get_auto_optimize_progress()}, request) 
+       
 
 
 @require_POST
