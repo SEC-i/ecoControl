@@ -9,9 +9,9 @@ class CogenerationUnit(BaseSystem):
         # Vaillant ecoPOWER 4.7
         self.config = {
             'max_gas_input': 19.0,  # kW
-            'thermal_efficiency': 65.0,  # % (max 12.5 kW)
-            'electrical_efficiency': 24.7,  # % (max 4.7 kW)
-            'minimal_workload': 40.0,  # %
+            'thermal_efficiency': 0.65,  # % (max 12.5 kW)
+            'electrical_efficiency': 0.247,  # % (max 4.7 kW)
+            'minimal_workload': 0.40,  # %
             'minimal_off_time': 600.0,  # seconds
             'purchase_price': 15000.0,  # Euro
             'purchase_date': '01.01.2013',
@@ -70,8 +70,8 @@ class PeakLoadBoiler(BaseSystem):
         super(PeakLoadBoiler, self).__init__(system_id, env)
 
         self.config = {
-            'max_gas_input': 45.0,  # kW
-            'thermal_efficiency': 91.0,  # %
+            'max_gas_input': 0.45,  # kW
+            'thermal_efficiency': 0.91,  # %
         }
 
         self.heat_storage = None

@@ -18,8 +18,7 @@ class SimulatedCogenerationUnit(CogenerationUnit):
         if self.running:
             presumable_workload = self.calculate_new_workload()
             self.update_parameters(presumable_workload)
-            self.power_meter.add_energy(
-                self.get_electrical_energy_production())
+            self.power_meter.add_energy(self.get_electrical_energy_production())
             self.heat_storage.add_energy(self.get_thermal_energy_production())
             self.consume_gas()
         else:
@@ -27,7 +26,7 @@ class SimulatedCogenerationUnit(CogenerationUnit):
 
     def calculate_new_workload(self):
         if self.overwrite_workload is not None:
-            calculated_workload = self.overwrite_workload
+            calculated_workload = float(self.overwrite_workload)
         elif self.off_time > self.env.now:
             calculated_workload = 0.0
         elif self.thermal_driven:
@@ -52,27 +51,26 @@ class SimulatedCogenerationUnit(CogenerationUnit):
         if self.workload == self.config['minimal_workload']:
             return 1.0 - self.max_efficiency_loss
         relative_workload = (self.workload - self.config['minimal_workload']) \
-            / (99.0 - self.config['minimal_workload'])
-        return 1.0 - self.max_efficiency_loss * (1 - relative_workload)
+            / (1.0 - self.config['minimal_workload'])
+        return 1.0 - self.max_efficiency_loss * (1.0 - relative_workload)
 
     def get_calculated_workload_thermal(self):
-        max_thermal_power = self.config['thermal_efficiency'] / \
-            100.0 * self.config['max_gas_input']
-        min_thermal_power = max_thermal_power * (self.config['minimal_workload'] / 100.0)
+        max_thermal_power = self.config['thermal_efficiency'] * self.config['max_gas_input']
+        min_thermal_power = max_thermal_power * self.config['minimal_workload'] \
+                    * (1.0 - self.max_efficiency_loss)
         demand = self.heat_storage.get_require_energy()
         relative_demand = max(demand, min_thermal_power) / max_thermal_power
-        return min(relative_demand, 1) * 99.0
+        return min(relative_demand, 1.0)
 
     def get_calculated_workload_electric(self):
-        if self.heat_storage.get_temperature() >= \
-            self.heat_storage.target_temperature:
+        if self.heat_storage.get_temperature() >= self.heat_storage.target_temperature:
             return 0.0
-        max_electric_power = self.config['electrical_efficiency'] / \
-            100.0 * self.config['max_gas_input']
-        min_electric_power = max_electric_power * (self.config['minimal_workload'] / 100.0)
+        max_electric_power = self.config['electrical_efficiency'] * self.config['max_gas_input']
+        min_electric_power = max_electric_power * self.config['minimal_workload'] \
+                    * (1.0 - self.max_efficiency_loss)
         demand = self.power_meter.current_power_consum
         relative_demand = max(demand, min_electric_power) / max_electric_power
-        return min(relative_demand, 1) * 99.0
+        return min(relative_demand, 1.0)
 
     def update_parameters(self, calculated_workload):
         old_workload = self.workload
@@ -85,20 +83,18 @@ class SimulatedCogenerationUnit(CogenerationUnit):
 
             self.total_hours_of_operation += self.env.step_size / 3600.0
             # check range because of external overwrite_workload
-            self.workload = max(min(calculated_workload, 99.0), 0.0)
+            self.workload = max(min(calculated_workload, 1.0), 0.0)
         else:
             self.workload = 0.0
             if self.off_time <= self.env.now:
                 self.off_time = self.env.now + self.config['minimal_off_time']
 
         # calulate current consumption and production values
-        self.current_gas_consumption = self.workload / \
-            99.0 * self.config['max_gas_input']
+        self.current_gas_consumption = self.workload * self.config['max_gas_input']
         self.current_electrical_production = self.current_gas_consumption * \
-            self.config['electrical_efficiency'] / 100.0 * \
-            self.get_efficiency_loss_factor()
+            self.config['electrical_efficiency'] * self.get_efficiency_loss_factor()
         self.current_thermal_production = self.current_gas_consumption * \
-            self.config['thermal_efficiency'] / 100.0 * self.get_efficiency_loss_factor()
+            self.config['thermal_efficiency'] * self.get_efficiency_loss_factor()
 
     def consume_gas(self):
         self.total_gas_consumption += self.current_gas_consumption * \
@@ -127,7 +123,7 @@ class SimulatedPeakLoadBoiler(PeakLoadBoiler):
 
     def calculate_state(self):
         if self.overwrite_workload is not None:
-            self.workload = self.overwrite_workload
+            self.workload = float(self.overwrite_workload)
         else:
             # turn on if heat_storage is undersupplied
             if self.heat_storage.undersupplied() and self.off_time <= self.env.now:
@@ -135,7 +131,7 @@ class SimulatedPeakLoadBoiler(PeakLoadBoiler):
                     self.power_on_count += 1
 
                 self.total_hours_of_operation += self.env.step_size / 3600.0
-                self.workload = 99.0
+                self.workload = 1.0
             # turn off if heat storage's target energy is almost reached
             elif self.current_thermal_production >= \
                 self.heat_storage.get_require_energy():
@@ -145,10 +141,9 @@ class SimulatedPeakLoadBoiler(PeakLoadBoiler):
                     self.off_time = self.env.now + 3 * 60.0  # 3 min
 
         # calulate current consumption and production values
-        self.current_gas_consumption = float(self.workload) / \
-            99.0 * self.config['max_gas_input']
+        self.current_gas_consumption = self.workload * self.config['max_gas_input']
         self.current_thermal_production = self.current_gas_consumption * \
-            self.config['thermal_efficiency'] / 100.0
+                self.config['thermal_efficiency']
 
     def get_thermal_energy_production(self):
         return self.current_thermal_production * (self.env.step_size / 3600.0)
