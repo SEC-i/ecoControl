@@ -22,7 +22,6 @@ class SimulatedCogenerationUnit(CogenerationUnit):
 
         self.current_electrical_production = 0.0  # kW
         self.total_electrical_production = 0.0  # kWh
-        self.electrical_driven_minimal_production = 1.0  # kWh (electrical)
 
         self.overwrite_workload = None
 
@@ -72,8 +71,9 @@ class SimulatedCogenerationUnit(CogenerationUnit):
         max_thermal_power = self.config['thermal_efficiency'] / \
             100.0 * self.config['max_gas_input']
         min_thermal_power = max_thermal_power * (self.config['minimal_workload'] / 100.0)
-        calculated_power = self.heat_storage.get_require_energy()
-        return min(calculated_power / max_thermal_power, 1) * 99.0
+        demand = self.heat_storage.get_require_energy()
+        relative_demand = max(demand, min_thermal_power) / max_thermal_power
+        return min(relative_demand, 1) * 99.0
 
     def get_calculated_workload_electric(self):
         if self.heat_storage.get_temperature() >= \
@@ -81,9 +81,10 @@ class SimulatedCogenerationUnit(CogenerationUnit):
             return 0.0
         max_electric_power = self.config['electrical_efficiency'] / \
             100.0 * self.config['max_gas_input']
-        return min(max(self.power_meter.current_power_consum,
-                       self.electrical_driven_minimal_production)
-                   / max_electric_power, 1) * 99.0
+        min_electric_power = max_electric_power * (self.config['minimal_workload'] / 100.0)
+        demand = self.power_meter.current_power_consum
+        relative_demand = max(demand, min_electric_power) / max_electric_power
+        return min(relative_demand, 1) * 99.0
 
     def update_parameters(self, calculated_workload):
         old_workload = self.workload

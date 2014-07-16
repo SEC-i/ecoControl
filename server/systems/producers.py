@@ -38,7 +38,6 @@ class CogenerationUnit(BaseSystem):
         self.current_electrical_production = 0.0  # kW
         self.total_electrical_production = 0.0  # kWh
         self.thermal_driven = True
-        self.electrical_driven_minimal_production = 1.0  # kWh (electrical)
 
     def find_dependent_devices_in(self, system_list):
         for system in system_list:
