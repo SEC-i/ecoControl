@@ -191,7 +191,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
             hourly_data = Forecast.make_hourly(dataset, 6)
             electrical_forecast = DSHWForecast(
                 self.env, hourly_data, samples_per_hour=1)
-        #self.electrical_forecast = electrical_forecast
+        self.electrical_forecast = electrical_forecast
 
         self.new_data_interval = 24 * 60 * 60  # append data each day
         self.last_forecast_update = self.env.now
@@ -208,8 +208,8 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         self.power_meter.consume_energy(consumption)
         self.power_meter.current_power_consum = self.get_consumption_power()
         # if this is not a forecast consumer, update the statistical forecasting periodically
-        #if self.env.demo and not self.env.forecast and self.env.now - self.last_forecast_update > self.new_data_interval:
-        #    self.update_forecast_data()
+        if self.env.demo and not self.env.forecast and self.env.now - self.last_forecast_update > self.new_data_interval:
+            self.update_forecast_data()
             
     def get_all_data2014(self):
         sep = os.path.sep
@@ -234,9 +234,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         
         
         date_index = approximate_index(all_data["dates"], self.env.now)
-        return float(all_data["dataset"][date_index])
-        
-        
+
         if self.env.forecast:
             return self.electrical_forecast.get_forecast_at(self.env.now)
         else:

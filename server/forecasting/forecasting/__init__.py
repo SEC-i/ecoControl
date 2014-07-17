@@ -273,6 +273,7 @@ class DayTypeForecast(Forecast):
         arr_index = int((delta / (60.0 * 60.0)) * self.samples_per_hour)
         week_index = int(arr_index / (7 * 24))
         hour_index = arr_index % 24
+        print "yes"
         return (self.forecasted_demands[date.weekday()][week_index * 24 + hour_index], week_index, hour_index)
     
     
