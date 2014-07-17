@@ -138,9 +138,9 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         the temperature will change.'''
 
         first_result = self.heat_room_with_parameters(
-            current_power=2000, step_size=20 * 3600, temperature=20)
+            current_power=2000, step_size=120, temperature=20)
         second_result = self.heat_room_with_parameters(
-            current_power=200000, step_size=20 * 3600, temperature=20)
+            current_power=200000, step_size=120, temperature=20)
         self.assertNotEqual(first_result, second_result)
 
     def test_heat_room_considers_step_size(self):
@@ -151,9 +151,9 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         the temperature will change.'''
 
         first_result = self.heat_room_with_parameters(
-            current_power=2000, step_size=20 * 3600, temperature=20)
+            current_power=2000, step_size=120, temperature=20)
         second_result = self.heat_room_with_parameters(
-            current_power=2000, step_size=30 * 3600, temperature=20)
+            current_power=2000, step_size=200, temperature=20)
         self.assertNotEqual(first_result, second_result)
 
     def test_heat_room_considers_room_temperature(self):
@@ -164,16 +164,16 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         the temperature will change.'''
 
         first_result = self.heat_room_with_parameters(
-            current_power=2000, step_size=20 * 3600, temperature=20)
+            current_power=2000, step_size=120, temperature=20)
         second_result = self.heat_room_with_parameters(
-            current_power=2000, step_size=20 * 3600, temperature=30)
+            current_power=2000, step_size=120, temperature=30)
         self.assertNotEqual(first_result, second_result)
 
     def heat_room_with_parameters(self, current_power, step_size, temperature):
         self.consumer.current_power = current_power
         self.consumer.env.step_size = step_size
         self.consumer.temperature_room = temperature
-        for i in range(1,1000):
+        for i in range(1,10):
             #self.consumer.heat_room()
             self.consumer.simulate_consumption()
         return self.consumer.temperature_room
