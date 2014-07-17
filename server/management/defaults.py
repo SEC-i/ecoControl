@@ -38,11 +38,11 @@ def initialize_default_scenario():
         sensors.append(
             Sensor(device=pm, name='Fed in Electricity', key='fed_in_electricity', unit='kWh', aggregate_sum=True))
         sensors.append(
-            Sensor(device=cu, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True, aggregate_avg=True))
+            Sensor(device=cu, name='Workload', key='workload_percent', setter='workload_percent', unit='%', in_diagram=True, aggregate_avg=True))
         sensors.append(
             Sensor(device=cu, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh', aggregate_sum=True))
         sensors.append(
-            Sensor(device=plb, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True, aggregate_avg=True))
+            Sensor(device=plb, name='Workload', key='workload_percent', setter='workload_percent', unit='%', in_diagram=True, aggregate_avg=True))
         sensors.append(
             Sensor(device=plb, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh', aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Thermal Consumption',
@@ -107,11 +107,11 @@ def initialize_default_scenario():
         device_configurations.append(
             DeviceConfiguration(device=cu, key='max_gas_input', value='19.0', value_type=DeviceConfiguration.FLOAT, unit='kWh'))
         device_configurations.append(
-            DeviceConfiguration(device=cu, key='thermal_efficiency', value='65.0', value_type=DeviceConfiguration.FLOAT, unit='%'))
+            DeviceConfiguration(device=cu, key='thermal_efficiency', value='0.65', value_type=DeviceConfiguration.FLOAT, unit='%'))
         device_configurations.append(
-            DeviceConfiguration(device=cu, key='electrical_efficiency', value='24.7', value_type=DeviceConfiguration.FLOAT, unit='%'))
+            DeviceConfiguration(device=cu, key='electrical_efficiency', value='0.247', value_type=DeviceConfiguration.FLOAT, unit='%'))
         device_configurations.append(
-            DeviceConfiguration(device=cu, key='minimal_workload', value='40.0', value_type=DeviceConfiguration.FLOAT, unit='%'))
+            DeviceConfiguration(device=cu, key='minimal_workload', value='0.40', value_type=DeviceConfiguration.FLOAT, unit='%'))
         device_configurations.append(
             DeviceConfiguration(device=cu, key='minimal_off_time', value='600', value_type=DeviceConfiguration.INT, unit='seconds', tunable=True))
         device_configurations.append(
@@ -126,7 +126,7 @@ def initialize_default_scenario():
         device_configurations.append(
             DeviceConfiguration(device=plb, key='max_gas_input', value='45.0', value_type=DeviceConfiguration.FLOAT, unit='kWh'))
         device_configurations.append(
-            DeviceConfiguration(device=plb, key='thermal_efficiency', value='91.0', value_type=DeviceConfiguration.FLOAT, unit='%'))
+            DeviceConfiguration(device=plb, key='thermal_efficiency', value='0.91', value_type=DeviceConfiguration.FLOAT, unit='%'))
 
         device_configurations.append(
             DeviceConfiguration(device=hs, key='capacity', value='2500.0', value_type=DeviceConfiguration.FLOAT, unit='l'))

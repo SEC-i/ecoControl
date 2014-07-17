@@ -38,6 +38,11 @@ class CogenerationUnit(BaseSystem):
 
         self.gas_costs = 0.0655  # Euro
 
+    def workload_percent(self, workload=None):
+        if workload is not None:
+            self.workload = workload / 100.0
+        return self.workload * 100.0
+
     def find_dependent_devices_in(self, system_list):
         for system in system_list:
             system.attach_to_cogeneration_unit(self)
@@ -88,6 +93,10 @@ class PeakLoadBoiler(BaseSystem):
 
         self.gas_costs = 0.0655  # Euro
 
+    def workload_percent(self, workload=None):
+        if workload is not None:
+            self.workload = workload / 100.0
+        return self.workload * 100.0
 
     def find_dependent_devices_in(self, system_list):
         for system in system_list:
