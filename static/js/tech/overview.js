@@ -3,12 +3,14 @@ var plotline_timestamp = null;
 var sensor_count = 0;
 var editor = null;
 var live_diagram_detailed = true;
+var refresh_timeout = 10000;
 
 // READY
 function technician_overview_ready() {
     initialize_technician_diagram();
     initialize_technician_tuning_form();
     initialize_technician_editor();
+    initialize_technician_auto_optim();
     if (status_data['system_mode'] == 'demo') {
         initialize_forward_buttons();
     }
@@ -139,7 +141,7 @@ function initialize_technician_diagram() {
 
             setTimeout(function() {
                 refresh_technician_diagram(true);
-            }, 10000);
+            }, refresh_timeout);
         });
     });
 
@@ -195,7 +197,7 @@ function refresh_technician_diagram(repeat) {
             if (repeat && get_current_page() == 'overview') {
                 setTimeout(function() {
                     refresh_technician_diagram(true);
-                }, 10000);
+                }, refresh_timeout);
             }
         });
     });
@@ -552,4 +554,55 @@ function update_user_code() {
     $.getJSON(api_base_url + 'code/', function(data) {
         editor.setValue(data['code'], 1);
     });
+}
+
+
+// auto optimization
+
+function initialize_technician_auto_optim(){
+    $("[name='automoptim_checkbox']").bootstrapSwitch();
+    //deactivate at start
+    $.postJSON(api_base_url + "automoptimize/activate/", {
+            activate: false,
+        });
+
+    $("[name='automoptim_checkbox']").on('switchChange.bootstrapSwitch', function(event, state) {
+        //dont refresh often 
+        refresh_timeout = 180000;
+
+        $.postJSON(api_base_url + "automoptimize/activate/", {
+            activate: state,
+        }, function(data) {
+            refresh_technician_diagram(false);
+        });
+        //auto optimize on
+        if (state){  
+            $('#badge_automatic_optimization').addClass("badge-success");
+            $('#badge_automatic_optimization').text("active");
+            $('#calculation_progress').removeClass('hide');
+            update_progressbar(0);
+        }
+        else{
+            $('#badge_automatic_optimization').removeClass("badge-success");
+            $('#badge_automatic_optimization').text("deactivated");
+            refresh_timeout = 10000;
+        }
+    });
+}
+
+function update_progressbar(calls){
+    $.getJSON(api_base_url + 'automoptimize/progress/', function(json) {
+        $('#auto_optim_progress').find(".progress-bar").css("width",json.progress.toString() + "%");
+        $('#auto_optim_progress').find(".sr-only").text(json.progress.toString() + "%" + " Complete");
+    
+    if (json.progress < 99 && calls < 200){
+        setTimeout(function(){
+            update_progressbar(calls+1);
+        }, 2000);
+    }
+    else {
+        $('#calculation_progress').addClass('hide');
+    }
+    });
+
 }

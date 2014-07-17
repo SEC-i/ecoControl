@@ -10,7 +10,7 @@ from pylab import *
 from matplotlib.widgets import Slider, Button, RadioButtons
 from datetime import date, datetime, timedelta
 from server.forecasting.forecasting.holt_winters import additive, multiplicative
-from server.forecasting.forecasting import Forecast
+from server.forecasting.forecasting import Forecast, DayTypeForecast
 from server.systems.base import BaseEnvironment
 import time
 # 
@@ -133,7 +133,7 @@ def strategy_testing():
     
     dataset = [float(val) / 1000.0 for val in raw_dataset]
     hourly_data = Forecast.make_hourly(dataset, 6)
-    split_data = Forecast.split_weekdata(hourly_data , 1, start)
+    split_data = DayTypeForecast.split_weekdata(hourly_data , 1, start)
     
     
     env = BaseEnvironment()
