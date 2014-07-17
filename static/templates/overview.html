@@ -118,8 +118,8 @@
     <div class="panel-heading">
       <h4 class="panel-title">
         <a data-toggle="collapse" href="#auto_optim_container">
-          Automatic Optimization
-          <span id="badge_automatic_optimization" class="badge badge-warning pull-right">deactivated</span>
+          {{automatic_optimization}}
+          <span id="badge_automatic_optimization" class="badge badge-warning pull-right">{{deactivated}}</span>
         </a>
       </h4>
     </div>
@@ -135,7 +135,7 @@
           <div class="col-lg-6">
             <div id="calculation_progress" class="hide">
               <hr>
-              Calculation Progress
+              {{calculation_progress}}
               <div id="auto_optim_progress" class="progress progress-striped active ">
                 <div class="progress-bar" style="width: 0%;">
                     <span class="sr-only">0% Complete</span>
