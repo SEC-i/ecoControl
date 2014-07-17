@@ -142,13 +142,14 @@ class DSHWForecast(Forecast):
     def forecast_at(self, timestamp):
         date = datetime.utcfromtimestamp(timestamp).replace(tzinfo=utc)
         delta = (date - self.time_series_end).total_seconds()
-        print int(delta / 3600 * self.samples_per_hour)
+        #print int(delta / 3600 * self.samples_per_hour)
         return [self.forecasted_demands[int(delta / 3600 * self.samples_per_hour)]]
     
     def process_inputdata(self, data, samples_per_hour,start):
         return [data]
     
     def forecast_demands(self,verbose=False):
+        print "forecasting demands with double seasonal HW.."
         cached = Forecast.read_from_cache(self)
         if cached != None:
             return cached
@@ -169,6 +170,8 @@ class DSHWForecast(Forecast):
             "autocorrelation":autocorrelation, "mse": in_sample}
         if verbose:
             print "use auto HW ",calculated_parameters
+        
+        print "forecasting completed"
         
         return forecast_values
     
@@ -246,6 +249,7 @@ class DayTypeForecast(Forecast):
         
         mgr = multiprocessing.Manager()
         dict_threadsafe = mgr.dict()
+        print "forecasting demands with daytype strategy.."
 
         #call class as Functor because class methods are not pickeable
         jobs = [Process(target=self, args=(demand,index,dict_threadsafe)) for index, demand in enumerate(self.demands)]
@@ -263,6 +267,7 @@ class DayTypeForecast(Forecast):
             
         pickle.dump( {"forecasts" :forecasted_demands, "parameters" : self.calculated_parameters, "date": self.env.now },
                       open(os.path.join(BASE_DIR,"cache/cached_forecasts.cache"), "wb" ) ) 
+        print "forecasting completed"
 
         return forecasted_demands
     
@@ -273,7 +278,7 @@ class DayTypeForecast(Forecast):
         arr_index = int((delta / (60.0 * 60.0)) * self.samples_per_hour)
         week_index = int(arr_index / (7 * 24))
         hour_index = arr_index % 24
-        print "yes"
+        #print "yes"
         return (self.forecasted_demands[date.weekday()][week_index * 24 + hour_index], week_index, hour_index)
     
     
