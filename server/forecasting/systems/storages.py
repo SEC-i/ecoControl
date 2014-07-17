@@ -25,13 +25,15 @@ class SimulatedHeatStorage(HeatStorage):
         return self.input_energy - self.output_energy
 
     def get_target_energy(self):
-        return self.config['specific_heat_capacity'] * self.config['capacity'] * (self.config['target_temperature'] - self.config['base_temperature'])
+        return self.config['specific_heat_capacity'] * self.config['capacity'] * \
+         (self.config['target_temperature'] - self.config['base_temperature'])
 
     def get_require_energy(self):
         return self.get_target_energy() - self.energy_stored()
 
     def get_temperature(self):
-        return self.config['base_temperature'] + self.energy_stored() / (self.config['capacity'] * self.config['specific_heat_capacity'])
+        return self.config['base_temperature'] + self.energy_stored() / \
+        (self.config['capacity'] * self.config['specific_heat_capacity'])
 
     def set_temperature(self, value):
         self.output_energy = 0
@@ -39,9 +41,9 @@ class SimulatedHeatStorage(HeatStorage):
             (self.config['capacity'] * self.config['specific_heat_capacity'])
 
     def get_energy_capacity(self):
+        temp_delta = self.config['critical_temperature'] - self.config['base_temperature']
         return self.config['capacity'] * \
-            (self.config['critical_temperature'] - self.config['base_temperature']) * \
-            self.config['specific_heat_capacity']
+            temp_delta * self.config['specific_heat_capacity']
 
     def undersupplied(self):
         return self.get_temperature() < self.config['min_temperature']

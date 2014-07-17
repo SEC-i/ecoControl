@@ -56,12 +56,10 @@ class SimulatedThermalConsumer(ThermalConsumer):
             (self.config['apartments'] * self.config['avg_rooms_per_apartment'])
         # Assume 3 walls per room to not count multiple
         avg_wall_size = self.config['avg_room_volume'] / self.room_height * 3
-        # Assume each appartment have an average of 0.8 outer walls per
-        # apartment
+        # Assume each apartment have an average of 0.8 outer walls per
         self.outer_wall_surface = avg_wall_size * self.config['apartments'] * 0.8
         self.max_power = self.config['total_heated_floor'] * \
             float(self.heating_constant)
-
         # Assume a window size of 2 square meters
         self.window_surface = 2 * self.config['avg_windows_per_room'] * \
             self.config['avg_rooms_per_apartment'] * self.config['apartments']
@@ -73,7 +71,27 @@ class SimulatedThermalConsumer(ThermalConsumer):
         self.consumed += consumption
         self.heat_storage.consume_energy(consumption)
 
-    def heat_room(self):
+    def simulate_consumption(self):
+        # Calculate variation using daily demand
+        hours = datetime.fromtimestamp(self.env.now).replace(tzinfo=utc).hour
+        self.config['target_temperature'] = self.daily_demand[hours]
+
+        self.heat_apartments()
+
+        # The heating powers to full capacity in 60 min
+        slope = self.max_power * (self.env.step_size / (60 * 60.0))
+        if self.temperature_room > self.config['target_temperature']:
+            self.current_power -= slope
+        else:
+            self.current_power += slope
+
+        # Clamp to maximum power
+        self.current_power = max(min(self.current_power, self.max_power), 0.0)
+
+    def get_consumption_energy(self):
+        return self.get_consumption_power() * (self.env.step_size / 3600.0)
+
+    def heat_apartments(self):
         # Convert from J/(m^3 * K) to kWh/(m^3 * K)
         specific_heat_capacity_air = 1000.0 / 3600.0
         room_power = self.get_consumption_power() - self.heat_loss_power()
@@ -82,9 +100,17 @@ class SimulatedThermalConsumer(ThermalConsumer):
             (self.config['avg_room_volume'] * specific_heat_capacity_air)
         self.temperature_room += temp_delta
 
-    def get_consumption_energy(self):
-        # convert to kWh
-        return self.get_consumption_power() * (self.env.step_size / 3600.0)
+    def heat_loss_power(self):
+        temp_delta = self.temperature_room - self.get_outside_temperature()
+        heat_flow_window = self.window_surface * \
+            self.heat_transfer_window * temp_delta
+        heat_flow_wall = self.outer_wall_surface * \
+            self.heat_transfer_wall * temp_delta
+        return (heat_flow_wall + heat_flow_window) / 1000.0  # kW
+
+    def get_outside_temperature(self, offset_days=0):
+        date = datetime.fromtimestamp(self.env.now).replace(tzinfo=utc)
+        return self.weather_forecast.get_temperature_estimate(date)
 
     def get_warmwater_consumption_power(self):
         #demand_liters_per_hour = self.warmwater_forecast.get_forecast_at(self.env.now)
@@ -110,35 +136,6 @@ class SimulatedThermalConsumer(ThermalConsumer):
 
     def get_warmwater_consumption_energy(self):
         return self.get_warmwater_consumption_power() * (self.env.step_size / 3600.0)
-
-    def simulate_consumption(self):
-        # Calculate variation using daily demand
-        hours = datetime.fromtimestamp(self.env.now).replace(tzinfo=utc).hour
-        self.config['target_temperature'] = self.daily_demand[hours]
-
-        self.heat_room()
-
-        # The heating powers to full capacity in 60 min
-        slope = self.max_power * (self.env.step_size / (60 * 60.0))
-        if self.temperature_room > self.config['target_temperature']:
-            self.current_power -= slope
-        else:
-            self.current_power += slope
-
-        # Clamp to maximum power
-        self.current_power = max(min(self.current_power, self.max_power), 0.0)
-
-    def heat_loss_power(self):
-        temp_delta = self.temperature_room - self.get_outside_temperature()
-        heat_flow_window = self.window_surface * \
-            self.heat_transfer_window * temp_delta
-        heat_flow_wall = self.outer_wall_surface * \
-            self.heat_transfer_wall * temp_delta
-        return (heat_flow_wall + heat_flow_window) / 1000.0  # kW
-
-    def get_outside_temperature(self, offset_days=0):
-        date = datetime.fromtimestamp(self.env.now).replace(tzinfo=utc)
-        return self.weather_forecast.get_temperature_estimate(date)
 
 
 class SimulatedElectricalConsumer(ElectricalConsumer):
