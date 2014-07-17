@@ -2,7 +2,8 @@ import unittest
 from datetime import datetime
 import os
 
-from server.forecasting.forecasting import Forecast, DayTypeForecast
+from server.forecasting.forecasting import Forecast, DayTypeForecast,\
+    DSHWForecast
 from server.forecasting.forecasting.dataloader import DataLoader
 from server.systems.base import BaseEnvironment
 from server.forecasting.forecasting.helpers import approximate_index
@@ -57,6 +58,15 @@ class ForecastTests(unittest.TestCase):
                          "calculated average not the same as function average")
         self.assertAlmostEqual(len(hourly_data), 24 * 365, delta=23,
                                msg="data for " + str(len(hourly_data) / 24) + " days")
+        
+    def test_dshw_forecast(self):
+        hourly_data = Forecast.make_hourly(self.dataset, 6)
+        env = BaseEnvironment()
+        fc = DSHWForecast(env, hourly_data, hw_optimization="MSE", try_cache=False)
+        
+        self.assertTrue(len(fc.demands[0]) >= fc.input_hours, "the day series only contains " + str(
+            len(fc.demands[0]) / 24) + " days, not " + str(fc.input_weeks * 7))
+        
 
     def test_split_week_data(self):
         print "\n--------- test split_week_data ------------------"
@@ -71,10 +81,10 @@ class ForecastTests(unittest.TestCase):
             len(fc.demands[0]) / 24) + " days, not " + str(fc.input_weeks) + " (or at least more than 50)")
         
 #         # from server.forecasting.tools import plotting
-#         for i in range(7):
-#             # plotting.Plotting.plot_dataset({"measured":fc.demands[i], "forecasted": fc.forecasted_demands[i]}, len(fc.demands[i]), block=True)
-#             rmse = self.rmse(self.dataset_2014[:len(fc.forecasted_demands[i])], fc.forecasted_demands[i])
-#             self.assertTrue(rmse < 20.0, "MSE of " + str(rmse) + "for day" + str(i) + " is way too high")
+        for i in range(7):
+            # plotting.Plotting.plot_dataset({"measured":fc.demands[i], "forecasted": fc.forecasted_demands[i]}, len(fc.demands[i]), block=True)
+            rmse = self.rmse(self.dataset_2014[:len(fc.forecasted_demands[i])], fc.forecasted_demands[i])
+            self.assertTrue(rmse < 30.0, "MSE of " + str(rmse) + "for day" + str(i) + " is way too high")
             
             
     def rmse(self,testdata, forecast):

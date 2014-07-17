@@ -64,8 +64,7 @@ class Forecast:
         else:
             self.try_cache = True
             
-        self.demands = self.process_inputdata(input_data,samples_per_hour,start)
-        self.demands = [demand[-self.input_hours:] for demand in self.demands]
+        self.demands = self.process_inputdata(input_data[-self.input_hours:] ,samples_per_hour,start)
         
         #forecast all demands.. might take long
         self.forecasted_demands = self.forecast_demands()
@@ -208,7 +207,7 @@ class DayTypeForecast(Forecast):
     def forecast_multiplicative(self, demand, index, result_dict, verbose=False):
         #seasonality length -- one day
         m = 24 * self.samples_per_hour
-        fc = self.output_weeks * 24 * 7 *  self.samples_per_hour #forecast_length
+        fc = self.output_weeks * 24 * self.samples_per_hour #forecast_length
         # alpha, beta, gamma. if any is None, holt.winters determines them automatically
         # cost-expensive, so only do this once..
         (alpha, beta, gamma) = self.hw_parameters
@@ -283,9 +282,9 @@ class DayTypeForecast(Forecast):
         for index, demand in enumerate(new_demands):
             self.demands[index] += demand
             
-            if len(self.demands[index]) > self.input_hours:
+            if len(self.demands[index]) > self.input_hours / 7:
                 #only keep number of input_weeks
-                start_index = len(self.demands[index]) - self.input_hours
+                start_index = len(self.demands[index]) - self.input_hours / 7
                 self.demands[index] = self.demands[index][start_index:]
         self.update_if_needed()
     
