@@ -1,9 +1,9 @@
-var lang_en = {
     add: 'Add',
     add_new_threshold: 'Add New Threshold',
     amortization_notice: 'Amortization on',
     apartments: 'Apartments',
     apply: 'Apply',
+    auto_optimize_explanation: ' This optimization incorporates the cost of the system and tries to find the most cost-effective parameters. It uses the simulation as well as the load forecasts, to predict future system costs. When activate, immediate feedback is unavailable due to long calculation times.',
     automatic_optimization: 'Automatic Optimization',
     avg_electrical_consumption: 'Avg. Electrical Consumption',
     avg_rooms_per_apartment: 'Avg. Rooms per Apartment',
@@ -95,6 +95,7 @@ var lang_en = {
     residents: 'Residents',
     save: 'Save',
     sensor: 'Sensor',
+    sensor_type : 'Select Sensor',
     simulate: 'Simulate',
     simulating_changes: 'Simulating Changes',
     statistics: 'Statistics',
@@ -124,4 +125,5 @@ var lang_en = {
     username: 'Username',
     warmwater_load_curves: 'Warmwater Load Curves',
     warmwater_revenues: 'Warmwater Revenues',
+var lang_en = {
 };
