@@ -12,7 +12,7 @@ References:
  Hyndman, R. J.; Athanasopoulos, G. (2013) Forecasting: principles and practice. http://otexts.com/fpp/. Accessed on 07/03/2013.
  Byrd, R. H.; Lu, P.; Nocedal, J. A Limited Memory Algorithm for Bound Constrained Optimization, (1995), SIAM Journal on Scientific and Statistical Computing, 16, 5, pp. 1190-1208."""
  
-from scipy.optimize import fmin_l_bfgs_b
+#from scipy.optimize import fmin_l_bfgs_b
 
 
 def exponential_smoothing_step(input, index, params,

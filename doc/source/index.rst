@@ -13,6 +13,7 @@ Contents:
 
 
     modules/models
+    modules/forecasting
 
 
 
