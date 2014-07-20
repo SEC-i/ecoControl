@@ -49,11 +49,11 @@ def exponential_smoothing_step(input, index, params,
         #see Short-term electricity demand forecasting using 
         #double seasonal exponential smoothing (Tayler 2003)
         #the trend term is omitted, as no trend is expected
-        a.append( params.alpha * (Y[i] - s2[i] - s[i]) + (1 - params.alpha) * (a[i]))
-        s.append(params.delta *  (Y[i] - a[i] - s2[i]) + (1 - params.delta) * s[i])
-        s2.append(params.gamma * (Y[i] - a[i] - s[i]) + (1 - params.gamma) * s2[i])
+        a[i+1] = params.alpha * (Y[i] - s2[i] - s[i]) + (1 - params.alpha) * a[i]
+        s[params.m+i] = params.delta *  (Y[i] - a[i] - s2[i]) + (1 - params.delta) * s[i]
+        s2[params.m2divm+i] = params.gamma * (Y[i] - a[i] - s[i]) + (1 - params.gamma) * s2[i]
         autocorr = params.autocorrelation * (Y[i] - (a[i] + s[i] + s2[i]))
-        y.append(a[i + 1] + s[i + 1] + s2[i + 1] + autocorr)
+        y[i+1] = a[i + 1] + s[i + 1] + s2[i + 1] + autocorr
 
         
 def _holt_winters(params, *args):
@@ -223,15 +223,25 @@ def double_seasonal(x, m, m2, forecast, alpha = None, beta = None, gamma = None,
         parameters = fmin_l_bfgs_b(optimization_criterion, x0 = initial_values, args = (train_series, hw_type, (m,m2), test_series), 
                                    bounds = boundaries, approx_grad = True,factr=10**3)
         alpha, beta, gamma, delta, autocorrelation = parameters[0]
+    all_length= len(Y) + forecast+len(test_series) +1
     
-
-    a = [sum(Y[0:m]) / float(m)]
-    b = [(sum(Y[m2:2 * m2]) - sum(Y[0:m2])) / (m2) ** 2]
-    s = [Y[i] / a[0] for i in range(m)]
-    s2 = [Y[i] / a[0] for i in range(0,m2,m)]
-    y = [a[0] + b[0] + s[0] + s2[0]]
-    named_parameters = namedtuple("Multiplicative", ["alpha", "beta","gamma","delta","autocorrelation"], False)(alpha,beta,gamma,delta,autocorrelation)
-
+    a = np.zeros((all_length,))
+    a[0] = sum(Y[0:m]) / float(m)
+    
+    b = np.zeros((all_length,))
+    b[0] = (sum(Y[m2:2 * m2]) - sum(Y[0:m2])) / (m2) ** 2
+    
+    s = np.zeros((all_length+m2,))
+    s[:m] = [Y[i] / a[0] for i in range(m)]
+    
+    s2 = np.zeros((all_length+m2,))
+    s2[0:m2:m] = [Y[i] / a[0] for i in range(0,m2,m)]
+    
+    y = np.zeros((all_length,))
+    y[0] = a[0] + b[0] + s[0] + s2[0]
+    
+    named_parameters = namedtuple("Multiplicative", ["alpha", "beta","gamma","delta","autocorrelation","m","m2divm"], False)(alpha,beta,gamma,delta,autocorrelation,m,m2/m)
+    
     for i in range(len(Y) + forecast+len(test_series)):
  
         if i >= len(Y):
