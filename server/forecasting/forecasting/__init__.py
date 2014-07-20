@@ -149,7 +149,7 @@ class Forecast:
         raise NotImplementedError("This is an abstract class, please use a subclass")
     
     
-    def __update_if_needed(self):
+    def update_if_needed(self):
         """Update the forecasts, if `env.now` is more than `forecast_update_interval` seconds ahead from last demand measurement"""
 
         now = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=utc)
@@ -249,7 +249,7 @@ class DSHWForecast(Forecast):
             start_index = len(demand) - self.input_hours
             self.demands[0] = demand[start_index:]
         
-        self.__update_if_needed()
+        self.update_if_needed()
 
 
 
@@ -359,7 +359,7 @@ class DayTypeForecast(Forecast):
                 #only keep number of input_weeks
                 start_index = len(self.demands[index]) - self.input_hours / 7
                 self.demands[index] = self.demands[index][start_index:]
-        self.__update_if_needed()
+        self.update_if_needed()
     
     
     # callable class
