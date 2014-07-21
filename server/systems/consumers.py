@@ -11,9 +11,9 @@ class ThermalConsumer(BaseSystem):
         super(ThermalConsumer, self).__init__(system_id, env)
 
         self.config = {
-            'apartments' : 12,
+            'apartments' : 8,
             'avg_rooms_per_apartment': 4,
-            'residents': 22,
+            'residents': 24,
             'avg_thermal_consumption': 0,
             'type_of_housing': 0,
             'avg_windows_per_room': 3,

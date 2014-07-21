@@ -33,8 +33,7 @@ class MeasurementStorage():
 
 
     def take_and_save(self):
-        # save demo values every 15mins
-        if self.env.now % 60 * 60 != 0:
+        if self.env.now % 60  != 0:
             return
         timestamp = datetime.utcfromtimestamp(
             self.env.now).replace(tzinfo=utc)
@@ -62,7 +61,8 @@ class MeasurementStorage():
 
                         self.forecast_data[index].append(float(value))
 
-    def get_cached(self):
+
+    def get_cached(self,delete_after=False):
         output = []
         for index, sensor in enumerate(self.sensors):
             if sensor.in_diagram:
@@ -75,6 +75,8 @@ class MeasurementStorage():
                     'key': sensor.key,
                     'data': self.forecast_data[index].tolist()
                 })
+            if delete_after:
+                self.forecast_data[index] = []
         return output
 
     def get_last(self, value):

@@ -114,6 +114,40 @@
       </div>
     </div>
   </div>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#auto_optim_container">
+          {{automatic_optimization}}
+          <span id="badge_automatic_optimization" class="badge badge-warning pull-right">{{deactivated}}</span>
+        </a>
+      </h4>
+    </div>
+    <div id="auto_optim_container" class="panel-collapse collapse">
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-lg-6">
+           {{auto_optimize_explanation}}
+          </div>
+          <div class="col-lg-6">
+              <input type="checkbox" name="automoptim_checkbox" >
+          </div>
+          <div class="col-lg-6">
+            <div id="calculation_progress" class="hide">
+              <hr>
+              {{calculation_progress}}
+              <div id="auto_optim_progress" class="progress progress-striped active ">
+                <div class="progress-bar" style="width: 0%;">
+                    <span class="sr-only">0% Complete</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="manager">

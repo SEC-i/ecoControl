@@ -6,10 +6,11 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueMonthlyAvg, SensorValueMonthlySum, SensorValueDaily
 from server.functions import get_past_time, get_latest_value, get_latest_value_with_unit, get_configuration, get_device_configuration
+from server.settings import BASE_DIR
 
 
 logger = logging.getLogger('django')
-SNIPPET_FOLDER = 'snippets/'
+SNIPPET_FOLDER = os.path.join(BASE_DIR,'snippets/')
 
 
 def get_snippet_list():
@@ -43,7 +44,7 @@ def save_snippet(name, code):
 
 
 def apply_snippet(code):
-    with open('server/user_code.py', "w") as snippet_file:
+    with open(os.path.join(BASE_DIR,'server/user_code.py'), "w") as snippet_file:
         snippet_file.write(code.encode('utf-8'))
     return {
         'code': code,
@@ -52,7 +53,7 @@ def apply_snippet(code):
 
 
 def get_current_snippet():
-    with open('server/user_code.py', "r") as snippet_file:
+    with open(os.path.join(BASE_DIR,'server/user_code.py'), "r") as snippet_file:
         return {'code': snippet_file.read()}
 
 
@@ -63,6 +64,7 @@ def get_modified_configurations(data):
         for change in data:
             if str(config.device_id) == change['device'] and config.key == change['key'] and str(config.value_type) == change['type']:
                 config.value = change['value']
+    print configurations
     return configurations
 
 
