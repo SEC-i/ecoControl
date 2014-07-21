@@ -1,3 +1,10 @@
+"""
+This module represents the energy systems.
+
+The hardware interface should orient at the base classes of the devices.
+The simulation in :mod:`server.forecasting.systems` is also based on these classes.
+"""
+
 import logging
 import os
 from django.core.exceptions import ObjectDoesNotExist
@@ -12,14 +19,18 @@ from server.settings import BASE_DIR
 logger = logging.getLogger('simulation')
 
 def get_initialized_scenario():
-        devices = list(Device.objects.all())
-        system_list = []
-        env = BaseEnvironment()
-        for device in devices:
-            for device_type, class_name in Device.DEVICE_TYPES:
-                if device.device_type == device_type:
-                    system_class = globals()[class_name]
-                    system_list.append(system_class(device.id, env))
+    """The function returns a list of energy systems based on the configuration in the database
+
+    :returns: `list` of objects from :mod:`server.forecasting.systems`
+    """
+    devices = list(Device.objects.all())
+    system_list = []
+    env = BaseEnvironment()
+    for device in devices:
+        for device_type, class_name in Device.DEVICE_TYPES:
+            if device.device_type == device_type:
+                system_class = globals()[class_name]
+                system_list.append(system_class(device.id, env))
 
         # configurations = DeviceConfiguration.objects.all()
         # for device in system_list:
@@ -30,10 +41,17 @@ def get_initialized_scenario():
         #             if configuration.key in device.config:
         #                 device.config[configuration.key] = value
 
-        return system_list
+    return system_list
 
 
 def get_user_function(systems, code=None):
+    """Builds a method with the users code from the programming-interface.
+
+    :param systems: `list` of devices from :func:get_initialized_scenario:
+    :param code: `string` with the user-code
+
+    :returns: callable user-function expecting a pointer to a systems list as argument
+    """
     local_names = ['device_%s' % system.id for system in systems]
 
     if code is None:
@@ -50,12 +68,15 @@ def get_user_function(systems, code=None):
 
     source = "\n".join(lines)
     namespace = {}
-    exec source in namespace  # execute code in namespace
+    exec source in namespace
 
     return namespace['user_function']
 
 
 def perform_configuration(data):
+    """Saves a systems configuration to the database.
+
+    :param data: `json` with configuration values for energy systems"""
     configurations = []
     device_configurations = []
     for config in data:

@@ -1,15 +1,14 @@
-import time
+from time import time
 from datetime import datetime
+
 from django.utils.timezone import utc
 
 class BaseSystem(object):
+    """Represents a general interface to the energy-systems."""
 
     def __init__(self, system_id, env):
-        self.id = system_id
-        self.env = env
-                
-        
-
+        self.id = system_id #: `int` identifier
+        self.env = env #: `:class:BaseEnvironment`
 
     def calculate(self):
         pass
@@ -34,17 +33,22 @@ class BaseSystem(object):
 
 
 class BaseEnvironment(object):
+    """This class manages the simulation of the energy-systems."""
 
     def __init__(self, initial_time=None, step_size=120, demo=False, forecast=False):
         if initial_time is None:
-            self.now = time.time()
+            self.now = time()
         else:
             self.now = initial_time
-
-        self.step_size = step_size
-        self.demo = demo
+        #: a unix timestamp when the simulation starts, if `None` the current time is used
         self.initial_date = datetime.fromtimestamp(self.now).replace(tzinfo=utc)
+        #: `int` value of seconds how often the simulated devices calculate their state
+        self.step_size = step_size
+        #: `bool` if demo modus is active
+        self.demo = demo
+        #: `bool` seems to be irrelevant
         self.forecast = forecast
 
     def get_day_of_year(self):
+        """Returns an `int` value of the current simulated day"""
         return time.gmtime(self.now).tm_yday
