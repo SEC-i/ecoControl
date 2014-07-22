@@ -11,9 +11,9 @@ class ThermalConsumer(BaseSystem):
         super(ThermalConsumer, self).__init__(system_id, env)
 
         self.config = {
-            'apartments' : 12,
+            'apartments' : 8,
             'avg_rooms_per_apartment': 4,
-            'residents': 22,
+            'residents': 24,
             'avg_thermal_consumption': 0,
             'type_of_housing': 0,
             'avg_windows_per_room': 3,
@@ -25,7 +25,7 @@ class ThermalConsumer(BaseSystem):
         self.heat_storage = None
 
         # initial temperature
-        self.temperature_room = 12.0
+        self.temperature_room = 20.0
         self.temperature_warmwater = 40.0
 
         # list of 24 values representing target_temperature per hour
@@ -41,7 +41,7 @@ class ThermalConsumer(BaseSystem):
         self.heat_transfer_window = 2.2
         self.heat_transfer_wall = 0.5
 
-        self.consumed = 0
+        self.total_consumed = 0
 
         # global weather_forecast
         # if weather_forecast == None:

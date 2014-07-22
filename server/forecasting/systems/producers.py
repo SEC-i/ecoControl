@@ -158,6 +158,7 @@ class SimulatedPeakLoadBoiler(PeakLoadBoiler):
     def calculate_state(self):
         if self.overwrite_workload is not None:
             self.workload = self.overwrite_workload
+            self.total_hours_of_operation += self.env.step_size / 3600.0
         else:
             # turn on if heat_storage is undersupplied
             if self.heat_storage.undersupplied() and self.off_time <= self.env.now:
@@ -167,8 +168,7 @@ class SimulatedPeakLoadBoiler(PeakLoadBoiler):
                 self.total_hours_of_operation += self.env.step_size / 3600.0
                 self.workload = 99.0
             # turn off if heat storage's target energy is almost reached
-            elif self.current_thermal_production >= \
-                self.heat_storage.get_require_energy():
+            elif self.current_thermal_production >= self.heat_storage.get_require_energy():
                 self.workload = 0.0
 
                 if self.off_time <= self.env.now:

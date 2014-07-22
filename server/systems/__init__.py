@@ -1,5 +1,5 @@
 import logging
-
+import os
 from django.core.exceptions import ObjectDoesNotExist
 
 from base import BaseEnvironment
@@ -7,6 +7,7 @@ from producers import CogenerationUnit, PeakLoadBoiler
 from storages import HeatStorage, PowerMeter
 from consumers import ThermalConsumer, ElectricalConsumer
 from server.models import Device, Configuration, DeviceConfiguration
+from server.settings import BASE_DIR
 
 logger = logging.getLogger('simulation')
 
@@ -36,7 +37,7 @@ def get_user_function(systems, code=None):
     local_names = ['env', 'forecast'] + ['device_%s' % x.id for x in systems]
 
     if code is None:
-        with open('server/user_code.py', "r") as code_file:
+        with open(os.path.join(BASE_DIR,'server','user_code.py'), "r") as code_file:
             code = code_file.read()
 
     lines = []
