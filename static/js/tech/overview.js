@@ -445,28 +445,32 @@ function apply_changes() {
 }
 
 function update_immediate_forecast(data) {
-    var chart = $('#tech_live_diagram').highcharts();
-    var start = new Date(data['start']).getTime();
-    var step = data['step'];
+    if(forecast_data['valid'] == '1') {
+        var chart = $('#tech_live_diagram').highcharts();
+        var start = new Date(data['start']).getTime();
+        var step = data['step'];
 
-    cleanup_diagram();
-    $.each(data['sensors'], function(index, sensor) {
-        var sensor_data = []
-        $.each(sensor.data, function(index, value){
-            sensor_data.push([start + step * index * 1000, value]);
+        cleanup_diagram();
+        $.each(data['sensors'], function(index, sensor) {
+            var sensor_data = []
+            $.each(sensor.data, function(index, value){
+                sensor_data.push([start + step * index * 1000, value]);
+            });
+            chart.addSeries({
+                name: sensor.name + ' (' + sensor.device + ') (simulated)',
+                data: sensor_data,
+                color: colors_modified[index],
+                dashStyle: 'shortdot',
+                tooltip: {
+                    valueSuffix: ' ' + sensor.unit
+                },
+                visible: chart.series[index].visible
+            }, false);
         });
-        chart.addSeries({
-            name: sensor.name + ' (' + sensor.device + ') (simulated)',
-            data: sensor_data,
-            color: colors_modified[index],
-            dashStyle: 'shortdot',
-            tooltip: {
-                valueSuffix: ' ' + sensor.unit
-            },
-            visible: chart.series[index].visible
-        }, false);
-    });
-    chart.redraw();
+        chart.redraw();
+    } else {
+        
+    }
 }
 
 function cleanup_diagram() {

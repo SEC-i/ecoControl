@@ -1,0 +1,38 @@
+{
+  "name": "ecoControl",
+  "version": "0.5.0",
+  "homepage": "https://github.com/BP2013H1/BP2013H1",
+  "authors": [
+    "Eva-Maria Herbst",
+    "Fabian Maschler",
+    "Fabio Niephaus",
+    "Max Reimann",
+    "Julia Steier"
+  ],
+  "main": "manage.py",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "cache",
+    "logs",
+    "middleware",
+    "server",
+    "snippets"
+  ],
+  "dependencies": {
+    "ace-builds": "~1.1.4",
+    "bootstrap": "~3.2.0",
+    "bootstrap-switch": "~3.0.2",
+    "highcharts-release": "~4.0.1",
+    "highstock-release": "~2.0.1",
+    "jquery": "~2.1.1",
+    "jquery-address": "*",
+    "jquery-cookie": "~1.4.1",
+    "jquery-dateFormat": "~1.0.1",
+    "jquery-ui": "~1.11.0",
+    "mustache": "~0.8.2",
+    "TableCSVExport": "BP2013H1/TableCSVExport",
+    "x-editable": "~1.5.1"
+  }
+}

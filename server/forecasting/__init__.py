@@ -6,7 +6,7 @@ from threading import Thread
 
 from server.models import Device, DeviceConfiguration, Configuration, Sensor, SensorValue
 from server.systems import get_user_function
-from server.helpers import write_pidfile_or_fail
+from server.helpers_thread import write_pidfile_or_fail
 
 from helpers import MeasurementStorage, parse_value
 
