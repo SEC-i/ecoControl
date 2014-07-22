@@ -3,16 +3,18 @@ from server.systems.base import BaseSystem
 
 class CogenerationUnit(BaseSystem):
     """Represents a basic interface to a cogeneration unit.
-    The configuration is read from the database and consists of the following parameters:
-    max_gas_input in kW
-    thermal_efficiency in percent between 0 and 1
-    electrical_efficiency [0,1]
-    minimal_workload: 0.40 [0,1]
-    minimal_off_time `int` in seconds
-    purchase_price in Euro
-    purchase_date `string`
-    maintenance_interval_hours `int`
-    maintenance_interval_powerons `int`
+    The configuration is read from the database and can be set from the frontend.
+    The following parameters are available:
+
+    :param float max_gas_input: in kW
+    :param float thermal_efficiency: in percent between 0 and 1 calculated by the maximal thermal power and gas input
+    :param float electrical_efficiency: in percent between 0 and 1 calculated by the maximal electrical power and gas input
+    :param float minimal_workload: in percent between 0 and 1 used for modulation
+    :param float minimal_off_time: minimal time between to power-ons in seconds
+    :param float purchase_price: in Euro
+    :param date purchase_date: to calculate armotization
+    :param int maintenance_interval_hours: operating hours until maintenance is necessary
+    :param int maintenance_interval_powerons: maximal power-ons until maintenance is necessary
     """
 
     def __init__(self, system_id, env):
@@ -48,12 +50,15 @@ class CogenerationUnit(BaseSystem):
         self.total_hours_of_operation = 0
         self.power_on_count = 0
 
-        self.gas_costs = 0.0655  #: default 0.0655 Euro
+        self.gas_costs = 0.0655  #: default 0.0655 Euro per kWh
 
     def workload_percent(self, workload=None):
         """Getter and setter for the workload.
-        :param workload: `float` between 0-100, if None nothing is set
-        :returns current workload in [0,100]"""
+
+        :param float workload: between 0-100, if None nothing is set
+
+        :returns: current workload in percent [0,100]
+        """
         if workload is not None:
             self.workload = workload / 100.0
         return self.workload * 100.0
@@ -63,7 +68,7 @@ class CogenerationUnit(BaseSystem):
             system.attach_to_cogeneration_unit(self)
 
     def connected(self):
-        """The device needs a `PowerMeter` and `HeatStorage` to operate properly."""
+        """The device needs a `PowerMeter` and a `HeatStorage` to operate properly."""
         return self.power_meter is not None and self.heat_storage is not None
 
     def start(self):
@@ -88,9 +93,11 @@ class CogenerationUnit(BaseSystem):
 
 class PeakLoadBoiler(BaseSystem):
     """Represents a basic interface to a cogeneration unit.
-    The configuration is read from the database and consists of the following parameters:
-    max_gas_input in kW,
-    thermal_efficiency in percent between 0 and 1
+    The configuration is read from the database and can be set from the frontend.
+    The following parameters are available:
+
+    :param float max_gas_input: in kW
+    :param float thermal_efficiency: in percent between 0 and 1 calculated by the maximal thermal power and gas input
     """
 
     def __init__(self, system_id, env):
@@ -117,8 +124,11 @@ class PeakLoadBoiler(BaseSystem):
 
     def workload_percent(self, workload=None):
         """Getter and setter for the workload.
-        :param workload: `float` between 0-100, if None nothing is set
-        :returns current workload in [0,100]"""
+
+        :param float workload: between 0-100, if None nothing is set
+
+        :returns: current workload in [0,100]
+        """
         if workload is not None:
             self.workload = workload / 100.0
         return self.workload * 100.0
