@@ -66,6 +66,8 @@ def initialize_default_scenario():
         configurations.append(Configuration(
             key='system_mode', value='', value_type=Configuration.STR, internal=True))
         configurations.append(Configuration(
+            key='auto_optimization', value='0', value_type=Configuration.BOOL, internal=True))
+        configurations.append(Configuration(
             key='apartments', value='12', value_type=Configuration.INT))
         configurations.append(Configuration(
             key='avg_rooms_per_apartment', value='4', value_type=Configuration.INT, unit=''))

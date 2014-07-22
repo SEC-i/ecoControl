@@ -8,8 +8,6 @@ from django.utils.timezone import utc
 
 from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueDaily
 
-from forecasting.helpers import parse_value
-
 
 logger = logging.getLogger('django')
 CACHE_TIMEOUT = 120  # seconds
@@ -29,9 +27,9 @@ def get_latest_value_with_unit(system, key):
     return '%s %s' % (round(sensor_value.value, 2), sensor.unit)
 
 
-def get_configuration(key):
+def get_configuration(key, cached=True):
     config = cache.get(key)
-    if config is None:
+    if config is None or not cached:
         config = Configuration.objects.get(key=key)
         cache.set(key, config, CACHE_TIMEOUT)
     return parse_value(config)
@@ -99,3 +97,23 @@ def get_past_time(years=0, months=0, days=0, use_view=False):
         pass
 
     return output_time + dateutil.relativedelta.relativedelta(years=-years, months=-months, days=-days)
+
+
+def parse_value(config):
+    try:
+        if config.value_type == DeviceConfiguration.STR:
+            return str(config.value)
+        elif config.value_type == DeviceConfiguration.INT:
+            return int(config.value)
+        elif config.value_type == DeviceConfiguration.FLOAT:
+            return float(config.value)
+        elif config.value_type == DeviceConfiguration.BOOL:
+            print config.value
+            return config.value == "True"
+        else:
+            logger.warning(
+                "Couldn't determine type of %s (%s)" % (config.value, config.value_type))
+    except ValueError:
+        logger.warning("ValueError parsing %s to %s" %
+                       (config.value, config.value_type))
+    return str(config.value)

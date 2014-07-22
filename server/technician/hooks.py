@@ -21,8 +21,7 @@ from server.models import Device, Configuration, DeviceConfiguration, Sensor, Se
 from server.helpers import create_json_response
 from server.functions import get_device_configurations, get_past_time
 from server.systems import perform_configuration
-from server.forecasting import get_forecast, DemoSimulation,\
-    activate_auto_optimization, get_auto_optimize_progress
+from server.forecasting import get_forecast, DemoSimulation
 import functions
 
 logger = logging.getLogger('django')
@@ -61,26 +60,17 @@ def configure(request):
     if not request.user.is_superuser:
         raise PermissionDenied
 
-    cache.clear()
-    perform_configuration(json.loads(request.body))
-    return create_json_response({"status": "success"}, request)
-
-@require_POST
-def auto_optimize(request):
-    if not request.user.is_superuser:
-        raise PermissionDenied
-    
     data = json.loads(request.body)
-    activate_auto_optimization(data["activate"])
-    
-    return create_json_response({"status": "success"}, request) 
 
-def progress(request):
-    if not request.user.is_superuser:
-        raise PermissionDenied
-    
-    return create_json_response({"progress": get_auto_optimize_progress()}, request) 
-       
+    if 'auto_optimization' in data:
+        auto_optimization = Configuration.objects.get(key='auto_optimization')
+        auto_optimization.value = data['auto_optimization']
+        auto_optimization.save()
+        return create_json_response({"auto_optimization": auto_optimization.value}, request)
+    else:
+        cache.clear()
+        perform_configuration(data)
+    return create_json_response({"status": "success"}, request)
 
 
 @require_POST
