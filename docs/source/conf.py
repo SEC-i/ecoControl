@@ -224,7 +224,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'ecocontrol', u'ecoControl Documentation',
+    ('index', 'ecoControl', u'ecoControl Documentation',
      [u'Eva-Maria Herbst, Fabian Maschler, Fabio Niephaus, Max Reimann, Julia Steier'], 1)
 ]
 
