@@ -25,31 +25,31 @@ class SimulatedHeatStorage(HeatStorage):
         return self.input_energy - self.output_energy
 
     def get_target_energy(self):
-        return self.config['specific_heat_capacity'] * self.config['capacity'] * \
-         (self.config['target_temperature'] - self.config['base_temperature'])
+        return self.specific_heat_capacity * self.config['capacity'] * \
+         (self.config['target_temperature'] - self.base_temperature)
 
     def get_require_energy(self):
         return self.get_target_energy() - self.energy_stored()
 
     def get_temperature(self):
-        return self.config['base_temperature'] + self.energy_stored() / \
-        (self.config['capacity'] * self.config['specific_heat_capacity'])
+        return self.base_temperature + self.energy_stored() / \
+        (self.config['capacity'] * self.specific_heat_capacity)
 
     def set_temperature(self, value):
         self.output_energy = 0
-        self.input_energy = (float(value) - self.config['base_temperature']) * \
-            (self.config['capacity'] * self.config['specific_heat_capacity'])
+        self.input_energy = (float(value) - self.base_temperature) * \
+            (self.config['capacity'] * self.specific_heat_capacity)
 
     def get_energy_capacity(self):
-        temp_delta = self.config['critical_temperature'] - self.config['base_temperature']
+        temp_delta = self.config['critical_temperature'] - self.base_temperature
         return self.config['capacity'] * \
-            temp_delta * self.config['specific_heat_capacity']
+            temp_delta * self.specific_heat_capacity
 
     def undersupplied(self):
         return self.get_temperature() < self.config['min_temperature']
 
     def step(self):
-        hourly_energy_loss = (self.config['capacity'] * self.config['specific_heat_capacity']) * \
+        hourly_energy_loss = (self.config['capacity'] * self.specific_heat_capacity) * \
             self.temperature_loss
         self.output_energy += hourly_energy_loss * \
             (self.env.step_size / 3600.0)
