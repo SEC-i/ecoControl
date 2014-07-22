@@ -15,12 +15,15 @@ DTYPE = np.float64
 # type with a _t-suffix.
 ctypedef np.float64_t DTYPE_t
 
+from scipy.optimize import fmin_l_bfgs_b
 
 
 def Cdouble_seasonal(x,unsigned int m,unsigned int m2,int forecast,DTYPE_t alpha,DTYPE_t beta,DTYPE_t gamma,DTYPE_t delta, DTYPE_t autocorrelation):
     hw = CHoltWinters(x,m,m2,forecast)
     return hw.double_seasonal(alpha,beta,gamma,delta,autocorrelation)
 
+
+""" optimize first globally and then locally. The trend component is ignored"""
 @cython.initializedcheck(False)
 @cython.boundscheck(False) # turn of bounds-checking for entire function
 @cython.wraparound(False) #dont wrap around arrays
@@ -28,7 +31,7 @@ def optimize_parameters(x,unsigned int m,unsigned int m2,int forecast):
     cdef CHoltWinters holtwinters = CHoltWinters(x,m,m2,forecast)
     cdef int min_index
     cdef unsigned int a_i,g_i,d_i,ac_i = 0
-    cdef int steps = 10
+    cdef int steps = 11
 
     cdef np.ndarray[DTYPE_t,ndim=1] linsp = np.linspace(0,1.0,steps)
     cdef np.ndarray[DTYPE_t, ndim=4] MSEs = np.ndarray(shape=(steps,steps,steps,steps), dtype=DTYPE)
@@ -43,10 +46,17 @@ def optimize_parameters(x,unsigned int m,unsigned int m2,int forecast):
     min_MSE = MSEs[indices] #get minimum mse
 
     found_parameters = [linsp[i] for i in indices] #map indices back to parameters
+    found_parameters.insert(1,0) #insert unused trend
     
+    cdef np.ndarray[DTYPE_t,ndim=1] initial_values = np.array(found_parameters, dtype=DTYPE)
+    cdef np.ndarray[DTYPE_t,ndim=2] boundaries = np.array([(0, 1), (0, 0.0), (0, 1), (0,1), (0,1)], dtype=DTYPE)
     
+    # set to search with very high accuracy.. optimum cant be far..
+    optimized_parameters = fmin_l_bfgs_b(holtwinters.MSE, x0 = initial_values, bounds = boundaries, 
+                                approx_grad = True,factr=4, epsilon=0.001, maxfun=20000, maxiter=100)
 
-    return found_parameters
+
+    return found_parameters,optimized_parameters
 
 
 
@@ -109,8 +119,10 @@ cdef class CHoltWinters:
             if k < len(test_data):
                 self.test_series[k] = test_data[k]
     
-    def MSE(self, DTYPE_t alpha,DTYPE_t beta,DTYPE_t gamma,DTYPE_t delta, DTYPE_t autocorrelation):
-        return self._mse(alpha,beta,gamma,delta,autocorrelation)
+    """thin wrapper for _MSE function. Use this for calls from python, f.e for an optimization routine
+        :params: DTYPE_t alpha,DTYPE_t beta,DTYPE_t gamma,DTYPE_t delta, DTYPE_t autocorrelation"""
+    def MSE(self, params):
+        return self._MSE(params[0],params[1],params[2],params[3],params[4])
 
 
 
@@ -130,6 +142,7 @@ cdef class CHoltWinters:
 
         return 2 *  mse_insample + 3 * mse_outofsample #weight out of sample more
 
+    
     def double_seasonal(self, DTYPE_t alpha,DTYPE_t beta,DTYPE_t gamma,DTYPE_t delta, DTYPE_t autocorrelation):
         self._double_seasonal(alpha, beta, gamma, delta, autocorrelation)
         return self.forecast_series, self.y[:-self.forecast-1]
