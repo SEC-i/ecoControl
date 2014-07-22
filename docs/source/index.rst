@@ -15,6 +15,8 @@ Contents:
     modules/models
     modules/forecasting
 
+    frontend/main
+
 
 
 
