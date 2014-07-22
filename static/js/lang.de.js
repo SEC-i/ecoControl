@@ -67,7 +67,7 @@ var lang_de = {
     monthly_costs: 'Monatliche Kosten',
     monthly_rewards: 'Monatliche Einnahmen',
     months: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
-    months_short: ['Jan', 'Feb', 'März', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+    months_short: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
     name: 'Name',
     navbar_balances: 'Bilanzen',
     navbar_live_setup: 'System Aufbau',
@@ -127,3 +127,24 @@ var lang_de = {
     warmwater_load_curves: 'Tageslastkurven für Warmwasserverbrauch',
     warmwater_revenues: 'Einnahmen durch Verkauf von Warmwasser',
 };
+
+var lang_de_highcharts = {
+    decimalPoint: ',',
+    thousandsSep: '.',
+    loading: 'Daten werden geladen...',
+    months: lang_de['months'],
+    weekdays: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
+    shortMonths: lang_de['months_short'],
+    exportButtonTitle: "Exportieren",
+    printButtonTitle: "Drucken",
+    rangeSelectorFrom: "Von",
+    rangeSelectorTo: "Bis",
+    rangeSelectorZoom: "Zeitraum",
+    downloadPNG: 'Download als PNG-Bild',
+    downloadJPEG: 'Download als JPEG-Bild',
+    downloadPDF: 'Download als PDF-Dokument',
+    downloadSVG: 'Download als SVG-Bild',
+    resetZoom: "Zoom zurücksetzen",
+    resetZoomTitle: "Zoom zurücksetzen",
+    noData: "Keine Daten zum Anzeigen"
+}

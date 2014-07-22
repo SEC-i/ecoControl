@@ -30,4 +30,10 @@ $(function() {
         $.cookie('selected_language', $(this).attr('data-value'), { expires: 7 });
         location.reload();
     });
+
+    if ($.cookie('selected_language')  != undefined) {
+        if ($.cookie('selected_language') == 'de') {
+            Highcharts.setOptions({lang: lang_de_highcharts});
+        }
+    }
 });
