@@ -1,3 +1,4 @@
+var lang_en = {
     add: 'Add',
     add_new_threshold: 'Add New Threshold',
     amortization_notice: 'Amortization on',
@@ -125,5 +126,4 @@
     username: 'Username',
     warmwater_load_curves: 'Warmwater Load Curves',
     warmwater_revenues: 'Warmwater Revenues',
-var lang_en = {
 };

@@ -1,4 +1,4 @@
-
+var lang_de = {
     add: 'OK',
     add_new_threshold: 'Hinzufügen eines neuen Schwellenwertes',
     amortization_notice: 'Amortisation voraussichtlich am',
@@ -53,7 +53,7 @@
     load: 'Laden',
     location: 'Ort',
     login_button: 'Anmelden',
-    login_incorrect: 'Die Logindaten waren nicht korrekt. Bitte versuchen Sie es erneut!',
+    login_incorrect: 'Falsche Zugangsdaten. Bitte erneut versuchen!',
     login_notice: 'Bitte loggen Sie sich ein',
     maintenance_interval_hours: 'Wartungsintervall in Stunden',
     maintenance_interval_powerons: 'Einschaltzyklen pro Wartungsintervall',
@@ -126,5 +126,4 @@
     username: 'Benutzername',
     warmwater_load_curves: 'Tageslastkurven für Warmwasserverbrauch',
     warmwater_revenues: 'Einnahmen durch Verkauf von Warmwasser',
-var lang_de = {
 };
