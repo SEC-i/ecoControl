@@ -22,9 +22,9 @@ from sys import platform as _platform
 import cPickle as pickle
 
 from django.utils.timezone import utc
+import logging
 from holt_winters import multiplicative, additive
 from server.settings import BASE_DIR
-import logging
 from server.forecasting.forecasting.holt_winters import double_seasonal
 
 logger = logging.getLogger('simulation')
