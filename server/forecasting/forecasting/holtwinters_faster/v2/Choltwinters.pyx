@@ -21,6 +21,36 @@ def Cdouble_seasonal(x,unsigned int m,unsigned int m2,int forecast,DTYPE_t alpha
     hw = CHoltWinters(x,m,m2,forecast)
     return hw.double_seasonal(alpha,beta,gamma,delta,autocorrelation)
 
+@cython.initializedcheck(False)
+@cython.boundscheck(False) # turn of bounds-checking for entire function
+@cython.wraparound(False) #dont wrap around arrays
+def optimize_parameters(x,unsigned int m,unsigned int m2,int forecast):
+    cdef CHoltWinters holtwinters = CHoltWinters(x,m,m2,forecast)
+    cdef int min_index
+    cdef unsigned int a_i,g_i,d_i,ac_i = 0
+    cdef int steps = 10
+
+    cdef np.ndarray[DTYPE_t,ndim=1] linsp = np.linspace(0,1.0,steps)
+    cdef np.ndarray[DTYPE_t, ndim=4] MSEs = np.ndarray(shape=(steps,steps,steps,steps), dtype=DTYPE)
+    for a_i in range(0,steps):
+        for g_i in range(0,steps):
+            for d_i in range(0,steps):
+                for ac_i in range(0,steps):
+                    MSEs[a_i,g_i,d_i,ac_i] = holtwinters._MSE(linsp[a_i],0.0,linsp[g_i],linsp[d_i],linsp[ac_i])
+
+    min_index = MSEs.argmin() #index of minimum in flattened array
+    indices = np.unravel_index(min_index, (steps,steps,steps,steps)) #find original indices
+    min_MSE = MSEs[indices] #get minimum mse
+
+    found_parameters = [linsp[i] for i in indices] #map indices back to parameters
+    
+    
+
+    return found_parameters
+
+
+
+
 cdef class CHoltWinters:
 
     ## type ALL variables
@@ -28,6 +58,7 @@ cdef class CHoltWinters:
     #We have to avoid negative indices now
     cdef int forecast
     cdef unsigned int all_length, len_x, m ,m2
+    cdef DTYPE_t a_0
 
     cdef DTYPE_t [:] Y #input
     cdef DTYPE_t [:] s #seasonality1
@@ -46,7 +77,7 @@ cdef class CHoltWinters:
         self.forecast = forecast
         self.len_x = len(x)
         self.all_length = len(x) + forecast
-        a_i = np.sum(x[0:m]) / float(m)
+        self.a_0 = np.sum(x[0:m]) / float(m)
 
         ## alloc arrays, using cython numpy arrays for fast access, also typed
 
@@ -72,16 +103,23 @@ cdef class CHoltWinters:
             self.Y[k] = x[k]
             #init seasonal variables
             if k % self.m == 0 and k < self.m2:
-                self.s2[k] = self.Y[k] / a_i
+                self.s2[k] = self.Y[k] / self.a_0
             if k < m:
-                self.s[k] = self.Y[k] / a_i
+                self.s[k] = self.Y[k] / self.a_0
             if k < len(test_data):
                 self.test_series[k] = test_data[k]
+    
+    def MSE(self, DTYPE_t alpha,DTYPE_t beta,DTYPE_t gamma,DTYPE_t delta, DTYPE_t autocorrelation):
+        return self._mse(alpha,beta,gamma,delta,autocorrelation)
+
+
 
     @cython.initializedcheck(False)
     @cython.boundscheck(False) # turn of bounds-checking for entire function
     @cython.cdivision(True) #disables checks for zerodivision and other division checks
-    def MSE(self, DTYPE_t alpha,DTYPE_t beta,DTYPE_t gamma,DTYPE_t delta, DTYPE_t autocorrelation):
+    @cython.wraparound(False) #dont wrap around arrays
+    @cython.nonecheck(False)
+    cdef inline DTYPE_t _MSE(self, DTYPE_t alpha,DTYPE_t beta,DTYPE_t gamma,DTYPE_t delta, DTYPE_t autocorrelation):
         cdef DTYPE_t mse_outofsample, mse_insample, sum1, sum2
         cdef unsigned int k, lengthfc
 
@@ -90,7 +128,7 @@ cdef class CHoltWinters:
         mse_outofsample = ((self.forecast_series.base - self.test_series.base) ** 2).mean(axis=None,dtype=DTYPE)
         mse_insample = ((np.asarray(self.y[:-self.forecast-1],dtype=DTYPE) - self.Y.base) ** 2).mean(axis=None ,dtype=DTYPE)
 
-        return mse_insample + mse_outofsample
+        return 2 *  mse_insample + 3 * mse_outofsample #weight out of sample more
 
     def double_seasonal(self, DTYPE_t alpha,DTYPE_t beta,DTYPE_t gamma,DTYPE_t delta, DTYPE_t autocorrelation):
         self._double_seasonal(alpha, beta, gamma, delta, autocorrelation)
@@ -100,23 +138,20 @@ cdef class CHoltWinters:
     @cython.initializedcheck(False)
     @cython.boundscheck(False) # turn of bounds-checking for entire function
     @cython.cdivision(True) #disables checks for zerodivision and other division checks
-    def _double_seasonal(self, DTYPE_t alpha,DTYPE_t beta,DTYPE_t gamma,DTYPE_t delta, DTYPE_t autocorrelation):
+    @cython.wraparound(False) #dont wrap around arrays
+    @cython.nonecheck(False) #do not check for None values
+    cdef inline void _double_seasonal(self, DTYPE_t alpha,DTYPE_t beta,DTYPE_t gamma,DTYPE_t delta, DTYPE_t autocorrelation):
         
         cdef DTYPE_t a_i, a_next, s_i, s2_i, autocorr, Y_i
         cdef unsigned int i,i_s2, i_s, m, m2
         cdef np.ndarray[DTYPE_t, ndim=1] Y,s,s2,y
 
-        Y = self.Y.base
-        s = self.s.base
-        s2 = self.s2.base
-        y = self.y.base
-
-
-        m = self.m
-        m2 = self.m2
+        Y = self.Y.base;s = self.s.base
+        s2 = self.s2.base;y = self.y.base
+        m = self.m;m2 = self.m2
      
         ## reset variables
-        a_i = sum(Y[0:m]) / float(m)
+        a_i = self.a_0
         i_s2 = int(m2 / m)
         i_s = m
 
