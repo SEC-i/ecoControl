@@ -11,9 +11,14 @@ Contents:
 .. toctree::
     :maxdepth: 2
 
+    getting_started
+
+    api
 
     modules/models
     modules/forecasting
+
+    frontend
 
 
 
