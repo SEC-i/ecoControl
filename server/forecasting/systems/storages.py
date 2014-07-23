@@ -33,9 +33,13 @@ class SimulatedHeatStorage(HeatStorage):
             self.output_energy += self.energy_stored()
 
     def energy_stored(self):
+        """Currently available energy in kWh"""
         return self.input_energy - self.output_energy
 
     def get_target_energy(self):
+        """Returns the overall energy needed for reaching the target temperature
+        when the water is cold (base temperature)
+        """
         return self.specific_heat_capacity * self.config['capacity'] * \
          (self.config['target_temperature'] - self.base_temperature)
 
@@ -44,7 +48,7 @@ class SimulatedHeatStorage(HeatStorage):
         return self.get_target_energy() - self.energy_stored()
 
     def get_temperature(self):
-        """Compute the average temperature of the heat storage"""
+        """Returns the average temperature of the heat storage"""
         return self.base_temperature + self.energy_stored() / \
         (self.config['capacity'] * self.specific_heat_capacity)
 
@@ -55,6 +59,7 @@ class SimulatedHeatStorage(HeatStorage):
             (self.config['capacity'] * self.specific_heat_capacity)
 
     def get_energy_capacity(self):
+        """Returns the maximal storable amount of energy in kWh"""
         temp_delta = self.config['critical_temperature'] - self.base_temperature
         return self.config['capacity'] * \
             temp_delta * self.specific_heat_capacity
