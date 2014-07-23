@@ -243,7 +243,7 @@ function initialize_tech_live_diagram_filters(series) {
 }
 
 function update_now_table(rows, date) {
-    var headlines = ['Sensor', 'Device', 'Value'];
+    var headlines = [get_text('sensor'), get_text('device'), get_text('value')];
     draw_table($('#tech_live_data_table_container'), headlines, rows);
     $('#tech_live_data_table_container').prepend('<h3>' + $.format.date(new Date(date), "dd.MM.yyyy HH:MM") + '</h3>');
 }

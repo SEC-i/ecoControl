@@ -103,6 +103,7 @@ var lang_de = {
     statistics_diagrams: 'Statistiken',
     statistics_overview_table: 'Übersichtstabelle',
     statistics_show_diagrams_in_table: 'Diagramm als Tabelle',
+    system: 'System',
     target_temperature: 'Zieltemperatur',
     thermal_efficiency: 'Thermale Effizienz',
     thermal_load_curves: 'Tageslastkurven für Heizung',
@@ -124,6 +125,7 @@ var lang_de = {
     type_of_residents: 'Art der Mieter',
     type_of_windows: 'Art der Fenster',
     username: 'Benutzername',
+    value: 'Wert',
     warmwater_load_curves: 'Tageslastkurven für Warmwasserverbrauch',
     warmwater_revenues: 'Einnahmen durch Verkauf von Warmwasser',
 };

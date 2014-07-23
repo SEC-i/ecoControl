@@ -103,6 +103,7 @@ var lang_en = {
     statistics_diagrams: 'Diagrams',
     statistics_overview_table: 'Overview Table',
     statistics_show_diagrams_in_table: 'Show Diagrams in Table',
+    system: 'System',
     target_temperature: 'Target Temperature',
     thermal_efficiency: 'Thermal Efficiency',
     thermal_load_curves: 'Thermal Load Curves',
@@ -124,6 +125,7 @@ var lang_en = {
     type_of_residents: 'Type of Residents',
     type_of_windows: 'Type of Windows',
     username: 'Username',
+    value: 'Value',
     warmwater_load_curves: 'Warmwater Load Curves',
     warmwater_revenues: 'Warmwater Revenues',
 };
