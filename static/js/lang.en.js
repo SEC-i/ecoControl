@@ -5,6 +5,8 @@ var lang_en = {
     apartments: 'Apartments',
     apply: 'Apply',
     auto_optimize_explanation: ' This optimization incorporates the cost of the system and tries to find the most cost-effective parameters. It uses the simulation as well as the load forecasts, to predict future system costs. When activate, immediate feedback is unavailable due to long calculation times.',
+    auto_optimization_on: 'Active',
+    auto_optimization_off: 'Inactive',
     automatic_optimization: 'Automatic Optimization',
     avg_electrical_consumption: 'Avg. Electrical Consumption',
     avg_rooms_per_apartment: 'Avg. Rooms per Apartment',

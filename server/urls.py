@@ -34,8 +34,6 @@ urlpatterns = patterns('',
     (r'^api/statistics/$', technician.hooks.get_statistics),
     (r'^api/statistics/monthly/$', technician.hooks.get_monthly_statistics),
     (r'^api/thresholds/$', technician.hooks.list_thresholds),
-    (r'^api/automoptimize/activate/$', technician.hooks.auto_optimize),
-    (r'^api/automoptimize/progress/$', technician.hooks.progress),
 
     # manager hooks
     (r'^api/avgs/(sensor/(?P<sensor_id>[0-9]+)/)?(year/(?P<year>[0-9]+)/)?$', manager.hooks.get_avgs),

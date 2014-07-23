@@ -29,11 +29,13 @@ class Configuration(models.Model):
     INT = 1
     FLOAT = 2
     DATE = 3
+    BOOL = 4
     TYPES = (
         (STR, 'str'),
         (INT, 'int'),
         (FLOAT, 'float'),
         (DATE, 'date'),
+        (BOOL, 'bool'),
     )
 
     key = models.CharField(max_length=100)
@@ -53,11 +55,13 @@ class DeviceConfiguration(models.Model):
     INT = 1
     FLOAT = 2
     DATE = 3
+    BOOL = 4
     TYPES = (
         (STR, 'str'),
         (INT, 'int'),
         (FLOAT, 'float'),
         (DATE, 'date'),
+        (BOOL, 'bool'),
     )
 
     device = models.ForeignKey('Device')

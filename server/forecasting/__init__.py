@@ -6,9 +6,10 @@ from threading import Thread
 
 from server.models import Device, DeviceConfiguration, Configuration, Sensor, SensorValue
 from server.systems import get_user_function
+from server.functions import get_configuration, parse_value
 from server.helpers_thread import write_pidfile_or_fail
 
-from helpers import MeasurementStorage, parse_value
+from helpers import MeasurementStorage
 
 from server.systems.base import BaseEnvironment
 from server.forecasting.systems.producers import SimulatedCogenerationUnit, SimulatedPeakLoadBoiler
@@ -20,14 +21,14 @@ DEFAULT_FORECAST_INTERVAL = 14 * 24 * 3600.0
 DEFAULT_FORECAST_STEP_SIZE = 15 * 60.0
 logger = logging.getLogger('simulation')
 
-use_auto_optimization=False
-auto_optimize_progress = 0
 
 def get_forecast(initial_time, configurations=None, code=None, forward=None, forecast=True):
     env = BaseEnvironment(initial_time=initial_time,forecast=forecast, step_size=DEFAULT_FORECAST_STEP_SIZE)
 
     if configurations is None:
         configurations = DeviceConfiguration.objects.all()
+
+    auto_optimization = get_configuration('auto_optimization')
 
     systems = get_initialized_scenario(env, configurations)
 
@@ -45,11 +46,9 @@ def get_forecast(initial_time, configurations=None, code=None, forward=None, for
 
         user_function(*systems)
 
-        if next_auto_optim <= 0.0 and use_auto_optimization:  
+        if next_auto_optim <= 0.0 and auto_optimization:  
             auto_optimize(env,systems)
             next_auto_optim = 3600.0
-            global auto_optimize_progress
-            auto_optimize_progress = 100.0 - (time_remaining/float(forward)) * 100
         # call step function for all systems
         for system in systems:
             system.step()
@@ -169,11 +168,12 @@ class DemoSimulation(Thread):
             return cls.stored_simulation
 
     def run(self):
+        auto_optimization = get_configuration('auto_optimization')
         next_auto_optim = 0.0
         while self.running:
             self.user_function(*self.systems)
             
-            if next_auto_optim <= 0.0 and use_auto_optimization:  
+            if next_auto_optim <= 0.0 and auto_optimization:  
                 auto_optimize(self.env,self.systems)
                 next_auto_optim = 3600.0
 
@@ -186,6 +186,7 @@ class DemoSimulation(Thread):
             if self.forward > 0:
                 self.forward -= self.env.step_size
             else:
+                auto_optimization = get_configuration('auto_optimization')
                 time.sleep(1.0 / self.steps_per_second)
 
             self.env.now += self.env.step_size
@@ -205,15 +206,6 @@ class DemoSimulation(Thread):
 
     def update_user_function(self):
         self.user_function = get_user_function(self.systems)
-
-def activate_auto_optimization(state):
-    global use_auto_optimization
-    use_auto_optimization = state
-    global auto_optimize_progress
-    auto_optimize_progress = 0
-    
-def get_auto_optimize_progress():
-    return auto_optimize_progress
 
 def get_initial_time():
     try:
