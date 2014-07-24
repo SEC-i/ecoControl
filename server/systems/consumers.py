@@ -46,6 +46,7 @@ class ThermalConsumer(BaseSystem):
                              20, 20, 21, 20, 21, 21, 21, 21, 22, 22, 22, 22, 22, 21, 19]
 
         self.room_height = 2.5  #: constant room height
+        # heating demand per square meter in W (rule of thumb for new housing: 100)
         self.heating_constant = 100
         # heat transfer coefficient normal glas window in W/(m^2 * K)
         # normal glas 5.9, isolated 1.1

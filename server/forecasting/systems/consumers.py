@@ -21,19 +21,11 @@ weather_forecast = None
 all_data = None
 
 class SimulatedThermalConsumer(ThermalConsumer):
+    """The simulation of the thermal consume (heating and warm water) of a house
 
-    """
-    physically based heating, using formulas from
+    Usied formulas from
     http://www.model.in.tum.de/um/research/groups/ai/fki-berichte/postscript/fki-227-98.pdf and
     http://www.inference.phy.cam.ac.uk/is/papers/DanThermalModellingBuildings.pdf
-    house data from pamiru48 (12 apartments with 22 persons)
-
-    total_heated_floor - area of simulated house in square meter (650)
-    residents - number of residents (22)
-    apartments - number of apartments (12)
-    avg_rooms_per_appartment - average room number (4)
-    average_window_per_room, each window 2 m^2(3)
-    heating_constant - heating demand per square meter in W (rule of thumb for new housing: 100)
     """
 
     def __init__(self, system_id, env):
@@ -54,22 +46,24 @@ class SimulatedThermalConsumer(ThermalConsumer):
         self.calculate()
 
     def calculate(self):
-
+        """Update the heating parameters when a house parameter is changed.
+        Therefore some assumptions are made"""
         self.current_power = 0
         self.total_heated_volume = self.config['total_heated_floor'] * self.room_height
         self.config['avg_room_volume'] = self.total_heated_volume / \
             (self.config['apartments'] * self.config['avg_rooms_per_apartment'])
-        # Assume 3 walls per room to not count multiple
+        #: Assume 3 walls per room to not count multiple
         avg_wall_size = self.config['avg_room_volume'] / self.room_height * 3
-        # Assume each apartment have an average of 0.8 outer walls per
+        #: Assume each apartment have an average of 0.8 outer walls
         self.outer_wall_surface = avg_wall_size * self.config['apartments'] * 0.8
         self.max_power = self.config['total_heated_floor'] * \
             float(self.heating_constant)
-        # Assume a window size of 2 square meters
+        #: Assume a size of 2 square meters per singel window
         self.window_surface = 2 * self.config['avg_windows_per_room'] * \
             self.config['avg_rooms_per_apartment'] * self.config['apartments']
 
     def step(self):
+        """Simulate the heating and consume according energy"""
         self.simulate_consumption()
         consumption = self.get_consumption_energy(
         ) + self.get_warmwater_consumption_energy()
@@ -77,13 +71,14 @@ class SimulatedThermalConsumer(ThermalConsumer):
         self.heat_storage.consume_energy(consumption)
 
     def simulate_consumption(self):
-        # Calculate variation using daily demand
+        """Determine the heating power of the whole house considerung the rooms target temperature.
+        """
         hours = datetime.fromtimestamp(self.env.now).replace(tzinfo=utc).hour
         self.config['target_temperature'] = self.daily_demand[hours]
 
         self.heat_apartments()
 
-        # The heating powers to full capacity in 60 min
+        #: The heating powers to full capacity in 60 min
         slope = self.max_power * (self.env.step_size / (60 * 60.0))
         if self.temperature_room > self.config['target_temperature']:
             self.current_power -= slope
@@ -94,9 +89,13 @@ class SimulatedThermalConsumer(ThermalConsumer):
         self.current_power = max(min(self.current_power, self.max_power), 0.0)
 
     def get_consumption_energy(self):
+        """Returns consumed thermal energy for heating in kWh during current time-step"""
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
 
     def heat_apartments(self):
+        """Increases the rooms temperature.
+        With the current heating power an amount of energy for the current time-step is produced.
+        This energy and the specific heat capacity of air (1000 J/(m^3 * K)) is needed for the temperature calculation."""
         # Convert from J/(m^3 * K) to kWh/(m^3 * K)
         specific_heat_capacity_air = 1000.0 / 3600.0
         room_power = self.get_consumption_power() - self.heat_loss_power()
@@ -106,20 +105,29 @@ class SimulatedThermalConsumer(ThermalConsumer):
         self.temperature_room += temp_delta
 
     def heat_loss_power(self):
+        """Returns the power in kW by with the house loses thermal energy at outer walls and windows.
+        The outside temperature is needed for the temperature difference."""
         temp_delta = self.temperature_room - self.get_outside_temperature()
         heat_flow_window = self.window_surface * \
             self.heat_transfer_window * temp_delta
         heat_flow_wall = self.outer_wall_surface * \
             self.heat_transfer_wall * temp_delta
-        return (heat_flow_wall + heat_flow_window) / 1000.0  # kW
+        return (heat_flow_wall + heat_flow_window) / 1000.0
 
-    def get_outside_temperature(self, offset_days=0):
+    def get_outside_temperature(self):
+        """The thermal energy demand depends on the outside temperature.
+        For the current simulated time (self.env.now) the outside temperature is returned.
+        """
         date = datetime.fromtimestamp(self.env.now).replace(tzinfo=utc)
         return self.weather_forecast.get_temperature_estimate(date)
 
     def get_warmwater_consumption_power(self):
+        """The energy needed for warm water is calculated by the amount of needed liters in average.
+        For the time step the power is calculated which could heat the needed water of all residents to the given temperature
+        (40 degrees Celsius default)."""
         #demand_liters_per_hour = self.warmwater_forecast.get_forecast_at(self.env.now)
-        specific_heat_capacity_water = 0.001163708  # kWh/(kg*K)
+        #: specific heat capacity water set to 0.001163708 kWh/(kg*K)
+        specific_heat_capacity_water = 0.001163708
         time_tuple = time.gmtime(self.env.now)
 
         hour = time_tuple.tm_hour
@@ -140,18 +148,12 @@ class SimulatedThermalConsumer(ThermalConsumer):
         return power_demand * self.config['residents']
 
     def get_warmwater_consumption_energy(self):
+        """Returns needed thermal energy for warm water in kWh during current time-step"""
         return self.get_warmwater_consumption_power() * (self.env.step_size / 3600.0)
 
 
 class SimulatedElectricalConsumer(ElectricalConsumer):
-
-    """
-    Demand based on pamiru's data (22 residents in a 12 apartment house)
-
-    env - simulation environment
-    power_meter - PowerMeter
-    residents - house residents
-    """
+    """The simulation of the electrical consume of a house based on forecasting."""
     dataset = []
     dates = []
 
@@ -180,10 +182,11 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
             all_data = self.get_all_data2014()
 
     def step(self):
+        """Calculate the current power and consume according energy for current time-step."""
         consumption = self.get_consumption_energy()
         self.total_consumption += consumption
         self.power_meter.consume_energy(consumption)
-        self.power_meter.current_power_consum = self.get_consumption_power()
+        #self.power_meter.current_power_consum = self.get_consumption_power()
         # if this is not a forecast consumer, update the statistical forecasting periodically
         if self.env.demo and not self.env.forecast and self.env.now - self.last_forecast_update > self.new_data_interval:
             self.update_forecast_data()
@@ -207,9 +210,8 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         self.last_forecast_update = self.env.now
 
     def get_consumption_power(self):
+        """Use the forecast to determine the current power demand"""
         time_tuple = time.gmtime(self.env.now)
-
-
         date_index = approximate_index(all_data["dates"], self.env.now)
 
         if self.env.forecast:
@@ -220,6 +222,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
 
 
     def get_consumption_energy(self):
+        """Returns needed electrical energy in kWh during current time-step"""
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
 
     def get_data_until(self, timestamp, start_timestamp=None):
