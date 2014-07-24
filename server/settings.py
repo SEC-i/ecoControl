@@ -27,6 +27,8 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# try to compile the cython (.pyx) version of a few, perfomance critical functions
+CYTHON_SUPPORT = True
 
 # Application definition
 

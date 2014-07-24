@@ -9,10 +9,33 @@ from sys import platform as _platform
 import cPickle as pickle
 
 from django.utils.timezone import utc
-from holt_winters import multiplicative, additive
-from server.settings import BASE_DIR
+from server.settings import BASE_DIR, CYTHON_SUPPORT
 import logging
-from server.forecasting.forecasting.holt_winters import double_seasonal
+   
+
+## try to import compiled holtwinters extension by building it. 
+# if this fails, the standard holtwinters is used.
+fast_hw = False
+if (CYTHON_SUPPORT):
+    try:
+        from server.forecasting.forecasting.exp_smoothing.build_extension import build_holtwinters_extension
+        try:
+            build_holtwinters_extension() #compile and link
+            from server.forecasting.forecasting.exp_smoothing.holtwinters_fast import double_seasonal
+            fast_hw = True
+        except Exception as e:
+            print "error while building. ", e
+    except Exception as e:
+        print "cython probably not installed", e
+    
+if not fast_hw:
+    if (CYTHON_SUPPORT):
+        print "falling back to python holt-winters"
+    from server.forecasting.forecasting.exp_smoothing.holt_winters import double_seasonal, multiplicative, additive
+else:
+    #!TODO: until now only double_seasonal is accelerated
+    from server.forecasting.forecasting.exp_smoothing.holt_winters import multiplicative, additive
+
 
 logger = logging.getLogger('simulation')
 
@@ -150,6 +173,7 @@ class DSHWForecast(Forecast):
     
     def forecast_demands(self,verbose=False):
         print "forecasting demands with double seasonal HW.."
+        t = time.time()
         cached = Forecast.read_from_cache(self)
         if cached != None:
             return cached
@@ -171,7 +195,7 @@ class DSHWForecast(Forecast):
         if verbose:
             print "use auto HW ",calculated_parameters
         
-        print "forecasting completed"
+        print "doubleseasonal completed in:", time.time()-t, " s"
         
         return forecast_values
     

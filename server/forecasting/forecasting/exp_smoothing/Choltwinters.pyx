@@ -17,10 +17,15 @@ ctypedef np.float64_t DTYPE_t
 
 from scipy.optimize import fmin_l_bfgs_b
 
+""" executes one run of holt winters. For very fast runs with the same initialisation data, 
+instantiate a HoltWinters Object and the repeatedly call HoltWinters.double_seasonal(alpha,beta,gamma,delta,autocorr)"""
+def double_seasonal(x, m, m2, forecast, alpha, beta, gamma, delta, autocorrelation):
+    if (None in (alpha,beta,gamma,delta,autocorrelation)):
+        alpha, beta, gamma, delta, autocorrelation = optimize_parameters(x, m, m2, forecast)
 
-def Cdouble_seasonal(x,unsigned int m,unsigned int m2,int forecast,DTYPE_t alpha,DTYPE_t beta,DTYPE_t gamma,DTYPE_t delta, DTYPE_t autocorrelation):
     hw = CHoltWinters(x,m,m2,forecast)
-    return hw.double_seasonal(alpha,beta,gamma,delta,autocorrelation)
+    hw._double_seasonal(alpha,beta,gamma,delta,autocorrelation)
+    return hw.forecast_series, (alpha, beta, gamma, delta, autocorrelation), hw.y[:-forecast-1]
 
 
 """ optimize first globally and then locally. The trend component is ignored"""
@@ -31,7 +36,7 @@ def optimize_parameters(x,unsigned int m,unsigned int m2,int forecast):
     cdef CHoltWinters holtwinters = CHoltWinters(x,m,m2,forecast)
     cdef int min_index
     cdef unsigned int a_i,g_i,d_i,ac_i = 0
-    cdef int steps = 11
+    cdef int steps = 9
 
     cdef np.ndarray[DTYPE_t,ndim=1] linsp = np.linspace(0,1.0,steps)
     cdef np.ndarray[DTYPE_t, ndim=4] MSEs = np.ndarray(shape=(steps,steps,steps,steps), dtype=DTYPE)
@@ -53,10 +58,10 @@ def optimize_parameters(x,unsigned int m,unsigned int m2,int forecast):
     
     # set to search with very high accuracy.. optimum cant be far..
     optimized_parameters = fmin_l_bfgs_b(holtwinters.MSE, x0 = initial_values, bounds = boundaries, 
-                                approx_grad = True,factr=4, epsilon=0.001, maxfun=20000, maxiter=100)
+                                approx_grad = True,factr=10, epsilon=0.01, maxfun=2000, maxiter=100)
 
 
-    return found_parameters,optimized_parameters
+    return optimized_parameters[0]
 
 
 
@@ -142,7 +147,7 @@ cdef class CHoltWinters:
 
         return 2 *  mse_insample + 3 * mse_outofsample #weight out of sample more
 
-    
+    #callable from python
     def double_seasonal(self, DTYPE_t alpha,DTYPE_t beta,DTYPE_t gamma,DTYPE_t delta, DTYPE_t autocorrelation):
         self._double_seasonal(alpha, beta, gamma, delta, autocorrelation)
         return self.forecast_series, self.y[:-self.forecast-1]
