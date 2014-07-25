@@ -15,7 +15,8 @@ def initialize_default_user():
         User.objects.create_user('manager', 'bp2013h1@lists.myhpi.de', 'verwaltung')
 
 def initialize_default_scenario():
-    if len(Device.objects.all()) == 0:
+    needs_initialization = len(Device.objects.all()) == 0 
+    if needs_initialization:
         hs = Device(name='Heat Storage', device_type=Device.HS)
         hs.save()
         pm = Device(name='Power Meter', device_type=Device.PM)
@@ -29,7 +30,8 @@ def initialize_default_scenario():
         ec = Device(name='Electrical Consumer', device_type=Device.EC)
         ec.save()
         print "Default power systems initialized"
-
+    
+    
         sensors = []
         sensors.append(
             Sensor(device=hs, name='Temperature', key='get_temperature', setter='set_temperature', unit='°C', in_diagram=True, aggregate_avg=True))
@@ -59,7 +61,9 @@ def initialize_default_scenario():
 
         Sensor.objects.bulk_create(sensors)
         print "Default sensors initialized"
-
+    
+    # if the configuration must be renewed, while the devices stay the same, init only the config again
+    if needs_initialization or len(Configuration.objects.all()) == 0:
         configurations = []
         configurations.append(Configuration(
             key='system_status', value='init', value_type=Configuration.STR, internal=True))
@@ -104,7 +108,8 @@ def initialize_default_scenario():
 
         Configuration.objects.bulk_create(configurations)
         print "Default configurations initialized"
-
+    
+    if needs_initialization:
         device_configurations = []
         device_configurations.append(
             DeviceConfiguration(device=cu, key='max_gas_input', value='19.0', value_type=DeviceConfiguration.FLOAT, unit='kWh'))
