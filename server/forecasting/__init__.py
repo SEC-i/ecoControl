@@ -21,51 +21,11 @@ DEFAULT_FORECAST_INTERVAL = 14 * 24 * 3600.0
 DEFAULT_FORECAST_STEP_SIZE = 15 * 60.0
 logger = logging.getLogger('simulation')
 
-
+""" for short-lived forecasts, call this. It will block and deliver the forecast"""
 def get_forecast(initial_time, configurations=None, code=None, forward=None, forecast=True):
-    env = BaseEnvironment(initial_time=initial_time,forecast=forecast, step_size=DEFAULT_FORECAST_STEP_SIZE)
-
-    if configurations is None:
-        configurations = DeviceConfiguration.objects.all()
-
-    auto_optimization = get_configuration('auto_optimization')
-
-    devices = get_initialized_scenario(env, configurations)
-
-    measurements = MeasurementStorage(env, devices)
-    user_function = get_user_function(devices, code)
-
-    if forward == None:
-        forward = DEFAULT_FORECAST_INTERVAL
-    time_remaining = forward
+    forecast_object = Forecast(initial_time,configurations,code,forward,forecast)
+    return forecast_object.run().get() #dont start in thread
     
-    next_auto_optim = 0.0
-    
-    while time_remaining > 0:
-        measurements.take_and_cache()
-
-        user_function(*devices)
-
-        if next_auto_optim <= 0.0 and auto_optimization:  
-            auto_optimize(env,devices)
-            next_auto_optim = 3600.0
-        # call step function for all devices
-        for device in devices:
-            device.step()
-        
-
-        measurements.take_and_cache()
-
-        env.now += env.step_size
-        time_remaining -= env.step_size
-        next_auto_optim -= env.step_size
-
-    return {
-        'start': datetime.fromtimestamp(initial_time).isoformat(),
-        'step': DEFAULT_FORECAST_STEP_SIZE,
-        'end': datetime.fromtimestamp(env.now).isoformat(),
-        'sensors': measurements.get_cached()
-    }
 
 
 def get_initialized_scenario(env, configurations):
@@ -118,30 +78,103 @@ def get_initialized_scenario(env, configurations):
 
         return device_list
 
+class ForecastQueue():
+    forecasts = []
+    id = 0
+    
+    def schedule_new(self, initial_time, *params):
+        self.id += 1
+        forecast = Forecast(initial_time,*params)
+        self.forecasts.append((self.id,forecast))
+        forecast.start()
+        return self.id
+    
+    def get_by_id(self, forecast_id):
+        for index, (_id, forecast) in enumerate(self.forecasts):
+            if _id == forecast_id:
+                result = forecast.get()
+                if result != None:
+                    del self.forecasts[index]
+                return result
+        
 
-class DemoSimulation(Thread):
+
+class Forecast(Thread):  
+    def __init__(self, initial_time, configurations=None, code=None, forward=None, forecast=True, demo = False):
+        self.env = BaseEnvironment(initial_time=initial_time, forecast=forecast, 
+                              step_size=DEFAULT_FORECAST_STEP_SIZE,demo=demo) #get_forecast
+    
+        if configurations is None:
+            configurations = DeviceConfiguration.objects.all()
+    
+        self.devices = get_initialized_scenario(self.env, configurations)
+    
+        self.measurements = MeasurementStorage(self.env, self.devices)
+        self.user_function = get_user_function(self.devices, code)
+        self.progress = 0.0
+        self.result = None
+        self.forward = forward
+        
+        if forward == None:
+            self.forward = DEFAULT_FORECAST_INTERVAL
+            
+        self.next_optimization = 0.0
+        self.use_optimization = get_configuration('auto_optimization')
+    
+
+    def step(self):
+        forecast = self.env.forecast
+        
+        self.user_function(self.env,forecast,*self.devices)
+
+        if self.use_optimization and self.next_optimization <= 0.0:  
+            auto_optimize(self.env, self.devices)
+            self.next_optimization = 3600.0
+            
+        # call step function for all devices
+        for device in self.devices:
+            device.step()
+
+        self.store_values()
+        
+        self.env.now += self.env.step_size
+        self.next_optimization -= self.env.step_size
+        
+        
+    def run(self):       
+        time_remaining = self.forward
+        while time_remaining > 0:    
+            
+            self.step()
+            
+            self.progress = (1.0 - time_remaining/float(self.forward)) * 100
+            time_remaining -= self.env.step_size
+             
+        self.result =  {
+            'start': self.env.initial_date.isoformat(),
+            'step': DEFAULT_FORECAST_STEP_SIZE,
+            'end': datetime.fromtimestamp(self.env.now).isoformat(),
+            'sensors': self.measurements.get_cached()
+        }
+        
+        return self
+        
+    def get(self):
+        return self.result
+    
+    def store_values(self):
+        self.measurements.take_and_cache()
+
+
+class DemoSimulation(Forecast):
     stored_simulation = None
     
 
     def __init__(self, initial_time, configurations=None):
-        Thread.__init__(self)
+        DemoSimulation.__init__(self, configurations, forward=0, forecast=False, demo = True)
         self.daemon = True
 
         self.steps_per_second = 3600.0 / 120
-        self.forward = 0
-
-        initial_time = (int(initial_time) / 3600) * 3600.0
-        # initialize real-time environment
-        self.env = BaseEnvironment(initial_time=initial_time, demo=True)
-
-        if configurations is None:
-            configurations = DeviceConfiguration.objects.all()
-
-        self.devices = get_initialized_scenario(self.env, configurations)
-
-        self.measurements = MeasurementStorage(self.env, self.devices)
-        self.user_function = get_user_function(self.devices)
-
         self.running = False
 
     @classmethod
@@ -151,7 +184,6 @@ class DemoSimulation(Thread):
         if neccessary and it makes sure that only
         one demo simulation can run at once
         """
-        #if not write_pidfile_or_fail("/tmp/simulation.pid"):
         # Start demo simulation if in demo mode
         device_mode = Configuration.objects.get(key='device_mode')
         if device_mode.value == 'demo':
@@ -168,44 +200,23 @@ class DemoSimulation(Thread):
             return cls.stored_simulation
 
     def run(self):
-        auto_optimization = get_configuration('auto_optimization')
-        next_auto_optim = 0.0
         while self.running:
-            self.user_function(*self.devices)
+            self.step()
             
-            if next_auto_optim <= 0.0 and auto_optimization:  
-                auto_optimize(self.env,self.devices)
-                next_auto_optim = 3600.0
-
-            # call step function for all devices
-            for device in self.devices:
-                device.step()
-
-            self.measurements.take_and_save()
-
             if self.forward > 0:
                 self.forward -= self.env.step_size
             else:
-                auto_optimization = get_configuration('auto_optimization')
+                self.use_optimization = get_configuration('auto_optimization')
                 time.sleep(1.0 / self.steps_per_second)
-
-            self.env.now += self.env.step_size
-            next_auto_optim -= self.env.step_size
+                
+    def store_values(self):
+        #stores values in database. Overwrites parents saving method
+        self.measurements.take_and_save()
 
     def start(self):
         self.running = True
         Thread.start(self)
 
-    def fast_forward(self, seconds):
-        self.forward = seconds
-        self.start()
-        self.measurements.flush_data()
-
-    def is_forwarding(self):
-        return self.forward > 0.0
-
-    def update_user_function(self):
-        self.user_function = get_user_function(self.devices)
 
 def get_initial_time():
     try:

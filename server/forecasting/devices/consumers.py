@@ -8,7 +8,7 @@ from django.utils.timezone import utc
 from server.devices.consumers import ThermalConsumer, ElectricalConsumer
 from server.forecasting.devices.data.old_demands import warm_water_demand_workday, warm_water_demand_weekend
 from server.forecasting.forecasting.weather import DemoWeather, WeatherForecast
-from server.forecasting.forecasting import Forecast, DayTypeForecast,\
+from server.forecasting.forecasting import StatisticalForecast, DayTypeForecast,\
     DSHWForecast
 from server.forecasting.forecasting.dataloader import DataLoader
 from server.forecasting.forecasting.helpers import approximate_index
@@ -56,7 +56,7 @@ class SimulatedThermalConsumer(ThermalConsumer):
         self.current_power = 0
 
         # only build once, to save lots of time
-        #self.warmwater_forecast = Forecast(self.env, input_data, samples_per_hour=1)
+        #self.warmwater_forecast = StatisticalForecast(self.env, input_data, samples_per_hour=1)
 
         self.calculate()
 
@@ -188,7 +188,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
             raw_dataset = self.get_data_until(self.env.now)
             # cast to float and convert to kW
             dataset = [float(val) / 1000.0 for val in raw_dataset]
-            hourly_data = Forecast.make_hourly(dataset, 6)
+            hourly_data = StatisticalForecast.make_hourly(dataset, 6)
             electrical_forecast = DSHWForecast(
                 self.env, hourly_data, samples_per_hour=1)
         self.electrical_forecast = electrical_forecast

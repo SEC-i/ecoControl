@@ -1,5 +1,5 @@
 from datetime import datetime
-#from scipy.optimize import fmin_l_bfgs_b
+from scipy.optimize import fmin_l_bfgs_b
 import calendar
 import cProfile
 import copy
@@ -19,59 +19,6 @@ import dateutil
 
 
 DEFAULT_FORECAST_INTERVAL = 1 * 3600.0
-
-def simulation_run(start=None,code=None):
-    from server.forecasting import get_initialized_scenario
-    from server.forecasting.helpers import MeasurementStorage
-    from server.models import DeviceConfiguration
-    from server.devices import get_user_function
-    from server.forecasting import get_forecast
-    
-    if start==None:
-        initial_time = calendar.timegm(datetime(year=2014,month=4,day=20).timetuple())
-    else:
-        initial_time = start
-    
-
-    
-    env = BaseEnvironment(initial_time)
-    configurations = DeviceConfiguration.objects.all()
-    
-    devices = get_initialized_scenario(env, configurations)
-    [hs,pm,cu,plb,tc,ec] = devices
-    measurements = MeasurementStorage(env, devices)
-    
-
-    days = 30
-    forward = days * 24 * 3600.0 #month
-    next_auto_optim = 0.0
-    
-    #values = get_forecast(initial_time, forward=forward, forecast=False)
-    #plot_dataset(values, 0, True)
-    
-    
-    while forward > 0:
-        measurements.take_and_cache()
-
-        # call step function for all devices
-        for device in devices:
-            device.step()
-            
-        if next_auto_optim <= 0.0:
-            auto_optimize(env, devices)
-            next_auto_optim = DEFAULT_FORECAST_INTERVAL
-
-        env.now += env.step_size
-        forward -= env.step_size
-        next_auto_optim -= env.step_size
-    
-    values_norm = get_forecast(initial_time, forward=days * 24 * 3600.0, forecast=False)
-
-
-    values_optim = measurements.get()
-    return (values_norm, values_optim)
-
-
 
 def auto_optimize(env, devices):
     optimized_config = find_optimal_config(env.now, devices)

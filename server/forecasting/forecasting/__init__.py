@@ -1,7 +1,7 @@
 """
 This module contains the statistical forecasting initiation and management.
 
-The base class for all forecastings is :class:`Forecast`, 
+The base class for all forecastings is :class:`StatisticalForecast`, 
 to generate forecasts one of the following subclasses has to be used
 
 .. autosummary::
@@ -29,7 +29,7 @@ from server.forecasting.forecasting.holt_winters import double_seasonal
 
 logger = logging.getLogger('simulation')
 
-class Forecast:
+class StatisticalForecast:
     """
     This is the abstract class for statistical forecasting. Statistical forecasts use exponential smoothing methods
     to forecast timeseries into the future. These methods rely on the right parameters to make a realistic forecast.
@@ -200,7 +200,7 @@ class Forecast:
         return errors.mean() / d
 
 
-class DSHWForecast(Forecast):
+class DSHWForecast(StatisticalForecast):
     """ This forecast uses the double seasonal exponential smoothing method. It often delivers better results 
     than the :class: `DayTypeForecast`. """
     
@@ -215,7 +215,7 @@ class DSHWForecast(Forecast):
     
     def forecast_demands(self,verbose=False):
         print "forecasting demands with double seasonal HW.."
-        cached = Forecast.read_from_cache(self)
+        cached = StatisticalForecast.read_from_cache(self)
         if cached != None:
             return cached
         demand = self.demands[0] #dshw demands only contains one dataset
@@ -254,7 +254,7 @@ class DSHWForecast(Forecast):
 
 
 
-class DayTypeForecast(Forecast):
+class DayTypeForecast(StatisticalForecast):
     """This forecast splits the demands into 7 weekdays and minimizes and forecasts each with the
     holt-winters multiplicative method."""
     
@@ -298,7 +298,7 @@ class DayTypeForecast(Forecast):
     
     
     def forecast_demands(self):
-        cached = Forecast.read_from_cache(self)
+        cached = StatisticalForecast.read_from_cache(self)
         if cached != None:
             return cached
         

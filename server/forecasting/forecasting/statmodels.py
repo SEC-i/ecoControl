@@ -10,7 +10,7 @@ from pylab import *
 from matplotlib.widgets import Slider, Button, RadioButtons
 from datetime import date, datetime, timedelta
 from server.forecasting.forecasting.holt_winters import additive, multiplicative
-from server.forecasting.forecasting import Forecast, DayTypeForecast
+from server.forecasting.forecasting import StatisticalForecast, DayTypeForecast
 from server.devices.base import BaseEnvironment
 import time
 # 
@@ -132,7 +132,7 @@ def strategy_testing():
     start = datetime(year=2013,month=1,day=1)
     
     dataset = [float(val) / 1000.0 for val in raw_dataset]
-    hourly_data = Forecast.make_hourly(dataset, 6)
+    hourly_data = StatisticalForecast.make_hourly(dataset, 6)
     split_data = DayTypeForecast.split_weekdata(hourly_data , 1, start)
     
     
@@ -155,14 +155,14 @@ def strategy_testing():
                 the_file.write("RMSE optimization: ")
                 t0 = time.time()
                 (forecast_values, alpha, beta, gamma, rmse) = multiplicative(training_data, m, fc_length, alpha, beta, None, optimization_type="RMSE")
-                mase = Forecast.MASE(training_data, testing_data, forecast_values)
+                mase = StatisticalForecast.MASE(training_data, testing_data, forecast_values)
                 
                 the_file.write("testing MASE: " + str(mase) + "| time: " + str(time.time() - t0) + "secs \n")
                 
                 the_file.write("MASE optimization: ")
                 t0 = time.time()
                 (forecast_values, alpha, beta, gamma, rmse) = multiplicative(training_data, m, fc_length, alpha, beta, None,initial_values_optimization=[0.02, 0.01, 0.08], optimization_type="MASE")
-                mase = Forecast.MASE(training_data, testing_data, forecast_values)
+                mase = StatisticalForecast.MASE(training_data, testing_data, forecast_values)
 #                 if day == "Mo":
 #                     print mase,rmse
 #                     plot_dataset({'measured': split_data[i], 'forecasted': forecast_values}, forecast_start=training_length)
