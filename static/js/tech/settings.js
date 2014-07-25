@@ -4,14 +4,14 @@ var settings_data = null;
 function technician_settings_ready() {
     $.getJSON(api_base_url + 'settings/', function(data) {
         settings_data = data;
-        $.each(settings_data, function(system_id, system_configurations) {
-            $.each(system_configurations, function(key, config_data) {
-                var namespace = namespaces[system_id];
+        $.each(settings_data, function(device_id, device_configurations) {
+            $.each(device_configurations, function(key, config_data) {
+                var namespace = namespaces[device_id];
                 var item = $('#' + namespace + '_panel .panel-body');
                 if (item.length) {
                     var view = {
                         datatype: get_mapped_type(config_data.type),
-                        system: system_id,
+                        device: device_id,
                         id: namespace + '_' + key,
                         key: key,
                         name: get_text(key),
@@ -19,7 +19,7 @@ function technician_settings_ready() {
                         unit: config_data.unit,
                         value: config_data.value,
                     };
-                    if (status_data['system_status'] == 'init') {
+                    if (status_data['device_status'] == 'init') {
                         var output = render_template($('#snippet_settings_input').html(), view);
                         item.append(output);
                     } else {
@@ -35,7 +35,7 @@ function technician_settings_ready() {
             params: function(params) {
                 var item = $('a[data-name="' + params.name + '"]');
                 var post_data = [{
-                    system: item.attr('data-system'),
+                    device: item.attr('data-device'),
                     key: params.pk,
                     type: item.attr('data-type2'),
                     value: params.value,
@@ -48,7 +48,7 @@ function technician_settings_ready() {
             }
         });
 
-        if (status_data['system_status'] == 'init') {
+        if (status_data['device_status'] == 'init') {
             var rendered = render_template($('#snippet_settings_notice').html());
             $('#container').prepend(rendered);
             var rendered = render_template($('#snippet_settings_buttons').html());
@@ -59,7 +59,7 @@ function technician_settings_ready() {
                 var post_data = [];
                 $( ' .configuration' ).each(function( index ) {
                     post_data.push({
-                        system: $(this).attr('data-system'),
+                        device: $(this).attr('data-device'),
                         key: $(this).attr('data-key'),
                         type: $(this).attr('data-type'),
                         value: $(this).val(),

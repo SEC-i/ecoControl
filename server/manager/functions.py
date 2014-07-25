@@ -4,7 +4,7 @@ from datetime import date
 
 from django.db.models import Sum
 
-from server.models import System, Sensor, SensorValue, SensorValueMonthlySum
+from server.models import Device, Sensor, SensorValue, SensorValueMonthlySum
 from server.functions import get_configuration
 
 logger = logging.getLogger('django')
@@ -17,7 +17,7 @@ def get_total_balance_by_date(month, year):
 
     # calculate costs
     sensor_ids = Sensor.objects.filter(
-        system__system_type__in=[System.CU, System.PLB]).values_list('id', flat=True)
+        device__device_type__in=[Device.CU, Device.PLB]).values_list('id', flat=True)
 
     sensor_values_sum = SensorValueMonthlySum.objects.filter(
         timestamp__gte=start, timestamp__lte=end, sensor_id__in=sensor_ids)
@@ -34,7 +34,7 @@ def get_total_balance_by_date(month, year):
 
     # Calculate electrical purchase
     sensor_ids = Sensor.objects.filter(
-        system__system_type=System.PM).values_list('id', flat=True)
+        device__device_type=Device.PM).values_list('id', flat=True)
     sensor_values_sum = SensorValueMonthlySum.objects.filter(
         timestamp__gte=start, timestamp__lte=end, sensor_id__in=sensor_ids)
     sensor_values = sensor_values_sum.filter(sensor__key='purchased')
@@ -50,7 +50,7 @@ def get_total_balance_by_date(month, year):
 
     # thermal consumption
     sensor_ids = Sensor.objects.filter(
-        system__system_type=System.TC).values_list('id', flat=True)
+        device__device_type=Device.TC).values_list('id', flat=True)
     sensor_values_sum = SensorValueMonthlySum.objects.filter(
         timestamp__gte=start, timestamp__lte=end, sensor_id__in=sensor_ids)
     sensor_values = sensor_values_sum.filter(
@@ -79,7 +79,7 @@ def get_total_balance_by_date(month, year):
 
     # electrical consumption
     sensor_ids = Sensor.objects.filter(
-        system__system_type=System.EC).values_list('id', flat=True)
+        device__device_type=Device.EC).values_list('id', flat=True)
     sensor_values_sum = SensorValueMonthlySum.objects.filter(
         timestamp__gte=start, timestamp__lte=end, sensor_id__in=sensor_ids)
     sensor_values = sensor_values_sum.filter(
@@ -94,7 +94,7 @@ def get_total_balance_by_date(month, year):
 
     # electrical infeed
     sensor_ids = Sensor.objects.filter(
-        system__system_type=System.PM).values_list('id', flat=True)
+        device__device_type=Device.PM).values_list('id', flat=True)
     sensor_values_sum = SensorValueMonthlySum.objects.filter(
         timestamp__gte=start, timestamp__lte=end, sensor_id__in=sensor_ids)
     sensor_values = sensor_values_sum.filter(sensor__key='fed_in_electricity')

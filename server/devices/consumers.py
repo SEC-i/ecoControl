@@ -1,14 +1,14 @@
-from base import BaseSystem
+from base import BaseDevice
 # from server.forecasting.forecasting.weather import WeatherForecast
 
 electrical_forecast = None
 weather_forecast = None
 
 
-class ThermalConsumer(BaseSystem):
+class ThermalConsumer(BaseDevice):
 
-    def __init__(self, system_id, env):
-        super(ThermalConsumer, self).__init__(system_id, env)
+    def __init__(self, device_id, env):
+        super(ThermalConsumer, self).__init__(device_id, env)
 
         self.config = {
             'apartments' : 8,
@@ -49,9 +49,9 @@ class ThermalConsumer(BaseSystem):
         # self.weather_forecast = weather_forecast
         self.current_power = 0
 
-    def find_dependent_systems_in(self, system_list):
-        for system in system_list:
-            system.attach_to_thermal_consumer(self)
+    def find_dependent_devices_in(self, device_list):
+        for device in device_list:
+            device.attach_to_thermal_consumer(self)
 
     def connected(self):
         return self.heat_storage is not None
@@ -83,10 +83,10 @@ class ThermalConsumer(BaseSystem):
         raise NotImplementedError
 
 
-class ElectricalConsumer(BaseSystem):
+class ElectricalConsumer(BaseDevice):
 
-    def __init__(self, system_id, env):
-        super(ElectricalConsumer, self).__init__(system_id, env)
+    def __init__(self, device_id, env):
+        super(ElectricalConsumer, self).__init__(device_id, env)
 
         self.config = {
             'apartments' : 12,
@@ -101,9 +101,9 @@ class ElectricalConsumer(BaseSystem):
         self.new_data_interval = 24 * 60 * 60  # append data each day
         self.last_forecast_update = 0  # self.env.now
 
-    def find_dependent_systems_in(self, system_list):
-        for system in system_list:
-            system.attach_to_electrical_consumer(self)
+    def find_dependent_devices_in(self, device_list):
+        for device in device_list:
+            device.attach_to_electrical_consumer(self)
 
     def connected(self):
         return self.power_meter is not None

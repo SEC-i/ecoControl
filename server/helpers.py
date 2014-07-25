@@ -5,7 +5,7 @@ import calendar
 from django.http import HttpResponse
 
 from server.worker import Worker
-from server.models import Configuration, SystemConfiguration, SensorValue
+from server.models import Configuration, DeviceConfiguration, SensorValue
 
 from helpers_thread import write_pidfile_or_fail
 

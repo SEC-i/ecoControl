@@ -5,7 +5,7 @@ import os
 from server.forecasting.forecasting import Forecast, DayTypeForecast,\
     DSHWForecast
 from server.forecasting.forecasting.dataloader import DataLoader
-from server.systems.base import BaseEnvironment
+from server.devices.base import BaseEnvironment
 from server.forecasting.forecasting.helpers import approximate_index
 from server.settings import BASE_DIR
 
@@ -14,13 +14,13 @@ class ForecastTests(unittest.TestCase):
 
     def setUp(self):
         # dataset containing one year of data, sampled in 10 minute intervals
-        DataLoader.cached_csv = {}  # really important to reset, because other systems could have added data which is unwanted
-        path = os.path.join(BASE_DIR, "server/forecasting/systems/data/Electricity_2013.csv")
+        DataLoader.cached_csv = {}  # really important to reset, because other devices could have added data which is unwanted
+        path = os.path.join(BASE_DIR, "server/forecasting/devices/data/Electricity_2013.csv")
         raw_dataset = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
         # cast to float and convert to kW
         self.dataset = [float(val) / 1000.0 for val in raw_dataset]
         
-        path = os.path.join(BASE_DIR, "server/forecasting/systems/data/Electricity_1.1-12.6.2014.csv")
+        path = os.path.join(BASE_DIR, "server/forecasting/devices/data/Electricity_1.1-12.6.2014.csv")
         raw_dataset_2014 = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
         self.dataset_2014 = Forecast.make_hourly([float(val) / 1000.0 for val in raw_dataset_2014], 6)
     
@@ -32,7 +32,7 @@ class ForecastTests(unittest.TestCase):
 
     def test_data(self):
         print "\n--------- test data ------------------"
-        path = os.path.join(BASE_DIR, "server/forecasting/systems/data/Electricity_2013.csv")
+        path = os.path.join(BASE_DIR, "server/forecasting/devices/data/Electricity_2013.csv")
         date_dataset = DataLoader.load_from_file(path, "Datum", "\t")
         ten_min = 10 * 60
         epsilon = 599  # maximal 599 seconds deviatiation from samplinginterval
@@ -109,7 +109,7 @@ class ForecastTests(unittest.TestCase):
     def test_append_data(self):
         print "\n--------- test append_values ------------------"
         self.setup_forecast()
-        path = os.path.join(BASE_DIR, "server/forecasting/systems/data/Electricity_1.1-12.6.2014.csv")
+        path = os.path.join(BASE_DIR, "server/forecasting/devices/data/Electricity_1.1-12.6.2014.csv")
         raw_dataset_2014 = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
 
         # cast to float and convert to kW

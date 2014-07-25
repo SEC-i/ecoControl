@@ -5,8 +5,8 @@ import cProfile
 
 from django.utils.timezone import utc
 
-from server.systems.consumers import ThermalConsumer, ElectricalConsumer
-from server.forecasting.systems.data.old_demands import warm_water_demand_workday, warm_water_demand_weekend
+from server.devices.consumers import ThermalConsumer, ElectricalConsumer
+from server.forecasting.devices.data.old_demands import warm_water_demand_workday, warm_water_demand_weekend
 from server.forecasting.forecasting.weather import DemoWeather, WeatherForecast
 from server.forecasting.forecasting import Forecast, DayTypeForecast,\
     DSHWForecast
@@ -35,9 +35,9 @@ class SimulatedThermalConsumer(ThermalConsumer):
     heating_constant - heating demand per square meter in W (rule of thumb for new housing: 100)
     """
 
-    def __init__(self, system_id, env):
+    def __init__(self, device_id, env):
 
-        super(SimulatedThermalConsumer, self).__init__(system_id, env)
+        super(SimulatedThermalConsumer, self).__init__(device_id, env)
 
         # list of 24 values representing target_temperature per hour
         self.daily_demand = [19, 19, 19, 19, 19, 19, 19, 20, 21,
@@ -176,8 +176,8 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
     dataset = []
     dates = []
 
-    def __init__(self, system_id, env):
-        super(SimulatedElectricalConsumer, self).__init__(system_id, env)
+    def __init__(self, device_id, env):
+        super(SimulatedElectricalConsumer, self).__init__(device_id, env)
 
         self.power_meter = None
         self.total_consumption = 0.0  # kWh
@@ -213,7 +213,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
             
     def get_all_data2014(self):
         sep = os.path.sep
-        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
+        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
         raw_dataset = DataLoader.load_from_file(
             path, "Strom - Verbrauchertotal (Aktuell)", "\t")
         dates = DataLoader.load_from_file(path, "Datum", "\t")
@@ -250,13 +250,13 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         date = datetime.utcfromtimestamp(timestamp).replace(tzinfo=utc)
         if self.__class__.dataset == [] or self.__class__.dates == []:
             sep = os.path.sep
-            path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_2013.csv")
+            path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_2013.csv")
             raw_dataset = DataLoader.load_from_file(
                 path, "Strom - Verbrauchertotal (Aktuell)", "\t")
             dates = DataLoader.load_from_file(path, "Datum", "\t")
 
             if date.year == 2014:
-                path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
+                path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
                 raw_dataset += DataLoader.load_from_file(
                     path, "Strom - Verbrauchertotal (Aktuell)", "\t")
                 dates += DataLoader.load_from_file(path, "Datum", "\t")
