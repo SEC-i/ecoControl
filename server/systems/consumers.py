@@ -49,7 +49,7 @@ class ThermalConsumer(BaseSystem):
         # self.weather_forecast = weather_forecast
         self.current_power = 0
 
-    def find_dependent_devices_in(self, system_list):
+    def find_dependent_systems_in(self, system_list):
         for system in system_list:
             system.attach_to_thermal_consumer(self)
 
@@ -101,7 +101,7 @@ class ElectricalConsumer(BaseSystem):
         self.new_data_interval = 24 * 60 * 60  # append data each day
         self.last_forecast_update = 0  # self.env.now
 
-    def find_dependent_devices_in(self, system_list):
+    def find_dependent_systems_in(self, system_list):
         for system in system_list:
             system.attach_to_electrical_consumer(self)
 

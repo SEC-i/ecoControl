@@ -17,9 +17,9 @@ from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.gzip import gzip_page
 
-from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
+from server.models import System, Configuration, SystemConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
 from server.helpers import create_json_response
-from server.functions import get_device_configurations, get_past_time
+from server.functions import get_system_configurations, get_past_time
 from server.systems import perform_configuration
 from server.forecasting import get_forecast, DemoSimulation
 import functions
@@ -98,11 +98,11 @@ def start_system(request):
     return create_json_response({"status": "system already running"}, request)
 
 
-def get_tunable_device_configurations(request):
+def get_tunable_system_configurations(request):
     if not request.user.is_superuser:
         raise PermissionDenied
 
-    output = dict(get_device_configurations(tunable=True))
+    output = dict(get_system_configurations(tunable=True))
     return create_json_response(output, request)
 
 @gzip_page
@@ -234,13 +234,13 @@ def list_sensor_values(request, interval='month'):
         sensor_values = SensorValueHourly.objects.\
             filter(sensor__in_diagram=True).\
             select_related(
-                'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
+                'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__system__name')
     else:
         start = get_past_time(years=1, use_view=True)
         sensor_values = SensorValueDaily.objects.\
             filter(timestamp__gte=start, sensor__in_diagram=True).\
             select_related(
-                'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
+                'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__system__name')
 
     values = {}
     output = {}
@@ -250,7 +250,7 @@ def list_sensor_values(request, interval='month'):
             values[value.sensor.id] = []
             output[value.sensor.id] = {
                 'id': value.sensor.id,
-                'device': value.sensor.device.name,
+                'system': value.sensor.system.name,
                 'name': value.sensor.name,
                 'unit': value.sensor.unit,
                 'key': value.sensor.key,

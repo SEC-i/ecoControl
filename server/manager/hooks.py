@@ -6,7 +6,7 @@ from django.db.models import Sum, Avg
 from django.db import connection
 from django.core.exceptions import PermissionDenied
 
-from server.models import Device, Sensor, SensorValue, SensorValueMonthlySum, SensorValueMonthlyAvg
+from server.models import System, Sensor, SensorValue, SensorValueMonthlySum, SensorValueMonthlyAvg
 from server.functions import get_configuration, get_past_time
 from server.helpers import create_json_response
 import functions
@@ -95,7 +95,7 @@ def get_daily_loads(request):
 
     start = get_past_time(days=1)
     sensors = Sensor.objects.filter(
-        device__device_type=Device.TC, key='get_consumption_power').values_list('id', flat=True)
+        system__system_type=System.TC, key='get_consumption_power').values_list('id', flat=True)
 
     output = {
         'thermal': {},
@@ -107,13 +107,13 @@ def get_daily_loads(request):
             sensor__id=sensor_id, timestamp__gte=start).values_list('timestamp', 'value'))
 
     sensors = Sensor.objects.filter(
-        device__device_type=Device.TC, key='get_warmwater_consumption_power').values_list('id', flat=True)
+        system__system_type=System.TC, key='get_warmwater_consumption_power').values_list('id', flat=True)
     for sensor_id in sensors:
         output['warmwater'][sensor_id] = list(SensorValue.objects.filter(
             sensor__id=sensor_id, timestamp__gte=start).values_list('timestamp', 'value'))
 
     sensors = Sensor.objects.filter(
-        device__device_type=Device.EC, key='get_consumption_power').values_list('id', flat=True)
+        system__system_type=System.EC, key='get_consumption_power').values_list('id', flat=True)
     for sensor_id in sensors:
         output['electrical'][sensor_id] = list(SensorValue.objects.filter(
             sensor__id=sensor_id, timestamp__gte=start).values_list('timestamp', 'value'))

@@ -40,7 +40,7 @@ class CogenerationUnit(BaseSystem):
         self.thermal_driven = True
         self.electrical_driven_minimal_production = 1.0  # kWh (electrical)
 
-    def find_dependent_devices_in(self, system_list):
+    def find_dependent_systems_in(self, system_list):
         for system in system_list:
             system.attach_to_cogeneration_unit(self)
 
@@ -106,7 +106,7 @@ class PeakLoadBoiler(BaseSystem):
 
         self.overwrite_workload = None
 
-    def find_dependent_devices_in(self, system_list):
+    def find_dependent_systems_in(self, system_list):
         for system in system_list:
             system.attach_to_peak_load_boiler(self)
 

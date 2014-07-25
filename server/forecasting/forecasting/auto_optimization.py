@@ -23,7 +23,7 @@ DEFAULT_FORECAST_INTERVAL = 1 * 3600.0
 def simulation_run(start=None,code=None):
     from server.forecasting import get_initialized_scenario
     from server.forecasting.helpers import MeasurementStorage
-    from server.models import DeviceConfiguration
+    from server.models import SystemConfiguration
     from server.systems import get_user_function
     from server.forecasting import get_forecast
     
@@ -35,7 +35,7 @@ def simulation_run(start=None,code=None):
 
     
     env = BaseEnvironment(initial_time)
-    configurations = DeviceConfiguration.objects.all()
+    configurations = SystemConfiguration.objects.all()
     
     systems = get_initialized_scenario(env, configurations)
     [hs,pm,cu,plb,tc,ec] = systems
@@ -189,7 +189,7 @@ def plot_dataset(sensordata,forecast_start=0,block=True):
     fig, ax = plt.subplots()
     for index, dataset in enumerate(sensordata):
         data = [data_tuple[1] for data_tuple in dataset["data"]]
-        sim_plot, = ax.plot(range(len(data)), data, label=dataset["device"] + dataset["key"])
+        sim_plot, = ax.plot(range(len(data)), data, label=dataset["system"] + dataset["key"])
     
     # Now add the legend with some customizations.
     legend = ax.legend(loc='upper center', shadow=True)

@@ -5,7 +5,7 @@
                 <b>{{name}}</b>:
             </div>
             <div class="col-xs-3 text-right">
-                {{#device}}<a href="#" class="setting_input" data-name="{{id}}" data-type="{{datatype}}" data-title="{{title}}" data-pk="{{key}}" data-device="{{device}}" data-unit="{{unit}}" data-type2="{{type}}">{{/device}}{{value}}{{#device}}</a>{{/device}} {{unit}}
+                {{#system}}<a href="#" class="setting_input" data-name="{{id}}" data-type="{{datatype}}" data-title="{{title}}" data-pk="{{key}}" data-system="{{system}}" data-unit="{{unit}}" data-type2="{{type}}">{{/system}}{{value}}{{#system}}</a>{{/system}} {{unit}}
             </div>
         </div>
     </div>
@@ -17,12 +17,12 @@
             <label for="{{id}}">{{name}}</label>
             <!--{{#unit}}-->
             <div class="input-group">
-                <input type="text" class="configuration form-control" id="{{id}}" data-device="{{device}}" data-key="{{key}}" data-type="{{type}}" data-unit="{{unit}}" value="{{value}}">
+                <input type="text" class="configuration form-control" id="{{id}}" data-system="{{system}}" data-key="{{key}}" data-type="{{type}}" data-unit="{{unit}}" value="{{value}}">
                 <span class="input-group-addon">{{unit}}</span>
             </div>
             <!--{{/unit}}-->
             <!--{{^unit}}-->
-            <input type="text" class="configuration form-control" id="{{id}}" data-device="{{device}}" data-key="{{key}}" data-type="{{type}}" data-unit="{{unit}}" value="{{value}}">
+            <input type="text" class="configuration form-control" id="{{id}}" data-system="{{system}}" data-key="{{key}}" data-type="{{type}}" data-unit="{{unit}}" value="{{value}}">
             <!--{{/unit}}-->
         </div>
     </div>
@@ -33,7 +33,7 @@
         <label>{{name}}: <span id="{{id}}_text">{{value}}</span> {{unit}}</label>
         <div class="tuning_slider" data-target="{{id}}"></div>
         
-        <input type="hidden" class="configuration form-control" id="{{id}}" data-device="{{device}}" data-key="{{key}}" data-type="{{type}}" data-unit="{{unit}}" value="{{value}}" data-old-value="{{value}}">
+        <input type="hidden" class="configuration form-control" id="{{id}}" data-system="{{system}}" data-key="{{key}}" data-type="{{type}}" data-unit="{{unit}}" value="{{value}}" data-old-value="{{value}}">
         <br>
     </div>
 </div>
