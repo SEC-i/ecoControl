@@ -7,7 +7,7 @@ from server.devices import get_initialized_scenario, get_user_function, execute_
 
 import functions
 
-logger = logging.getLogger('worker')
+logger = logging.getLogger('ecocontrol')
 
 
 class Worker(Thread):

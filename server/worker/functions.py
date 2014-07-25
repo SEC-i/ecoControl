@@ -6,7 +6,7 @@ from django.db import connection
 from server.models import SensorValue, Threshold, Notification
 import functions
 
-logger = logging.getLogger('worker')
+logger = logging.getLogger('ecocontrol')
 
 
 def check_thresholds():

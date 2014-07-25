@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import logging
 
 from django.utils.timezone import utc
 from django.db import connection, ProgrammingError
@@ -8,6 +9,7 @@ from django.contrib.auth.models import User
 from server.forecasting.devices.data.old_demands import outside_temperatures_2013, outside_temperatures_2012
 from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum, WeatherValue
 
+logger = logging.getLogger('ecocontrol')
 
 def initialize_default_user():
     if len(User.objects.all()) == 0:
@@ -29,7 +31,7 @@ def initialize_default_scenario():
         tc.save()
         ec = Device(name='Electrical Consumer', device_type=Device.EC)
         ec.save()
-        print "Default power devices initialized"
+        logger.debug("Default devices initialized")
 
         sensors = []
         sensors.append(
@@ -59,10 +61,10 @@ def initialize_default_scenario():
                        key='get_consumption_power', unit='kWh', in_diagram=True, aggregate_sum=True))
 
         Sensor.objects.bulk_create(sensors)
-        print "Default sensors initialized"
     
     # if the configuration must be renewed, while the devices stay the same, init only the config again
     if needs_initialization or len(Configuration.objects.all()) == 0:
+        logger.debug("Default sensors initialized")
         configurations = []
         configurations.append(Configuration(
             key='device_status', value='init', value_type=Configuration.STR, internal=True))
@@ -106,9 +108,9 @@ def initialize_default_scenario():
             key='electrical_revenues', value='0.268', value_type=Configuration.FLOAT, unit='€'))
 
         Configuration.objects.bulk_create(configurations)
-        print "Default configurations initialized"
     
     if needs_initialization:
+        logger.debug("Default configurations initialized")
         device_configurations = []
         device_configurations.append(
             DeviceConfiguration(device=cu, key='max_gas_input', value='19.0', value_type=DeviceConfiguration.FLOAT, unit='kWh'))
@@ -144,7 +146,7 @@ def initialize_default_scenario():
             DeviceConfiguration(device=hs, key='critical_temperature', value='90.0', value_type=DeviceConfiguration.FLOAT, unit='°C', tunable=True))
 
         DeviceConfiguration.objects.bulk_create(device_configurations)
-        print "Default device configurations initialized"
+        logger.debug("Default device configurations initialized")
 
 
 def initialize_weathervalues():
@@ -175,7 +177,7 @@ def initialize_weathervalues():
 
         WeatherValue.objects.bulk_create(weather_values)
 
-        print "Default weather data for 2012 and 2013 initialized"
+        logger.debug("Default weather data for 2012 and 2013 initialized")
 
 
 def initialize_views():
