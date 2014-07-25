@@ -13,12 +13,12 @@ function manager_statistics_ready() {
         $.each(sensor_list, function(index, sensor) {
             if (sensor.sum) {
                 $('.series_list').append(
-                    '<option value="' + sensor.id + '" data-aggregation="sum">SUM ' + sensor.name + ' (' + sensor.system + ')</option>'
+                    '<option value="' + sensor.id + '" data-aggregation="sum">SUM ' + sensor.name + ' (' + sensor.device + ')</option>'
                 );
             }
             if (sensor.avg) {
                 $('.series_list').append(
-                    '<option value="' + sensor.id + '" data-aggregation="avg">AVG ' + sensor.name + ' (' + sensor.system + ')</option>'
+                    '<option value="' + sensor.id + '" data-aggregation="avg">AVG ' + sensor.name + ' (' + sensor.device + ')</option>'
                 );
             }
         });

@@ -17,10 +17,10 @@ from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.gzip import gzip_page
 
-from server.models import System, Configuration, SystemConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
+from server.models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueHourly, SensorValueDaily, SensorValueMonthlySum, Threshold, Notification
 from server.helpers import create_json_response
-from server.functions import get_system_configurations, get_past_time
-from server.systems import perform_configuration
+from server.functions import get_device_configurations, get_past_time
+from server.devices import perform_configuration
 from server.forecasting import get_forecast, DemoSimulation
 import functions
 
@@ -74,35 +74,35 @@ def configure(request):
 
 
 @require_POST
-def start_system(request):
+def start_device(request):
     if not request.user.is_superuser:
         raise PermissionDenied
 
     data = json.loads(request.body)
 
-    system_status = Configuration.objects.get(key='system_status')
-    system_mode = Configuration.objects.get(key='system_mode')
+    device_status = Configuration.objects.get(key='device_status')
+    device_mode = Configuration.objects.get(key='device_mode')
 
-    if system_status.value != 'running':
-        system_status.value = 'running'
-        system_status.save()
+    if device_status.value != 'running':
+        device_status.value = 'running'
+        device_status.save()
         if 'demo' in data and data['demo'] == '1':
-            system_mode.value = 'demo'
-            system_mode.save()
+            device_mode.value = 'demo'
+            device_mode.save()
             DEMO_SIMULATION = DemoSimulation.start_or_get()
             return create_json_response({"status": "demo started"}, request)
-        system_mode.value = 'normal'
-        system_mode.save()
-        return create_json_response({"status": "system started without demo"}, request)
+        device_mode.value = 'normal'
+        device_mode.save()
+        return create_json_response({"status": "device started without demo"}, request)
 
-    return create_json_response({"status": "system already running"}, request)
+    return create_json_response({"status": "device already running"}, request)
 
 
-def get_tunable_system_configurations(request):
+def get_tunable_device_configurations(request):
     if not request.user.is_superuser:
         raise PermissionDenied
 
-    output = dict(get_system_configurations(tunable=True))
+    output = dict(get_device_configurations(tunable=True))
     return create_json_response(output, request)
 
 @gzip_page
@@ -234,13 +234,13 @@ def list_sensor_values(request, interval='month'):
         sensor_values = SensorValueHourly.objects.\
             filter(sensor__in_diagram=True).\
             select_related(
-                'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__system__name')
+                'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
     else:
         start = get_past_time(years=1, use_view=True)
         sensor_values = SensorValueDaily.objects.\
             filter(timestamp__gte=start, sensor__in_diagram=True).\
             select_related(
-                'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__system__name')
+                'sensor__name', 'sensor__unit', 'sensor__key', 'sensor__device__name')
 
     values = {}
     output = {}
@@ -250,7 +250,7 @@ def list_sensor_values(request, interval='month'):
             values[value.sensor.id] = []
             output[value.sensor.id] = {
                 'id': value.sensor.id,
-                'system': value.sensor.system.name,
+                'device': value.sensor.device.name,
                 'name': value.sensor.name,
                 'unit': value.sensor.unit,
                 'key': value.sensor.key,

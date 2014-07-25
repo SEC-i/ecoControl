@@ -3,7 +3,7 @@ import json
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 
-from server.models import SystemConfiguration, Notification, Threshold
+from server.models import DeviceConfiguration, Notification, Threshold
 
 
 class TechnicianHooksTestCase(TestCase):
@@ -17,20 +17,20 @@ class TechnicianHooksTestCase(TestCase):
     def setUp(self):
         self.client = Client()
 
-    def test_update_system_configurations(self):
-        self.assertEqual(len(SystemConfiguration.objects.all()), 15)
+    def test_update_device_configurations(self):
+        self.assertEqual(len(DeviceConfiguration.objects.all()), 15)
 
         data = [
-            {'system': '1', 'key': 'capacity',
+            {'device': '1', 'key': 'capacity',
                 'value': '12344', 'type': '1', 'unit': 'l'},
-            {'system': '3', 'key': 'max_gas_input', 'value': '223445', 'type': '2', 'unit': 'kWh'}]
+            {'device': '3', 'key': 'max_gas_input', 'value': '223445', 'type': '2', 'unit': 'kWh'}]
         response = self.client.post(
             '/api/configure/', json.dumps(data), content_type='application/json')
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content), {"status": "success"})
 
-        self.assertEqual(len(SystemConfiguration.objects.all()), 15)
+        self.assertEqual(len(DeviceConfiguration.objects.all()), 15)
 
     def test_forecast(self):
         response = self.client.get('/api/forecast/')

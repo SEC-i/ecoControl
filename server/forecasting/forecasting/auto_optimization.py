@@ -7,7 +7,7 @@ from collections import namedtuple
 import numpy as np
 from numpy import array
 
-from server.systems.base import BaseEnvironment
+from server.devices.base import BaseEnvironment
 
 from server.functions import get_configuration
 import multiprocessing
@@ -23,8 +23,8 @@ DEFAULT_FORECAST_INTERVAL = 1 * 3600.0
 def simulation_run(start=None,code=None):
     from server.forecasting import get_initialized_scenario
     from server.forecasting.helpers import MeasurementStorage
-    from server.models import SystemConfiguration
-    from server.systems import get_user_function
+    from server.models import DeviceConfiguration
+    from server.devices import get_user_function
     from server.forecasting import get_forecast
     
     if start==None:
@@ -35,11 +35,11 @@ def simulation_run(start=None,code=None):
 
     
     env = BaseEnvironment(initial_time)
-    configurations = SystemConfiguration.objects.all()
+    configurations = DeviceConfiguration.objects.all()
     
-    systems = get_initialized_scenario(env, configurations)
-    [hs,pm,cu,plb,tc,ec] = systems
-    measurements = MeasurementStorage(env, systems)
+    devices = get_initialized_scenario(env, configurations)
+    [hs,pm,cu,plb,tc,ec] = devices
+    measurements = MeasurementStorage(env, devices)
     
 
     days = 30
@@ -53,12 +53,12 @@ def simulation_run(start=None,code=None):
     while forward > 0:
         measurements.take_and_cache()
 
-        # call step function for all systems
-        for system in systems:
-            system.step()
+        # call step function for all devices
+        for device in devices:
+            device.step()
             
         if next_auto_optim <= 0.0:
-            auto_optimize(env, systems)
+            auto_optimize(env, devices)
             next_auto_optim = DEFAULT_FORECAST_INTERVAL
 
         env.now += env.step_size
@@ -73,9 +73,9 @@ def simulation_run(start=None,code=None):
 
 
 
-def auto_optimize(env, systems):
-    optimized_config = find_optimal_config(env.now, systems)
-    [hs,pm,cu,plb,tc,ec] = systems
+def auto_optimize(env, devices):
+    optimized_config = find_optimal_config(env.now, devices)
+    [hs,pm,cu,plb,tc,ec] = devices
     
     cu.overwrite_workload = float(optimized_config["cu_overwrite_workload"])
     
@@ -83,7 +83,7 @@ def auto_optimize(env, systems):
     
 
 
-def find_optimal_config(initial_time, systems):
+def find_optimal_config(initial_time, devices):
     prices = {}
     prices["gas_costs"] = get_configuration('gas_costs')
     prices["electrical_costs"] = get_configuration('electrical_costs')
@@ -94,7 +94,7 @@ def find_optimal_config(initial_time, systems):
     rewards["electrical_revenues"] = get_configuration('electrical_revenues')
     rewards["feed_in_reward"] = get_configuration('feed_in_reward')
 
-    arguments = (initial_time, systems, prices, rewards)
+    arguments = (initial_time, devices, prices, rewards)
     #find initial approximation for parameters
     results = []
     for cu_load in range(0,100,10):
@@ -114,28 +114,28 @@ def find_optimal_config(initial_time, systems):
     return {"cu_overwrite_workload":cu_workload}
 
 def estimate_cost(params, *args):
-    (initial_time, systems, prices, rewards) = args
-    copied_system = copy.deepcopy(systems)
-    [hs,pm,cu,plb,tc,ec] = copied_system
+    (initial_time, devices, prices, rewards) = args
+    copied_device = copy.deepcopy(devices)
+    [hs,pm,cu,plb,tc,ec] = copied_device
     
     cu.overwrite_workload = params[0]
         
-    simplified_forecast(hs.env, initial_time,copied_system)
+    simplified_forecast(hs.env, initial_time,copied_device)
     
-    return total_costs(copied_system, prices, rewards)
+    return total_costs(copied_device, prices, rewards)
 
-def simplified_forecast(env, initial_time, systems):
+def simplified_forecast(env, initial_time, devices):
     forward = DEFAULT_FORECAST_INTERVAL
     while forward > 0:
-        for system in systems:
-            system.step()
+        for device in devices:
+            device.step()
             
         env.now += env.step_size
         forward -= env.step_size
 
 
-def total_costs(systems, prices, rewards):
-    [hs,pm,cu,plb,tc,ec] = systems
+def total_costs(devices, prices, rewards):
+    [hs,pm,cu,plb,tc,ec] = devices
     #maintenance_costs = cu.power_on_count
     gas_costs = (cu.total_gas_consumption + plb.total_gas_consumption) * prices["gas_costs"]
     own_el_consumption = ec.total_consumption -  pm.fed_in_electricity - pm.total_purchased
@@ -189,7 +189,7 @@ def plot_dataset(sensordata,forecast_start=0,block=True):
     fig, ax = plt.subplots()
     for index, dataset in enumerate(sensordata):
         data = [data_tuple[1] for data_tuple in dataset["data"]]
-        sim_plot, = ax.plot(range(len(data)), data, label=dataset["system"] + dataset["key"])
+        sim_plot, = ax.plot(range(len(data)), data, label=dataset["device"] + dataset["key"])
     
     # Now add the legend with some customizations.
     legend = ax.legend(loc='upper center', shadow=True)

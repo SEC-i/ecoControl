@@ -6,35 +6,35 @@ from base import BaseEnvironment
 from producers import CogenerationUnit, PeakLoadBoiler
 from storages import HeatStorage, PowerMeter
 from consumers import ThermalConsumer, ElectricalConsumer
-from server.models import System, Configuration, SystemConfiguration
+from server.models import Device, Configuration, DeviceConfiguration
 from server.settings import BASE_DIR
 
 logger = logging.getLogger('simulation')
 
 def get_initialized_scenario():
-        systems = list(System.objects.all())
-        systems = []
+        devices = list(Device.objects.all())
+        devices = []
         env = BaseEnvironment()
-        for system in systems:
-            for system_type, class_name in System.DEVICE_TYPES:
-                if system.system_type == system_type:
-                    system_class = globals()[class_name]
-                    systems.append(system_class(system.id, env))
+        for device in devices:
+            for device_type, class_name in Device.DEVICE_TYPES:
+                if device.device_type == device_type:
+                    device_class = globals()[class_name]
+                    devices.append(device_class(device.id, env))
 
-        # configurations = SystemConfiguration.objects.all()
-        # for system in systems:
-        #     # configure systems
+        # configurations = DeviceConfiguration.objects.all()
+        # for device in devices:
+        #     # configure devices
         #     for configuration in configurations:
-        #         if configuration.system_id == system.id:
+        #         if configuration.device_id == device.id:
         #             value = parse_value(configuration)
-        #             if configuration.key in system.config:
-        #                 system.config[configuration.key] = value
+        #             if configuration.key in device.config:
+        #                 device.config[configuration.key] = value
 
-        return (env, systems)
+        return (env, devices)
 
 
-def get_user_function(systems, code=None):
-    local_names = ['env', 'forecast'] + ['system_%s' % x.id for x in systems]
+def get_user_function(devices, code=None):
+    local_names = ['env', 'forecast'] + ['device_%s' % x.id for x in devices]
 
     if code is None:
         with open(os.path.join(BASE_DIR,'server','user_code.py'), "r") as code_file:
@@ -55,9 +55,9 @@ def get_user_function(systems, code=None):
     return namespace['user_function']
 
 
-def execute_user_function(user_function, env, systems, forecast):
+def execute_user_function(user_function, env, devices, forecast):
     try:
-        user_function(env, forecast, *systems)
+        user_function(env, forecast, *devices)
         return True
     except:
         return False
@@ -65,10 +65,10 @@ def execute_user_function(user_function, env, systems, forecast):
 
 def perform_configuration(data):
     configurations = []
-    system_configurations = []
+    device_configurations = []
     for config in data:
-        if all(x in config for x in ['system', 'key', 'value', 'type', 'unit']):
-            if config['system'] == '0':
+        if all(x in config for x in ['device', 'key', 'value', 'type', 'unit']):
+            if config['device'] == '0':
                 try:
                     existing_config = Configuration.objects.get(
                         key=config['key'])
@@ -82,28 +82,28 @@ def perform_configuration(data):
                         Configuration(key=config['key'], value=config['value'], value_type=int(config['type']), unit=config['unit']))
             else:
                 try:
-                    system = System.objects.get(id=config['system'])
-                    for system_type, class_name in System.DEVICE_TYPES:
-                        if system.system_type == system_type:
-                            system_class = globals()[class_name]
+                    device = Device.objects.get(id=config['device'])
+                    for device_type, class_name in Device.DEVICE_TYPES:
+                        if device.device_type == device_type:
+                            device_class = globals()[class_name]
 
-                    # Make sure that key is present in corresponding system
+                    # Make sure that key is present in corresponding device
                     # class
-                    if config['key'] in system_class(0, BaseEnvironment()).config:
+                    if config['key'] in device_class(0, BaseEnvironment()).config:
                         try:
-                            existing_config = SystemConfiguration.objects.get(
-                                system=system, key=config['key'])
-                            existing_config.system = system
+                            existing_config = DeviceConfiguration.objects.get(
+                                device=device, key=config['key'])
+                            existing_config.device = device
                             existing_config.value = config['value']
                             existing_config.value_type = int(
                                 config['type'])
                             existing_config.unit = config['unit']
                             existing_config.save()
-                        except SystemConfiguration.DoesNotExist:
-                            system_configurations.append(
-                                SystemConfiguration(system=system, key=config['key'], value=config['value'], value_type=int(config['type']), unit=config['unit']))
+                        except DeviceConfiguration.DoesNotExist:
+                            device_configurations.append(
+                                DeviceConfiguration(device=device, key=config['key'], value=config['value'], value_type=int(config['type']), unit=config['unit']))
                 except ObjectDoesNotExist:
-                    logger.error("Unknown system %s" % config['system'])
+                    logger.error("Unknown device %s" % config['device'])
                 except ValueError:
                     logger.error(
                         "ValueError value_type '%s' not an int" % config['type'])
@@ -112,5 +112,5 @@ def perform_configuration(data):
 
     if len(configurations) > 0:
         Configuration.objects.bulk_create(configurations)
-    if len(system_configurations) > 0:
-        SystemConfiguration.objects.bulk_create(system_configurations)
+    if len(device_configurations) > 0:
+        DeviceConfiguration.objects.bulk_create(device_configurations)

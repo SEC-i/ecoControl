@@ -21,7 +21,7 @@ from server.forecasting.forecasting.dataloader import DataLoader
 from server.forecasting.forecasting import Forecast, DayTypeForecast,\
     DSHWForecast
 from math import sqrt
-from server.systems.base import BaseEnvironment
+from server.devices.base import BaseEnvironment
 from server.forecasting.tools.holt_winters_parameters import value_changer
 
 
@@ -109,12 +109,12 @@ class Command(BaseCommand):
     def strom_real(self):
         sep = os.path.sep
         t0 = time()
-        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_2012Neuendorf.csv")
+        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_2012Neuendorf.csv")
         raw_dataset1 = DataLoader.load_from_file(
             path, "Strom - Verbrauchertotal (Aktuell)", "\t")
         dates1 = DataLoader.load_from_file(path, "Datum", "\t")
 
-        path2 = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_2013.csv")
+        path2 = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_2013.csv")
         raw_dataset2 = DataLoader.load_from_file(
             path2, "Strom - Verbrauchertotal (Aktuell)", "\t")
         dates2 = DataLoader.load_from_file(path2, "Datum", "\t")
@@ -162,7 +162,7 @@ class Command(BaseCommand):
                 
     def error_arrays(self):
         sep = os.path.sep
-        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_2013-6.2014Reger.csv")
+        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_2013-6.2014Reger.csv")
         raw_dataset1 = DataLoader.load_from_file(
             path, "Energie DG Leistung", "\t")
         raw_dataset2 = DataLoader.load_from_file(
@@ -170,7 +170,7 @@ class Command(BaseCommand):
         
         dates = DataLoader.load_from_file(path, "Datum", "\t")
 
-#         path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
+#         path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
 #         raw_dataset += DataLoader.load_from_file(
 #             path, "Strom - Verbrauchertotal (Aktuell)", "\t")
 #         dates += DataLoader.load_from_file(path, "Datum", "\t")
@@ -220,7 +220,7 @@ class Command(BaseCommand):
                 
     def handle_single_data(self):
         sep = os.path.sep
-        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
+        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
         raw_dataset = DataLoader.load_from_file(
             path, "Strom - Verbrauchertotal (Aktuell)", "\t")
         dates = [int(d) for d in DataLoader.load_from_file(path, "Datum", "\t")]#Forecast.make_hourly([int(d) for d in DataLoader.load_from_file(path, "Datum", "\t")],6)

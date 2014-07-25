@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class System(models.Model):
+class Device(models.Model):
     HS = 0  # HeatStorage(self.env)
     PM = 1  # PowerMeter(self.env)
     CU = 2  # CogenerationUnit(self.env, self.hs, self.pm)
@@ -18,7 +18,7 @@ class System(models.Model):
     )
 
     name = models.CharField(max_length=100)
-    system_type = models.PositiveSmallIntegerField(choices=DEVICE_TYPES)
+    device_type = models.PositiveSmallIntegerField(choices=DEVICE_TYPES)
 
     def __unicode__(self):
         return self.name + " (#" + str(self.pk) + ")"
@@ -46,7 +46,7 @@ class Configuration(models.Model):
     internal = models.BooleanField(default=False)
 
 
-class SystemConfiguration(models.Model):
+class DeviceConfiguration(models.Model):
 
     """
     Does not inherit from Configuration because of bulk creation
@@ -64,7 +64,7 @@ class SystemConfiguration(models.Model):
         (BOOL, 'bool'),
     )
 
-    system = models.ForeignKey('System')
+    device = models.ForeignKey('Device')
     key = models.CharField(max_length=100)
     value = models.CharField(max_length=255)
     value_type = models.PositiveSmallIntegerField(
@@ -74,7 +74,7 @@ class SystemConfiguration(models.Model):
 
 
 class Sensor(models.Model):
-    system = models.ForeignKey('System')
+    device = models.ForeignKey('Device')
     name = models.CharField(max_length=100)
     key = models.CharField(max_length=100)
     setter = models.CharField(max_length=100)

@@ -5,13 +5,13 @@ var sensor_count = 0;
 // READY
 $(function() {
     $.getJSON("/api/status/", function(data) {
-        if (data['system_status'] == 'init') {
+        if (data['device_status'] == 'init') {
             redirect_to_settings();
         } else {
             initialize_diagram();
             initialize_tuning_form();
             initialize_editor();
-            if (data['system_mode'] == 'demo') {
+            if (data['device_mode'] == 'demo') {
                 initialize_forward_buttons();
             }
         }
@@ -31,7 +31,7 @@ function initialize_diagram() {
     $.getJSON('/api/data/', function(data) {
         $.each(data, function(index, sensor) {
             series.push({
-                name: sensor.name + ' (' + sensor.system + ')',
+                name: sensor.name + ' (' + sensor.device + ')',
                 data: sensor.data,
                 color: colors_past[index],
                 tooltip: {
@@ -224,9 +224,9 @@ function initialize_forward_buttons() {
 function initialize_tuning_form() {
     $.getJSON('/api/settings/tunable/', function(data) {
         var item = $('#tuning_form');
-        $.each(data, function(system_id, system_configurations) {
-            $.each(system_configurations, function(key, config_data) {
-                var namespace = namespaces[system_id];
+        $.each(data, function(device_id, device_configurations) {
+            $.each(device_configurations, function(key, config_data) {
+                var namespace = namespaces[device_id];
                 item.append(get_input_field_code(namespace, key, config_data));
             });
         });
@@ -245,7 +245,7 @@ function generate_immediate_feedback() {
     var post_data = [];
     $('.configuration').each(function () {
         post_data.push({
-            system: $(this).attr('data-system'),
+            device: $(this).attr('data-device'),
             key: $(this).attr('data-key'),
             type: $(this).attr('data-type'),
             unit: $(this).attr('data-unit'),
@@ -271,7 +271,7 @@ function apply_changes() {
     var post_data = [];
     $('.configuration').each(function () {
         post_data.push({
-            system: $(this).attr('data-system'),
+            device: $(this).attr('data-device'),
             key: $(this).attr('data-key'),
             type: $(this).attr('data-type'),
             unit: $(this).attr('data-unit'),
@@ -302,7 +302,7 @@ function update_immediate_forecast(data) {
 
     $.each(data, function(index, sensor) {
         chart.addSeries({
-            name: sensor.name + ' (' + sensor.system + ') (predicted)',
+            name: sensor.name + ' (' + sensor.device + ') (predicted)',
             data: sensor.data,
             color: colors_modified[index],
             dashStyle: 'shortdot',
@@ -328,17 +328,17 @@ function cleanup_diagram(chart) {
 }
 
 function get_input_field_code(namespace, key, data) {
-    var system_id = namespaces.indexOf(namespace);
+    var device_id = namespaces.indexOf(namespace);
     var output =
             '<div class="col-sm-4"><div class="form-group">' +
-                '<label for="' + namespace + '_' + key + '">' + get_text(key) + ' (System #' + system_id + ')</label>';
+                '<label for="' + namespace + '_' + key + '">' + get_text(key) + ' (Device #' + device_id + ')</label>';
     if (data.unit == '') {
         output +=
-                '<input type="text" class="configuration form-control" id="' + namespace + '_' + key + '" data-system="' + system_id + '" data-key="' + key + '" data-type="' + data.type + '" data-unit="' + data.unit + '"  value="' + data.value + '">';
+                '<input type="text" class="configuration form-control" id="' + namespace + '_' + key + '" data-device="' + device_id + '" data-key="' + key + '" data-type="' + data.type + '" data-unit="' + data.unit + '"  value="' + data.value + '">';
     } else {
         output +=
                 '<div class="input-group">' +
-                    '<input type="text" class="configuration form-control" id="' + namespace + '_' + key + '" data-system="' + system_id + '" data-key="' + key + '" data-type="' + data.type + '" data-unit="' + data.unit + '"  value="' + data.value + '">' +
+                    '<input type="text" class="configuration form-control" id="' + namespace + '_' + key + '" data-device="' + device_id + '" data-key="' + key + '" data-type="' + data.type + '" data-unit="' + data.unit + '"  value="' + data.value + '">' +
                     '<span class="input-group-addon">' + data.unit + '</span>' +
                 '</div>';
     }

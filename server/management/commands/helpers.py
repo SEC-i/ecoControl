@@ -16,8 +16,8 @@ def export_csv(sensordata_sets, name="evaluation.csv", plot_series="all"):
             labels = ["date"]
             for sensordata in sensordata_sets:
                 for index, dataset in enumerate(sensordata):
-                    if plot_series == "all" or dataset["system"] + dataset["key"] in plot_series:
-                        labels.append(dataset["system"] + " " + dataset["key"])
+                    if plot_series == "all" or dataset["device"] + dataset["key"] in plot_series:
+                        labels.append(dataset["device"] + " " + dataset["key"])
             w.writerow(labels)
                        
             dates = [dateutil.parser.parse(data_tuple[0]) for data_tuple in sensordata_sets[0][0]["data"]]
@@ -26,7 +26,7 @@ def export_csv(sensordata_sets, name="evaluation.csv", plot_series="all"):
                 row.append(_date)
                 for sensordata in sensordata_sets:
                     for dataset in sensordata:
-                        if plot_series == "all" or dataset["system"] + dataset["key"] in plot_series:
+                        if plot_series == "all" or dataset["device"] + dataset["key"] in plot_series:
                             try:
                                 row.append(dataset["data"][i][1])
                             except:
@@ -48,8 +48,8 @@ def export_rows(sensordata_sets,name="evaluation.txt", plot_series="all"):
         
         for sensordata in sensordata_sets:
             for dataset in sensordata:
-                if plot_series == "all" or dataset["system"] + dataset["key"] in plot_series:
-                    output += dataset["system"] + " " + dataset["key"] + ": "
+                if plot_series == "all" or dataset["device"] + dataset["key"] in plot_series:
+                    output += dataset["device"] + " " + dataset["key"] + ": "
                     for t,v in dataset["data"]:
                         output += str(v) + ","
                     output += "\n\n\n"

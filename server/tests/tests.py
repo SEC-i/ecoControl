@@ -4,7 +4,7 @@ import re
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 
-from server.models import SystemConfiguration, Notification, Threshold
+from server.models import DeviceConfiguration, Notification, Threshold
 from server.urls import urlpatterns
 
 
@@ -40,7 +40,7 @@ class APITestCase(TestCase):
 
         # Check that the response equals {"login": "inactive"}
         self.assertDictContainsSubset(
-            {"login": "active", "user": "test_fn test_ln", "system_status": "init"}, json.loads(response.content))
+            {"login": "active", "user": "test_fn test_ln", "device_status": "init"}, json.loads(response.content))
 
         # Issue a request to logout
         response = self.client.get('/api/logout/')
@@ -52,7 +52,7 @@ class APITestCase(TestCase):
 
         # Check that the response equals {"login": "inactive"}
         self.assertDictContainsSubset(
-            {"login": "inactive", "system_status": "init"}, json.loads(response.content))
+            {"login": "inactive", "device_status": "init"}, json.loads(response.content))
 
     def test_all_hooks_simple(self):
         for pattern in urlpatterns:

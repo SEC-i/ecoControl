@@ -119,7 +119,7 @@ class Command(BaseCommand):
         fig, ax = plt.subplots()
         for sensordata in sensordata_sets:
             for index, dataset in enumerate(sensordata):
-                if plot_series == "all" or dataset["system"] + dataset["key"] in plot_series:
+                if plot_series == "all" or dataset["device"] + dataset["key"] in plot_series:
                     data = [data_tuple[1] for data_tuple in dataset["data"]]
                     dates = [dateutil.parser.parse(data_tuple[0]) for data_tuple in dataset["data"]]
                     sim_plot, = ax.plot(dates, data, label=dataset["dataset_name"] + " " + dataset["key"])
@@ -136,7 +136,7 @@ class Command(BaseCommand):
             labels = ["date"]
             for sensordata in sensordata_sets:
                 for index, dataset in enumerate(sensordata):
-                    if plot_series == "all" or dataset["system"] + dataset["key"] in plot_series:
+                    if plot_series == "all" or dataset["device"] + dataset["key"] in plot_series:
                         labels.append(dataset["dataset_name"] + " " + dataset["key"])
             w.writerow(labels)
                        
@@ -146,7 +146,7 @@ class Command(BaseCommand):
                 row.append(_date)
                 for sensordata in sensordata_sets:
                     for dataset in sensordata:
-                        if plot_series == "all" or dataset["system"] + dataset["key"] in plot_series:
+                        if plot_series == "all" or dataset["device"] + dataset["key"] in plot_series:
                             try:
                                 row.append(dataset["data"][i][1])
                             except:
@@ -166,7 +166,7 @@ class Command(BaseCommand):
             
             for sensordata in sensordata_sets:
                 for dataset in sensordata:
-                    if plot_series == "all" or dataset["system"] + dataset["key"] in plot_series:
+                    if plot_series == "all" or dataset["device"] + dataset["key"] in plot_series:
                         output += dataset["dataset_name"] + " " + dataset["key"] + ": "
                         for t,v in dataset["data"]:
                             output += str(v) + ","

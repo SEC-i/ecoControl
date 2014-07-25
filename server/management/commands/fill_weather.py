@@ -11,7 +11,7 @@ class Command(BaseCommand):
     help = 'fill weather from files into the database'
 
     def handle(self, *args, **options):
-        directory  = join(BASE_DIR,"server","forecasting","systems","data","weatherforecast")
+        directory  = join(BASE_DIR,"server","forecasting","devices","data","weatherforecast")
         
         
         
