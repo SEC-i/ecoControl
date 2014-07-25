@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
 from django.utils.timezone import utc
 
-from models import Device, Configuration, DeviceConfiguration, Sensor, SensorValue, SensorValueDaily
+from models import System, Configuration, SystemConfiguration, Sensor, SensorValue, SensorValueDaily
 
 
 logger = logging.getLogger('django')
@@ -14,14 +14,14 @@ CACHE_TIMEOUT = 120  # seconds
 
 
 def get_latest_value(system, key):
-    sensor = Sensor.objects.get(device=system, key=key)
+    sensor = Sensor.objects.get(system=system, key=key)
     sensor_value = SensorValue.objects.filter(
         sensor=sensor).latest('timestamp')
     return sensor_value.value
 
 
 def get_latest_value_with_unit(system, key):
-    sensor = Sensor.objects.get(device=system, key=key)
+    sensor = Sensor.objects.get(system=system, key=key)
     sensor_value = SensorValue.objects.filter(
         sensor=sensor).latest('timestamp')
     return '%s %s' % (round(sensor_value.value, 2), sensor.unit)
@@ -35,18 +35,18 @@ def get_configuration(key, cached=True):
     return parse_value(config)
 
 
-def get_device_configuration(system, key):
+def get_system_configuration(system, key):
     configs = cache.get(key + str(system.id))
     if configs is None:
-        configs = DeviceConfiguration.objects.filter(device=system)
+        configs = SystemConfiguration.objects.filter(system=system)
         cache.set(key + str(system.id), configs, CACHE_TIMEOUT)
     for config in configs:
         if config.key == key:
             return parse_value(config)
 
 
-def get_device_configuration(system, key):
-    return parse_value(DeviceConfiguration.objects.get(device=system, key=key))
+def get_system_configuration(system, key):
+    return parse_value(SystemConfiguration.objects.get(system=system, key=key))
 
 
 def get_configurations():
@@ -60,25 +60,25 @@ def get_configurations():
     return [(0, configurations)]
 
 
-def get_device_configurations(tunable=None):
+def get_system_configurations(tunable=None):
     output = []
-    for device in Device.objects.all():
+    for system in System.objects.all():
         configurations = {}
-        configuration_queryset = DeviceConfiguration.objects.filter(
-            device=device)
+        configuration_queryset = SystemConfiguration.objects.filter(
+            system=system)
         if tunable is not None:
             configuration_queryset = configuration_queryset.filter(
                 tunable=tunable)
 
         for config in configuration_queryset:
             configurations[config.key] = {
-                'device': config.device.name,
+                'system': config.system.name,
                 'value': config.value,
                 'type': config.value_type,
                 'unit': config.unit
             }
         if len(configurations) > 0:
-            output += [(device.id, configurations)]
+            output += [(system.id, configurations)]
 
     return output
 
@@ -101,13 +101,13 @@ def get_past_time(years=0, months=0, days=0, use_view=False):
 
 def parse_value(config):
     try:
-        if config.value_type == DeviceConfiguration.STR:
+        if config.value_type == SystemConfiguration.STR:
             return str(config.value)
-        elif config.value_type == DeviceConfiguration.INT:
+        elif config.value_type == SystemConfiguration.INT:
             return int(config.value)
-        elif config.value_type == DeviceConfiguration.FLOAT:
+        elif config.value_type == SystemConfiguration.FLOAT:
             return float(config.value)
-        elif config.value_type == DeviceConfiguration.BOOL:
+        elif config.value_type == SystemConfiguration.BOOL:
             print config.value
             return config.value == "True"
         else:

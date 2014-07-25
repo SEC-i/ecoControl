@@ -15,7 +15,7 @@ from django.db import connection
 from django.core.exceptions import PermissionDenied
 
 import functions
-from models import Device, Configuration, DeviceConfiguration, Sensor, Notification
+from models import System, Configuration, SystemConfiguration, Sensor, Notification
 from helpers import create_json_response
 
 
@@ -85,7 +85,7 @@ def list_settings(request):
 
     output = []
     output += functions.get_configurations()
-    output += functions.get_device_configurations()
+    output += functions.get_system_configurations()
     return create_json_response(dict(output), request)
 
 
@@ -94,10 +94,10 @@ def list_sensors(request):
         raise PermissionDenied
 
     sensors = Sensor.objects.filter(in_diagram=True).values(
-        'id', 'name', 'unit', 'device__name', 'aggregate_sum', 'aggregate_avg')
+        'id', 'name', 'unit', 'system__name', 'aggregate_sum', 'aggregate_avg')
 
-    # rename device__name to device for convenience
-    output = [{'id': x['id'], 'name': x['name'], 'unit': x['unit'], 'device': x['device__name'], 'sum': x['aggregate_sum'], 'avg': x['aggregate_avg']}
+    # rename system__name to system for convenience
+    output = [{'id': x['id'], 'name': x['name'], 'unit': x['unit'], 'system': x['system__name'], 'sum': x['aggregate_sum'], 'avg': x['aggregate_avg']}
               for x in sensors]
 
     return create_json_response(output, request)

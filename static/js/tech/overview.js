@@ -26,7 +26,7 @@ function initialize_technician_diagram() {
 
     var series = [];
     $.getJSON(api_base_url + 'data/' + (live_diagram_detailed ? 'monthly/' : 'yearly/'), function(data) {
-        var table_headlines = ['Sensor', 'Device', 'Value'];
+        var table_headlines = ['Sensor', 'System', 'Value'];
         var table_rows = [];
         var latest_date = 0;
         $.each(data, function(index, sensor) {
@@ -35,7 +35,7 @@ function initialize_technician_diagram() {
             });
             series.push({
                 id: index,
-                name: sensor.name + ' (' + sensor.device + ')',
+                name: sensor.name + ' (' + sensor.system + ')',
                 data: sensor.data,
                 color: colors_past[index],
                 tooltip: {
@@ -44,7 +44,7 @@ function initialize_technician_diagram() {
             });
             latest_value = Math.round(sensor.data[sensor.data.length - 1][1] * 100) / 100;
             latest_date = sensor.data[sensor.data.length - 1][0];
-            table_rows.push([sensor.name, sensor.device, latest_value + ' ' + sensor.unit]);
+            table_rows.push([sensor.name, sensor.system, latest_value + ' ' + sensor.unit]);
         });
         update_now_table(table_rows, latest_date);
         sensor_count = series.length;
@@ -174,7 +174,7 @@ function refresh_technician_diagram(repeat) {
             series_data.push(sensor.data);
             latest_value = Math.round(sensor.data[sensor.data.length - 1][1] * 100) / 100;
             latest_date = sensor.data[sensor.data.length - 1][0];
-            table_rows.push([sensor.name, sensor.device, latest_value + ' ' + sensor.unit]);
+            table_rows.push([sensor.name, sensor.system, latest_value + ' ' + sensor.unit]);
         });
         update_now_table(table_rows, latest_date);
     }).done(function () {
@@ -243,7 +243,7 @@ function initialize_tech_live_diagram_filters(series) {
 }
 
 function update_now_table(rows, date) {
-    var headlines = [get_text('sensor'), get_text('device'), get_text('value')];
+    var headlines = [get_text('sensor'), get_text('system'), get_text('value')];
     draw_table($('#tech_live_data_table_container'), headlines, rows);
     $('#tech_live_data_table_container').prepend('<h3>' + $.format.date(new Date(date), "dd.MM.yyyy HH:MM") + '</h3>');
 }
@@ -327,11 +327,11 @@ function initialize_forward_buttons() {
 function initialize_technician_tuning_form() {
     $.getJSON(api_base_url + 'settings/tunable/', function(data) {
         var item = $('#tuning_form');
-        $.each(data, function(device_id, device_configurations) {
-            $.each(device_configurations, function(key, config_data) {
-                var namespace = namespaces[device_id];
+        $.each(data, function(system_id, system_configurations) {
+            $.each(system_configurations, function(key, config_data) {
+                var namespace = namespaces[system_id];
                 var output = render_template($('#snippet_tuning_input').html(), {
-                    device: device_id,
+                    system: system_id,
                     id: namespace + '_' + key,
                     key: key,
                     name: get_text(key),
@@ -391,7 +391,7 @@ function generate_immediate_feedback() {
     };
     $('#tuning_form .configuration').each(function () {
         post_data.configurations.push({
-            device: $(this).attr('data-device'),
+            system: $(this).attr('data-system'),
             key: $(this).attr('data-key'),
             type: $(this).attr('data-type'),
             unit: $(this).attr('data-unit'),
@@ -419,7 +419,7 @@ function apply_changes() {
     var post_data = [];
     $('#tuning_form .configuration').each(function () {
         post_data.push({
-            device: $(this).attr('data-device'),
+            system: $(this).attr('data-system'),
             key: $(this).attr('data-key'),
             type: $(this).attr('data-type'),
             unit: $(this).attr('data-unit'),
@@ -457,7 +457,7 @@ function update_immediate_forecast(data) {
                 sensor_data.push([start + step * index * 1000, value]);
             });
             chart.addSeries({
-                name: sensor.name + ' (' + sensor.device + ') (simulated)',
+                name: sensor.name + ' (' + sensor.system + ') (simulated)',
                 data: sensor_data,
                 color: colors_modified[index],
                 dashStyle: 'shortdot',

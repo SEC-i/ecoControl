@@ -6,27 +6,27 @@ import array
 from django.utils.timezone import utc
 from django.db import connection
 
-from server.models import Sensor, DeviceConfiguration
+from server.models import Sensor, SystemConfiguration
 
 logger = logging.getLogger('simulation')
 
 
 class MeasurementStorage():
 
-    def __init__(self, env, devices, demo=False):
+    def __init__(self, env, systems, demo=False):
         self.env = env
-        self.devices = devices
+        self.systems = systems
         self.sensors = Sensor.objects.filter(
-            device_id__in=[x.id for x in self.devices])
+            system_id__in=[x.id for x in self.systems])
 
         if demo:
             # initialize for demo
-            self.device_map = []
+            self.system_map = []
             self.sensor_values = []
-            for device in self.devices:
+            for system in self.systems:
                 for sensor in self.sensors:
-                    if device.id == sensor.device.id:
-                        self.device_map.append((sensor, device))
+                    if system.id == sensor.system.id:
+                        self.system_map.append((sensor, system))
         else:
             # initialize for forecasting
             self.forecast_data = [array.array('f') for i in self.sensors]
@@ -37,8 +37,8 @@ class MeasurementStorage():
             return
         timestamp = datetime.utcfromtimestamp(
             self.env.now).replace(tzinfo=utc)
-        for (sensor, device) in self.device_map:
-            value = getattr(device, sensor.key, None)
+        for (sensor, system) in self.system_map:
+            value = getattr(system, sensor.key, None)
             if value is not None:
                 # in case value is a function, call that function
                 if hasattr(value, '__call__'):
@@ -51,9 +51,9 @@ class MeasurementStorage():
 
     def take_and_cache(self):
         for index, sensor in enumerate(self.sensors):
-            for device in self.devices:
-                if device.id == sensor.device.id and sensor.in_diagram:
-                    value = getattr(device, sensor.key, None)
+            for system in self.systems:
+                if system.id == sensor.system.id and sensor.in_diagram:
+                    value = getattr(system, sensor.key, None)
                     if value is not None:
                         # in case value is a function, call that function
                         if hasattr(value, '__call__'):
@@ -68,8 +68,8 @@ class MeasurementStorage():
             if sensor.in_diagram:
                 output.append({
                     'id': sensor.id,
-                    'device_id': sensor.device_id,
-                    'device': sensor.device.name,
+                    'system_id': sensor.system_id,
+                    'system': sensor.system.name,
                     'name': sensor.name,
                     'unit': sensor.unit,
                     'key': sensor.key,

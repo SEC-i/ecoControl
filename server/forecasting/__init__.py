@@ -4,7 +4,7 @@ import calendar
 from datetime import datetime
 from threading import Thread
 
-from server.models import Device, DeviceConfiguration, Configuration, Sensor, SensorValue
+from server.models import System, SystemConfiguration, Configuration, Sensor, SensorValue
 from server.systems import get_user_function
 from server.functions import get_configuration, parse_value
 from server.helpers_thread import write_pidfile_or_fail
@@ -26,7 +26,7 @@ def get_forecast(initial_time, configurations=None, code=None, forward=None, for
     env = BaseEnvironment(initial_time=initial_time,forecast=forecast, step_size=DEFAULT_FORECAST_STEP_SIZE)
 
     if configurations is None:
-        configurations = DeviceConfiguration.objects.all()
+        configurations = SystemConfiguration.objects.all()
 
     auto_optimization = get_configuration('auto_optimization')
 
@@ -69,52 +69,52 @@ def get_forecast(initial_time, configurations=None, code=None, forward=None, for
 
 
 def get_initialized_scenario(env, configurations):
-        devices = list(Device.objects.all())
+        systems = list(System.objects.all())
         system_list = []
-        for device in devices:
-            for device_type, class_name in Device.DEVICE_TYPES:
-                if device.device_type == device_type:
+        for system in systems:
+            for system_type, class_name in System.DEVICE_TYPES:
+                if system.system_type == system_type:
                     system_class = globals()['Simulated%s' % class_name]
-                    system_list.append(system_class(device.id, env))
+                    system_list.append(system_class(system.id, env))
 
-        for device in system_list:
+        for system in system_list:
             # connect power systems
-            device.find_dependent_devices_in(system_list)
-            if not device.connected():
+            system.find_dependent_systems_in(system_list)
+            if not system.connected():
                 logger.error(
-                    "Simulation: Device %s is not connected" % device.name)
+                    "Simulation: System %s is not connected" % system.name)
                 raise RuntimeError
 
             # configure systems
             for configuration in configurations:
-                if configuration.device_id == device.id:
+                if configuration.system_id == system.id:
                     value = parse_value(configuration)
-                    if configuration.key in device.config:
-                        device.config[configuration.key] = value
+                    if configuration.key in system.config:
+                        system.config[configuration.key] = value
 
             # load latest sensor values
             try:
-                for sensor in Sensor.objects.filter(device_id=device.id):
+                for sensor in Sensor.objects.filter(system_id=system.id):
                     value = SensorValue.objects.filter(
                         sensor=sensor).latest('timestamp').value
                     if sensor.setter != '':
-                        callback = getattr(device, sensor.setter, None)
+                        callback = getattr(system, sensor.setter, None)
                         if callback is not None:
                             if hasattr(callback, '__call__'):
                                 callback(value)
                             else:
-                                setattr(device, sensor.setter, value)
+                                setattr(system, sensor.setter, value)
 
             except SensorValue.DoesNotExist:
                 logger.warning("Simulation: No sensor values \
-                    found for sensor '%s' at device '%s'"
-                               % (sensor.name, sensor.device.name))
+                    found for sensor '%s' at system '%s'"
+                               % (sensor.name, sensor.system.name))
             except Sensor.DoesNotExist:
                 logger.warning(
                     'Could not find any sensor values to configure simulation')
 
             # re-calculate values
-            device.calculate()
+            system.calculate()
 
         return system_list
 
@@ -135,7 +135,7 @@ class DemoSimulation(Thread):
         self.env = BaseEnvironment(initial_time=initial_time, demo=True)
 
         if configurations is None:
-            configurations = DeviceConfiguration.objects.all()
+            configurations = SystemConfiguration.objects.all()
 
         self.systems = get_initialized_scenario(self.env, configurations)
 

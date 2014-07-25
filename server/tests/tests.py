@@ -4,7 +4,7 @@ import re
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 
-from server.models import DeviceConfiguration, Notification, Threshold
+from server.models import SystemConfiguration, Notification, Threshold
 from server.urls import urlpatterns
 
 

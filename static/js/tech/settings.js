@@ -4,14 +4,14 @@ var settings_data = null;
 function technician_settings_ready() {
     $.getJSON(api_base_url + 'settings/', function(data) {
         settings_data = data;
-        $.each(settings_data, function(device_id, device_configurations) {
-            $.each(device_configurations, function(key, config_data) {
-                var namespace = namespaces[device_id];
+        $.each(settings_data, function(system_id, system_configurations) {
+            $.each(system_configurations, function(key, config_data) {
+                var namespace = namespaces[system_id];
                 var item = $('#' + namespace + '_panel .panel-body');
                 if (item.length) {
                     var view = {
                         datatype: get_mapped_type(config_data.type),
-                        device: device_id,
+                        system: system_id,
                         id: namespace + '_' + key,
                         key: key,
                         name: get_text(key),
@@ -35,7 +35,7 @@ function technician_settings_ready() {
             params: function(params) {
                 var item = $('a[data-name="' + params.name + '"]');
                 var post_data = [{
-                    device: item.attr('data-device'),
+                    system: item.attr('data-system'),
                     key: params.pk,
                     type: item.attr('data-type2'),
                     value: params.value,
@@ -59,7 +59,7 @@ function technician_settings_ready() {
                 var post_data = [];
                 $( ' .configuration' ).each(function( index ) {
                     post_data.push({
-                        device: $(this).attr('data-device'),
+                        system: $(this).attr('data-system'),
                         key: $(this).attr('data-key'),
                         type: $(this).attr('data-type'),
                         value: $(this).val(),

@@ -14,7 +14,7 @@ class BaseSystem(object):
     def calculate(self):
         pass
 
-    def find_dependent_devices_in(self, system_list):
+    def find_dependent_systems_in(self, system_list):
         pass
 
     def attach_to_cogeneration_unit(self, system):
