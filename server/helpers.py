@@ -9,7 +9,7 @@ from server.models import Configuration, DeviceConfiguration, SensorValue
 
 from helpers_thread import write_pidfile_or_fail
 
-logger = logging.getLogger('django')
+logger = logging.getLogger('ecocontrol')
 
 
 class WebAPIEncoder(json.JSONEncoder):
@@ -30,6 +30,6 @@ def create_json_response(data, request):
 
 def start_worker():
     if not write_pidfile_or_fail("/tmp/worker.pid"):
-        print 'Starting worker...'
+        logger.info('Starting worker...')
         worker = Worker()
         worker.start()

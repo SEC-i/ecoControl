@@ -111,6 +111,14 @@ LOGGING = {
         },
     },
     'handlers': {
+        'ecocontrol': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(os.path.dirname(__file__), '../logs/ecocontrol.log'),
+            'maxBytes': 1024 * 1024 * 4,
+            'backupCount': 5,
+            'formatter': 'verbose'
+        },
         'django': {
             'level': 'WARNING',
             'class': 'logging.handlers.RotatingFileHandler',
@@ -133,16 +141,13 @@ LOGGING = {
             'backupCount': 5,
             'formatter': 'verbose'
         },
-        'worker': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(os.path.dirname(__file__), '../logs/worker.log'),
-            'maxBytes': 1024 * 1024 * 4,
-            'backupCount': 5,
-            'formatter': 'verbose'
-        },
     },
     'loggers': {
+        'ecocontrol': {
+            'handlers': ['ecocontrol'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
         'django': {
             'handlers': ['django'],
             'propagate': True,
@@ -153,11 +158,6 @@ LOGGING = {
 
             'propagate': True,
             'level': 'WARNING',
-        },
-        'worker': {
-            'handlers': ['worker'],
-            'propagate': True,
-            'level': 'DEBUG',
         },
     }
 }
