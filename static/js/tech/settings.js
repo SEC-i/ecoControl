@@ -19,7 +19,7 @@ function technician_settings_ready() {
                         unit: config_data.unit,
                         value: config_data.value,
                     };
-                    if (status_data['system_status'] == 'init') {
+                    if (status_data['device_status'] == 'init') {
                         var output = render_template($('#snippet_settings_input').html(), view);
                         item.append(output);
                     } else {
@@ -48,7 +48,7 @@ function technician_settings_ready() {
             }
         });
 
-        if (status_data['system_status'] == 'init') {
+        if (status_data['device_status'] == 'init') {
             var rendered = render_template($('#snippet_settings_notice').html());
             $('#container').prepend(rendered);
             var rendered = render_template($('#snippet_settings_buttons').html());

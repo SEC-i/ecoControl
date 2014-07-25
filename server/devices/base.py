@@ -2,10 +2,10 @@ import time
 from datetime import datetime
 from django.utils.timezone import utc
 
-class BaseSystem(object):
+class BaseDevice(object):
 
-    def __init__(self, system_id, env):
-        self.id = system_id
+    def __init__(self, device_id, env):
+        self.id = device_id
         self.env = env
                 
         
@@ -14,19 +14,19 @@ class BaseSystem(object):
     def calculate(self):
         pass
 
-    def find_dependent_devices_in(self, system_list):
+    def find_dependent_devices_in(self, device_list):
         pass
 
-    def attach_to_cogeneration_unit(self, system):
+    def attach_to_cogeneration_unit(self, device):
         pass
 
-    def attach_to_peak_load_boiler(self, system):
+    def attach_to_peak_load_boiler(self, device):
         pass
 
-    def attach_to_thermal_consumer(self, system):
+    def attach_to_thermal_consumer(self, device):
         pass
 
-    def attach_to_electrical_consumer(self, system):
+    def attach_to_electrical_consumer(self, device):
         pass
 
     def connected(self):

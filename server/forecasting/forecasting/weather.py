@@ -5,7 +5,7 @@ import logging
 import calendar
 from datetime import datetime, timedelta
 
-from server.forecasting.systems.data.old_demands import outside_temperatures_2013, outside_temperatures_2012
+from server.forecasting.devices.data.old_demands import outside_temperatures_2013, outside_temperatures_2012
 from server.forecasting.forecasting.helpers import cached_data,\
     approximate_index
 from server.models import WeatherValue, RealWeatherValue

@@ -13,28 +13,28 @@ logger = logging.getLogger('simulation')
 
 def get_initialized_scenario():
         devices = list(Device.objects.all())
-        systems = []
+        devices = []
         env = BaseEnvironment()
         for device in devices:
             for device_type, class_name in Device.DEVICE_TYPES:
                 if device.device_type == device_type:
-                    system_class = globals()[class_name]
-                    systems.append(system_class(device.id, env))
+                    device_class = globals()[class_name]
+                    devices.append(device_class(device.id, env))
 
         # configurations = DeviceConfiguration.objects.all()
-        # for device in systems:
-        #     # configure systems
+        # for device in devices:
+        #     # configure devices
         #     for configuration in configurations:
         #         if configuration.device_id == device.id:
         #             value = parse_value(configuration)
         #             if configuration.key in device.config:
         #                 device.config[configuration.key] = value
 
-        return (env, systems)
+        return (env, devices)
 
 
-def get_user_function(systems, code=None):
-    local_names = ['env', 'forecast'] + ['device_%s' % x.id for x in systems]
+def get_user_function(devices, code=None):
+    local_names = ['env', 'forecast'] + ['device_%s' % x.id for x in devices]
 
     if code is None:
         with open(os.path.join(BASE_DIR,'server','user_code.py'), "r") as code_file:
@@ -55,9 +55,9 @@ def get_user_function(systems, code=None):
     return namespace['user_function']
 
 
-def execute_user_function(user_function, env, systems, forecast):
+def execute_user_function(user_function, env, devices, forecast):
     try:
-        user_function(env, forecast, *systems)
+        user_function(env, forecast, *devices)
         return True
     except:
         return False
@@ -85,11 +85,11 @@ def perform_configuration(data):
                     device = Device.objects.get(id=config['device'])
                     for device_type, class_name in Device.DEVICE_TYPES:
                         if device.device_type == device_type:
-                            system_class = globals()[class_name]
+                            device_class = globals()[class_name]
 
-                    # Make sure that key is present in corresponding system
+                    # Make sure that key is present in corresponding device
                     # class
-                    if config['key'] in system_class(0, BaseEnvironment()).config:
+                    if config['key'] in device_class(0, BaseEnvironment()).config:
                         try:
                             existing_config = DeviceConfiguration.objects.get(
                                 device=device, key=config['key'])

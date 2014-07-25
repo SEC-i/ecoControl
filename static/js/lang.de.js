@@ -104,7 +104,7 @@ var lang_de = {
     statistics_diagrams: 'Statistiken',
     statistics_overview_table: 'Übersichtstabelle',
     statistics_show_diagrams_in_table: 'Diagramm als Tabelle',
-    system: 'System',
+    device: 'System',
     target_temperature: 'Zieltemperatur',
     thermal_efficiency: 'Thermale Effizienz',
     thermal_load_curves: 'Tageslastkurven für Heizung',

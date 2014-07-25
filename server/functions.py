@@ -13,15 +13,15 @@ logger = logging.getLogger('django')
 CACHE_TIMEOUT = 120  # seconds
 
 
-def get_latest_value(system, key):
-    sensor = Sensor.objects.get(device=system, key=key)
+def get_latest_value(device, key):
+    sensor = Sensor.objects.get(device=device, key=key)
     sensor_value = SensorValue.objects.filter(
         sensor=sensor).latest('timestamp')
     return sensor_value.value
 
 
-def get_latest_value_with_unit(system, key):
-    sensor = Sensor.objects.get(device=system, key=key)
+def get_latest_value_with_unit(device, key):
+    sensor = Sensor.objects.get(device=device, key=key)
     sensor_value = SensorValue.objects.filter(
         sensor=sensor).latest('timestamp')
     return '%s %s' % (round(sensor_value.value, 2), sensor.unit)
@@ -35,18 +35,18 @@ def get_configuration(key, cached=True):
     return parse_value(config)
 
 
-def get_device_configuration(system, key):
-    configs = cache.get(key + str(system.id))
+def get_device_configuration(device, key):
+    configs = cache.get(key + str(device.id))
     if configs is None:
-        configs = DeviceConfiguration.objects.filter(device=system)
-        cache.set(key + str(system.id), configs, CACHE_TIMEOUT)
+        configs = DeviceConfiguration.objects.filter(device=device)
+        cache.set(key + str(device.id), configs, CACHE_TIMEOUT)
     for config in configs:
         if config.key == key:
             return parse_value(config)
 
 
-def get_device_configuration(system, key):
-    return parse_value(DeviceConfiguration.objects.get(device=system, key=key))
+def get_device_configuration(device, key):
+    return parse_value(DeviceConfiguration.objects.get(device=device, key=key))
 
 
 def get_configurations():

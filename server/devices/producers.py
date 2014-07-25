@@ -1,10 +1,10 @@
-from server.systems.base import BaseSystem
+from server.devices.base import BaseDevice
 
 
-class CogenerationUnit(BaseSystem):
+class CogenerationUnit(BaseDevice):
 
-    def __init__(self, system_id, env):
-        super(CogenerationUnit, self).__init__(system_id, env)
+    def __init__(self, device_id, env):
+        super(CogenerationUnit, self).__init__(device_id, env)
 
         # Vaillant ecoPOWER 4.7
         self.config = {
@@ -40,9 +40,9 @@ class CogenerationUnit(BaseSystem):
         self.thermal_driven = True
         self.electrical_driven_minimal_production = 1.0  # kWh (electrical)
 
-    def find_dependent_devices_in(self, system_list):
-        for system in system_list:
-            system.attach_to_cogeneration_unit(self)
+    def find_dependent_devices_in(self, device_list):
+        for device in device_list:
+            device.attach_to_cogeneration_unit(self)
 
     def connected(self):
         return self.power_meter is not None and self.heat_storage is not None
@@ -78,10 +78,10 @@ class CogenerationUnit(BaseSystem):
         raise NotImplementedError
 
 
-class PeakLoadBoiler(BaseSystem):
+class PeakLoadBoiler(BaseDevice):
 
-    def __init__(self, system_id, env):
-        super(PeakLoadBoiler, self).__init__(system_id, env)
+    def __init__(self, device_id, env):
+        super(PeakLoadBoiler, self).__init__(device_id, env)
 
         self.config = {
             'max_gas_input': 45.0,  # kW
@@ -106,9 +106,9 @@ class PeakLoadBoiler(BaseSystem):
 
         self.overwrite_workload = None
 
-    def find_dependent_devices_in(self, system_list):
-        for system in system_list:
-            system.attach_to_peak_load_boiler(self)
+    def find_dependent_devices_in(self, device_list):
+        for device in device_list:
+            device.attach_to_peak_load_boiler(self)
 
     def connected(self):
         return self.heat_storage is not None

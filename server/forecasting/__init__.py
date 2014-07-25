@@ -5,16 +5,16 @@ from datetime import datetime
 from threading import Thread
 
 from server.models import Device, DeviceConfiguration, Configuration, Sensor, SensorValue
-from server.systems import get_user_function
+from server.devices import get_user_function
 from server.functions import get_configuration, parse_value
 from server.helpers_thread import write_pidfile_or_fail
 
 from helpers import MeasurementStorage
 
-from server.systems.base import BaseEnvironment
-from server.forecasting.systems.producers import SimulatedCogenerationUnit, SimulatedPeakLoadBoiler
-from server.forecasting.systems.storages import SimulatedHeatStorage, SimulatedPowerMeter
-from server.forecasting.systems.consumers import SimulatedThermalConsumer, SimulatedElectricalConsumer
+from server.devices.base import BaseEnvironment
+from server.forecasting.devices.producers import SimulatedCogenerationUnit, SimulatedPeakLoadBoiler
+from server.forecasting.devices.storages import SimulatedHeatStorage, SimulatedPowerMeter
+from server.forecasting.devices.consumers import SimulatedThermalConsumer, SimulatedElectricalConsumer
 from server.forecasting.forecasting.auto_optimization import auto_optimize
 
 DEFAULT_FORECAST_INTERVAL = 14 * 24 * 3600.0
@@ -30,10 +30,10 @@ def get_forecast(initial_time, configurations=None, code=None, forward=None, for
 
     auto_optimization = get_configuration('auto_optimization')
 
-    systems = get_initialized_scenario(env, configurations)
+    devices = get_initialized_scenario(env, configurations)
 
-    measurements = MeasurementStorage(env, systems)
-    user_function = get_user_function(systems, code)
+    measurements = MeasurementStorage(env, devices)
+    user_function = get_user_function(devices, code)
 
     if forward == None:
         forward = DEFAULT_FORECAST_INTERVAL
@@ -44,14 +44,14 @@ def get_forecast(initial_time, configurations=None, code=None, forward=None, for
     while time_remaining > 0:
         measurements.take_and_cache()
 
-        user_function(*systems)
+        user_function(*devices)
 
         if next_auto_optim <= 0.0 and auto_optimization:  
-            auto_optimize(env,systems)
+            auto_optimize(env,devices)
             next_auto_optim = 3600.0
-        # call step function for all systems
-        for system in systems:
-            system.step()
+        # call step function for all devices
+        for device in devices:
+            device.step()
         
 
         measurements.take_and_cache()
@@ -70,22 +70,22 @@ def get_forecast(initial_time, configurations=None, code=None, forward=None, for
 
 def get_initialized_scenario(env, configurations):
         devices = list(Device.objects.all())
-        system_list = []
+        device_list = []
         for device in devices:
             for device_type, class_name in Device.DEVICE_TYPES:
                 if device.device_type == device_type:
-                    system_class = globals()['Simulated%s' % class_name]
-                    system_list.append(system_class(device.id, env))
+                    device_class = globals()['Simulated%s' % class_name]
+                    device_list.append(device_class(device.id, env))
 
-        for device in system_list:
-            # connect power systems
-            device.find_dependent_devices_in(system_list)
+        for device in device_list:
+            # connect power devices
+            device.find_dependent_devices_in(device_list)
             if not device.connected():
                 logger.error(
                     "Simulation: Device %s is not connected" % device.name)
                 raise RuntimeError
 
-            # configure systems
+            # configure devices
             for configuration in configurations:
                 if configuration.device_id == device.id:
                     value = parse_value(configuration)
@@ -116,7 +116,7 @@ def get_initialized_scenario(env, configurations):
             # re-calculate values
             device.calculate()
 
-        return system_list
+        return device_list
 
 
 class DemoSimulation(Thread):
@@ -137,10 +137,10 @@ class DemoSimulation(Thread):
         if configurations is None:
             configurations = DeviceConfiguration.objects.all()
 
-        self.systems = get_initialized_scenario(self.env, configurations)
+        self.devices = get_initialized_scenario(self.env, configurations)
 
-        self.measurements = MeasurementStorage(self.env, self.systems)
-        self.user_function = get_user_function(self.systems)
+        self.measurements = MeasurementStorage(self.env, self.devices)
+        self.user_function = get_user_function(self.devices)
 
         self.running = False
 
@@ -153,8 +153,8 @@ class DemoSimulation(Thread):
         """
         #if not write_pidfile_or_fail("/tmp/simulation.pid"):
         # Start demo simulation if in demo mode
-        system_mode = Configuration.objects.get(key='system_mode')
-        if system_mode.value == 'demo':
+        device_mode = Configuration.objects.get(key='device_mode')
+        if device_mode.value == 'demo':
             if print_visible:
                 print 'Starting demo simulation...'
             else:
@@ -171,15 +171,15 @@ class DemoSimulation(Thread):
         auto_optimization = get_configuration('auto_optimization')
         next_auto_optim = 0.0
         while self.running:
-            self.user_function(*self.systems)
+            self.user_function(*self.devices)
             
             if next_auto_optim <= 0.0 and auto_optimization:  
-                auto_optimize(self.env,self.systems)
+                auto_optimize(self.env,self.devices)
                 next_auto_optim = 3600.0
 
-            # call step function for all systems
-            for system in self.systems:
-                system.step()
+            # call step function for all devices
+            for device in self.devices:
+                device.step()
 
             self.measurements.take_and_save()
 
@@ -205,7 +205,7 @@ class DemoSimulation(Thread):
         return self.forward > 0.0
 
     def update_user_function(self):
-        self.user_function = get_user_function(self.systems)
+        self.user_function = get_user_function(self.devices)
 
 def get_initial_time():
     try:

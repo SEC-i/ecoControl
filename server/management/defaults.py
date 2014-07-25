@@ -5,7 +5,7 @@ from django.utils.timezone import utc
 from django.db import connection, ProgrammingError
 from django.contrib.auth.models import User
 
-from server.forecasting.systems.data.old_demands import outside_temperatures_2013, outside_temperatures_2012
+from server.forecasting.devices.data.old_demands import outside_temperatures_2013, outside_temperatures_2012
 from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum, WeatherValue
 
 
@@ -29,9 +29,8 @@ def initialize_default_scenario():
         tc.save()
         ec = Device(name='Electrical Consumer', device_type=Device.EC)
         ec.save()
-        print "Default power systems initialized"
-    
-    
+        print "Default power devices initialized"
+
         sensors = []
         sensors.append(
             Sensor(device=hs, name='Temperature', key='get_temperature', setter='set_temperature', unit='°C', in_diagram=True, aggregate_avg=True))
@@ -66,9 +65,9 @@ def initialize_default_scenario():
     if needs_initialization or len(Configuration.objects.all()) == 0:
         configurations = []
         configurations.append(Configuration(
-            key='system_status', value='init', value_type=Configuration.STR, internal=True))
+            key='device_status', value='init', value_type=Configuration.STR, internal=True))
         configurations.append(Configuration(
-            key='system_mode', value='', value_type=Configuration.STR, internal=True))
+            key='device_mode', value='', value_type=Configuration.STR, internal=True))
         configurations.append(Configuration(
             key='auto_optimization', value='0', value_type=Configuration.BOOL, internal=True))
         configurations.append(Configuration(

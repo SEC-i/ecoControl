@@ -1,10 +1,10 @@
-from server.systems.base import BaseSystem
+from server.devices.base import BaseDevice
 
 
-class HeatStorage(BaseSystem):
+class HeatStorage(BaseDevice):
 
-    def __init__(self, system_id, env):
-        super(HeatStorage, self).__init__(system_id, env)
+    def __init__(self, device_id, env):
+        super(HeatStorage, self).__init__(device_id, env)
         # default data from pamiru48
         self.config = {
             'capacity': 2500,  # liters
@@ -16,14 +16,14 @@ class HeatStorage(BaseSystem):
         }
 
 
-    def attach_to_cogeneration_unit(self, system):
-        system.heat_storage = self
+    def attach_to_cogeneration_unit(self, device):
+        device.heat_storage = self
 
-    def attach_to_peak_load_boiler(self, system):
-        system.heat_storage = self
+    def attach_to_peak_load_boiler(self, device):
+        device.heat_storage = self
 
-    def attach_to_thermal_consumer(self, system):
-        system.heat_storage = self
+    def attach_to_thermal_consumer(self, device):
+        device.heat_storage = self
 
     def energy_stored(self):
         return self.input_energy - self.output_energy
@@ -46,10 +46,10 @@ class HeatStorage(BaseSystem):
         return self.get_temperature() < self.config['min_temperature']
 
 
-class PowerMeter(BaseSystem):
+class PowerMeter(BaseDevice):
 
-    def __init__(self, system_id, env):
-        super(PowerMeter, self).__init__(system_id, env)
+    def __init__(self, device_id, env):
+        super(PowerMeter, self).__init__(device_id, env)
 
         self.fed_in_electricity = 0.0  # kWh
         self.purchased = 0  # kWh
@@ -64,11 +64,11 @@ class PowerMeter(BaseSystem):
         # reward in Euro for feed in 1 kW/h
         self.feed_in_reward = 0.0917
 
-    def attach_to_cogeneration_unit(self, system):
-        system.power_meter = self
+    def attach_to_cogeneration_unit(self, device):
+        device.power_meter = self
 
-    def attach_to_electrical_consumer(self, system):
-        system.power_meter = self
+    def attach_to_electrical_consumer(self, device):
+        device.power_meter = self
 
     def get_reward(self):
         return self.total_fed_in_electricity * self.feed_in_reward

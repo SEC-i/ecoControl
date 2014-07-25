@@ -5,13 +5,13 @@ var sensor_count = 0;
 // READY
 $(function() {
     $.getJSON("/api/status/", function(data) {
-        if (data['system_status'] == 'init') {
+        if (data['device_status'] == 'init') {
             redirect_to_settings();
         } else {
             initialize_diagram();
             initialize_tuning_form();
             initialize_editor();
-            if (data['system_mode'] == 'demo') {
+            if (data['device_mode'] == 'demo') {
                 initialize_forward_buttons();
             }
         }
