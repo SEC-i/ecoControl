@@ -33,7 +33,7 @@ var lang_en = {
     cogeneration_unit: 'Cogeneration Unit',
     configure_demo: 'Start Demo',
     configure_normal: 'Start Normal',
-    configure_notice: 'Please Configure The Device',
+    configure_notice: 'Please configure ecoControl',
     critical_temperature: 'Critical Temperature',
     deactivated: 'Not Active',
     electrical_costs: 'Electrical Costs per kWh',
