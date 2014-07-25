@@ -13,8 +13,8 @@ from server.settings import BASE_DIR, CYTHON_SUPPORT
 import logging
    
 
-## try to import compiled holtwinters extension by building it. 
-# if this fails, the standard holtwinters is used.
+""""try to import compiled holtwinters (double seasonal) extension by building it. 
+if this fails, the standard holtwinters is used. """
 fast_hw = False
 if (CYTHON_SUPPORT):
     try:
@@ -23,8 +23,10 @@ if (CYTHON_SUPPORT):
             build_holtwinters_extension() #compile and link
             from server.forecasting.forecasting.exp_smoothing.holtwinters_fast import double_seasonal
             fast_hw = True
+            print "cython extension built and imported"
         except Exception as e:
             print "error while building. ", e
+            print "check extensions.log"
     except Exception as e:
         print "cython probably not installed", e
     
@@ -172,8 +174,6 @@ class DSHWForecast(Forecast):
         return [data]
     
     def forecast_demands(self,verbose=False):
-        print "forecasting demands with double seasonal HW.."
-        t = time.time()
         cached = Forecast.read_from_cache(self)
         if cached != None:
             return cached
@@ -184,15 +184,17 @@ class DSHWForecast(Forecast):
             (alpha, beta, gamma, delta, autocorr) = self.hw_parameters
         else:
             (alpha, beta, gamma, delta, autocorr) = (None for i in range(5))
-            
-        forecast_values, (alpha, beta, gamma, delta, autocorrelation),in_sample = double_seasonal(demand, m=24*sph, m2=24*7*sph,
-                                                                           forecast=fc, alpha=alpha, beta=beta, gamma=gamma, delta=delta,
+        print "forecasting demands with double seasonal HW.."
+        t = time.time()
+        forecast_values, (alpha, beta, gamma, delta, autocorrelation),in_sample = double_seasonal(demand, m=int(24*sph), m2=int(24*7*sph),
+                                                                           forecast=int(fc), alpha=alpha, beta=beta, gamma=gamma, delta=delta,
                                                                             autocorrelation=autocorr)
         
-        calculated_parameters = {
-            "alpha": alpha, "beta": beta, "gamma": gamma, "delta":delta, 
-            "autocorrelation":autocorrelation, "mse": in_sample}
         if verbose:
+            mse = ((in_sample - forecast_values) ** 2).mean(axis=None)
+            calculated_parameters = {
+                "alpha": alpha, "beta": beta, "gamma": gamma, "delta":delta, 
+                "autocorrelation":autocorrelation, "mse": mse}
             print "use auto HW ",calculated_parameters
         
         print "doubleseasonal completed in:", time.time()-t, " s"

@@ -19,10 +19,11 @@ from scipy.optimize import fmin_l_bfgs_b
 
 """ executes one run of holt winters. For very fast runs with the same initialisation data, 
 instantiate a HoltWinters Object and the repeatedly call HoltWinters.double_seasonal(alpha,beta,gamma,delta,autocorr)"""
-def double_seasonal(x, m, m2, forecast, alpha, beta, gamma, delta, autocorrelation):
+def double_seasonal(x, m, m2, forecast,  alpha=None, beta=None, gamma=None, delta=None, autocorrelation=None):
+
     if (None in (alpha,beta,gamma,delta,autocorrelation)):
         alpha, beta, gamma, delta, autocorrelation = optimize_parameters(x, m, m2, forecast)
-
+    
     hw = CHoltWinters(x,m,m2,forecast)
     hw._double_seasonal(alpha,beta,gamma,delta,autocorrelation)
     return hw.forecast_series, (alpha, beta, gamma, delta, autocorrelation), hw.y[:-forecast-1]
@@ -33,9 +34,11 @@ def double_seasonal(x, m, m2, forecast, alpha, beta, gamma, delta, autocorrelati
 @cython.boundscheck(False) # turn of bounds-checking for entire function
 @cython.wraparound(False) #dont wrap around arrays
 def optimize_parameters(x,unsigned int m,unsigned int m2,int forecast):
+    
     cdef CHoltWinters holtwinters = CHoltWinters(x,m,m2,forecast)
+    
     cdef int min_index
-    cdef unsigned int a_i,g_i,d_i,ac_i = 0
+    cdef int a_i,g_i,d_i,ac_i = 0
     cdef int steps = 9
 
     cdef np.ndarray[DTYPE_t,ndim=1] linsp = np.linspace(0,1.0,steps)
@@ -50,16 +53,15 @@ def optimize_parameters(x,unsigned int m,unsigned int m2,int forecast):
     indices = np.unravel_index(min_index, (steps,steps,steps,steps)) #find original indices
     min_MSE = MSEs[indices] #get minimum mse
 
+    
     found_parameters = [linsp[i] for i in indices] #map indices back to parameters
     found_parameters.insert(1,0) #insert unused trend
-    
+
     cdef np.ndarray[DTYPE_t,ndim=1] initial_values = np.array(found_parameters, dtype=DTYPE)
     cdef np.ndarray[DTYPE_t,ndim=2] boundaries = np.array([(0, 1), (0, 0.0), (0, 1), (0,1), (0,1)], dtype=DTYPE)
-    
     # set to search with very high accuracy.. optimum cant be far..
     optimized_parameters = fmin_l_bfgs_b(holtwinters.MSE, x0 = initial_values, bounds = boundaries, 
                                 approx_grad = True,factr=10, epsilon=0.01, maxfun=2000, maxiter=100)
-
 
     return optimized_parameters[0]
 
@@ -93,13 +95,11 @@ cdef class CHoltWinters:
         self.len_x = len(x)
         self.all_length = len(x) + forecast
         self.a_0 = np.sum(x[0:m]) / float(m)
-
         ## alloc arrays, using cython numpy arrays for fast access, also typed
-
 
         cdef np.ndarray[DTYPE_t, ndim=1] Y = np.zeros([len(x)], dtype = DTYPE)
         cdef np.ndarray[DTYPE_t, ndim=1] s = np.zeros([self.m+self.all_length], dtype=DTYPE)
-        cdef np.ndarray[DTYPE_t, ndim=1] s2 = np.zeros([self.m2/self.m+self.all_length], dtype=DTYPE)
+        cdef np.ndarray[DTYPE_t, ndim=1] s2 = np.zeros([int(self.m2/self.m)+self.all_length], dtype=DTYPE)
         cdef np.ndarray[DTYPE_t, ndim=1] y = np.zeros([self.all_length +1], dtype=DTYPE)
         cdef np.ndarray[DTYPE_t, ndim=1] forecast_series = np.zeros([forecast], dtype=DTYPE)
         cdef np.ndarray[DTYPE_t, ndim=1] test_series = np.zeros([forecast], dtype=DTYPE)
@@ -123,7 +123,6 @@ cdef class CHoltWinters:
                 self.s[k] = self.Y[k] / self.a_0
             if k < len(test_data):
                 self.test_series[k] = test_data[k]
-    
     """thin wrapper for _MSE function. Use this for calls from python, f.e for an optimization routine
         :params: DTYPE_t alpha,DTYPE_t beta,DTYPE_t gamma,DTYPE_t delta, DTYPE_t autocorrelation"""
     def MSE(self, params):

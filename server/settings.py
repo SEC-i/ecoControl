@@ -135,6 +135,14 @@ LOGGING = {
             'backupCount': 5,
             'formatter': 'verbose'
         },
+        'extensions': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(os.path.dirname(__file__), '../logs/extensions.log'),
+            'maxBytes': 1024 * 1024 * 4,
+            'backupCount': 5,
+            'formatter': 'verbose'
+        },
         'worker': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
@@ -158,6 +166,11 @@ LOGGING = {
         },
         'worker': {
             'handlers': ['worker'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+        'extensions': {
+            'handlers': ['extensions'],
             'propagate': True,
             'level': 'DEBUG',
         },

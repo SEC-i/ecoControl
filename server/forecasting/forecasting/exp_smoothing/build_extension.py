@@ -6,7 +6,11 @@ import sys
 import subprocess
 import numpy
 import shlex
+import logging
 #from server.settings import BASE_DIR
+
+
+logger = logging.getLogger('extensions')
 
 def build_holtwinters_extension():
     # vsstudio is default compiler for python extensions and should definitely be used on windows. 
@@ -22,12 +26,15 @@ def build_holtwinters_extension():
 
     starting_directory = os.getcwd()
     #change working directory
-    os.chdir(os.path.dirname(os.path.realpath(__file__)))#os.path.join(BASE_DIR, "server/forecasting/forecasting/exp_smoothing/"))
-    print  os.path.dirname(os.path.realpath(__file__))
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
     #build extension and pass in modified envionment variables
     #filepath = os.path.realpath(os.path.join(BASE_DIR, "server/forecasting/forecasting/exp_smoothing/build_extension.py"))
-    commandline_arg = shlex.split(u"python " + "build_extension.py" + " build_ext --inplace",posix=(os.name == "posix"))
-    subprocess.call(commandline_arg, env=dict(os.environ))
+    commandline_args = shlex.split(u"python " + "build_extension.py" + " build_ext --inplace",posix=(os.name == "posix"))
+    proc = subprocess.Popen(commandline_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=dict(os.environ))
+    out, err = proc.communicate()
+    logger.debug(out)
+    if len(err) > 0:
+        logger.error(err)
   
     os.chdir(starting_directory)
 
