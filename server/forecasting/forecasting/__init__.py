@@ -202,7 +202,7 @@ class StatisticalForecast:
 
 class DSHWForecast(StatisticalForecast):
     """ This forecast uses the double seasonal exponential smoothing method. It often delivers better results 
-    than the :class: `DayTypeForecast`. """
+    than the :class `DayTypeForecast`. """
     
     def forecast_at(self, timestamp):
         date = datetime.utcfromtimestamp(timestamp).replace(tzinfo=utc)
