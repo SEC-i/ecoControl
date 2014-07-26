@@ -61,10 +61,11 @@ def initialize_default_scenario():
                        key='get_consumption_power', unit='kWh', in_diagram=True, aggregate_sum=True))
 
         Sensor.objects.bulk_create(sensors)
-    
+
     # if the configuration must be renewed, while the devices stay the same, init only the config again
     if needs_initialization or len(Configuration.objects.all()) == 0:
         logger.debug("Default sensors initialized")
+        
         configurations = []
         configurations.append(Configuration(
             key='device_status', value='init', value_type=Configuration.STR, internal=True))
@@ -111,6 +112,7 @@ def initialize_default_scenario():
     
     if needs_initialization:
         logger.debug("Default configurations initialized")
+
         device_configurations = []
         device_configurations.append(
             DeviceConfiguration(device=cu, key='max_gas_input', value='19.0', value_type=DeviceConfiguration.FLOAT, unit='kWh'))

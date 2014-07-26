@@ -5,7 +5,7 @@ from datetime import datetime
 from threading import Thread
 
 from server.models import Device, DeviceConfiguration, Configuration, Sensor, SensorValue
-from server.devices import get_user_function
+from server.devices import get_user_function, execute_user_function
 from server.functions import get_configuration, parse_value
 from server.helpers_thread import write_pidfile_or_fail
 
@@ -101,6 +101,7 @@ class ForecastQueue():
 
 class Forecast(Thread):  
     def __init__(self, initial_time, configurations=None, code=None, forward=None, forecast=True, demo = False):
+        Thread.__init__(self)
         self.env = BaseEnvironment(initial_time=initial_time, forecast=forecast, 
                               step_size=DEFAULT_FORECAST_STEP_SIZE,demo=demo) #get_forecast
     
@@ -123,9 +124,8 @@ class Forecast(Thread):
     
 
     def step(self):
-        forecast = self.env.forecast
         
-        self.user_function(self.env,forecast,*self.devices)
+        execute_user_function(self.env,self.env.forecast,self.devices,self.user_function)
 
         if self.use_optimization and self.next_optimization <= 0.0:  
             auto_optimize(self.env, self.devices)
@@ -171,7 +171,7 @@ class DemoSimulation(Forecast):
     
 
     def __init__(self, initial_time, configurations=None):
-        DemoSimulation.__init__(self, configurations, forward=0, forecast=False, demo = True)
+        Forecast.__init__(self, configurations, forward=0, forecast=False, demo = True)
         self.daemon = True
 
         self.steps_per_second = 3600.0 / 120
