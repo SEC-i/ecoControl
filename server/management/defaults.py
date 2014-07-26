@@ -5,6 +5,7 @@ import logging
 from django.utils.timezone import utc
 from django.db import connection, ProgrammingError
 from django.contrib.auth.models import User
+from django.core.management import call_command
 
 from server.forecasting.devices.data.old_demands import outside_temperatures_2013, outside_temperatures_2012
 from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum, WeatherValue
@@ -153,32 +154,7 @@ def initialize_default_scenario():
 
 def initialize_weathervalues():
     if len(WeatherValue.objects.all()) == 0:
-        weather_values = []
-        base_time = datetime.datetime.strptime(
-            '2012-01-01 00:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
-        timestamp = datetime.datetime.strptime(
-            '2013-12-12 23:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
-        hours = 0
-        for temperature in outside_temperatures_2012:  # every day
-            target_time = base_time + datetime.timedelta(hours=hours)
-            weather_values.append(WeatherValue(timestamp=timestamp,
-                                               target_time=target_time,
-                                               temperature=temperature))
-            hours = hours + 1
-        base_time = datetime.datetime.strptime(
-            '2013-01-01 00:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
-        timestamp = datetime.datetime.strptime(
-            '2013-12-12 23:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
-        hours = 0
-        for temperature in outside_temperatures_2013:  # every day
-            target_time = base_time + datetime.timedelta(hours=hours)
-            weather_values.append(WeatherValue(timestamp=timestamp,
-                                               target_time=target_time,
-                                               temperature=temperature))
-            hours = hours + 1
-
-        WeatherValue.objects.bulk_create(weather_values)
-
+        call_command('fill_weather', interactive=True)
         logger.debug("Default weather data for 2012 and 2013 initialized")
 
 

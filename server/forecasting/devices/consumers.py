@@ -7,7 +7,7 @@ from django.utils.timezone import utc
 
 from server.devices.consumers import ThermalConsumer, ElectricalConsumer
 from server.forecasting.devices.data.old_demands import warm_water_demand_workday, warm_water_demand_weekend
-from server.forecasting.forecasting.weather import DemoWeather, WeatherForecast
+from server.forecasting.forecasting.weather import DemoWeather, CurrentWeatherForecast
 from server.forecasting.forecasting import StatisticalForecast, DayTypeForecast,\
     DSHWForecast
 from server.forecasting.forecasting.dataloader import DataLoader
@@ -51,7 +51,7 @@ class SimulatedThermalConsumer(ThermalConsumer):
             if self.env.demo:
                 weather_forecast = DemoWeather(self.env)
             else:
-                weather_forecast = WeatherForecast(self.env)
+                weather_forecast = CurrentWeatherForecast(self.env)
         self.weather_forecast = weather_forecast
         self.current_power = 0
 
@@ -213,7 +213,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
             
     def get_all_data2014(self):
         sep = os.path.sep
-        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
+        path = os.path.join(BASE_DIR, "server" + sep +  "forecasting" + sep + "demodata" +sep+ "demo_electricity_2014.csv")
         raw_dataset = DataLoader.load_from_file(
             path, "Strom - Verbrauchertotal (Aktuell)", "\t")
         dates = DataLoader.load_from_file(path, "Datum", "\t")
@@ -250,13 +250,13 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         date = datetime.utcfromtimestamp(timestamp).replace(tzinfo=utc)
         if self.__class__.dataset == [] or self.__class__.dates == []:
             sep = os.path.sep
-            path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_2013.csv")
+            path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "demodata" +sep+ "demo_electricity_2013.csv")
             raw_dataset = DataLoader.load_from_file(
                 path, "Strom - Verbrauchertotal (Aktuell)", "\t")
             dates = DataLoader.load_from_file(path, "Datum", "\t")
 
             if date.year == 2014:
-                path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
+                path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "demodata" + sep+"demo_electricity_2014.csv")
                 raw_dataset += DataLoader.load_from_file(
                     path, "Strom - Verbrauchertotal (Aktuell)", "\t")
                 dates += DataLoader.load_from_file(path, "Datum", "\t")

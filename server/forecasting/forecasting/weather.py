@@ -111,7 +111,7 @@ class DemoWeather:
 
 
 
-class WeatherForecast:
+class CurrentWeatherForecast:
     def __init__(self, env=None, city="Berlin"):
         self.env = env
 
@@ -165,11 +165,11 @@ class WeatherForecast:
         for data_set in data["list"]:
             try:
                 forecast_temperatures.append(data_set["main"]["temp"])
-            except:
-                logger.warning("WeatherForecast: Problems while json parsing")
+            except:   
+                logger.warning("CurrentWeatherForecast: Problems while json parsing")
                 if "gdps" not in data_set:
-                    logger.error("WeatherForecast: Couldn't read temperature values from openweathermap")
-        logger.info("WeatherForecast: Fetched %d tempterature values" % len(forecast_temperatures))
+                    logger.error("CurrentWeatherForecast: Couldn't read temperature values from openweathermap")
+        logger.info("CurrentWeatherForecast: Fetched %d tempterature values" % len(forecast_temperatures))
         return forecast_temperatures
 
     def get_openweathermapdata(self):
@@ -181,7 +181,7 @@ class WeatherForecast:
         try:
             return urllib2.urlopen(url).read()
         except urllib2.URLError, e:
-            logger.error("WeatherForecast: URLError during API call")
+            logger.error("CurrentWeatherForecast: URLError during API call")
             # Use history data
             result = []
             for i in range(0, 40):
