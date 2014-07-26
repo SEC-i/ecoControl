@@ -27,7 +27,7 @@ class ForecastTests(unittest.TestCase):
     def setup_forecast(self):
         hourly_data = StatisticalForecast.make_hourly(self.dataset, 6)
         self.env = BaseEnvironment()
-        self.forecast = DayTypeForecast(self.env, hourly_data, 1, None, (0.0000000, 0.0, 1.0), hw_optimization="RMSE")
+        self.forecast = DayTypeForecast(self.env, hourly_data, 1, None, (0.0000000, 0.0, 1.0))
         
 
     def test_data(self):
@@ -62,7 +62,7 @@ class ForecastTests(unittest.TestCase):
     def test_dshw_forecast(self):
         hourly_data = StatisticalForecast.make_hourly(self.dataset, 6)
         env = BaseEnvironment()
-        fc = DSHWForecast(env, hourly_data, hw_optimization="MSE", try_cache=False)
+        fc = DSHWForecast(env, hourly_data, try_cache=False)
         
         self.assertTrue(len(fc.demands[0]) >= fc.input_hours, "the day series only contains " + str(
             len(fc.demands[0]) / 24) + " days, not " + str(fc.input_weeks * 7))
@@ -72,7 +72,7 @@ class ForecastTests(unittest.TestCase):
         print "\n--------- test split_week_data ------------------"
         hourly_data = StatisticalForecast.make_hourly(self.dataset, 6)
         env = BaseEnvironment()
-        fc = DayTypeForecast(env, hourly_data, hw_optimization="MSE", try_cache=False)
+        fc = DayTypeForecast(env, hourly_data,  try_cache=False)
         self.assertTrue(
             len(fc.demands) == 7, "week_split does not contain 7 series")
         

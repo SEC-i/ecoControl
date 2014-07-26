@@ -1,11 +1,12 @@
 """
 This module contains the statistical forecasting initiation and management.
 
-The base class for all forecastings is :class:`StatisticalForecast`, 
+The base class for all forecastings is :py:class:`StatisticalForecast` , 
 to generate forecasts one of the following subclasses has to be used
 
 .. autosummary::
-
+    
+    ~StatisticalForecast
     ~DSHWForecast
     ~DayTypeForecast
 
@@ -37,13 +38,11 @@ class StatisticalForecast:
 
 
     Forecastings are calculated after contruction of class and then whenever needed, 
-    which is set by :attr: `forecast_update_interval`.
+    which is set by :attr:`forecast_update_interval`.
 
     :param list input_data: list of consecutive values sampled in ``samples_per_hour``
     :param datetime start: start date of input data
     :param int samples_per_hour: Number of samples per hour in input_data
-    :param tuple hw_parameters: holt-winter parameters (depends on Subclass used)
-    :param str hw_optimisation: type of minimization measure, if minimization is used
 
         *   None - given hw_parameters are always used (fastest, hw_parameters required)
         *   "MSE" - Mean Square Error used as optimization parameter for Holt-Winters (default)
@@ -58,14 +57,9 @@ class StatisticalForecast:
 
     """
 
-    def __init__(self, env, input_data, samples_per_hour=1, start=None, 
-        hw_parameters=(), hw_optimization="MSE", try_cache=True, **kwargs):
-        if hw_parameters == ():
-            self.hw_parameters = (None, None, None)
-        else:
-            self.hw_parameters = hw_parameters 
+    def __init__(self, env, input_data, samples_per_hour=1, start=None,
+                         try_cache=True, **kwargs):
 
-        self.hw_optimization = hw_optimization
         self.calculated_parameters = []
         self.samples_per_hour = samples_per_hour
         self.env = env
@@ -98,12 +92,9 @@ class StatisticalForecast:
         self.forecasted_demands = self.forecast_demands()
         
     def get_forecast_at(self, timestamp):
-        """ Return the forecast at the timestamp.
+        """ Return the forecast at the (unix) timestamp.
 
-        :param timestamp: a unix timestamp
-        :returns: `single value`
-
-        :raises :py:exc:`IndexError` if there is no forecast for the timestamp."""
+        Raise a :py:exc:`IndexError` if there is no forecast for the timestamp."""
         try:
             return self.forecast_at(timestamp)[0]
         except IndexError as e:
@@ -112,52 +103,28 @@ class StatisticalForecast:
             raise IndexError(str(e) + msg)
 
     
-    
-    def read_from_cache(self):
-        """ Return a cached result. If  *try_cache* = ``True``, this will try to read from cache/cached_forecasts.cache. 
-        The results are only returned, if the timestamp of the forecast creation is not older than 24h.
-        Else or if no cached file is available, ``None`` is returned.
-
-        :returns: `list` or `None`
-        """
-        if self.try_cache: 
-            try:
-                cached = pickle.load(open( os.path.join(BASE_DIR,"cache/cached_forecasts.cache"), "rb" ))
-                diff_time = datetime.utcfromtimestamp(cached["date"]).replace(tzinfo=utc) - self.time_series_end
-                if diff_time.total_seconds() < 24 * 60 * 60: #24 hours epsilon
-                    forecasted_demands = cached["forecasts"]
-                    self.calculated_parameters = cached["parameters"] 
-                    logger.info("read forecasts from cache")
-                    return forecasted_demands
-            except IOError as e:
-                logger.info(str(e) + " .. creating new cache file")
-        return None
-    
-    
     def process_inputdata(self, data, samples_per_hour,start):
-        """Preprocess the input demands. Needed for the division into weekdays in :class: `DayTypeForecast`.
-        :param datetime start: the time of the first datapoint. Only the day is of interest
+        """.. _process-inputdata: 
 
-        :returns: processed demands
+        Preprocess and return the input demands. Needed for the division into weekdays in :class:`DayTypeForecast`.
+        
+        :param datetime start: the time of the first datapoint. Only the day is of interest.
         """
         raise NotImplementedError("This is an abstract class, please use a subclass")
     
     def forecast_demands(self):
-        """Forecast the :attr: `demands`. The forecasting method depends on the subclass.
+        """Forecast and return the :attr:`demands`. The forecasting method depends on the subclass.
 
-        :returns: forecasted demands"""
+        """
         raise NotImplementedError("This is an abstract class, please use a subclass")
-    
-    
-    def update_if_needed(self):
-        """Update the forecasts, if `env.now` is more than `forecast_update_interval` seconds ahead from last demand measurement"""
 
-        now = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=utc)
-        delta = (now - self.time_series_end).total_seconds()
-        if delta > self.forecast_update_interval:
-            self.forecasted_demands = self.forecast_demands()
-            self.time_series_end = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=utc)
+    def append_values(self, data, start_date=None):
+        """ Pushes in new values and cuts off values at the beginning to keep input length.
+            Will update the forecasts if needed.
+        """
+        raise NotImplementedError("This is an abstract class, please use a subclass")
 
+    
     @classmethod
     def make_hourly(cls, data, samples_per_hour):
         """ aggregates data series to 1hourly data.
@@ -198,22 +165,61 @@ class StatisticalForecast:
 
         errors = np.abs(testing_series - prediction_series)
         return errors.mean() / d
+    
+    def update_if_needed(self):
+        """``Internal Method``
+        Update the forecasts, if `env.now` is more than `forecast_update_interval` seconds ahead from last demand measurement"""
+
+        now = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=utc)
+        delta = (now - self.time_series_end).total_seconds()
+        if delta > self.forecast_update_interval:
+            self.forecasted_demands = self.forecast_demands()
+            self.time_series_end = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=utc)
+
+
+
+
+    def read_from_cache(self):
+        """ ``Internal Method``
+        Return a cached result. If  *try_cache* = ``True``, this will try to read from cache/cached_forecasts.cache. 
+        The results are only returned, if the timestamp of the forecast creation is not older than 24h.
+        Else or if no cached file is available, ``None`` is returned.
+
+        :returns: ``list`` or `None`
+        """
+        if self.try_cache: 
+            try:
+                cached = pickle.load(open( os.path.join(BASE_DIR,"cache/cached_forecasts.cache"), "rb" ))
+                diff_time = datetime.utcfromtimestamp(cached["date"]).replace(tzinfo=utc) - self.time_series_end
+                if diff_time.total_seconds() < 24 * 60 * 60: #24 hours epsilon
+                    forecasted_demands = cached["forecasts"]
+                    self.calculated_parameters = cached["parameters"] 
+                    logger.info("read forecasts from cache")
+                    return forecasted_demands
+            except IOError as e:
+                logger.info(str(e) + " .. creating new cache file")
+        return None
+
 
 
 class DSHWForecast(StatisticalForecast):
     """ This forecast uses the double seasonal exponential smoothing method. It often delivers better results 
-    than the :class `DayTypeForecast`. """
+    than the :class:`DayTypeForecast`. """
     
     def forecast_at(self, timestamp):
         date = datetime.utcfromtimestamp(timestamp).replace(tzinfo=utc)
         delta = (date - self.time_series_end).total_seconds()
-        #print int(delta / 3600 * self.samples_per_hour)
         return [self.forecasted_demands[int(delta / 3600 * self.samples_per_hour)]]
     
     def process_inputdata(self, data, samples_per_hour,start):
+        """ See :meth:`StatisticalForecast.process_inputdata`
+        Dummy Method, returns array of data.
+        """
         return [data]
     
     def forecast_demands(self,verbose=False):
+        """ See :meth:`StatisticalForecast.forecast_demands`."""
+
         print "forecasting demands with double seasonal HW.."
         cached = StatisticalForecast.read_from_cache(self)
         if cached != None:
@@ -221,10 +227,8 @@ class DSHWForecast(StatisticalForecast):
         demand = self.demands[0] #dshw demands only contains one dataset
         sph = self.samples_per_hour
         fc = self.output_weeks * 24 * 7 * self.samples_per_hour #forecast_length
-        if None not in self.hw_parameters:
-            (alpha, beta, gamma, delta, autocorr) = self.hw_parameters
-        else:
-            (alpha, beta, gamma, delta, autocorr) = (None for i in range(5))
+
+        (alpha, beta, gamma, delta, autocorr) = (None for i in range(5))
             
         forecast_values, (alpha, beta, gamma, delta, autocorrelation),in_sample = double_seasonal(demand, m=24*sph, m2=24*7*sph,
                                                                            forecast=fc, alpha=alpha, beta=beta, gamma=gamma, delta=delta,
@@ -241,6 +245,7 @@ class DSHWForecast(StatisticalForecast):
         return forecast_values
     
     def append_values(self, data, start_date=None):
+        """See :meth:`StatisticalForecast.append_values`"""
         demand = self.demands[0]
         demand += data
         
@@ -260,6 +265,9 @@ class DayTypeForecast(StatisticalForecast):
     
     @classmethod
     def split_weekdata(cls, data, samples_per_hour, start_date=None):
+        """Splits the data into 7 lists, one for each weekday.
+        :param datetime start_date: the weekday which of the first day of input data. Default = 0
+        :returns: [mon_series, tue_series, wen_series,..]"""
         if start_date != None:
             weekday = start_date.weekday()
         else:
@@ -272,15 +280,19 @@ class DayTypeForecast(StatisticalForecast):
         return split_array
         
     def process_inputdata(self, data, samples_per_hour,start):
+        """ See :meth:`StatisticalForecast.process_inputdata`
+        Splits the data into 7 arrays, one for each weekday.
+        """
         return DayTypeForecast.split_weekdata(data, samples_per_hour, start)
   
     def forecast_multiplicative(self, demand, index, result_dict, verbose=False):
+        """  `Internal Method`. Forecasts one series and stores into result_dict"""
         #seasonality length -- one day
         m = 24 * self.samples_per_hour
         fc = self.output_weeks * 24 * self.samples_per_hour #forecast_length
-        # alpha, beta, gamma. if any is None, holt.winters determines them automatically
+        # alpha, beta, gamma. holt.winters determines them automatically
         # cost-expensive, so only do this once..
-        (alpha, beta, gamma) = self.hw_parameters
+        (alpha, beta, gamma) = (None, None, None)
         print "find holt winter parameters for day: ", index
 
         # find values automatically
@@ -298,6 +310,9 @@ class DayTypeForecast(StatisticalForecast):
     
     
     def forecast_demands(self):
+        """ See :meth:`StatisticalForecast.forecast_demands`.
+        This method uses processes, to speed up the calculation. 
+        This drives the cpu to full load for a short time."""
         cached = StatisticalForecast.read_from_cache(self)
         if cached != None:
             return cached
@@ -331,7 +346,8 @@ class DayTypeForecast(StatisticalForecast):
         for fc_tuple in split_results:
             forecasted_demands.append(list(fc_tuple[0]))
             self.calculated_parameters.append(fc_tuple[1])
-            
+        
+        #cache forecasts
         pickle.dump( {"forecasts" :forecasted_demands, "parameters" : self.calculated_parameters, "date": self.env.now },
                       open(os.path.join(BASE_DIR,"cache/cached_forecasts.cache"), "wb" ) ) 
         print "forecasting completed"
@@ -340,16 +356,21 @@ class DayTypeForecast(StatisticalForecast):
     
     
     def forecast_at(self, timestamp):
+        """  `Internal Method`. Returns the forecast at the timestamp.
+        The timestamps weekday is used to get the right forecasting
+
+        :returns: (forecast value, index of week, index of hour)
+        """
         date = datetime.utcfromtimestamp(timestamp).replace(tzinfo=utc)
         delta = (date - self.time_series_end).total_seconds()
         arr_index = int((delta / (60.0 * 60.0)) * self.samples_per_hour)
         week_index = int(arr_index / (7 * 24))
         hour_index = arr_index % 24
-        #print "yes"
         return (self.forecasted_demands[date.weekday()][week_index * 24 + hour_index], week_index, hour_index)
     
     
     def append_values(self, data, start_date=None):
+        """See :meth:`StatisticalForecast.append_values`"""
         new_demands = DayTypeForecast.split_weekdata(data, self.samples_per_hour, start_date)
         
         for index, demand in enumerate(new_demands):
