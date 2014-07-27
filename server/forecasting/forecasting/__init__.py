@@ -43,10 +43,6 @@ class StatisticalForecast:
     :param list input_data: list of consecutive values sampled in ``samples_per_hour``
     :param datetime start: start date of input data
     :param int samples_per_hour: Number of samples per hour in input_data
-
-        *   None - given hw_parameters are always used (fastest, hw_parameters required)
-        *   "MSE" - Mean Square Error used as optimization parameter for Holt-Winters (default)
-        *   "MASE" - Mean Absolute Scaled Error is used. (slowest)
     :param boolean try_cache: Read and Save forecasts to a cache on the file device to avoid unneccesary recomputation, is ``True`` by default.
     :param \*\*kwargs: Any instance variable can be overwritten with a keyword from here, f.e. *input_weeks = 14*. Will be set before any data is processed. Only use, if you know what your doing.
 

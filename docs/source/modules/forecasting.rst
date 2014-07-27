@@ -23,3 +23,12 @@ Day-Type Forecast
     	:show-inheritance:
     	:members: process_inputdata, append_values, forecast_demands
 
+====================
+Holt-Winters Methods
+====================
+
+.. automodule:: server.forecasting.forecasting.holt_winters
+    :members: 
+    :member-order: bysource
+
+
