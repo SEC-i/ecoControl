@@ -21,12 +21,13 @@ from server.models import Device, Configuration, DeviceConfiguration, Sensor, Se
 from server.helpers import create_json_response
 from server.functions import get_device_configurations, get_past_time
 from server.devices import perform_configuration
-from server.forecasting import get_forecast, DemoSimulation
+from server.forecasting import get_forecast, DemoSimulation, ForecastQueue
 import functions
 
 logger = logging.getLogger('django')
 
 DEMO_SIMULATION = None
+FORECAST_QUEUE = ForecastQueue()
 
 def handle_snippets(request):
     if not request.user.is_superuser:
@@ -119,6 +120,15 @@ def forecast(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            
+            if 'forecast_id' in data:
+                result = FORECAST_QUEUE.get_by_id(data['forecast_id'])
+                if result == None:
+                    output =  {"forecast_id" : data['forecast_id'], 'sensors' : [], 'status' : "running"}
+                else:
+                    output = result
+                    output["status"] = "finished"
+                return create_json_response(output, request) 
 
             code = None
             if 'code' in data:
@@ -127,9 +137,16 @@ def forecast(request):
             configurations = None
             if 'configurations' in data:
                 configurations = functions.get_modified_configurations(data['configurations'])
-
-            output = get_forecast(initial_time, configurations=configurations, code=code)
-        except ValueError:
+            
+            if functions.get_configuration('auto_optimization'):
+                # schedule forecast and immediately return its id. 
+                # The forecast result can be later retrieved by it
+                forecast_id = FORECAST_QUEUE.schedule_new(initial_time, configurations, code)
+                output = {"forecast_id" : forecast_id, 'sensors' : [], 'status' : "running"}
+            else:
+                output = get_forecast(initial_time, configurations=configurations, code=code)
+        except ValueError as e:
+            logger.error(e)
             return create_json_response({"status": "failed"})
     else:
         output = get_forecast(initial_time)

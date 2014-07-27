@@ -12,6 +12,6 @@ def initialize_defaults(**kwargs):
     defaults.initialize_default_user()
     defaults.initialize_default_scenario()
     defaults.initialize_views()
-    #defaults.initialize_weathervalues()
+    defaults.initialize_weathervalues()
 
 post_syncdb.connect(initialize_defaults)
