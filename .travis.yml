@@ -19,7 +19,7 @@ before_install:
 install: 
   - pip install -r requirements_travis.txt
 before_script:
-  - psql -c "CREATE ROLE sec-i LOGIN PASSWORD 'demo123' SUPERUSER CREATEDB CREATEROLE;" -U postgres
+  - psql -c "CREATE ROLE ecocontrol LOGIN PASSWORD 'sec-i' SUPERUSER CREATEDB CREATEROLE;" -U postgres
   - createdb ecocontrol
   - python manage.py syncdb --noinput
 script:

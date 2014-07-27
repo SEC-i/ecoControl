@@ -64,8 +64,8 @@ DATABASES = {
         'NAME': 'ecocontrol',
         'HOST': 'localhost',
         'PORT': '5432',
-        'USER': 'sec-i',
-        'PASSWORD': 'demo123'
+        'USER': 'ecocontrol',
+        'PASSWORD': 'sec-i'
      }
  }
 
