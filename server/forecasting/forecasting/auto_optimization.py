@@ -3,7 +3,7 @@ This module contains the algorithm for optimizing the costs of energy systems.
 
 """
 from datetime import datetime
-#from scipy.optimize import fmin_l_bfgs_b
+from scipy.optimize import fmin_l_bfgs_b
 import calendar
 import cProfile
 import copy
