@@ -18,7 +18,6 @@ import numpy as np
 from numpy import array
 from collections import namedtuple
 
-
 from scipy.optimize import fmin_l_bfgs_b
 
      
