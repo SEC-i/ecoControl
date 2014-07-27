@@ -1,7 +1,7 @@
 {
   "name": "ecoControl",
   "version": "0.5.0",
-  "homepage": "https://github.com/BP2013H1/BP2013H1",
+  "homepage": "https://github.com/SEC-i/ecoControl",
   "authors": [
     "Eva-Maria Herbst",
     "Fabian Maschler",
@@ -31,7 +31,7 @@
     "jquery-dateFormat": "~1.0.1",
     "jquery-ui": "~1.11.0",
     "mustache": "~0.8.2",
-    "TableCSVExport": "BP2013H1/TableCSVExport",
+    "TableCSVExport": "SEC-i/TableCSVExport",
     "x-editable": "~1.5.1"
   }
 }

@@ -61,11 +61,11 @@ WSGI_APPLICATION = 'server.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'bp2013h1',
+        'NAME': 'ecocontrol',
         'HOST': 'localhost',
         'PORT': '5432',
-        'USER': 'bp2013h1',
-        'PASSWORD': 'hirsch'
+        'USER': 'sec-i',
+        'PASSWORD': 'demo123'
      }
  }
 

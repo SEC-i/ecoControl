@@ -4,7 +4,7 @@ branches:
     - dev
 notifications:
   email:
-    - bp2013h1@lists.myhpi.de
+    - ecocontrol@sec-i.org
 language: python
 python:
   - "2.7"
@@ -19,8 +19,8 @@ before_install:
 install: 
   - pip install -r requirements_travis.txt
 before_script:
-  - psql -c "CREATE ROLE BP2013H1 LOGIN PASSWORD 'hirsch' SUPERUSER CREATEDB CREATEROLE;" -U postgres
-  - createdb bp2013h1
+  - psql -c "CREATE ROLE sec-i LOGIN PASSWORD 'demo123' SUPERUSER CREATEDB CREATEROLE;" -U postgres
+  - createdb ecocontrol
   - python manage.py syncdb --noinput
 script:
   - coverage run --source='.' manage.py test

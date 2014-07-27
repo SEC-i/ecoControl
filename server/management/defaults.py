@@ -14,8 +14,8 @@ logger = logging.getLogger('ecocontrol')
 
 def initialize_default_user():
     if len(User.objects.all()) == 0:
-        User.objects.create_superuser('technician', 'bp2013h1@lists.myhpi.de', 'techniker')
-        User.objects.create_user('manager', 'bp2013h1@lists.myhpi.de', 'verwaltung')
+        User.objects.create_superuser('technician', 'technician@example.com', 'techniker')
+        User.objects.create_user('manager', 'manager@example.com', 'verwaltung')
 
 def initialize_default_scenario():
     needs_initialization = len(Device.objects.all()) == 0 
