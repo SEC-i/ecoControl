@@ -17,6 +17,7 @@ Contents:
 
     modules/models
     modules/forecasting
+    modules/autooptimization
 
     frontend
 

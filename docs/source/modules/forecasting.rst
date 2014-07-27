@@ -1,4 +1,4 @@
-
+=======================
 Statistical Forecasting
 =======================
 
@@ -22,4 +22,4 @@ Day-Type Forecast
     .. autoclass:: DayTypeForecast
     	:show-inheritance:
     	:members: process_inputdata, append_values, forecast_demands
-    	
+
