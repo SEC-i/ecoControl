@@ -9,7 +9,7 @@ from server.devices import get_user_function, execute_user_function
 from server.functions import get_configuration, parse_value
 from server.helpers_thread import write_pidfile_or_fail
 
-from helpers import MeasurementStorage
+from server.forecasting.measurementstorage import MeasurementStorage
 
 from server.devices.base import BaseEnvironment
 from server.forecasting.devices.producers import SimulatedCogenerationUnit, SimulatedPeakLoadBoiler
