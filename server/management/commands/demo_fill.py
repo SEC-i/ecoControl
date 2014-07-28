@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         demo_sim = DemoSimulation.start_or_get(print_visible=True)
-        demo_sim.forward = 24*3600*1
+        demo_sim.forward = 24*3600*10
         while demo_sim.forward > 0:
             time.sleep(1)
             #print datetime.fromtimestamp(demo_sim.env.now).replace(tzinfo=utc)

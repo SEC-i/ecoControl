@@ -145,7 +145,7 @@ def forecast(request):
             if functions.get_configuration('auto_optimization'):
                 # schedule forecast and immediately return its id. 
                 # The forecast result can be later retrieved by it
-                forecast_id = FORECAST_QUEUE.schedule_new(initial_time, configurations, code)
+                forecast_id = FORECAST_QUEUE.schedule_new(initial_time, configurations=configurations, code=code)
                 output = {"forecast_id" : forecast_id, 'sensors' : [], 'status' : "running"}
             else:
                 output = get_forecast(initial_time, configurations=configurations, code=code)

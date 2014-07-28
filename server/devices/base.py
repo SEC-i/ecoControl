@@ -35,14 +35,15 @@ class BaseDevice(object):
 
 class BaseEnvironment(object):
 
-    def __init__(self, initial_time=None, step_size=120, demo=False, forecast=False):
+    def __init__(self, initial_time=None, step_size=120, demomode=False, forecast=False):
+        """ demomode indicates, if running in demomode, not if this is the demo simulation"""
         if initial_time is None:
             self.now = time.time()
         else:
             self.now = initial_time
 
         self.step_size = step_size
-        self.demo_mode = demo
+        self.demo_mode = demomode
         self.initial_date = datetime.fromtimestamp(self.now).replace(tzinfo=utc)
         self.forecast = forecast
 

@@ -22,8 +22,9 @@ DEFAULT_FORECAST_STEP_SIZE = 15 * 60.0
 logger = logging.getLogger('simulation')
 
 """ for short-lived forecasts, call this. It will block and deliver the forecast"""
-def get_forecast(initial_time, configurations=None, code=None, forward=None, forecast=True):
-    forecast_object = Forecast(initial_time,configurations,code,forward,forecast)
+def get_forecast(initial_time, configurations=None, code=None, forward=None):
+    forecast_object = Forecast(initial_time, configurations, code=code,  
+                               forecast=True, forward=forward)
     return forecast_object.run().get() #dont start in thread
     
 
@@ -82,9 +83,9 @@ class ForecastQueue():
     forecasts = []
     id = 0
     
-    def schedule_new(self, initial_time, *params):
+    def schedule_new(self, initial_time, **kwargs):
         self.id += 1
-        forecast = Forecast(initial_time,*params)
+        forecast = Forecast(initial_time, **kwargs)
         self.forecasts.append((self.id,forecast))
         forecast.start()
         return self.id
@@ -100,12 +101,13 @@ class ForecastQueue():
 
 
 class Forecast(Thread):  
-    def __init__(self, initial_time, configurations=None, code=None, forward=None, forecast=True, demo = False):
+    def __init__(self, initial_time, configurations=None, code=None, forward=None, forecast=True):
         Thread.__init__(self)
         self.daemon = True
+        demomode = Configuration.objects.get(key='device_mode').value == "demo"
         
         self.env = BaseEnvironment(initial_time=initial_time, forecast=forecast, 
-                              step_size=DEFAULT_FORECAST_STEP_SIZE,demo=demo) #get_forecast
+                              step_size=DEFAULT_FORECAST_STEP_SIZE,demomode=demomode) #get_forecast
     
         if configurations is None:
             configurations = DeviceConfiguration.objects.all()
@@ -173,7 +175,7 @@ class DemoSimulation(Forecast):
     
 
     def __init__(self, initial_time, configurations=None):
-        Forecast.__init__(self, initial_time, configurations, forward=0, forecast=False, demo = True)
+        Forecast.__init__(self, initial_time, configurations, forward=0, forecast=False)
         
 
         self.steps_per_second = 3600.0  / self.env.step_size

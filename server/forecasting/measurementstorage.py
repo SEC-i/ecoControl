@@ -19,7 +19,7 @@ class MeasurementStorage():
         self.sensors = Sensor.objects.filter(
             device_id__in=[x.id for x in self.devices])
 
-        if env.demo_mode:
+        if env.is_demo_simulation():
             # initialize for demo
             self.device_map = []
             self.sensor_values = []
@@ -46,7 +46,7 @@ class MeasurementStorage():
 
                 self.sensor_values.append((sensor.id, value, timestamp))
 
-        if len(self.sensor_values) > 10000:
+        if len(self.sensor_values) > 1000:
             self.flush_data()
 
     def take_and_cache(self):
@@ -58,7 +58,6 @@ class MeasurementStorage():
                         # in case value is a function, call that function
                         if hasattr(value, '__call__'):
                             value = value()
-
                         self.forecast_data[index].append(float(value))
 
 
