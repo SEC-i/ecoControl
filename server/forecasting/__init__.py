@@ -102,6 +102,8 @@ class ForecastQueue():
 class Forecast(Thread):  
     def __init__(self, initial_time, configurations=None, code=None, forward=None, forecast=True, demo = False):
         Thread.__init__(self)
+        self.daemon = True
+        
         self.env = BaseEnvironment(initial_time=initial_time, forecast=forecast, 
                               step_size=DEFAULT_FORECAST_STEP_SIZE,demo=demo) #get_forecast
     
@@ -171,8 +173,8 @@ class DemoSimulation(Forecast):
     
 
     def __init__(self, initial_time, configurations=None):
-        Forecast.__init__(self, configurations, forward=0, forecast=False, demo = True)
-        self.daemon = True
+        Forecast.__init__(self, initial_time, configurations, forward=0, forecast=False, demo = True)
+        
 
         self.steps_per_second = 3600.0 / 120
         self.running = False
@@ -195,7 +197,7 @@ class DemoSimulation(Forecast):
             simulation = DemoSimulation(get_initial_time())
             simulation.start()
             cls.stored_simulation = simulation
-            return simulation
+        
         if cls.stored_simulation != None:
             return cls.stored_simulation
 
