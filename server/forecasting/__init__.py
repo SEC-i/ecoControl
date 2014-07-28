@@ -176,7 +176,7 @@ class DemoSimulation(Forecast):
         Forecast.__init__(self, initial_time, configurations, forward=0, forecast=False, demo = True)
         
 
-        self.steps_per_second = 12  / self.env.step_size #run at 12x speed 
+        self.steps_per_second = 3600.0  / self.env.step_size
         self.running = False
 
     @classmethod

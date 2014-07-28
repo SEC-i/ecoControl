@@ -134,7 +134,7 @@ LOGGING = {
 
         },
         'simulation': {
-            'level': 'WARNING',
+            'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(os.path.dirname(__file__), '../logs/simulation.log'),
             'maxBytes': 1024 * 1024 * 4,
@@ -157,7 +157,7 @@ LOGGING = {
             'handlers': ['simulation'],
 
             'propagate': True,
-            'level': 'WARNING',
+            'level': 'DEBUG',
         },
     }
 }

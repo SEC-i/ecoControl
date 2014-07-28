@@ -1,5 +1,5 @@
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import cProfile
 
@@ -13,6 +13,7 @@ from server.forecasting.forecasting import StatisticalForecast, DayTypeForecast,
 from server.forecasting.forecasting.dataloader import DataLoader
 from server.forecasting.forecasting.helpers import approximate_index
 from server.settings import BASE_DIR
+import calendar
 
 
 electrical_forecast = None
@@ -184,6 +185,8 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
 
         self.new_data_interval = 24 * 60 * 60  # append data each day
         self.last_forecast_update = self.env.now
+        #cache, for performance
+        self.start_timestamp = calendar.timegm(self.env.initial_date.timetuple()) 
         
         #if self.env.demo_mode or not self.env.forecast:
         #    self.all_data = self.get_all_data2014()
@@ -196,8 +199,9 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         self.total_consumption += consumption
         self.power_meter.consume_energy(consumption)
         self.power_meter.current_power_consum = self.get_consumption_power()
-        # if this is not a forecast consumer, update the statistical forecasting periodically
-        if self.env.is_demo_simulation() and self.env.now - self.last_forecast_update > self.new_data_interval:
+        # if this is not a demo simulation, update the statistical forecasting periodically
+        if not self.env.is_demo_simulation() and \
+            self.start_timestamp - self.last_forecast_update > self.new_data_interval:
             self.update_forecast_data()
             
     def get_all_data2014(self):

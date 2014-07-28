@@ -185,7 +185,7 @@ class StatisticalForecast:
         """
         if self.try_cache: 
             try:
-                cached = pickle.load(open( os.path.join(BASE_DIR,"cache/cached_forecasts.cache"), "rb" ))
+                cached = pickle.load(open( os.path.join(BASE_DIR,"cache", "cached_forecasts.cache"), "rb" ))
                 diff_time = datetime.utcfromtimestamp(cached["date"]).replace(tzinfo=utc) - self.time_series_end
                 if diff_time.total_seconds() < 24 * 60 * 60: #24 hours epsilon
                     forecasted_demands = cached["forecasts"]
@@ -345,7 +345,7 @@ class DayTypeForecast(StatisticalForecast):
         
         #cache forecasts
         pickle.dump( {"forecasts" :forecasted_demands, "parameters" : self.calculated_parameters, "date": self.env.now },
-                      open(os.path.join(BASE_DIR,"cache/cached_forecasts.cache"), "wb" ) ) 
+                      open(os.path.join(BASE_DIR,"cache", "cached_forecasts.cache"), "wb" ) ) 
         print "forecasting completed"
 
         return forecasted_demands

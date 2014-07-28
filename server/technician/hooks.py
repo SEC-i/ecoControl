@@ -346,5 +346,5 @@ def live_data(request):
 
 def initialize_globals():
     global DEMO_SIMULATION, FORECAST_QUEUE
-    #DEMO_SIMULATION =  DemoSimulation.start_or_get()
+    DEMO_SIMULATION =  DemoSimulation.start_or_get()
     FORECAST_QUEUE = ForecastQueue()
