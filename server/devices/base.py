@@ -42,9 +42,12 @@ class BaseEnvironment(object):
             self.now = initial_time
 
         self.step_size = step_size
-        self.demo = demo
+        self.demo_mode = demo
         self.initial_date = datetime.fromtimestamp(self.now).replace(tzinfo=utc)
         self.forecast = forecast
 
     def get_day_of_year(self):
         return time.gmtime(self.now).tm_yday
+    
+    def is_demo_simulation(self):
+        return self.demo_mode and not self.forecast
