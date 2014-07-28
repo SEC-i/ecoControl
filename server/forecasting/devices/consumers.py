@@ -7,7 +7,7 @@ from django.utils.timezone import utc
 
 from server.devices.consumers import ThermalConsumer, ElectricalConsumer
 from server.forecasting.devices.data.old_demands import warm_water_demand_workday, warm_water_demand_weekend
-from server.forecasting.forecasting.weather import DemoWeather, CurrentWeatherForecast
+from server.forecasting.forecasting.weather import get_temperature
 from server.forecasting.forecasting import StatisticalForecast, DayTypeForecast,\
     DSHWForecast
 from server.forecasting.forecasting.dataloader import DataLoader
@@ -16,7 +16,6 @@ from server.settings import BASE_DIR
 
 
 electrical_forecast = None
-weather_forecast = None
 all_data = None
 
 class SimulatedThermalConsumer(ThermalConsumer):
@@ -46,13 +45,6 @@ class SimulatedThermalConsumer(ThermalConsumer):
 
         self.total_consumed = 0
 
-        global weather_forecast
-        if weather_forecast == None:
-            if self.env.demo:
-                weather_forecast = DemoWeather(self.env)
-            else:
-                weather_forecast = CurrentWeatherForecast(self.env)
-        self.weather_forecast = weather_forecast
         self.current_power = 0
 
         # only build once, to save lots of time
@@ -152,13 +144,10 @@ class SimulatedThermalConsumer(ThermalConsumer):
             self.heat_transfer_wall * temp_delta
         return (heat_flow_wall + heat_flow_window) / 1000.0  # kW
 
-    def get_outside_temperature(self, offset_days=0):
+    def get_outside_temperature(self):
         date = datetime.fromtimestamp(self.env.now).replace(tzinfo=utc)
-        if self.env.forecast :
-            temp = self.weather_forecast.get_temperature_estimate(date)
-        else:
-            temp = self.weather_forecast.get_temperature(date)
-        return float(temp)
+        
+        return float(get_temperature(self.env, date))
 
     def linear_interpolation(self, a, b, x):
         return a * (1 - x) + b * x
@@ -238,8 +227,8 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         if self.env.forecast:
             return self.electrical_forecast.get_forecast_at(self.env.now)
         else:
-            date_index = approximate_index(self.all_data["dates"], self.env.now)
-            return float(self.all_data["dataset"][date_index])
+            date_index = approximate_index(all_data["dates"], self.env.now)
+            return float(all_data["dataset"][date_index])
             
 
     def get_consumption_energy(self):
