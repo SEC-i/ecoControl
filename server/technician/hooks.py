@@ -26,8 +26,11 @@ import functions
 
 logger = logging.getLogger('django')
 
-DEMO_SIMULATION = None
+DEMO_SIMULATION =  DemoSimulation.start_or_get()
+"""This runs in the background, but can be accessed globally in `technician.hooks`. If the system is not in demo-mode, DEMO_SIMULATION will be ``None``"""
+
 FORECAST_QUEUE = ForecastQueue()
+"""Running forecasts can be accessed by ID from here"""
 
 def handle_snippets(request):
     if not request.user.is_superuser:
@@ -147,6 +150,7 @@ def forecast(request):
                 output = get_forecast(initial_time, configurations=configurations, code=code)
         except ValueError as e:
             logger.error(e)
+            print e #raise some awareness, because this ones pretty bad..
             return create_json_response({"status": "failed"})
     else:
         output = get_forecast(initial_time)

@@ -182,13 +182,18 @@ class DemoSimulation(Forecast):
     @classmethod
     def start_or_get(cls, print_visible=False):
         """
-        This method start a new demo simulation
+        This method starts a new demo simulation
         if neccessary and it makes sure that only
-        one demo simulation can run at once
+        one demo simulation can runs at once.
+        
+        :returns: :class:`DemoSimulation` or ``None`` if system not in demo mode.
         """
         # Start demo simulation if in demo mode
         device_mode = Configuration.objects.get(key='device_mode')
-        if device_mode.value == 'demo':
+        if device_mode.value != 'demo':
+            return None 
+        
+        if cls.stored_simulation == None:
             if print_visible:
                 print 'Starting demo simulation...'
             else:
@@ -198,8 +203,8 @@ class DemoSimulation(Forecast):
             simulation.start()
             cls.stored_simulation = simulation
         
-        if cls.stored_simulation != None:
-            return cls.stored_simulation
+        return cls.stored_simulation
+
 
     def run(self):
         while self.running:
