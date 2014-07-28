@@ -60,7 +60,7 @@ class DemoWeather:
         idx = approximate_index(self.cache_real_values[0], calendar.timegm(date.utctimetuple()))
         return  self.cache_real_values[1][idx]
         
-    def get_temperature_estimate(self, creation_date, target_date):
+    def get_temperature_estimate(self, target_date):
         """Retrieve a forecasted temperature at a certain time. The target_date must be between 0 and 10 days away from the creation_date,
         as weather forecasts only cover 10 days.
 
@@ -70,9 +70,10 @@ class DemoWeather:
         :param datetime date: The timepoint
 
         """
-        time_passed = (date_time - creation_date).total_seconds() / (60.0 * 60.0 * 24)  # in days
         
-        initial0 = creation_date.replace(minute=0,second=0)
+        time_passed = (target_date - self.env.initial_date).total_seconds() / (60.0 * 60.0 * 24)  # in days
+        
+        initial0 = self.env.initial_date.replace(minute=0,second=0)
         initial1 = initial0 + timedelta(hours=1)
         
         target_date = target_date.replace(hour=0,minute=0,second=0)
@@ -81,13 +82,13 @@ class DemoWeather:
         
         
         if self.error_day_cache.has_key(target_date_key):
-            return self.error_day_cache[target_date_key][date_time.hour]
+            return self.error_day_cache[target_date_key][target_date.hour]
         
         if not self.cache_day.has_key(target_date_key):
             forecasts_until_now = WeatherValue.objects.filter(timestamp__lte=initial0)
             if len(forecasts_until_now) == 0:
                 #print "Warning, date_time not in weatherforecasts ", date_time, " getting real data" ,"initial", initial0
-                return self.get_temperature(date_time)
+                return self.get_temperature(target_date)
             newest_creation_timestamp = forecasts_until_now.latest('timestamp').timestamp
             
             
@@ -96,14 +97,14 @@ class DemoWeather:
 
             test_list = [(float(v.temperature),v.target_time.hour) for v in day_values0]
             if len(test_list) < 24:
-                self.error_day_cache[target_date_key] = self._fill_error_gaps(test_list, date_time)
-                return self.error_day_cache[target_date_key][date_time.hour]
+                self.error_day_cache[target_date_key] = self._fill_error_gaps(test_list, target_date)
+                return self.error_day_cache[target_date_key][target_date.hour]
             
             self.cache_day[target_date_key] = [float(v.temperature) for v in day_values0]
         
         
         values0 =self.cache_day[target_date_key]
-        return self.mix(values0[date_time.hour],values0[min(date_time.hour+1,23)], target_date.minute / 60.0)
+        return self.mix(values0[target_date.hour],values0[min(target_date.hour+1,23)], target_date.minute / 60.0)
     
     def _fill_error_gaps(self, input_list, date):
         """ fill gaps of data, if missing or prediction are asked for intervals > 10 days"""

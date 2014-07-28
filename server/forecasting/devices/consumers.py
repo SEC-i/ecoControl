@@ -154,7 +154,7 @@ class SimulatedThermalConsumer(ThermalConsumer):
 
     def get_outside_temperature(self, offset_days=0):
         date = datetime.fromtimestamp(self.env.now).replace(tzinfo=utc)
-        if self.env.forecast:
+        if self.env.forecast :
             temp = self.weather_forecast.get_temperature_estimate(date)
         else:
             temp = self.weather_forecast.get_temperature(date)
