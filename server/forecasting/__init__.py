@@ -176,7 +176,7 @@ class DemoSimulation(Forecast):
         Forecast.__init__(self, initial_time, configurations, forward=0, forecast=False, demo = True)
         
 
-        self.steps_per_second = 3600.0 / 120
+        self.steps_per_second = 12  / self.env.step_size #run at 12x speed 
         self.running = False
 
     @classmethod
@@ -200,6 +200,7 @@ class DemoSimulation(Forecast):
                 logger.debug('Starting demo simulation...')
 
             simulation = DemoSimulation(get_initial_time())
+            simulation.use_optimization = get_configuration('auto_optimization')
             simulation.start()
             cls.stored_simulation = simulation
         
@@ -213,7 +214,6 @@ class DemoSimulation(Forecast):
             if self.forward > 0:
                 self.forward -= self.env.step_size
             else:
-                self.use_optimization = get_configuration('auto_optimization')
                 time.sleep(1.0 / self.steps_per_second)
                 
     def store_values(self):

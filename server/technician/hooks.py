@@ -26,10 +26,10 @@ import functions
 
 logger = logging.getLogger('django')
 
-DEMO_SIMULATION =  DemoSimulation.start_or_get()
+DEMO_SIMULATION =  None
 """This runs in the background, but can be accessed globally in `technician.hooks`. If the system is not in demo-mode, DEMO_SIMULATION will be ``None``"""
 
-FORECAST_QUEUE = ForecastQueue()
+FORECAST_QUEUE = None
 """Running forecasts can be accessed by ID from here"""
 
 def handle_snippets(request):
@@ -69,6 +69,7 @@ def configure(request):
     if 'auto_optimization' in data:
         auto_optimization = Configuration.objects.get(key='auto_optimization')
         auto_optimization.value = data['auto_optimization']
+        DEMO_SIMULATION.use_optimization = data['auto_optimization']
         auto_optimization.save()
         return create_json_response({"auto_optimization": auto_optimization.value}, request)
     else:
@@ -340,3 +341,10 @@ def live_data(request):
         raise PermissionDenied
 
     return create_json_response(functions.get_live_data(), request)
+
+
+
+def initialize_globals():
+    global DEMO_SIMULATION, FORECAST_QUEUE
+    #DEMO_SIMULATION =  DemoSimulation.start_or_get()
+    FORECAST_QUEUE = ForecastQueue()

@@ -108,7 +108,6 @@ def parse_value(config):
         elif config.value_type == DeviceConfiguration.FLOAT:
             return float(config.value)
         elif config.value_type == DeviceConfiguration.BOOL:
-            print config.value
             return config.value == "True"
         else:
             logger.warning(

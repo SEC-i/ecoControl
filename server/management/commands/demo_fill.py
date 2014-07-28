@@ -13,6 +13,6 @@ class Command(BaseCommand):
         demo_sim.forward = 24*3600*1
         while demo_sim.forward > 0:
             time.sleep(1)
-            print datetime.fromtimestamp(demo_sim.env.now).replace(tzinfo=utc)
+            #print datetime.fromtimestamp(demo_sim.env.now).replace(tzinfo=utc)
         demo_sim.measurements.flush_data()
         demo_sim.running = False

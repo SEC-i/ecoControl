@@ -64,7 +64,7 @@ def get_modified_configurations(data):
         for change in data:
             if str(config.device_id) == change['device'] and config.key == change['key'] and str(config.value_type) == change['type']:
                 config.value = change['value']
-    print configurations
+    #print configurations
     return configurations
 
 

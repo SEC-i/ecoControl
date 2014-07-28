@@ -197,7 +197,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         self.power_meter.consume_energy(consumption)
         self.power_meter.current_power_consum = self.get_consumption_power()
         # if this is not a forecast consumer, update the statistical forecasting periodically
-        if self.env.demo_mode and not self.env.forecast and self.env.now - self.last_forecast_update > self.new_data_interval:
+        if self.env.is_demo_simulation() and self.env.now - self.last_forecast_update > self.new_data_interval:
             self.update_forecast_data()
             
     def get_all_data2014(self):
