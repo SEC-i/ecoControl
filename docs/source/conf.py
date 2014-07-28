@@ -26,6 +26,15 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'server.settings'
 from django.conf import settings
 settings.configure()
 
+
+# Mock a few python packages which cannot be installed on ReadtheDocs
+import mock
+ 
+MOCK_MODULES = ['numpy', 'scipy', 'scipy.optimize', 'matplotlib', 'matplotlib.pyplot']
+for mod_name in MOCK_MODULES:
+sys.modules[mod_name] = mock.Mock()
+
+
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -35,7 +44,6 @@ settings.configure()
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.intersphinx', 'sphinx.ext.autosummary',
 'sphinx.ext.todo',  'sphinx.ext.viewcode']#'sphinx.ext.mathjax', 
-
 
 
 # Add any paths that contain templates here, relative to this directory.
