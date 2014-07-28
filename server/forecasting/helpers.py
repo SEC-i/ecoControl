@@ -13,13 +13,13 @@ logger = logging.getLogger('simulation')
 
 class MeasurementStorage():
 
-    def __init__(self, env, devices, demo=False):
+    def __init__(self, env, devices):
         self.env = env
         self.devices = devices
         self.sensors = Sensor.objects.filter(
             device_id__in=[x.id for x in self.devices])
 
-        if demo:
+        if env.demo_mode:
             # initialize for demo
             self.device_map = []
             self.sensor_values = []

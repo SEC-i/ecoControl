@@ -35,8 +35,8 @@ def get_temperature(env, date):
     """
     global demo_weather
     global current_weather
-    # check if demo mode
-    if env.demo:
+    # check if demo_mode mode
+    if env.demo_mode:
         if demo_weather == None:
             demo_weather = DemoWeather(env)
         
@@ -52,7 +52,7 @@ def get_temperature(env, date):
 
 
 class DemoWeather:
-    """ Gets Weathervalues from the database. The demomode operates on stored data from the past.
+    """ Gets Weathervalues from the database. The demo_mode operates on stored data from the past.
     For maximum realism, the past data should contain the real weather values as well as stored weather forecasts.
 
     The data is stored in the database, with :class:`server.models.RealWeatherValue` for history weather and :class:`server.models.WeatherValue` for stored forecasts.
