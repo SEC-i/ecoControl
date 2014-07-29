@@ -51,6 +51,3 @@ This leads to results very close to the absolute optimum.
 To build this module, use the :func:`~server.forecasting.forecasting.exp_smoothing.build_holtwinters_extension` function.
 If it suceeds, a .pyd extension is built, which can be used like a normal python module.
 An example for importing and building the extension can be seen in :mod:`server.forecasting.forecasting` (source).
-
-
-

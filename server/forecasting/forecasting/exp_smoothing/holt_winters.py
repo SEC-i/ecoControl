@@ -19,6 +19,7 @@ from numpy import array
 from collections import namedtuple
 from scipy.optimize import fmin_l_bfgs_b
 
+
  
 def linear(x, forecast, alpha = None, beta = None):
     """ Returns a forecast calculated with linear exponential smoothing.

@@ -5,6 +5,7 @@ from server.forecasting.forecasting.helpers import approximate_index
 import calendar
 from server.forecasting.forecasting import StatisticalForecast
 from server.settings import BASE_DIR, CYTHON_SUPPORT
+
 import os
 
 ## try to import compiled holtwinters extension by building it. 

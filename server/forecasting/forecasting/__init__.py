@@ -53,7 +53,9 @@ else:
     from server.forecasting.forecasting.exp_smoothing.holt_winters import additive
 
 
+
 logger = logging.getLogger('simulation')
+
 
 class StatisticalForecast:
     """
@@ -197,9 +199,6 @@ class StatisticalForecast:
             self.forecasted_demands = self.forecast_demands()
             self.time_series_end = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=utc)
 
-
-
-
     def read_from_cache(self):
         """ ``Internal Method``
         Return a cached result. If  *try_cache* = ``True``, this will try to read from cache/cached_forecasts.cache. 
@@ -256,7 +255,7 @@ class DSHWForecast(StatisticalForecast):
                                                                            forecast=int(fc), alpha=alpha, beta=beta, gamma=gamma, delta=delta,
                                                                            autocorrelation=autocorr)
                                                                             
-        
+
         if verbose:
             mse = ((in_sample - forecast_values) ** 2).mean(axis=None)
             calculated_parameters = {

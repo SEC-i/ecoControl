@@ -11,7 +11,9 @@ function technician_overview_ready() {
     initialize_technician_tuning_form();
     initialize_technician_editor();
     initialize_technician_auto_optimization();
-    if (status_data['device_mode'] === "demo") {
+
+    if (status_data['device_mode'] == 'demo') {
+
         initialize_forward_buttons();
     }
 }
@@ -445,7 +447,9 @@ function apply_changes() {
 }
 
 function update_immediate_forecast(data) {
-    if(forecast_data['valid'] === "1") {
+
+    if(forecast_data['valid'] == '1') {
+
         var chart = $('#tech_live_diagram').highcharts();
         var start = new Date(data['start']).getTime();
         var step = data['step'];
@@ -566,7 +570,8 @@ function initialize_technician_auto_optimization(){
     update_auto_optimization_button(status_data['auto_optimization']);
     $("#auto_optimization_button").click(function() {
         $.postJSON(api_base_url + "configure/", {
-            auto_optimization: $("#auto_optimization_button").val() !== "true"
+            auto_optimization: $("#auto_optimization_button").val() != 'true'
+
         }, function(data) {
             update_auto_optimization_button(data['auto_optimization']);
         });
