@@ -1,16 +1,16 @@
-var sensor_list = null;
-var headlines = ['Month', '', ''];
-var table_data = [];
+var mgmt_sensor_list = null;
+var mgmt_stats_headlines = ['Month', '', ''];
+var mgmt_stats_table_data = [];
 
 // READY
 function manager_statistics_ready() {
     $.each(get_text('months'), function(index, month) {
-        table_data.push([month, 0, 0]);
+        mgmt_stats_table_data.push([month, 0, 0]);
     });
 
     $.getJSON(api_base_url + 'sensors/', function(data) {
-        sensor_list = data;
-        $.each(sensor_list, function(index, sensor) {
+        mgmt_sensor_list = data;
+        $.each(mgmt_sensor_list, function(index, sensor) {
             if (sensor.sum) {
                 $('.series_list').append(
                     '<option value="' + sensor.id + '" data-aggregation="sum">SUM ' + sensor.name + ' (' + sensor.device + ')</option>'
@@ -33,7 +33,7 @@ function manager_statistics_ready() {
             initialize_diagram();
             $('.series_list').change(function () {
                 var sensor_id = $(this).val();
-                var sensor = get_sensor(sensor_id);
+                var sensor = get_sensor(sensor_id, mgmt_sensor_list);
                 var target = $(this).attr('data-target');
                 var year = $('#years_' + target).val();
                 var aggregation_type = $(this).find(":selected").attr('data-aggregation');
@@ -95,21 +95,6 @@ function manager_statistics_ready() {
     });
 }
 
-function get_sensor(sensor_id) {
-    if (sensor_list === null) {
-        return null;
-    }
-
-    var output = null;
-    $.each(sensor_list, function (index, sensor) {
-        if (sensor.id === sensor_id) {
-            output = sensor;
-            return false;
-        }
-    });
-    return output;
-}
-
 function initialize_diagram() {
     $('#diagram_container').highcharts({
         chart: {
@@ -165,12 +150,12 @@ function update_table(data, col_title, right) {
         var offset = 1;
     }
 
-    headlines[offset] = col_title;
+    mgmt_stats_headlines[offset] = col_title;
 
     $.each(data, function(index, row) {
-        table_data[index][offset] = Math.round(row.total * 100) / 100;
+        mgmt_stats_table_data[index][offset] = Math.round(row.total * 100) / 100;
     });
 
-    draw_table($('#mgmt_statistics_table_container'), headlines, table_data);
+    draw_table($('#mgmt_statistics_table_container'), mgmt_stats_headlines, mgmt_stats_table_data);
 
 }

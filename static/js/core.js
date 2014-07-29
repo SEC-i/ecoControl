@@ -175,3 +175,18 @@ function initialize_page(callback) {
         });
     }
 }
+
+function get_sensor(sensor_id, sensor_list) {
+    if (sensor_list === null) {
+        return null;
+    }
+
+    var output = null;
+    $.each(sensor_list, function (index, sensor) {
+        if (sensor.id === sensor_id) {
+            output = sensor;
+            return false;
+        }
+    });
+    return output;
+}
