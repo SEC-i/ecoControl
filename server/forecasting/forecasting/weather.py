@@ -31,7 +31,7 @@ def get_temperature(env, date):
     Will decide upon the `env` parameter, if :class:`DemoWeather` or :class:`CurrentWeatherForecast` should be used. 
     
     :param :class:`~server.devices.base.BaseEnvironment` env: the current environment
-    :param :py:`~datetime.datetime` date: the time of which to retrieve the weather(forecast)
+    :param :py:class:`~datetime.datetime` date: the time of which to retrieve the weather(forecast)
     """
     global demo_weather
     global current_weather

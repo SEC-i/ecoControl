@@ -35,7 +35,7 @@ if (CYTHON_SUPPORT):
         from server.forecasting.forecasting.exp_smoothing.build_extension import build_holtwinters_extension
         try:
             build_holtwinters_extension() #compile and link
-            from server.forecasting.forecasting.exp_smoothing.holtwinters_fast import double_seasonal
+            from server.forecasting.forecasting.exp_smoothing.holtwinters_fast import double_seasonal, multiplicative
             fast_hw = True
             print "cython extension built and imported"
         except Exception as e:
@@ -49,8 +49,8 @@ if not fast_hw:
         print "falling back to python holt-winters"
     from server.forecasting.forecasting.exp_smoothing.holt_winters import double_seasonal, multiplicative, additive
 else:
-    #!TODO: until now only double_seasonal is accelerated
-    from server.forecasting.forecasting.exp_smoothing.holt_winters import multiplicative, additive
+    #!TODO: additive is not accelerated (yet)
+    from server.forecasting.forecasting.exp_smoothing.holt_winters import additive
 
 
 logger = logging.getLogger('simulation')
