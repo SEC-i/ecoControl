@@ -8,7 +8,7 @@ $(function() {
     $.getJSON(api_base_url + 'status/', function(data) {
         status_data = data;
         initialize_page(function() {
-            if ((status_data['admin'] && status_data['device_status'] == 'init')) {
+            if ((status_data['admin'] && status_data['device_status'] === "init")) {
                 $.address.value('settings');
             } else {
                 $.address.value(get_current_page());
@@ -31,8 +31,8 @@ $(function() {
         location.reload();
     });
 
-    if ($.cookie('selected_language')  != undefined) {
-        if ($.cookie('selected_language') == 'de') {
+    if ($.cookie('selected_language') !== undefined) {
+        if ($.cookie('selected_language') === "de") {
             Highcharts.setOptions({lang: lang_de_highcharts});
         }
     }

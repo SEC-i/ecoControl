@@ -19,7 +19,7 @@ function technician_settings_ready() {
                         unit: config_data.unit,
                         value: config_data.value,
                     };
-                    if (status_data['device_status'] == 'init') {
+                    if (status_data['device_status'] === "init") {
                         var output = render_template($('#snippet_settings_input').html(), view);
                         item.append(output);
                     } else {
@@ -44,11 +44,11 @@ function technician_settings_ready() {
                 return JSON.stringify(post_data);
             },
             validate: function(value) {
-               if($.trim(value) == '') return 'This field is required';
+               if($.trim(value) === "") return 'This field is required';
             }
         });
 
-        if (status_data['device_status'] == 'init') {
+        if (status_data['device_status'] === "init") {
             var rendered = render_template($('#snippet_settings_notice').html());
             $('#container').prepend(rendered);
             var rendered = render_template($('#snippet_settings_buttons').html());
@@ -57,7 +57,7 @@ function technician_settings_ready() {
                 var demo = $(this).attr('data-demo');
 
                 var post_data = [];
-                $( ' .configuration' ).each(function( index ) {
+                $('.configuration').each(function( index ) {
                     post_data.push({
                         device: $(this).attr('data-device'),
                         key: $(this).attr('data-key'),
