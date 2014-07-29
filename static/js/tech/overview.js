@@ -11,7 +11,7 @@ function technician_overview_ready() {
     initialize_technician_tuning_form();
     initialize_technician_editor();
     initialize_technician_auto_optimization();
-    if (status_data['device_mode'] === "demo") {
+    if (status_data['device_mode'] == 'demo') {
         initialize_forward_buttons();
     }
 }
@@ -194,7 +194,7 @@ function refresh_technician_diagram(repeat) {
         }).done(function () {
             chart.redraw();
 
-            if (repeat && get_current_page() === "overview") {
+            if (repeat && get_current_page() == 'overview') {
                 setTimeout(function() {
                     refresh_technician_diagram(true);
                 }, refresh_timeout);
@@ -207,7 +207,7 @@ function initialize_tech_live_diagram_filters(series) {
     var rows = [{filters: []}];
     $.each(series, function(index, series_data) {
         var row = Math.floor(series_data.id / 4);
-        if (rows[row] === undefined) {
+        if (rows[row] == undefined) {
             rows.push({filters: []});
         }
         rows[row].filters.push({
@@ -445,7 +445,7 @@ function apply_changes() {
 }
 
 function update_immediate_forecast(data) {
-    if(forecast_data['valid'] === "1") {
+    if(forecast_data['valid'] == '1') {
         var chart = $('#tech_live_diagram').highcharts();
         var start = new Date(data['start']).getTime();
         var step = data['step'];
@@ -477,7 +477,7 @@ function cleanup_diagram() {
     var chart = $('#tech_live_diagram').highcharts();
     var i = 0
     while(chart.series.length > sensor_count + 1) {
-        if (chart.series[i].name.indexOf('simulated') !== -1) {
+        if (chart.series[i].name.indexOf('simulated') != -1) {
             chart.series[i].remove(false);
         } else {
             i++;
@@ -534,7 +534,7 @@ function initialize_technician_editor() {
         $.postJSON(api_base_url + "code/", {
             code: editor.getValue()
         }, function(data) {
-            if (data['status'] === "1") {
+            if (data['status'] == '1') {
                 editor.setValue(data['code'], 1);
             } else {
                 console.log('Failed to apply');
@@ -566,7 +566,7 @@ function initialize_technician_auto_optimization(){
     update_auto_optimization_button(status_data['auto_optimization']);
     $("#auto_optimization_button").click(function() {
         $.postJSON(api_base_url + "configure/", {
-            auto_optimization: $("#auto_optimization_button").val() !== "true"
+            auto_optimization: $("#auto_optimization_button").val() != 'true'
         }, function(data) {
             update_auto_optimization_button(data['auto_optimization']);
         });

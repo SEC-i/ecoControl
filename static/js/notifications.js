@@ -32,16 +32,16 @@ function update_notifications(start) {
 function update_pagination(current, total) {
     $('#notification_pagination').html(
         '<ul class="pagination">\
-            <li' + (current === 0 ? ' class="disabled"': '') + '><a href="#" data-start="' + (current - 1) * notifications_per_page  + '">&laquo;</a></li>\
+            <li' + (current == 0 ? ' class="disabled"': '') + '><a href="#" data-start="' + (current - 1) * notifications_per_page  + '">&laquo;</a></li>\
         </ul>'
     );
 
     for (var i = 0; i < total/notifications_per_page; i++) {
-        $('#notification_pagination .pagination').append('<li' + (i === current ? ' class="active"' : '') + '><a href="#" data-start="' + i * notifications_per_page  + '">' + (i + 1) + (i === current ? ' <span class="sr-only">(current)</span>' : '') + '</a></li>');
+        $('#notification_pagination .pagination').append('<li' + (i == current ? ' class="active"' : '') + '><a href="#" data-start="' + i * notifications_per_page  + '">' + (i + 1) + (i == current ? ' <span class="sr-only">(current)</span>' : '') + '</a></li>');
     };
 
     $('#notification_pagination .pagination').append(
-        '<li' + (current + 1 === total/notifications_per_page ? ' class="disabled"': '') + '><a href="#" data-start="' + (current + 1) * notifications_per_page  + '">&raquo;</a></li>'
+        '<li' + (current + 1 == total/notifications_per_page ? ' class="disabled"': '') + '><a href="#" data-start="' + (current + 1) * notifications_per_page  + '">&raquo;</a></li>'
     );
 
     $('#notification_pagination .pagination li a').click(function(event) {
@@ -102,8 +102,8 @@ function refresh_thresholds() {
         $.each(threshold_list, function(index, threshold) {
             threshold.index = index + 1;
             threshold.category_html = get_label(threshold.category);
-            threshold.show_manager_value = (threshold.show_manager === true ? '1' : '0');
-            threshold.show_manager_text = (threshold.show_manager === true ? 'Yes' : 'No');
+            threshold.show_manager_value = (threshold.show_manager == true ? '1' : '0');
+            threshold.show_manager_text = (threshold.show_manager == true ? 'Yes' : 'No');
         });
         var rendered = render_template($('#snippet_notification_threshold_list').html(), {
             thresholds: threshold_list
@@ -118,7 +118,7 @@ function refresh_thresholds() {
                 return JSON.stringify(post_data);
             },
             validate: function(value) {
-               if($.trim(value) === "") return 'This field is required';
+               if($.trim(value) == '') return 'This field is required';
             }
         });
         $('.x_editable_sensor_list').editable({

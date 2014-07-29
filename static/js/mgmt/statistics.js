@@ -39,14 +39,14 @@ function manager_statistics_ready() {
                 var aggregation_type = $(this).find(":selected").attr('data-aggregation');
 
                 var url = api_base_url + 'avgs/sensor/' + sensor_id + '/year/' + year + '/';
-                if (aggregation_type === "sum") {
+                if (aggregation_type == 'sum') {
                     var url = api_base_url + 'sums/sensor/' + sensor_id + '/year/' + year + '/';
                 }
 
                 $.getJSON(url, function(data) {
                     var chart = $('#diagram_container').highcharts();
                     var series_id = 0;
-                    if (target === "right") {
+                    if (target == 'right') {
                         series_id = 1;
                     }
 
@@ -68,12 +68,12 @@ function manager_statistics_ready() {
                     chart.series[series_id].setData(series_data,true);
 
                     var title = sensor.name + ' in ' + sensor.unit + ' - ' + year;
-                    if (aggregation_type === "sum") {
+                    if (aggregation_type == 'sum') {
                         title = 'SUM ' + title;
                     } else {
                         title = 'AVG ' + title;
                     }
-                    update_table(data, title, target === "right");
+                    update_table(data, title, target == 'right');
                 });
             });
 
@@ -96,13 +96,13 @@ function manager_statistics_ready() {
 }
 
 function get_sensor(sensor_id) {
-    if (sensor_list === null) {
+    if (sensor_list == null) {
         return null;
     }
 
     var output = null;
     $.each(sensor_list, function (index, sensor) {
-        if (sensor.id === sensor_id) {
+        if (sensor.id == sensor_id) {
             output = sensor;
             return false;
         }

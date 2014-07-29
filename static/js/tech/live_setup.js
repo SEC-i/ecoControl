@@ -13,7 +13,7 @@ function refresh_live_setup() {
         $.each(data, function(key, value) {
             var item = $('#' + key);
             if (item.length) { // check if item exists
-                if (key === "time") {
+                if (key == 'time') {
                     item.html($.format.date(new Date(parseFloat(value)), "dd.MM.yyyy HH:MM"));
                 } else {
                     item.html(value);
@@ -22,7 +22,7 @@ function refresh_live_setup() {
         });
     });
 
-    if (get_current_page() === "live_setup") {
+    if (get_current_page() == 'live_setup') {
         setTimeout(refresh_live_setup, 5000);
     }
 }
