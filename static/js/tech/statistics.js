@@ -50,27 +50,27 @@ function technician_statistics_ready() {
         var plb_statistics_table_data = [];
 
         $.each(data, function(index, values) {
-            $.each(values, function(system, system_data) {
-                if (system_data.type == '2') {
-                    cu_series_data_1[0].data.push(system_data['total_gas_consumption']);
-                    cu_series_data_1[1].data.push(system_data['hours_of_operation']);
+            $.each(values, function(device, device_data) {
+                if (device_data.type === "2") {
+                    cu_series_data_1[0].data.push(device_data['total_gas_consumption']);
+                    cu_series_data_1[1].data.push(device_data['hours_of_operation']);
 
-                    cu_series_data_2[0].data.push(system_data['power_ons']);
-                    cu_series_data_2[1].data.push(system_data['average_workload']);
+                    cu_series_data_2[0].data.push(device_data['power_ons']);
+                    cu_series_data_2[1].data.push(device_data['average_workload']);
 
                     cu_statistics_table_data.push([
-                        get_text('months')[index], system_data['total_gas_consumption'] + 'kWh',
-                        system_data['hours_of_operation'] + 'h', system_data['power_ons'],
-                        system_data['average_workload'] + '%'
+                        get_text('months')[index], device_data['total_gas_consumption'] + 'kWh',
+                        device_data['hours_of_operation'] + 'h', device_data['power_ons'],
+                        device_data['average_workload'] + '%'
                     ]);
-                } else if (system_data.type == '3') {
-                    plb_series_data_1[0].data.push(system_data['total_gas_consumption']);
-                    plb_series_data_1[1].data.push(system_data['hours_of_operation']);
-                    plb_series_data_2[0].data.push(system_data['power_ons']);
+                } else if (device_data.type === "3") {
+                    plb_series_data_1[0].data.push(device_data['total_gas_consumption']);
+                    plb_series_data_1[1].data.push(device_data['hours_of_operation']);
+                    plb_series_data_2[0].data.push(device_data['power_ons']);
 
                     plb_statistics_table_data.push([
-                        get_text('months')[index], system_data['total_gas_consumption'] + 'kWh',
-                        system_data['hours_of_operation'] + 'h', system_data['power_ons']
+                        get_text('months')[index], device_data['total_gas_consumption'] + 'kWh',
+                        device_data['hours_of_operation'] + 'h', device_data['power_ons']
                     ]);
                 }
             });

@@ -16,7 +16,7 @@ function manager_balances_ready() {
 }
 
 $(window).resize(function() {
-    if (get_current_page() == 'balances') {
+    if (get_current_page() === "balances") {
         resize_diagrams();
     }
 });

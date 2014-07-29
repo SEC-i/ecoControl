@@ -3,7 +3,7 @@ from server.forecasting.tools.plotting import show_plotting
 from server.forecasting.forecasting.dataloader import DataLoader
 from server.forecasting.forecasting.helpers import approximate_index
 import calendar
-from server.forecasting.forecasting import Forecast
+from server.forecasting.forecasting import StatisticalForecast
 from server.settings import BASE_DIR, CYTHON_SUPPORT
 import os
 
@@ -80,10 +80,10 @@ def value_changer():
     except:
         print "ljdlj"
     sep = os.path.sep
-    path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
+    path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
     raw_data = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)",delim="\t")
     ind = len(raw_data) / 2
-    kW_data = Forecast.make_hourly([float(val) / 1000.0 for val in raw_data],6) #cast to float and convert to kW
+    kW_data = StatisticalForecast.make_hourly([float(val) / 1000.0 for val in raw_data],6) #cast to float and convert to kW
     dates = [int(d) for d in DataLoader.load_from_file(path, "Datum", "\t")]
     input = make_hourly(kW_data,6)[-24*7:]
     start = calendar.timegm(datetime(year=2014,month=1,day=2).timetuple())

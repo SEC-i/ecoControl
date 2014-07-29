@@ -10,7 +10,7 @@ import logging
 #from server.settings import BASE_DIR
 
 
-logger = logging.getLogger('extensions')
+logger = logging.getLogger('ecocontrol')
 
 def build_holtwinters_extension():
     # vsstudio is default compiler for python extensions and should definitely be used on windows. 

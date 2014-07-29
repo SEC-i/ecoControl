@@ -1,4 +1,5 @@
-BP2013H1
+ecoControl
 ========
-[![Build Status](https://magnum.travis-ci.com/BP2013H1/BP2013H1.png?token=7fqzGEv22MQpvpU7RhK5&branch=master)](https://magnum.travis-ci.com/BP2013H1/BP2013H1)
-
+[![Build Status](https://travis-ci.org/SEC-i/ecoControl.svg)](https://travis-ci.org/SEC-i/ecoControl)
+[![Dependency Status](https://gemnasium.com/SEC-i/ecoControl.svg)](https://gemnasium.com/SEC-i/ecoControl)
+[![Code Climate](https://codeclimate.com/github/SEC-i/ecoControl.png)](https://codeclimate.com/github/SEC-i/ecoControl)

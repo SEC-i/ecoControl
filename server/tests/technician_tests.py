@@ -17,7 +17,7 @@ class TechnicianHooksTestCase(TestCase):
     def setUp(self):
         self.client = Client()
 
-    def test_update_system_configurations(self):
+    def test_update_device_configurations(self):
         self.assertEqual(len(DeviceConfiguration.objects.all()), 15)
 
         data = [
