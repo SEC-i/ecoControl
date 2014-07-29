@@ -1,3 +1,19 @@
+""" This module contains an optimized version of the holtwinters double seasonal and the multiplicative method.
+
+
+The functions in this module should deliver the same results as the unoptimized version in holt_winters.py.
+Just import the :func:`double_seasonal` from this module instead of the one in holt_winters.py.
+
+This module has to be compiled with cython, it introduces statically typed variables and optimizes array usage
+and can therefore get speedups up to 100x.
+
+Note that the optimizing function differs from the normal version, as it first searches the global boundaries and then
+does a extremly accurate local search. This leads results very close to the absolute optimum.
+
+To build this module, use the build_holtwinters_extension() function. If it suceeds,
+ a .pyd extension is built, which can be used like a normal python module.
+An example for importing and building the extension can be seen in forecasting.forecasting.__init__.
+"""
 # asdf cython: profile = True
 from __future__ import division
 import numpy as np
@@ -18,7 +34,7 @@ ctypedef np.float64_t DTYPE_t
 from scipy.optimize import fmin_l_bfgs_b
 
 def double_seasonal(x, m, m2, forecast,  alpha=None, beta=None, gamma=None, delta=None, autocorrelation=None):
-    """ executes one run of holt winters. For very fast runs with the same initialisation data, 
+    """ executes one run of the double_seasonal method. For very fast runs with the same initialisation data, 
     instantiate a HoltWinters Object and the repeatedly call HoltWinters.double_seasonal(alpha,beta,gamma,delta,autocorr)"""
 
     if (None in (alpha, beta, gamma, delta, autocorrelation)):
@@ -29,7 +45,7 @@ def double_seasonal(x, m, m2, forecast,  alpha=None, beta=None, gamma=None, delt
     return hw.forecast_series, (alpha, beta, gamma, delta, autocorrelation), hw.y[:-forecast - 1]
 
 def multiplicative(x, m, forecast,  alpha=None, beta=None, gamma=None):
-    """ executes one run of holt winters. For very fast runs with the same initialisation data, 
+    """ executes one run of the multiplicative method. For very fast runs with the same initialisation data, 
     instantiate a HoltWinters Object and the repeatedly call HoltWinters.multiplicative(alpha,beta,gamma,delta,autocorr)"""
 
     if (None in (alpha, beta, gamma)):
