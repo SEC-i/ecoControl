@@ -45,7 +45,7 @@ This module contains an optimized version of the Holt-Winters double-seasonal me
 The functions in this module should deliver the same results as the unoptimized version in :mod:`~server.forecasting.forecasting.exp_smoothing.holt_winters`. Just import the :func:`double_seasonal` from this module instead of the one in holt_winters.py. This module has to be compiled with `Cython <http://cython.org/>`_, it introduces statically typed variables and optimizes array usage
 and can therefore get speedups up to 100x. 
 Note that the optimizing function differs from the normal version, as it first searches the global boundaries and then
-does a extremly accurate local search. 
+does a extremely accurate local search. 
 This leads to results very close to the absolute optimum.
 
 To build this module, use the :func:`~server.forecasting.forecasting.exp_smoothing.build_holtwinters_extension` function.

@@ -43,6 +43,7 @@ nosetests.xml
 
 *.sublime-workspace
 *.sublime-project
+*.settings
 
 
 
