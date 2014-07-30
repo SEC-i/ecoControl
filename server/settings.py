@@ -75,6 +75,8 @@ DATABASES = {
 # Test runner with no database deletion
 
 TEST_RUNNER = 'server.tests.CustomTestSuiteRunner'
+#to know if this is a testing environment
+TESTING = 'test' in sys.argv 
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
