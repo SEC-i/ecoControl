@@ -239,14 +239,18 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         return self.get_consumption_power() * (self.env.step_size / 3600.0)
 
     def get_data_until(self, timestamp, start_timestamp=None):
-        #! TODO: reading data from csv will have to be replaced by live/fake data from database
         date = datetime.utcfromtimestamp(timestamp).replace(tzinfo=utc)
         if self.__class__.dataset == [] or self.__class__.dates == []:
             sep = os.path.sep
-            path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "demodata" +sep+ "demo_electricity_2013.csv")
+            path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "demodata" +sep+ "demo_electricity_2012.csv")
             raw_dataset = DataLoader.load_from_file(
                 path, "Strom - Verbrauchertotal (Aktuell)", "\t")
             dates = DataLoader.load_from_file(path, "Datum", "\t")
+            
+            path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "demodata" +sep+ "demo_electricity_2013.csv")
+            raw_dataset += DataLoader.load_from_file(
+                path, "Strom - Verbrauchertotal (Aktuell)", "\t")
+            dates += DataLoader.load_from_file(path, "Datum", "\t")
 
             if date.year == 2014:
                 path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "demodata" + sep+"demo_electricity_2014.csv")
@@ -260,7 +264,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         dates = self.__class__.dates
         dataset = self.__class__.dataset
 
-        now_index = approximate_index(dates, self.env.now)
+        now_index = approximate_index(dates, timestamp)
 
         # take data until simulated now time
         if start_timestamp == None:
