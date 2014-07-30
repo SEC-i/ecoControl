@@ -95,6 +95,8 @@ cdef class CDoubleSeasonal:
         self.y = y
         self.forecast_series = forecast_series
         self.test_series = test_series
+        
+        s2_tmp = [x[i] / self.a_0 for i in range(0,m2,m)]
 
         cdef unsigned int k
         # init arrays
@@ -102,8 +104,8 @@ cdef class CDoubleSeasonal:
             # copy input into typed array
             self.Y[k] = x[k]
             # init seasonal variables
-            if k % self.m == 0 and k < self.m2:
-                self.s2[k] = self.Y[k] / self.a_0
+            if k < len(s2_tmp):
+                self.s2[k] = s2_tmp[k]
             if k < m:
                 self.s[k] = self.Y[k] / self.a_0
             if k < len(test_data):

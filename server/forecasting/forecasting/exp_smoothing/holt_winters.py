@@ -187,9 +187,10 @@ def double_seasonal(x, m, m2, forecast, alpha = None, beta = None, gamma = None,
     
 
     a = [sum(Y[0:m]) / float(m)]
+    b = []
     s = [Y[i] / a[0] for i in range(m)]
     s2 = [Y[i] / a[0] for i in range(0,m2,m)]
-    y = [a[0] + b[0] + s[0] + s2[0]]
+    y = [a[0] + s[0] + s2[0]]
     named_parameters = namedtuple("Multiplicative", ["alpha", "beta","gamma","delta","autocorrelation"], False)(alpha,beta,gamma,delta,autocorrelation)
 
     for i in range(len(Y) + forecast+len(test_series)):
@@ -304,3 +305,4 @@ def __exponential_smoothing_step(input, index, params,
         s2.append(params.gamma * (Y[i] - a[i] - s[i]) + (1 - params.gamma) * s2[i])
         autocorr = params.autocorrelation * (Y[i] - (a[i] + s[i] + s2[i]))
         y.append(a[i + 1] + s[i + 1] + s2[i + 1] + autocorr)
+        
