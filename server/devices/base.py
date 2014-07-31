@@ -1,7 +1,5 @@
-from time import time
-from datetime import datetime
+from time import time, gmtime
 
-from django.utils.timezone import utc
 
 class BaseDevice(object):
     """Represents a general interface to the energy-systems."""
@@ -41,19 +39,19 @@ class BaseEnvironment(object):
             self.now = time()
         else:
             self.now = initial_time
-        #: a unix timestamp when the simulation starts, if `None` the current time is used
-        self.initial_date = datetime.fromtimestamp(self.now).replace(tzinfo=utc)
+        #: a unix timestamp representing the start of simulation
+        #: if initial_time is `None` the current time is used
+        self.initial_date = self.now
         #: `int` value of seconds how often the simulated devices calculate their state
         self.step_size = step_size
         #: `bool` decides if demo modus is active
         self.demo_mode = demomode
         #: `bool` seems to be irrelevant
         self.forecast = forecast
-        self.initial_date = datetime.fromtimestamp(self.now).replace(tzinfo=utc)
 
     def get_day_of_year(self):
         """Returns an `int` value of the current simulated day"""
-        return time.gmtime(self.now).tm_yday
+        return gmtime(self.now).tm_yday
 
     def is_demo_simulation(self):
         return self.demo_mode and not self.forecast

@@ -13,7 +13,6 @@ from server.forecasting.forecasting.dataloader import DataLoader
 from server.forecasting.forecasting.helpers import approximate_index
 from server.settings import BASE_DIR
 from helpers import linear_interpolation
-import calendar
 
 
 electrical_forecast = None
@@ -168,8 +167,8 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
         self.new_data_interval = 24 * 60 * 60  # append data each day
         self.last_forecast_update = self.env.now
 
-        # caching for better performance
-        self.start_timestamp = calendar.timegm(self.env.initial_date.timetuple())
+        # cache the forecast for better performance
+        self.start_timestamp = self.env.initial_date
         global all_data
         if all_data == None:
             all_data = self.get_all_data2014()
