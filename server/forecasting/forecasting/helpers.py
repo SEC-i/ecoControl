@@ -1,21 +1,29 @@
+""" helper methods for forecasting"""
 import os
 import pickle
 import time
 from datetime import date,datetime,timedelta
 from server.settings import BASE_DIR
 
-
 def perdelta(start, end, delta):
+    """ generator function, which outputs dates.
+    works like `range(start, stop, step)` for dates
+
+    :param datetime start,end: dates between which to iterate
+    :param timedelta delta: the stepwidth
+    """
     curr = start
     while curr < end:
         yield curr
         curr += delta
-        
-def linear_interpolation(a,b,x):
-    return a * x + b * (1.0 - x)
-
 
 def approximate_index(dataset, findvalue):
+    """ Return index  value in dataset, with optimized find procedure.
+    This assumes a `dataset` with continuous, increasing values. Typically, these are timestamps.
+
+    :param list dataset: a continuous list of values (f.e. timestamps)
+    :param int findvalue: the value, of which to find the index.
+    """
     length = len(dataset)
     #aproximate index
     diff = (dataset[1] - dataset[0])
@@ -31,22 +39,29 @@ def approximate_index(dataset, findvalue):
             i+=1
     return -1
 
-def cached_data(name, data_function=None, max_age=60):
+def cached_data(name, data_function=None, max_age=0):
+    """ store and retrieve data from a cache on the filesystem.
+    The function will try to retrieve the cached data. If there is None or
+    the data is too old, `data_function` will be called and the result is stored in the cache. 
+
+
+    :param string name: name of cache file
+    :param function data_function: A function, which outputs the data to be stored. 
+        If the function is ``None`` and the cache is invalid, the funtion will return ``None``.
+    :param int max_age: The maximum age (real time) in seconds, the cache is allowed to have before turning invalid.
+    :returns: data or ``None``
+    """
     cache_path = cachefile('%s.cache' % name)
     age = cached_data_age(name)
-    if (age < max_age or max_age == 0) and os.path.exists(cache_path):
-        with open(cache_path, 'rb') as file:
-            return pickle.load(file)
+    if age != None and (age < max_age or max_age == 0):
+        with open(cache_path, 'rb') as f:
+            return pickle.load(f)
     if not data_function:
         return None
     data = data_function()
-    cache_data(name, data)
+    with open(cache_path, 'wb') as f:
+        pickle.dump(data, f)
     return data
-    
-def cache_data(name, data):
-    cache_path = cachefile('%s.cache' % name)
-    with open(cache_path, 'wb') as file:
-        pickle.dump(data, file)
 
 def cachefile(filename):
         return os.path.join(BASE_DIR,'cache', filename)
@@ -54,5 +69,8 @@ def cachefile(filename):
 def cached_data_age(name):
     cache_path = cachefile('%s.cache' % name)
     if not os.path.exists(cache_path):
-        return 0
-    return time.time() - os.stat(cache_path).st_mtime
+        return None
+    return time.time() - os.stat(cache_path).st_mtime 
+
+def linear_interpolation(a,b,x):
+    return a * x + b * (1.0 - x)
