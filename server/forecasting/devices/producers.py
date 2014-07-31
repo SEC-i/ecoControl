@@ -6,7 +6,7 @@ class SimulatedCogenerationUnit(CogenerationUnit):
 
     def __init__(self, device_id, env):
 
-        super(SimulatedCogenerationUnit, self).__init__(system_id, env)
+        super(SimulatedCogenerationUnit, self).__init__(device_id, env)
         #: Saves the last powered off time to ensure minimal_off_time
         self.off_time = self.env.now
         #: Device can have fixed workload without internal control. Be aware of overheating!
