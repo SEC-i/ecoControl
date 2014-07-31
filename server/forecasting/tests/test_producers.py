@@ -66,7 +66,7 @@ class SimulatedCogenerationUnitTest(unittest.TestCase):
         # offtime
 
         #consider mode thermal
-        self.heat_storage.get_require_energy.return_value = 3
+        self.heat_storage.get_required_energy.return_value = 3
         expected_workload = self.cu.get_calculated_workload_thermal()
         self.cu.thermal_driven = True
         calculated_workload = self.cu.calculate_new_workload()
@@ -85,7 +85,7 @@ class SimulatedCogenerationUnitTest(unittest.TestCase):
                             .format(expected_workload, calculated_workload))
 
         #consider overwrite of workload
-        self.heat_storage.get_require_energy.return_value = 3
+        self.heat_storage.get_required_energy.return_value = 3
         expected_workload = self.cu.get_calculated_workload_thermal()
         self.cu.thermal_driven = True
         self.cu.overwrite_workload = 25.0
@@ -96,7 +96,7 @@ class SimulatedCogenerationUnitTest(unittest.TestCase):
 
         #consider offtime
         self.cu.overwrite_workload = None
-        self.heat_storage.get_require_energy.return_value = 3
+        self.heat_storage.get_required_energy.return_value = 3
         expected_workload = 0
         self.cu.thermal_driven = True
         self.cu.off_time = self.env.now + 1
@@ -137,7 +137,7 @@ class SimulatedCogenerationUnitTest(unittest.TestCase):
         gas_input = 20 # unit is energy: kWh
         thermal_efficiency = 0.6
 
-        self.heat_storage.get_require_energy.return_value = required_energy
+        self.heat_storage.get_required_energy.return_value = required_energy
         self.cu.config['max_gas_input'] = gas_input
         self.cu.config['thermal_efficiency'] = thermal_efficiency * 100
 
@@ -372,7 +372,7 @@ class SimulatedCogenerationUnitMethodUpdateParametersTest(unittest.TestCase):
         new_workload = 0
         self.cu.thermal_driven = True
         required_energy = 0.0
-        self.heat_storage.get_require_energy.return_value = required_energy
+        self.heat_storage.get_required_energy.return_value = required_energy
         off_time = self.env.now
         self.cu.off_time = off_time
 
@@ -475,7 +475,7 @@ class SimulatedCogenerationUnitMethodStepTest(unittest.TestCase):
         self.cu.thermal_driven = True
         self.heat_storage.required_energy = 20
 
-        self.heat_storage.get_require_energy.return_value = 20
+        self.heat_storage.get_required_energy.return_value = 20
         self.heat_storage.temperature = 0.0
         self.heat_storage.get_temperature.return_value = 0.0
         self.heat_storage.target_temperature = 0.0
@@ -506,7 +506,7 @@ class SimulatedCogenerationUnitMethodStepTest(unittest.TestCase):
         and the effective workload is zero'''
         self.cu.thermal_driven = True
 
-        self.heat_storage.get_require_energy.return_value = 0.1
+        self.heat_storage.get_required_energy.return_value = 0.1
         self.power_meter.energy_produced = 0.0 #ToDo
 
         self.cu.step()
@@ -539,7 +539,7 @@ class SimulatedCogenerationUnitMethodStepTest(unittest.TestCase):
         self.cu.thermal_driven = True
 
         required_energy = 5.0
-        self.heat_storage.get_require_energy.return_value = required_energy
+        self.heat_storage.get_required_energy.return_value = required_energy
 
         self.cu.step()
 
@@ -653,7 +653,7 @@ class SimulatedCogenerationUnitMethodStepTest(unittest.TestCase):
 
         self.heat_storage.get_temperature.return_value = 0.0
         self.heat_storage.target_temperature = 90.0
-        self.heat_storage.get_require_energy.return_value=1000
+        self.heat_storage.get_required_energy.return_value=1000
 
         required_energy = 2.0
         self.power_meter.current_power_consum = required_energy
@@ -713,7 +713,7 @@ class SimulatedCogenerationUnitMethodStepTest(unittest.TestCase):
 
         self.heat_storage.get_temperature.return_value = 0.0
         self.heat_storage.target_temperature = 90.0
-        self.heat_storage.get_require_energy.return_value=1000
+        self.heat_storage.get_required_energy.return_value=1000
 
         required_energy = 500.0
         self.power_meter.current_power_consum = required_energy
@@ -765,7 +765,7 @@ class SimulatedCogenerationUnitMethodStepTest(unittest.TestCase):
         self.heat_storage.target_temperature = 90.0
 
         required_energy = 0.0
-        self.heat_storage.get_require_energy.return_value = required_energy
+        self.heat_storage.get_required_energy.return_value = required_energy
         minimal_off_time = 40.0 * 60.0
         self.cu.config['minimal_off_time'] = minimal_off_time
 

@@ -35,7 +35,7 @@ class SimulatedHeatStorageTests(unittest.TestCase):
         self.hs.output_energy = 1
         self.assertEqual(self.hs.energy_stored(), 2 - 1)
 
-    def test_get_require_energy(self):
+    def test_get_required_energy(self):
         # target_energy should return the energy needed to fill the storage to
         # its target-temperature
         self.hs.input_energy = 9
@@ -50,11 +50,11 @@ class SimulatedHeatStorageTests(unittest.TestCase):
         self.hs.config['capacity'] = 2500
         target_energy = 0.002 * 70 * 2500
 
-        # get energy needed to fill storage from the stored enrgy to its target
+        # get energy needed to fill storage from the stored energy to its target
         # temperature
         required_energy = target_energy - stored_energy
 
-        self.assertAlmostEqual(required_energy, self.hs.get_require_energy())
+        self.assertAlmostEqual(required_energy, self.hs.get_required_energy())
 
     def test_add_energy(self):
         self.hs.input_energy = 0
