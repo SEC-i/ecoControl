@@ -44,7 +44,7 @@ class CogenerationUnit(BaseSystem):
         self.total_gas_consumption = 0  #: kWh
         self.total_thermal_production = 0.0  #: kWh
 
-        self.current_electrical_production = 0.0  # kW
+        self.current_electrical_production = 0.0  #: kW
         self.total_electrical_production = 0.0  #: kWh
 
         self.total_hours_of_operation = 0

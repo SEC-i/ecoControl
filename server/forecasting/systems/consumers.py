@@ -1,7 +1,6 @@
-import time
+from time import gmtime
 from datetime import datetime
 import os
-import cProfile
 
 from django.utils.timezone import utc
 
@@ -128,7 +127,7 @@ class SimulatedThermalConsumer(ThermalConsumer):
         #demand_liters_per_hour = self.warmwater_forecast.get_forecast_at(self.env.now)
         #: specific heat capacity water set to 0.001163708 kWh/(kg*K)
         specific_heat_capacity_water = 0.001163708
-        time_tuple = time.gmtime(self.env.now)
+        time_tuple = gmtime(self.env.now)
 
         hour = time_tuple.tm_hour
         wday = time_tuple.tm_wday
@@ -211,7 +210,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
 
     def get_consumption_power(self):
         """Use the forecast to determine the current power demand"""
-        time_tuple = time.gmtime(self.env.now)
+        time_tuple = gmtime(self.env.now)
         date_index = approximate_index(all_data["dates"], self.env.now)
 
         if self.env.forecast:

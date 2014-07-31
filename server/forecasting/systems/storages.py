@@ -11,7 +11,7 @@ class SimulatedHeatStorage(HeatStorage):
         self.output_energy = 0.0
         #: count the steps when mimium temperature is undershot
         self.empty_count = 0
-        #: termperature loss per hour by default 3 degress Celsius
+        #: temperature loss per day by default 3 degress Celsius
         self.temperature_loss = 3.0 / 24.0
 
     def add_energy(self, energy):
@@ -43,7 +43,7 @@ class SimulatedHeatStorage(HeatStorage):
         return self.specific_heat_capacity * self.config['capacity'] * \
          (self.config['target_temperature'] - self.base_temperature)
 
-    def get_require_energy(self):
+    def get_required_energy(self):
         """Necessary energy in kWh to reach the target temperature."""
         return self.get_target_energy() - self.energy_stored()
 
