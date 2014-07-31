@@ -59,7 +59,7 @@ class SimulatedCogenerationUnit(CogenerationUnit):
         max_thermal_power = self.config['thermal_efficiency'] * self.config['max_gas_input']
         min_thermal_power = max_thermal_power * self.config['minimal_workload'] \
                     * (1.0 - self.max_efficiency_loss)
-        demand = self.heat_storage.get_require_energy()
+        demand = self.heat_storage.get_required_energy()
         relative_demand = max(demand, min_thermal_power) / max_thermal_power
         return min(relative_demand, 1.0)
 
@@ -146,7 +146,7 @@ class SimulatedPeakLoadBoiler(PeakLoadBoiler):
                 self.total_hours_of_operation += self.env.step_size / 3600.0
                 self.workload = 1.0
             # turn off if heat storage's target energy is reached
-            elif self.current_thermal_production >= self.heat_storage.get_require_energy():
+            elif self.current_thermal_production >= self.heat_storage.get_required_energy():
                 self.workload = 0.0
 
                 if self.off_time <= self.env.now:

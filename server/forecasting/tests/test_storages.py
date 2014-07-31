@@ -115,7 +115,7 @@ class SimulatedHeatStorageTests(unittest.TestCase):
         self.assertFalse(self.hs.undersupplied())
 
     def test_step(self):
-        self.hs.temperature_loss = 3.0 / 24.0   # per hour
+        self.hs.temperature_loss = 3.0 / 24.0   # per dey
         self.hs.config['capacity'] = 2500
         self.hs.specific_heat_capacity = 0.002
         self.env.step_size = 120  # 20 measurements per hour
