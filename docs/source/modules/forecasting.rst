@@ -1,34 +1,12 @@
-=======================
-Statistical Forecasting
-=======================
-
-.. automodule:: server.forecasting.forecasting
-
-
-    .. autoclass:: StatisticalForecast
-        :members: 
-    	:member-order: bysource
+###########
+Forecasting
+###########
+This package contains methods for creating forecasts. They are split into statistical forecasts and weather forecast. 
 
 
-Double-Seasonal Forecast
-------------------------
-
-    .. autoclass:: DSHWForecast
-    	:show-inheritance:
-    	:members: process_inputdata, append_values, forecast_demands
-    	
-Day-Type Forecast
------------------
-    .. autoclass:: DayTypeForecast
-    	:show-inheritance:
-    	:members: process_inputdata, append_values, forecast_demands
-
-====================
-Holt-Winters Methods
-====================
-
-.. automodule:: server.forecasting.forecasting.holt_winters
-    :members: 
-    :member-order: bysource
-
-
+..  toctree::
+    
+    statistical_forecasting.rst
+    holt_winters.rst
+    weather.rst
+    forecasting_helpers.rst
