@@ -1,5 +1,9 @@
+"""
+This module contains the algorithm for optimizing the costs of energy systems.
+
+"""
 from datetime import datetime
-#from scipy.optimize import fmin_l_bfgs_b
+from scipy.optimize import fmin_l_bfgs_b
 import calendar
 import cProfile
 import copy
@@ -7,7 +11,7 @@ from collections import namedtuple
 import numpy as np
 from numpy import array
 
-from server.systems.base import BaseEnvironment
+from server.devices.base import BaseEnvironment
 
 from server.functions import get_configuration
 import multiprocessing
@@ -19,63 +23,24 @@ import dateutil
 
 
 DEFAULT_FORECAST_INTERVAL = 1 * 3600.0
+"""The interval for how long one auto_optimize will forecast and for how long one specific workload is set.
+Note, that this constant also represents a compromise: Shorter intervals can adjust to quick changes,
+f.e. electricity demands changes, while longer intervals can incorporate more forecasts, but wont be able
+to adjust quickly. 
+The interval of one hour lead to good results in our tests.
+"""
 
-def simulation_run(start=None,code=None):
-    from server.forecasting import get_initialized_scenario
-    from server.forecasting.helpers import MeasurementStorage
-    from server.models import DeviceConfiguration
-    from server.systems import get_user_function
-    from server.forecasting import get_forecast
+def auto_optimize(env, devices):
+    """ Tries to optimize the cost and sets the ``cu.overwrite_workload``
+
+    The method forecasts from ``env.now`` with different cu workloads and finds the one with the
+    lowest cost. The length of the forecast is :attr:`DEFAULT_FORECAST_INTERVAL`.
     
-    if start==None:
-        initial_time = calendar.timegm(datetime(year=2014,month=4,day=20).timetuple())
-    else:
-        initial_time = start
-    
+    :param list devices: a list with [|hs|, |pm|, |cu|, |plb|, |tc|, |ec|]. The order must be exactly this way. (Standard order of devices)
 
-    
-    env = BaseEnvironment(initial_time)
-    configurations = DeviceConfiguration.objects.all()
-    
-    systems = get_initialized_scenario(env, configurations)
-    [hs,pm,cu,plb,tc,ec] = systems
-    measurements = MeasurementStorage(env, systems)
-    
-
-    days = 30
-    forward = days * 24 * 3600.0 #month
-    next_auto_optim = 0.0
-    
-    #values = get_forecast(initial_time, forward=forward, forecast=False)
-    #plot_dataset(values, 0, True)
-    
-    
-    while forward > 0:
-        measurements.take_and_cache()
-
-        # call step function for all systems
-        for system in systems:
-            system.step()
-            
-        if next_auto_optim <= 0.0:
-            auto_optimize(env, systems)
-            next_auto_optim = DEFAULT_FORECAST_INTERVAL
-
-        env.now += env.step_size
-        forward -= env.step_size
-        next_auto_optim -= env.step_size
-    
-    values_norm = get_forecast(initial_time, forward=days * 24 * 3600.0, forecast=False)
-
-
-    values_optim = measurements.get()
-    return (values_norm, values_optim)
-
-
-
-def auto_optimize(env, systems):
-    optimized_config = find_optimal_config(env.now, systems)
-    [hs,pm,cu,plb,tc,ec] = systems
+    """
+    optimized_config = find_optimal_config(env.now, devices)
+    [hs,pm,cu,plb,tc,ec] = devices
     
     cu.overwrite_workload = float(optimized_config["cu_overwrite_workload"])
     
@@ -83,7 +48,10 @@ def auto_optimize(env, systems):
     
 
 
-def find_optimal_config(initial_time, systems):
+def find_optimal_config(initial_time, devices):
+    """ ``Internal Method`` Main method, which optimizes the costs by running a global
+    approximation for the best configuration and then running a local minimization
+    method on this approximation"""
     prices = {}
     prices["gas_costs"] = get_configuration('gas_costs')
     prices["electrical_costs"] = get_configuration('electrical_costs')
@@ -94,14 +62,13 @@ def find_optimal_config(initial_time, systems):
     rewards["electrical_revenues"] = get_configuration('electrical_revenues')
     rewards["feed_in_reward"] = get_configuration('feed_in_reward')
 
-    arguments = (initial_time, systems, prices, rewards)
+    arguments = (initial_time, devices, prices, rewards)
     #find initial approximation for parameters
     results = []
     for cu_load in range(0,100,10):
             config = [cu_load,]
             results.append(BilanceResult(estimate_cost(config, *arguments), config))
-#     configs = [[v,] for v in range(0,100,10)]
-#     results = multiprocess_map(estimate_cost, configs, *arguments)
+
     boundaries = [(0.0,100.0)]
     initial_parameters = min(results,key=lambda result: result.cost).params
     
@@ -114,28 +81,42 @@ def find_optimal_config(initial_time, systems):
     return {"cu_overwrite_workload":cu_workload}
 
 def estimate_cost(params, *args):
-    (initial_time, systems, prices, rewards) = args
-    copied_system = copy.deepcopy(systems)
-    [hs,pm,cu,plb,tc,ec] = copied_system
+    """``Internal Method`` copies the devices and environment, forwards it and returns the costs.
+
+    :param list params: parameter to be optimized (CU.workload for now)
+    :param args: (initial_time, devices, prices, rewards)
+
+    """
+    (initial_time, devices, prices, rewards) = args
+    copied_device = copy.deepcopy(devices)
+    [hs,pm,cu,plb,tc,ec] = copied_device
     
     cu.overwrite_workload = params[0]
         
-    simplified_forecast(hs.env, initial_time,copied_system)
+    simplified_forecast(hs.env, initial_time,copied_device)
     
-    return total_costs(copied_system, prices, rewards)
+    return total_costs(copied_device, prices, rewards)
 
-def simplified_forecast(env, initial_time, systems):
+def simplified_forecast(env, initial_time, devices):
+    """runs the forward loop only executing the step function"""
     forward = DEFAULT_FORECAST_INTERVAL
     while forward > 0:
-        for system in systems:
-            system.step()
+        for device in devices:
+            device.step()
             
         env.now += env.step_size
         forward -= env.step_size
 
 
-def total_costs(systems, prices, rewards):
-    [hs,pm,cu,plb,tc,ec] = systems
+def total_costs(devices, prices, rewards):
+    """``Internal Method`` Returns the cost of a forecast run. The function uses the prices which are stored
+    in the db deviceconfiguration. It is also constrained by boundaries, f.e. the heatstorage should
+    never go below min temperature.
+
+    :param devices: The devices after the forecast
+    :param dict prices, rewards: Cached prices and rewards 
+    """
+    [hs,pm,cu,plb,tc,ec] = devices
     #maintenance_costs = cu.power_on_count
     gas_costs = (cu.total_gas_consumption + plb.total_gas_consumption) * prices["gas_costs"]
     own_el_consumption = ec.total_consumption -  pm.fed_in_electricity - pm.total_purchased
@@ -154,59 +135,27 @@ def total_costs(systems, prices, rewards):
     return final_cost + above_penalty + below_penalty + small_penalties
 
 
-
-def multiprocess_map(target,params, *args):
-        mgr = multiprocessing.Manager()
-        dict_threadsafe = mgr.dict()
-
-        jobs = [Process(target=target_wrapper, args=(target,param,index,dict_threadsafe,args)) for index, param in enumerate(params)]
-        for job in jobs: job.start()
-        for job in jobs: job.join()
-        
-        result = []
-        for cost, param in dict_threadsafe.values():
-            result.append(BilanceResult(cost, param))
-            
-
-        return result
-    
-def target_wrapper(target, params, index, dict_threadsafe, args):
-    cost = target(params, *args)
-    dict_threadsafe[index] = [cost,params]
-    
 class BilanceResult(object):
+    """ wrapper for storing a optimization result"""
     def __init__(self, cost, params):
         self.params = params
         self.cost = cost
 
+####################################
+######### multiprocess map #########
+####################################
 
-def plot_dataset(sensordata,forecast_start=0,block=True):
-    try:
-        import matplotlib.pyplot as plt
-    except:
-        pass
-    #from pylab import *
-    fig, ax = plt.subplots()
-    for index, dataset in enumerate(sensordata):
-        data = [data_tuple[1] for data_tuple in dataset["data"]]
-        sim_plot, = ax.plot(range(len(data)), data, label=dataset["device"] + dataset["key"])
+
+def multiprocess_map(target,params, *args):
+    mgr = multiprocessing.Manager()
+    dict_threadsafe = mgr.dict()
+
+    jobs = [Process(target=target_wrapper, args=(target,param,index,dict_threadsafe,args)) for index, param in enumerate(params)]
+    for job in jobs: job.start()
+    for job in jobs: job.join()
+
+    return dict_threadsafe.values()
     
-    # Now add the legend with some customizations.
-    legend = ax.legend(loc='upper center', shadow=True)
+def target_wrapper(target, params, index, dict_threadsafe, args):
+    dict_threadsafe[index] = BilanceResult(target(params, *args),params)
     
-    # The frame is matplotlib.patches.Rectangle instance surrounding the legend.
-    frame = legend.get_frame()
-    frame.set_facecolor('0.90')
-    
-    # Set the fontsize
-    for label in legend.get_texts():
-        label.set_fontsize('medium')
-    
-    for label in legend.get_lines():
-        label.set_linewidth(1.5)
-    
-    plt.subplots_adjust(bottom=0.2)
-    plt.xlabel('Simulated time in seconds')
-    plt.xticks(rotation=90)
-    plt.grid(True)
-    plt.show()

@@ -1,32 +1,12 @@
+###########
 Forecasting
-===========
+###########
+This package contains the simulation and methods for creating forecasts. They are split into statistical forecasts and weather forecast. 
 
-.. automodule:: server.forecasting.forecasting
-
-    .. autoclass:: Forecast
-        :inherited-members:
-
-    .. autoclass:: DSHWForecast
-
-    .. autoclass:: DayTypeForecast
-
-Simulation
-==========
-
-    .. automodule:: server.forecasting.systems.producers
-    .. autoclass:: SimulatedCogenerationUnit
-        :members:
-    .. autoclass:: SimulatedPeakLoadBoiler
-        :members:
-
-    .. automodule:: server.forecasting.systems.consumers
-    .. autoclass:: SimulatedThermalConsumer
-        :members:
-    .. autoclass:: SimulatedElectricalConsumer
-        :members:
-
-    .. automodule:: server.forecasting.systems.storages
-    .. autoclass:: SimulatedHeatStorage
-        :members:
-    .. autoclass:: SimulatedPowerMeter
-        :members:
+..  toctree::
+    
+    simulation.rst
+    statistical_forecasting.rst
+    holt_winters.rst
+    weather.rst
+    forecasting_helpers.rst

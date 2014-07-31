@@ -18,10 +18,10 @@ from server.forecasting.forecasting.holt_winters import multiplicative, linear,\
     double_seasonal
 from server.forecasting.forecasting.helpers import approximate_index
 from server.forecasting.forecasting.dataloader import DataLoader
-from server.forecasting.forecasting import Forecast, DayTypeForecast,\
+from server.forecasting.forecasting import StatisticalForecast, DayTypeForecast,\
     DSHWForecast
 from math import sqrt
-from server.systems.base import BaseEnvironment
+from server.devices.base import BaseEnvironment
 from server.forecasting.tools.holt_winters_parameters import value_changer
 
 
@@ -88,7 +88,7 @@ class Command(BaseCommand):
         
         for day, length in enumerate(range(24,14*24,24)):
             period_errors[day][0] += self.rmse(forecast_nodaysplit[:length], testdata[:length])
-            period_errors[day][1] += Forecast.MASE(trainingdata,forecast_nodaysplit[:length], testdata[:length])
+            period_errors[day][1] += StatisticalForecast.MASE(trainingdata,forecast_nodaysplit[:length], testdata[:length])
         
         
 #         for day, day_data in enumerate(electrical_forecast.forecasted_demands):
@@ -109,32 +109,32 @@ class Command(BaseCommand):
     def strom_real(self):
         sep = os.path.sep
         t0 = time()
-        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_2012Neuendorf.csv")
+        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_2012Neuendorf.csv")
         raw_dataset1 = DataLoader.load_from_file(
             path, "Strom - Verbrauchertotal (Aktuell)", "\t")
         dates1 = DataLoader.load_from_file(path, "Datum", "\t")
 
-        path2 = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_2013.csv")
+        path2 = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_2013.csv")
         raw_dataset2 = DataLoader.load_from_file(
             path2, "Strom - Verbrauchertotal (Aktuell)", "\t")
         dates2 = DataLoader.load_from_file(path2, "Datum", "\t")
         
         t1 = time()
         
-        dates1 = Forecast.make_hourly([int(d) for d in dates1],6)
-        dates2 = Forecast.make_hourly([int(d) for d in dates2],6)
-        demand1 = Forecast.make_hourly([float(val) / 1000.0 for val in raw_dataset1], 6)
-        demand2 = Forecast.make_hourly([float(val) / 1000.0 for val in raw_dataset2], 6)   
+        dates1 = StatisticalForecast.make_hourly([int(d) for d in dates1],6)
+        dates2 = StatisticalForecast.make_hourly([int(d) for d in dates2],6)
+        demand1 = StatisticalForecast.make_hourly([float(val) / 1000.0 for val in raw_dataset1], 6)
+        demand2 = StatisticalForecast.make_hourly([float(val) / 1000.0 for val in raw_dataset2], 6)   
         t2 = time()
         
-        rm = Forecast.MASE(demand1,demand1[:len(demand2)],demand2)
+        rm = StatisticalForecast.MASE(demand1,demand1[:len(demand2)],demand2)
         
         
 
         #split_testdata1 = DayTypeForecast.split_weekdata(demand1,samples_per_hour=1,start_date=datetime.fromtimestamp(dates1[0]))
         #split_testdata2 = DayTypeForecast.split_weekdata(demand2,samples_per_hour=1,start_date=datetime.fromtimestamp(dates2[0]))
         #for index, dataset in enumerate(split_testdata1):
-        #    print self.rmse(split_testdata2[index], dataset)#Forecast.MASE(dataset, dataset[:len(split_testdata2[index])],split_testdata2[index][:len(dataset)])
+        #    print self.rmse(split_testdata2[index], dataset)#StatisticalForecast.MASE(dataset, dataset[:len(split_testdata2[index])],split_testdata2[index][:len(dataset)])
         t3 = time()
         print "t0 ", t1-t0, "t1 ", t2 - t1, "t3 ",t3-t2
         print rm
@@ -162,7 +162,7 @@ class Command(BaseCommand):
                 
     def error_arrays(self):
         sep = os.path.sep
-        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_2013-6.2014Reger.csv")
+        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_2013-6.2014Reger.csv")
         raw_dataset1 = DataLoader.load_from_file(
             path, "Energie DG Leistung", "\t")
         raw_dataset2 = DataLoader.load_from_file(
@@ -170,15 +170,15 @@ class Command(BaseCommand):
         
         dates = DataLoader.load_from_file(path, "Datum", "\t")
 
-#         path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
+#         path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
 #         raw_dataset += DataLoader.load_from_file(
 #             path, "Strom - Verbrauchertotal (Aktuell)", "\t")
 #         dates += DataLoader.load_from_file(path, "Datum", "\t")
         transf = lambda v: min(float(v) / 1000.0,500)
         demand = [transf(v1) + transf(v2) for v1,v2 in zip(raw_dataset1,raw_dataset2)]
         
-        dates = Forecast.make_hourly([int(d) for d in dates],6)
-        demand = Forecast.make_hourly(demand,6)#[float(val) / 1000.0 for val in raw_dataset], 6)
+        dates = StatisticalForecast.make_hourly([int(d) for d in dates],6)
+        demand = StatisticalForecast.make_hourly(demand,6)#[float(val) / 1000.0 for val in raw_dataset], 6)
         
         start = calendar.timegm(datetime(year=2013,month=2,day=15).timetuple())
         end = calendar.timegm(datetime(year=2013,month=8,day=15).timetuple())
@@ -220,11 +220,11 @@ class Command(BaseCommand):
                 
     def handle_single_data(self):
         sep = os.path.sep
-        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "systems" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
+        path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
         raw_dataset = DataLoader.load_from_file(
             path, "Strom - Verbrauchertotal (Aktuell)", "\t")
-        dates = [int(d) for d in DataLoader.load_from_file(path, "Datum", "\t")]#Forecast.make_hourly([int(d) for d in DataLoader.load_from_file(path, "Datum", "\t")],6)
-        demand = Forecast.make_hourly([float(val) / 1000.0 for val in raw_dataset], 6)
+        dates = [int(d) for d in DataLoader.load_from_file(path, "Datum", "\t")]#StatisticalForecast.make_hourly([int(d) for d in DataLoader.load_from_file(path, "Datum", "\t")],6)
+        demand = StatisticalForecast.make_hourly([float(val) / 1000.0 for val in raw_dataset], 6)
         
         start = calendar.timegm(datetime(year=2014,month=1,day=2).timetuple())
         start_index = approximate_index(dates, start)

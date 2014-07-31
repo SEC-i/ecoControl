@@ -10,8 +10,8 @@ function technician_overview_ready() {
     initialize_technician_diagram();
     initialize_technician_tuning_form();
     initialize_technician_editor();
-    initialize_technician_auto_optim();
-    if (status_data['system_mode'] == 'demo') {
+    initialize_technician_auto_optimization();
+    if (status_data['device_mode'] == 'demo') {
         initialize_forward_buttons();
     }
 }
@@ -243,7 +243,7 @@ function initialize_tech_live_diagram_filters(series) {
 }
 
 function update_now_table(rows, date) {
-    var headlines = ['Sensor', 'Device', 'Value'];
+    var headlines = [get_text('sensor'), get_text('device'), get_text('value')];
     draw_table($('#tech_live_data_table_container'), headlines, rows);
     $('#tech_live_data_table_container').prepend('<h3>' + $.format.date(new Date(date), "dd.MM.yyyy HH:MM") + '</h3>');
 }
@@ -445,28 +445,32 @@ function apply_changes() {
 }
 
 function update_immediate_forecast(data) {
-    var chart = $('#tech_live_diagram').highcharts();
-    var start = new Date(data['start']).getTime();
-    var step = data['step'];
+    if(forecast_data['valid'] == '1') {
+        var chart = $('#tech_live_diagram').highcharts();
+        var start = new Date(data['start']).getTime();
+        var step = data['step'];
 
-    cleanup_diagram();
-    $.each(data['sensors'], function(index, sensor) {
-        var sensor_data = []
-        $.each(sensor.data, function(index, value){
-            sensor_data.push([start + step * index * 1000, value]);
+        cleanup_diagram();
+        $.each(data['sensors'], function(index, sensor) {
+            var sensor_data = []
+            $.each(sensor.data, function(index, value){
+                sensor_data.push([start + step * index * 1000, value]);
+            });
+            chart.addSeries({
+                name: sensor.name + ' (' + sensor.device + ') (simulated)',
+                data: sensor_data,
+                color: colors_modified[index],
+                dashStyle: 'shortdot',
+                tooltip: {
+                    valueSuffix: ' ' + sensor.unit
+                },
+                visible: chart.series[index].visible
+            }, false);
         });
-        chart.addSeries({
-            name: sensor.name + ' (' + sensor.device + ') (simulated)',
-            data: sensor_data,
-            color: colors_modified[index],
-            dashStyle: 'shortdot',
-            tooltip: {
-                valueSuffix: ' ' + sensor.unit
-            },
-            visible: chart.series[index].visible
-        }, false);
-    });
-    chart.redraw();
+        chart.redraw();
+    } else {
+        
+    }
 }
 
 function cleanup_diagram() {
@@ -558,51 +562,25 @@ function update_user_code() {
 
 
 // auto optimization
-
-function initialize_technician_auto_optim(){
-    $("[name='automoptim_checkbox']").bootstrapSwitch();
-    //deactivate at start
-    $.postJSON(api_base_url + "automoptimize/activate/", {
-            activate: false,
-        });
-
-    $("[name='automoptim_checkbox']").on('switchChange.bootstrapSwitch', function(event, state) {
-        //dont refresh often 
-        refresh_timeout = 180000;
-
-        $.postJSON(api_base_url + "automoptimize/activate/", {
-            activate: state,
+function initialize_technician_auto_optimization(){
+    update_auto_optimization_button(status_data['auto_optimization']);
+    $("#auto_optimization_button").click(function() {
+        $.postJSON(api_base_url + "configure/", {
+            auto_optimization: $("#auto_optimization_button").val() != 'true'
         }, function(data) {
-            refresh_technician_diagram(false);
+            update_auto_optimization_button(data['auto_optimization']);
         });
-        //auto optimize on
-        if (state){  
-            $('#badge_automatic_optimization').addClass("badge-success");
-            $('#badge_automatic_optimization').text("active");
-            $('#calculation_progress').removeClass('hide');
-            update_progressbar(0);
-        }
-        else{
-            $('#badge_automatic_optimization').removeClass("badge-success");
-            $('#badge_automatic_optimization').text("deactivated");
-            refresh_timeout = 10000;
-        }
     });
 }
 
-function update_progressbar(calls){
-    $.getJSON(api_base_url + 'automoptimize/progress/', function(json) {
-        $('#auto_optim_progress').find(".progress-bar").css("width",json.progress.toString() + "%");
-        $('#auto_optim_progress').find(".sr-only").text(json.progress.toString() + "%" + " Complete");
-    
-    if (json.progress < 99 && calls < 200){
-        setTimeout(function(){
-            update_progressbar(calls+1);
-        }, 2000);
+function update_auto_optimization_button(state) {
+    $("#auto_optimization_button").removeClass('btn-success').removeClass('btn-danger');
+    if (state) {
+        $(".auto_optimization_state").text(get_text('auto_optimization_on'));
+        $("#auto_optimization_button").addClass('btn-success');
+    } else {
+        $(".auto_optimization_state").text(get_text('auto_optimization_off'));
+        $("#auto_optimization_button").addClass('btn-danger');
     }
-    else {
-        $('#calculation_progress').addClass('hide');
-    }
-    });
-
+    $("#auto_optimization_button").val(state);
 }

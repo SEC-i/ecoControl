@@ -8,7 +8,6 @@ var namespaces = ['general', 'hs', 'pm', 'cu', 'plb'];
 var categories = ['default', 'primary', 'success', 'info', 'warning', 'danger'];
 
 function get_text(key) {
-    
     if (key in get_language()) {
         return get_language()[key];
     }

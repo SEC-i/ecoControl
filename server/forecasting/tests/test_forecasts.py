@@ -2,10 +2,10 @@ import unittest
 from datetime import datetime
 import os
 
-from server.forecasting.forecasting import Forecast, DayTypeForecast,\
+from server.forecasting.forecasting import StatisticalForecast, DayTypeForecast,\
     DSHWForecast
 from server.forecasting.forecasting.dataloader import DataLoader
-from server.systems.base import BaseEnvironment
+from server.devices.base import BaseEnvironment
 from server.forecasting.forecasting.helpers import approximate_index
 from server.settings import BASE_DIR
 
@@ -14,25 +14,25 @@ class ForecastTests(unittest.TestCase):
 
     def setUp(self):
         # dataset containing one year of data, sampled in 10 minute intervals
-        DataLoader.cached_csv = {}  # really important to reset, because other systems could have added data which is unwanted
-        path = os.path.join(BASE_DIR, "server/forecasting/systems/data/Electricity_2013.csv")
+        DataLoader.cached_csv = {}  # really important to reset, because other devices could have added data which is unwanted
+        path = os.path.join(BASE_DIR, "server/forecasting/demodata/demo_electricity_2013.csv")
         raw_dataset = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
         # cast to float and convert to kW
         self.dataset = [float(val) / 1000.0 for val in raw_dataset]
         
-        path = os.path.join(BASE_DIR, "server/forecasting/systems/data/Electricity_1.1-12.6.2014.csv")
+        path = os.path.join(BASE_DIR, "server/forecasting/demodata/demo_electricity_2014.csv")
         raw_dataset_2014 = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
-        self.dataset_2014 = Forecast.make_hourly([float(val) / 1000.0 for val in raw_dataset_2014], 6)
+        self.dataset_2014 = StatisticalForecast.make_hourly([float(val) / 1000.0 for val in raw_dataset_2014], 6)
     
     def setup_forecast(self):
-        hourly_data = Forecast.make_hourly(self.dataset, 6)
+        hourly_data = StatisticalForecast.make_hourly(self.dataset, 6)
         self.env = BaseEnvironment()
-        self.forecast = DayTypeForecast(self.env, hourly_data, 1, None, (0.0000000, 0.0, 1.0), hw_optimization="RMSE")
+        self.forecast = DayTypeForecast(self.env, hourly_data, 1, None, (0.0000000, 0.0, 1.0))
         
 
     def test_data(self):
         print "\n--------- test data ------------------"
-        path = os.path.join(BASE_DIR, "server/forecasting/systems/data/Electricity_2013.csv")
+        path = os.path.join(BASE_DIR, "server/forecasting/demodata/demo_electricity_2013.csv")
         date_dataset = DataLoader.load_from_file(path, "Datum", "\t")
         ten_min = 10 * 60
         epsilon = 599  # maximal 599 seconds deviatiation from samplinginterval
@@ -47,7 +47,7 @@ class ForecastTests(unittest.TestCase):
 
     def test_make_hourly(self):
         print "\n--------- test make_hourly ------------------"
-        hourly_data = Forecast.make_hourly(self.dataset, 6)
+        hourly_data = StatisticalForecast.make_hourly(self.dataset, 6)
 
         average = 0
         for i in range(6):
@@ -60,9 +60,9 @@ class ForecastTests(unittest.TestCase):
                                msg="data for " + str(len(hourly_data) / 24) + " days")
         
     def test_dshw_forecast(self):
-        hourly_data = Forecast.make_hourly(self.dataset, 6)
+        hourly_data = StatisticalForecast.make_hourly(self.dataset, 6)
         env = BaseEnvironment()
-        fc = DSHWForecast(env, hourly_data, hw_optimization="MSE", try_cache=False)
+        fc = DSHWForecast(env, hourly_data, try_cache=False)
         
         self.assertTrue(len(fc.demands[0]) >= fc.input_hours, "the day series only contains " + str(
             len(fc.demands[0]) / 24) + " days, not " + str(fc.input_weeks * 7))
@@ -70,9 +70,9 @@ class ForecastTests(unittest.TestCase):
 
     def test_split_week_data(self):
         print "\n--------- test split_week_data ------------------"
-        hourly_data = Forecast.make_hourly(self.dataset, 6)
+        hourly_data = StatisticalForecast.make_hourly(self.dataset, 6)
         env = BaseEnvironment()
-        fc = DayTypeForecast(env, hourly_data, hw_optimization="MSE", try_cache=False)
+        fc = DayTypeForecast(env, hourly_data,  try_cache=False)
         self.assertTrue(
             len(fc.demands) == 7, "week_split does not contain 7 series")
         
@@ -109,11 +109,11 @@ class ForecastTests(unittest.TestCase):
     def test_append_data(self):
         print "\n--------- test append_values ------------------"
         self.setup_forecast()
-        path = os.path.join(BASE_DIR, "server/forecasting/systems/data/Electricity_1.1-12.6.2014.csv")
+        path = os.path.join(BASE_DIR, "server/forecasting/demodata/demo_electricity_2014.csv")
         raw_dataset_2014 = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
 
         # cast to float and convert to kW
-        dataset_2014 = Forecast.make_hourly([float(val) / 1000.0 for val in raw_dataset_2014], 6)
+        dataset_2014 = StatisticalForecast.make_hourly([float(val) / 1000.0 for val in raw_dataset_2014], 6)
         
         start = datetime(year=2014, month=1, day=1)
         split_demands14 = DayTypeForecast.split_weekdata(dataset_2014, 1, start)

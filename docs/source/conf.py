@@ -26,6 +26,15 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'server.settings'
 from django.conf import settings
 settings.configure()
 
+
+# Mock a few python packages which cannot be installed on ReadtheDocs
+import mock
+ 
+MOCK_MODULES = ['numpy', 'scipy', 'scipy.optimize', 'matplotlib', 'matplotlib.pyplot']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
+
+
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -34,8 +43,7 @@ settings.configure()
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.intersphinx', 'sphinx.ext.autosummary',
-'sphinx.ext.todo', 'sphinx.ext.mathjax',  'sphinx.ext.viewcode']
-
+'sphinx.ext.todo',  'sphinx.ext.viewcode']#'sphinx.ext.mathjax', 
 
 
 # Add any paths that contain templates here, relative to this directory.
@@ -131,7 +139,7 @@ html_theme = 'default'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -224,7 +232,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'ecocontrol', u'ecoControl Documentation',
+    ('index', 'ecoControl', u'ecoControl Documentation',
      [u'Eva-Maria Herbst, Fabian Maschler, Fabio Niephaus, Max Reimann, Julia Steier'], 1)
 ]
 

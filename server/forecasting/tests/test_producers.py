@@ -1,8 +1,8 @@
 import unittest
 
-from server.systems.base import BaseEnvironment
-from server.forecasting.systems.producers import SimulatedCogenerationUnit
-from server.forecasting.systems.storages import SimulatedHeatStorage, SimulatedPowerMeter
+from server.devices.base import BaseEnvironment
+from server.forecasting.devices.producers import SimulatedCogenerationUnit
+from server.forecasting.devices.storages import SimulatedHeatStorage, SimulatedPowerMeter
 
 from helpers import values_comparison
 from mock import Mock
