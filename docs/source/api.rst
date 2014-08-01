@@ -23,7 +23,7 @@ api/notifications/                    :ref:`api_notifications`
 api/sensors/                          :ref:`api_sensors`
 api/settings/                         :ref:`api_settings`
 api/status/                           :ref:`api_status`
-**Technician**                        
+**Technician**
 api/configure/                        :ref:`api_configure`
 api/data/(monthly|yearly)/            :ref:`api_data`
 api/forecast/                         :ref:`api_forecast`
@@ -36,7 +36,7 @@ api/start/                            :ref:`api_start`
 api/statistics/(monthly/)             :ref:`api_statistics`
 api/thresholds/                       :ref:`api_thresholds`
 api/automoptimize/                    :ref:`api_auto_optimization`
-**Manager**                           
+**Manager**
 api/avgs/                             :ref:`api_avgs`
 api/balance/total/(latest/)           :ref:`api_balances`
 api/history/                          :ref:`api_history`
@@ -45,7 +45,7 @@ api/sensor/                           :ref:`api_sensor`
 api/sums/                             :ref:`api_sums`
 ===================================   ===========================================
 
-General 
+General
 ----------
 
 Bla
@@ -72,19 +72,19 @@ Returns the current version number
 .. code-block:: js
 
         {
-            
+
         }
 
 .. _api_export:
 
 CSV-Export function
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: text
 
     /api/export
 
-POST 
+POST
 ++++++
 
 Reflects post data and starts a CSV file download.
@@ -92,8 +92,8 @@ Reflects post data and starts a CSV file download.
 ==============   ===============
 Param            Description
 ==============   ===============
-name             Name of the service 
-description      Description of service 
+name             Name of the service
+description      Description of service
 ==============   ===============
 
 .. code-block:: text
@@ -113,27 +113,27 @@ Login end point
 .. _api_logout:
 
 Logout end point
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 .. _api_notifications:
 
 Get notifications list
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. _api_sensors:
 
 Get sensors list
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 .. _api_settings:
 
 Get settings list
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 .. _api_status:
 
 Get system status
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 
 Technician
@@ -142,7 +142,7 @@ Technician
 .. _api_configure:
 
 Set configurations
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. _api_data:
 
@@ -152,23 +152,23 @@ Get sensor data
 .. _api_forecast:
 
 Get forecast
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
 
 .. _api_forward:
 
 forward
-~~~~~~~~~~~~~~~
+~~~~~~~
 
 .. _api_live:
 
 Get live data
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 
 .. _api_tunables:
 
 Get tunable settings
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 .. _api_snippets:
 
@@ -178,59 +178,58 @@ Manage snippets
 .. _api_code:
 
 Manage code
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~
 
 .. _api_start:
 
 Start system
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
 
 .. _api_statistics:
 
 Get statistics
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 .. _api_thresholds:
 
 Manage thresholds
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 .. _api_auto_optimization:
 
 Manage auto optimization
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 Manager
-----------
+-------
 
 .. _api_avgs:
 
 Get sensor averages
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 .. _api_balances:
 
 Get balances
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
 
 .. _api_history:
 
 Get history
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~
 
 .. _api_loads:
 
 Get loads
-~~~~~~~~~~~~~~~
+~~~~~~~~~
 
 .. _api_sensor:
 
 Get sensor details
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. _api_sums:
 
 Get sensor sums
 ~~~~~~~~~~~~~~~
-

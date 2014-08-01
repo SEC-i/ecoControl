@@ -15,16 +15,16 @@ to generate forecasts one of the following subclasses has to be used
 import os
 import time
 import numpy as np
-from multiprocessing import Pool
-from datetime import date, datetime, timedelta
-from multiprocessing.process import Process
-import multiprocessing
 from sys import platform as _platform
+from datetime import date, datetime, timedelta
+import multiprocessing
+from multiprocessing.process import Process
 import cPickle as pickle
+import logging
 
 from django.utils.timezone import utc
+
 from server.settings import BASE_DIR, CYTHON_SUPPORT
-import logging
    
 
 """"try to import compiled holtwinters (double seasonal) extension by building it. 
@@ -89,9 +89,9 @@ class StatisticalForecast:
         self.try_cache = try_cache
         self.forecast_update_interval = 24 * 60 * 60 
         #
-        self.input_weeks = 12 
+        self.input_weeks = 4 
         self.input_hours = self.input_weeks*24*7*self.samples_per_hour
-        self.output_weeks = 8 
+        self.output_weeks = 4 
 
         data_length = timedelta(hours=len(input_data) / samples_per_hour)
         #only use days
@@ -108,8 +108,12 @@ class StatisticalForecast:
         for key in vars(self).keys():
             if key in kwargs:
                 setattr(self,key,kwargs[key])
+                
+        if len(input_data) * samples_per_hour < self.input_hours:
+            raise Exception("not enough values to forecast upon, please use another date or add more inputdata")
 
         self.demands = self.process_inputdata(input_data[-self.input_hours:] ,samples_per_hour,start)
+        
         
         #forecast all demands.. might take long
         self.forecasted_demands = self.forecast_demands()

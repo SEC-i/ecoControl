@@ -16,8 +16,9 @@ Contents:
     api
 
     modules/models
+    modules/devices
     modules/forecasting
-    modules/weather
+
     modules/autooptimization
 
     frontend
@@ -31,4 +32,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

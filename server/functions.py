@@ -45,8 +45,6 @@ def get_device_configuration(device, key):
             return parse_value(config)
 
 
-def get_device_configuration(device, key):
-    return parse_value(DeviceConfiguration.objects.get(device=device, key=key))
 
 
 def get_configurations():

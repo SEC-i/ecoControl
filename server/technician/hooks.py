@@ -95,6 +95,10 @@ def start_device(request):
             device_mode.value = 'demo'
             device_mode.save()
             DEMO_SIMULATION = DemoSimulation.start_or_get()
+            #if no values exist, fill database with one week
+            if SensorValue.objects.count() == 0.0:
+                DEMO_SIMULATION.forward = 24 * 7 * 3600.0
+            
             return create_json_response({"status": "demo started"}, request)
         device_mode.value = 'normal'
         device_mode.save()

@@ -6,7 +6,7 @@ class HeatStorageMock():
         self.target_temperature = 0.0
         self.input_energy = 0
 
-    def get_require_energy(self):
+    def get_required_energy(self):
         return self.required_energy
 
     def add_energy(self, energy):
