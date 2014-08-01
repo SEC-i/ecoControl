@@ -288,7 +288,7 @@ class CurrentWeatherForecast:
             result = []
             for i in range(0, 40):
                 result.append(
-                    self.get_average_outside_temperature(self.get_date(), i))
+                    self.get_average_outside_temperature(datetime.fromtimestamp(self.get_date()), i))
             return result
 
 

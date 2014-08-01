@@ -54,7 +54,7 @@ class DataLoader(object):
     @classmethod
     def evenly_sampled(cls, data, date_name="Datum", sampling_interval=600):
         """ Will return a version of `data`, in which every value has a corresponding timestamp, 
-        which  is roughly `sampling_interval` seconds away from the last value. This is maximum interval,
+        which  is roughly `sampling_interval` seconds away from the last value. This is a maximum interval,
         if the data contains closer values together than sampling_interval, no actions will be taken.
 
         The data which is used to fill up gaps is tried to gather intelligently. 
