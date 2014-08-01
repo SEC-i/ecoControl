@@ -18,7 +18,7 @@ def initialize_default_user():
         User.objects.create_user('manager', 'manager@example.com', 'verwaltung')
 
 def initialize_default_scenario():
-    needs_initialization = len(Device.objects.all()) == 0 
+    needs_initialization = len(Device.objects.all()) == 0
     if needs_initialization:
         hs = Device(name='Heat Storage', device_type=Device.HS)
         hs.save()
@@ -66,12 +66,12 @@ def initialize_default_scenario():
     # if the configuration must be renewed, while the devices stay the same, init only the config again
     if needs_initialization or len(Configuration.objects.all()) == 0:
         logger.debug("Default sensors initialized")
-        
+
         configurations = []
         configurations.append(Configuration(
-            key='device_status', value='init', value_type=Configuration.STR, internal=True))
+            key='system_status', value='init', value_type=Configuration.STR, internal=True))
         configurations.append(Configuration(
-            key='device_mode', value='', value_type=Configuration.STR, internal=True))
+            key='system_mode', value='', value_type=Configuration.STR, internal=True))
         configurations.append(Configuration(
             key='auto_optimization', value='0', value_type=Configuration.BOOL, internal=True))
         configurations.append(Configuration(
@@ -110,7 +110,7 @@ def initialize_default_scenario():
             key='electrical_revenues', value='0.268', value_type=Configuration.FLOAT, unit='€'))
 
         Configuration.objects.bulk_create(configurations)
-    
+
     if needs_initialization:
         logger.debug("Default configurations initialized")
 

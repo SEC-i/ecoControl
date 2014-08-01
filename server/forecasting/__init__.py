@@ -27,7 +27,6 @@ def get_forecast(initial_time, configurations=None, code=None, forward=None):
                                forecast=True, forward=forward)
     return forecast_object.run().get() #dont start in thread
 
-
 def get_initialized_scenario(env, configurations):
         devices = list(Device.objects.all())
         device_list = []
@@ -103,7 +102,7 @@ class Forecast(Thread):
     def __init__(self, initial_time, configurations=None, code=None, forward=None, forecast=True):
         Thread.__init__(self)
         self.daemon = True
-        demomode = Configuration.objects.get(key='device_mode').value == "demo"
+        demomode = Configuration.objects.get(key='system_mode').value == "demo"
 
         self.env = BaseEnvironment(initial_time=initial_time, forecast=forecast,
                               step_size=DEFAULT_FORECAST_STEP_SIZE,demomode=demomode) #get_forecast
@@ -148,6 +147,7 @@ class Forecast(Thread):
         time_remaining = self.forward
         while time_remaining > 0:
             self.step()
+
             self.progress = (1.0 - time_remaining/float(self.forward)) * 100
             time_remaining -= self.env.step_size
 
@@ -187,8 +187,8 @@ class DemoSimulation(Forecast):
         :returns: :class:`DemoSimulation` or ``None`` if system not in demo mode.
         """
         # Start demo simulation if in demo mode
-        device_mode = Configuration.objects.get(key='device_mode')
-        if device_mode.value != 'demo':
+        system_mode = Configuration.objects.get(key='system_mode')
+        if system_mode.value != 'demo':
             return None
 
         if cls.stored_simulation == None:
