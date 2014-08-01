@@ -323,7 +323,7 @@ class DayTypeForecast(StatisticalForecast):
         print "find holt winter parameters for day: ", index
 
         # find values automatically
-        forecast_values, (alpha, beta, gamma),in_sample = multiplicative(demand, m, fc, optimization_type="MSE")
+        forecast_values, (alpha, beta, gamma),in_sample = multiplicative(demand, m, fc)
         
 
         calculated_parameters = {
