@@ -6,7 +6,7 @@ Devices
     :members:
 
     .. automodule:: server.devices.base
-    .. autoclass:: BaseSystem
+    .. autoclass:: BaseDevice
     .. autoclass:: BaseEnvironment
         :members:
     .. automodule:: server.devices.producers
