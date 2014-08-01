@@ -15,9 +15,11 @@ addons:
 virtualenv:
   system_site_packages: true
 before_install:
- - sudo apt-get install -qq python-dateutil python-numpy python-psycopg2 python-scipy python-dev cython
+ - sudo apt-get install -qq python-dateutil python-numpy python-psycopg2 python-scipy python-dev
+ - easy_install Cython
 install: 
   - pip install -r requirements_travis.txt
+  - python server/forecasting/forecasting/exp_smoothing/build_extension.py install
 before_script:
   - psql -c "CREATE ROLE ecocontrol LOGIN PASSWORD 'sec-i' SUPERUSER CREATEDB CREATEROLE;" -U postgres
   - createdb ecocontrol
