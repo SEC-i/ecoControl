@@ -4,10 +4,27 @@ from datetime import timedelta, date, datetime
 import os
 
 class DataLoader(object):
+    """ This class reads data from CSV formatted in a specific way. 
+    The files are cached in memory to enable fast, re-reads"""
     cached_csv = {}
     
     @classmethod
     def load_from_file(cls,filepath, column_name, delim="\t",date_name="Datum", sampling_interval=600):
+        """ load a time series from a csv file. This assumes, that the csv is formatted in the following way:
+
+        ===========   ===========   =========== ============
+        Date header   Row Header1   Row Header2 Row Header N
+        ===========   ===========   =========== ============
+        Timestamp0    Row1Value0    Row2Value0  RowNValue0
+        Timestamp1    ...           ...         ...
+        ===========   ===========   =========== ============
+        If the values in the file isn't sampled evenly, because it contains skips, blackouts, etc.. the data will be sampled evenly by copying certain data (see :meth:`evenly_sampled`).
+
+        :param string column_name: The name of the column (in the csv) to retrieve
+        :param string delim: The delimiter between values of a row. Default is Tab.
+        :param string date_name: The name of the Date header of the date row
+        :param int sampling_interval: The interval the data in the file is sampled.
+        """  
         if filepath not in cls.cached_csv:
             if filepath.endswith(".csv"):
                 with open(filepath, "rb") as file_obj:
@@ -34,13 +51,20 @@ class DataLoader(object):
         
         return cls.cached_csv[filepath][column_name]
     
-    """ 
-    @param data: dict with column names as keys
-    @param date_name: name of date row
-    @param sampling_interval: the number of seconds between each consecutive sample (if standard interval)
-    """
     @classmethod
     def evenly_sampled(cls, data, date_name="Datum", sampling_interval=600):
+        """ Will return a version of `data`, in which every value has a corresponding timestamp, 
+        which  is roughly `sampling_interval` seconds away from the last value. This is maximum interval,
+        if the data contains closer values together than sampling_interval, no actions will be taken.
+
+        The data which is used to fill up gaps is tried to gather intelligently. 
+        It is specifically designed for electrical data and takes values from one week ago, if  present, else one day or the last value if everything else fails.
+
+
+        :param dict data: dictionary with column names as keys and column data as values
+        :param string date_name: name of the date row
+        :param int sampling_interval: the number of seconds between each consecutive sample
+        """
         samples_per_hour = (60 * 60) / sampling_interval
         epsilon = 59  # maximal 59 seconds deviatiation from samplinginterval
         dates = data[date_name]
