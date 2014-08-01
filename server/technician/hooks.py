@@ -85,23 +85,23 @@ def start_device(request):
 
     data = json.loads(request.body)
 
-    device_status = Configuration.objects.get(key='device_status')
-    device_mode = Configuration.objects.get(key='device_mode')
+    system_status = Configuration.objects.get(key='system_status')
+    system_mode = Configuration.objects.get(key='system_mode')
 
-    if device_status.value != 'running':
-        device_status.value = 'running'
-        device_status.save()
+    if system_status.value != 'running':
+        system_status.value = 'running'
+        system_status.save()
         if 'demo' in data and data['demo'] == '1':
-            device_mode.value = 'demo'
-            device_mode.save()
+            system_mode.value = 'demo'
+            system_mode.save()
             DEMO_SIMULATION = DemoSimulation.start_or_get()
             #if no values exist, fill database with one week
             if SensorValue.objects.count() == 0.0:
                 DEMO_SIMULATION.forward = 24 * 7 * 3600.0
-            
+
             return create_json_response({"status": "demo started"}, request)
-        device_mode.value = 'normal'
-        device_mode.save()
+        system_mode.value = 'normal'
+        system_mode.save()
         return create_json_response({"status": "device started without demo"}, request)
 
     return create_json_response({"status": "device already running"}, request)
@@ -128,7 +128,7 @@ def forecast(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            
+
             if 'forecast_id' in data:
                 result = FORECAST_QUEUE.get_by_id(data['forecast_id'])
                 if result == None:
@@ -136,7 +136,7 @@ def forecast(request):
                 else:
                     output = result
                     output["status"] = "finished"
-                return create_json_response(output, request) 
+                return create_json_response(output, request)
 
             code = None
             if 'code' in data:
@@ -145,9 +145,9 @@ def forecast(request):
             configurations = None
             if 'configurations' in data:
                 configurations = functions.get_modified_configurations(data['configurations'])
-            
+
             if functions.get_configuration('auto_optimization'):
-                # schedule forecast and immediately return its id. 
+                # schedule forecast and immediately return its id.
                 # The forecast result can be later retrieved by it
                 forecast_id = FORECAST_QUEUE.schedule_new(initial_time, configurations=configurations, code=code)
                 output = {"forecast_id" : forecast_id, 'sensors' : [], 'status' : "running"}

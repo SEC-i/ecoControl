@@ -12,7 +12,7 @@ function technician_overview_ready() {
     initialize_technician_editor();
     initialize_technician_auto_optimization();
 
-    if (status_data['device_mode'] == 'demo') {
+    if (status_data['system_mode'] == 'demo') {
 
         initialize_forward_buttons();
     }
@@ -473,7 +473,7 @@ function update_immediate_forecast(data) {
         });
         chart.redraw();
     } else {
-        
+
     }
 }
 

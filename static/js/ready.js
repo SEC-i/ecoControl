@@ -8,7 +8,8 @@ $(function() {
     $.getJSON(api_base_url + 'status/', function(data) {
         status_data = data;
         initialize_page(function() {
-            if ((status_data['admin'] && status_data['device_status'] == 'init')) {
+
+            if ((status_data['admin'] && status_data['system_status'] == 'init')) {
 
                 $.address.value('settings');
             } else {
