@@ -19,7 +19,7 @@ before_install:
  - easy_install Cython
 install: 
   - pip install -r requirements_travis.txt
-  - python server/forecasting/forecasting/exp_smoothing/build_extension.py install
+  - python server/forecasting/forecasting/exp_smoothing/build_extension.py build_ext --inplace
 before_script:
   - psql -c "CREATE ROLE ecocontrol LOGIN PASSWORD 'sec-i' SUPERUSER CREATEDB CREATEROLE;" -U postgres
   - createdb ecocontrol

@@ -7,16 +7,11 @@ import numpy
 import shlex
 import logging
 
-#
-# Force `setup_requires` stuff like Cython to be installed before proceeding
-#
-from setuptools.dist import Distribution
-Distribution(dict(setup_requires='Cython'))
 
 try:
     from Cython.Distutils import build_ext
 except ImportError:
-    print("Could not import Cython.Distutils. Install `cython` and rerun.")
+    print "Could not import Cython.Distutils. Install `cython` and rerun."
     sys.exit(1)
 #from server.settings import BASE_DIR
 
@@ -60,6 +55,5 @@ if __name__ == "__main__":
 	    extra_link_args = [ '/MANIFEST']  if os.name == "nt" else [] )
 
 	setup(ext_modules=[ext],
-          setup_requires = ['Cython'],
-	      cmdclass = {'build_ext': build_ext})
+	      cmdclass = {'build_ext': build_ext},)
 
