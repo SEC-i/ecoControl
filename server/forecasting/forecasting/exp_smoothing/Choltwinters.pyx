@@ -42,7 +42,7 @@ def double_seasonal(x, m, m2, forecast,  alpha=None, beta=None, gamma=None, delt
 
     hw = CDoubleSeasonal(x, m, m2, forecast)
     hw._double_seasonal(alpha, beta, gamma, delta, autocorrelation)
-    return hw.forecast_series, (alpha, beta, gamma, delta, autocorrelation), hw.y[:-forecast - 1]
+    return hw.forecast_series.base.tolist(), (alpha, beta, gamma, delta, autocorrelation), hw.y[:-forecast - 1].base.tolist()
 
 def multiplicative(x, m, forecast,  alpha=None, beta=None, gamma=None):
     """ executes one run of the multiplicative method. For very fast runs with the same initialisation data, 
@@ -53,7 +53,7 @@ def multiplicative(x, m, forecast,  alpha=None, beta=None, gamma=None):
 
     hw = CMultiplicative(x, m, forecast)
     hw._multiplicative(alpha, beta, gamma)
-    return hw.forecast_series, (alpha, beta, gamma), hw.y[:-forecast - 1]
+    return hw.forecast_series.base.tolist(), (alpha, beta, gamma), hw.y[:-forecast - 1].base.tolist()
 
 
 cdef class CDoubleSeasonal:
