@@ -82,13 +82,13 @@ function get_diagram_data(type, input_data) {
 }
 
 function get_sensor(sensor_id) {
-    if (sensor_list == null) {
+    if (sensor_list === null) {
         return null;
     }
 
     var output = null;
     $.each(sensor_list, function (index, sensor) {
-        if (sensor.id == sensor_id) {
+        if (sensor.id === sensor_id) {
             output = sensor;
             return false;
         }

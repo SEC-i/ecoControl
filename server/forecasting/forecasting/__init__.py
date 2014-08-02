@@ -15,20 +15,51 @@ to generate forecasts one of the following subclasses has to be used
 import os
 import time
 import numpy as np
-from multiprocessing import Pool
-from datetime import date, datetime, timedelta
-from multiprocessing.process import Process
-import multiprocessing
 from sys import platform as _platform
+from datetime import date, datetime, timedelta
+import multiprocessing
+from multiprocessing.process import Process
 import cPickle as pickle
+import logging
 
 from django.utils.timezone import utc
-import logging
-from holt_winters import multiplicative, additive
-from server.settings import BASE_DIR
-from server.forecasting.forecasting.holt_winters import double_seasonal
+
+from server.settings import BASE_DIR, CYTHON_SUPPORT
+   
+
+""""try to import compiled holtwinters (double seasonal) extension by building it. 
+if this fails, the standard holtwinters is used. """
+fast_hw = False
+if (CYTHON_SUPPORT):
+    try:
+        from server.forecasting.forecasting.exp_smoothing.build_extension import build_holtwinters_extension
+        try:
+            t0 = time.time()
+            build_holtwinters_extension() #compile and link
+            #if function takes less than 8 seconds, the module was probably already built before
+            fresh_build = time.time() - t0 > 8 
+            from server.forecasting.forecasting.exp_smoothing.holtwinters_fast import double_seasonal, multiplicative
+            fast_hw = True
+            if fresh_build:
+                print "cython extension built and imported"
+        except Exception as e:
+            print "error while building. ", e
+            print "check ecoControl.log"
+    except Exception as e:
+        print "cython probably not installed", e
+    
+if not fast_hw:
+    if (CYTHON_SUPPORT):
+        print "falling back to python holt-winters"
+    from server.forecasting.forecasting.exp_smoothing.holt_winters import double_seasonal, multiplicative, additive
+else:
+    #!TODO: additive is not accelerated (yet)
+    from server.forecasting.forecasting.exp_smoothing.holt_winters import additive
+
+
 
 logger = logging.getLogger('simulation')
+
 
 class StatisticalForecast:
     """
@@ -176,9 +207,6 @@ class StatisticalForecast:
             self.forecasted_demands = self.forecast_demands()
             self.time_series_end = datetime.utcfromtimestamp(self.env.now).replace(tzinfo=utc)
 
-
-
-
     def read_from_cache(self):
         """ ``Internal Method``
         Return a cached result. If  *try_cache* = ``True``, this will try to read from cache/cached_forecasts.cache. 
@@ -220,8 +248,9 @@ class DSHWForecast(StatisticalForecast):
     def forecast_demands(self,verbose=False):
         """ See :meth:`StatisticalForecast.forecast_demands`."""
 
-        print "forecasting demands with double seasonal HW.."
+        logger.debug("forecasting demands with double seasonal HW..")
         cached = StatisticalForecast.read_from_cache(self)
+
         if cached != None:
             return cached
         demand = self.demands[0] #dshw demands only contains one dataset
@@ -229,18 +258,20 @@ class DSHWForecast(StatisticalForecast):
         fc = self.output_weeks * 24 * 7 * self.samples_per_hour #forecast_length
 
         (alpha, beta, gamma, delta, autocorr) = (None for i in range(5))
-            
-        forecast_values, (alpha, beta, gamma, delta, autocorrelation),in_sample = double_seasonal(demand, m=24*sph, m2=24*7*sph,
-                                                                           forecast=fc, alpha=alpha, beta=beta, gamma=gamma, delta=delta,
-                                                                            autocorrelation=autocorr)
-        
-        calculated_parameters = {
-            "alpha": alpha, "beta": beta, "gamma": gamma, "delta":delta, 
-            "autocorrelation":autocorrelation, "mse": in_sample}
+        t = time.time()
+        forecast_values, (alpha, beta, gamma, delta, autocorrelation),in_sample = double_seasonal(demand, m=int(24*sph), m2=int(24*7*sph),
+                                                                           forecast=int(fc), alpha=alpha, beta=beta, gamma=gamma, delta=delta,
+                                                                           autocorrelation=autocorr)
+                                                                            
+
         if verbose:
+            mse = ((in_sample - forecast_values) ** 2).mean(axis=None)
+            calculated_parameters = {
+                "alpha": alpha, "beta": beta, "gamma": gamma, "delta":delta, 
+                "autocorrelation":autocorrelation, "mse": mse}
             print "use auto HW ",calculated_parameters
         
-        print "forecasting completed"
+        logger.debug("doubleseasonal completed in:" + str(time.time()-t) + " s")
         
         return forecast_values
     
@@ -293,10 +324,10 @@ class DayTypeForecast(StatisticalForecast):
         # alpha, beta, gamma. holt.winters determines them automatically
         # cost-expensive, so only do this once..
         (alpha, beta, gamma) = (None, None, None)
-        print "find holt winter parameters for day: ", index
+        logger.debug("find holt winter parameters for day: " +  str(index))
 
         # find values automatically
-        forecast_values, (alpha, beta, gamma),in_sample = multiplicative(demand, m, fc, optimization_type="MSE")
+        forecast_values, (alpha, beta, gamma),in_sample = multiplicative(demand, m, fc)
         
 
         calculated_parameters = {
@@ -331,7 +362,7 @@ class DayTypeForecast(StatisticalForecast):
         
         mgr = multiprocessing.Manager()
         dict_threadsafe = mgr.dict()
-        print "forecasting demands with daytype strategy.."
+        logger.debug("forecasting demands with daytype strategy..")
 
         #call class as Functor because class methods are not pickeable
         jobs = [Process(target=self, args=(demand,index,dict_threadsafe)) for index, demand in enumerate(self.demands)]
@@ -350,7 +381,7 @@ class DayTypeForecast(StatisticalForecast):
         #cache forecasts
         pickle.dump( {"forecasts" :forecasted_demands, "parameters" : self.calculated_parameters, "date": self.env.now },
                       open(os.path.join(BASE_DIR,"cache", "cached_forecasts.cache"), "wb" ) ) 
-        print "forecasting completed"
+        logger.debug("forecasting completed")
 
         return forecasted_demands
     

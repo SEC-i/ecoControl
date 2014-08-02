@@ -14,7 +14,7 @@ from server.forecasting import get_forecast
 from server.functions import get_past_time
 from server.forecasting.tools.plotting import show_plotting, plot_dataset
 from server.settings import BASE_DIR
-from server.forecasting.forecasting.holt_winters import multiplicative, linear,\
+from server.forecasting.forecasting.exp_smoothing.holt_winters import multiplicative, linear,\
     double_seasonal
 from server.forecasting.forecasting.helpers import approximate_index
 from server.forecasting.forecasting.dataloader import DataLoader

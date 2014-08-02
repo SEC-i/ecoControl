@@ -15,8 +15,8 @@ function get_text(key) {
 }
 
 function get_language() {
-    if ($.cookie('selected_language')  != undefined) {
-        if ($.cookie('selected_language') == 'de') {
+    if ($.cookie('selected_language') !== undefined) {
+        if ($.cookie('selected_language') === "de") {
            return lang_de;
         }
     }
@@ -24,7 +24,7 @@ function get_language() {
 }
 
 function get_label(category_id) {
-    return '<span class="label label-' + categories[category_id] + '">' + categories[category_id] + '</span>'
+    return '<span class="label label-' + categories[category_id] + '">' + categories[category_id] + '</span>';
 }
 
 jQuery.extend({
@@ -41,7 +41,7 @@ jQuery.extend({
 });
 
 function draw_table(target, headlines, rows) {
-    if (rows.length > 0 && headlines.length == rows[0].length) {
+    if (rows.length > 0 && headlines.length === rows[0].length) {
         target.html(
             '<table class="table table-striped table-condensed">\
               <thead>\
@@ -86,15 +86,15 @@ function get_current_page() {
 }
 
 function is_logged_in() {
-    return status_data['login'] == 'active';
+    return status_data['login'] === "active";
 }
 
 function is_technician() {
-    return status_data['admin'] == '1';
+    return status_data['admin'] === "1";
 }
 
 function load_page(target) {
-    if (status_data == null) {
+    if (status_data === null) {
         setTimeout(function() {
             // wait for status_data to be ready
             load_page(target);
@@ -102,7 +102,7 @@ function load_page(target) {
     } else {
         if (!is_logged_in()) {
             target = 'login';
-        } else if (target == '') {
+        } else if (target === "") {
             target = 'overview';
         }
         url = 'templates/' + target + '.html';

@@ -6,9 +6,11 @@ from django.utils.timezone import utc
 from django.db import connection, ProgrammingError
 from django.contrib.auth.models import User
 from django.core.management import call_command
+from django import db
 
 from server.forecasting.devices.data.old_demands import outside_temperatures_2013, outside_temperatures_2012
 from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum, WeatherValue
+from server.settings import TESTING
 
 logger = logging.getLogger('ecocontrol')
 
@@ -153,7 +155,7 @@ def initialize_default_scenario():
 
 
 def initialize_weathervalues():
-    if len(WeatherValue.objects.all()) == 0:
+    if len(WeatherValue.objects.all()) == 0 and not TESTING:#exclude tests
         call_command('fill_weather', interactive=True)
         logger.debug("Default weather data for 2012 and 2013 initialized")
 

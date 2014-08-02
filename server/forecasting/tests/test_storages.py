@@ -9,6 +9,10 @@ electrical_costs_per_kwh = 0.283
 
 class SimulatedHeatStorageTests(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        print "\ntesting storages",
+
     def setUp(self):
         self.env = BaseEnvironment()
         self.hs = SimulatedHeatStorage(0, env=self.env)

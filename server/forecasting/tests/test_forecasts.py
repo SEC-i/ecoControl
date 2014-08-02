@@ -11,6 +11,10 @@ from server.settings import BASE_DIR
 
 
 class ForecastTests(unittest.TestCase):
+    
+    @classmethod
+    def setUpClass(cls):
+        print "\ntesting forecasts",
 
     def setUp(self):
         # dataset containing one year of data, sampled in 10 minute intervals
@@ -31,22 +35,17 @@ class ForecastTests(unittest.TestCase):
         
 
     def test_data(self):
-        print "\n--------- test data ------------------"
         path = os.path.join(BASE_DIR, "server/forecasting/demodata/demo_electricity_2013.csv")
         date_dataset = DataLoader.load_from_file(path, "Datum", "\t")
         ten_min = 10 * 60
         epsilon = 599  # maximal 599 seconds deviatiation from samplinginterval
-        print len(date_dataset)
         for index, date in enumerate(date_dataset):
             if index < len(date_dataset) - 1:
                 diff = int(date_dataset[index + 1]) - int(date_dataset[index])
-                if abs(diff - ten_min) > 1000:
-                    print index, diff
                 self.assertTrue(abs(diff - ten_min) < epsilon, "a jump of " + str(
                     diff - ten_min) + " seconds at index " + str(index))
 
     def test_make_hourly(self):
-        print "\n--------- test make_hourly ------------------"
         hourly_data = StatisticalForecast.make_hourly(self.dataset, 6)
 
         average = 0
@@ -69,7 +68,6 @@ class ForecastTests(unittest.TestCase):
         
 
     def test_split_week_data(self):
-        print "\n--------- test split_week_data ------------------"
         hourly_data = StatisticalForecast.make_hourly(self.dataset, 6)
         env = BaseEnvironment()
         fc = DayTypeForecast(env, hourly_data,  try_cache=False)
@@ -91,7 +89,6 @@ class ForecastTests(unittest.TestCase):
         return sum([(m - n) ** 2 for m, n in zip(testdata, forecast)]) / len(testdata)
             
     def test_forecast_at(self):
-        print "\n--------- test forecast_at ------------------"
         self.setup_forecast()
         (at_now, week_index, hour_index) = self.forecast.forecast_at(self.env.now)
         
@@ -107,7 +104,6 @@ class ForecastTests(unittest.TestCase):
         self.assertTrue(hour_index == 2, "hour should be 2 but was " + str(hour_index))
         
     def test_append_data(self):
-        print "\n--------- test append_values ------------------"
         self.setup_forecast()
         path = os.path.join(BASE_DIR, "server/forecasting/demodata/demo_electricity_2014.csv")
         raw_dataset_2014 = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
@@ -130,7 +126,6 @@ class ForecastTests(unittest.TestCase):
     def test_approximate_index(self):
         data = [1, 2, 3, 5, 6, 7, 8]
         self.assertTrue(approximate_index(data, 4) in [2, 3], "index approximation was wrong")
-        print  approximate_index(data, 8)
         self.assertTrue(approximate_index(data, 8) == data.index(8))
         self.assertTrue(approximate_index(data, 9) == -1)
         self.assertTrue(approximate_index(data, 1.2436) == 0)
