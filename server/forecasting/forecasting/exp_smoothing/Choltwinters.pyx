@@ -144,8 +144,7 @@ cdef class CDoubleSeasonal:
         cdef np.ndarray[DTYPE_t, ndim = 1] initial_values = np.array(found_parameters, dtype=DTYPE)
         cdef np.ndarray[DTYPE_t, ndim = 2] boundaries = np.array([(0, 1), (0, 0.0), (0, 1), (0, 1), (0, 1)], dtype=DTYPE)
         # set to search with very high accuracy.. optimum cant be far..
-        optimized_parameters = fmin_l_bfgs_b( holtwinters.MSE, x0=initial_values, bounds=boundaries,
-            approx_grad=True, factr=10, epsilon=0.01, maxfun=2000, maxiter=100)
+        optimized_parameters = fmin_l_bfgs_b( holtwinters.MSE, x0=initial_values, bounds=boundaries, approx_grad=True, factr=10, epsilon=0.01, maxfun=2000)
 
         return optimized_parameters[0]
 
