@@ -12,6 +12,10 @@ gas_price_per_kwh = 0.0655
 
 class SimulatedCogenerationUnitTest(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        print "\ntesting producers",
+
     def setUp(self):
         self.env = BaseEnvironment()
         self.heat_storage = Mock(spec=SimulatedHeatStorage)()

@@ -16,6 +16,7 @@ class ExtensionsTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        print "\ntesting cython extensions",
         from server.forecasting.forecasting.exp_smoothing.build_extension import build_holtwinters_extension
         build_holtwinters_extension() #compile and link holtwinters_fast module
         global Cdouble_seasonal, Cmultiplicative #make them accessible everywhere

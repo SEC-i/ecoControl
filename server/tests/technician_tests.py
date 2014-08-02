@@ -10,6 +10,7 @@ class TechnicianHooksTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        print "\ntesting technician hooks",
         # Create test user for all tests
         User.objects.create_user(
             username="test_user2", password="demo123", first_name="test_fn", last_name="test_ln")

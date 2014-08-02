@@ -8,18 +8,24 @@ from server.settings import BASE_DIR, CYTHON_SUPPORT
 
 import os
 
-## try to import compiled holtwinters extension by building it. 
-# if this fails, the standard holtwinters is used.
+""""try to import compiled holtwinters (double seasonal) extension by building it. 
+if this fails, the standard holtwinters is used. """
 fast_hw = False
 if (CYTHON_SUPPORT):
     try:
         from server.forecasting.forecasting.exp_smoothing.build_extension import build_holtwinters_extension
         try:
+            t0 = time.time()
             build_holtwinters_extension() #compile and link
-            from server.forecasting.forecasting.exp_smoothing.holtwinters_fast import double_seasonal
+            #if function takes less than 10 seconds, the module was probably already built before
+            fresh_build = time.time() - t0 > 10 
+            from server.forecasting.forecasting.exp_smoothing.holtwinters_fast import double_seasonal, multiplicative
             fast_hw = True
+            if fresh_build:
+                print "cython extension built and imported"
         except Exception as e:
             print "error while building. ", e
+            print "check ecoControl.log"
     except Exception as e:
         print "cython probably not installed", e
     
@@ -28,8 +34,9 @@ if not fast_hw:
         print "falling back to python holt-winters"
     from server.forecasting.forecasting.exp_smoothing.holt_winters import double_seasonal, multiplicative, additive
 else:
-    #!TODO: until now only double_seasonal is accelerated
-    from server.forecasting.forecasting.exp_smoothing.holt_winters import multiplicative, additive
+    #!TODO: additive is not accelerated (yet)
+    from server.forecasting.forecasting.exp_smoothing.holt_winters import additive
+
 
     
 from datetime import date, datetime, timedelta
