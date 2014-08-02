@@ -3,17 +3,17 @@ Helping functions for Forecasting
 ===================================================
 
 ----------------------------------------------
-:mod:`~server.forecasting.forecasting.helpers`
+:mod:`~server.forecasting.helpers`
 ----------------------------------------------
 
-.. automodule:: server.forecasting.forecasting.helpers
+.. automodule:: server.forecasting.helpers
     :members:
 
 -------------------------------------------------
-:mod:`~server.forecasting.forecasting.dataloader`
+:mod:`~server.forecasting.dataloader`
 -------------------------------------------------
 
-.. automodule:: server.forecasting.forecasting.dataloader
+.. automodule:: server.forecasting.dataloader
 
     .. autoclass:: DataLoader
         :members: 

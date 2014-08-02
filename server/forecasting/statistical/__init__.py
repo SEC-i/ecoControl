@@ -32,13 +32,13 @@ if this fails, the standard holtwinters is used. """
 fast_hw = False
 if (CYTHON_SUPPORT):
     try:
-        from server.forecasting.forecasting.exp_smoothing.build_extension import build_holtwinters_extension
+        from server.forecasting.statistical.build_extension import build_holtwinters_extension
         try:
             t0 = time.time()
             build_holtwinters_extension() #compile and link
             #if function takes less than 8 seconds, the module was probably already built before
             fresh_build = time.time() - t0 > 8 
-            from server.forecasting.forecasting.exp_smoothing.holtwinters_fast import double_seasonal, multiplicative
+            from server.forecasting.statistical.holtwinters_fast import double_seasonal, multiplicative
             fast_hw = True
             if fresh_build:
                 print "cython extension built and imported"
@@ -51,10 +51,10 @@ if (CYTHON_SUPPORT):
 if not fast_hw:
     if (CYTHON_SUPPORT):
         print "falling back to python holt-winters"
-    from server.forecasting.forecasting.exp_smoothing.holt_winters import double_seasonal, multiplicative, additive
+    from server.forecasting.statistical.holt_winters import double_seasonal, multiplicative, additive
 else:
     #!TODO: additive is not accelerated (yet)
-    from server.forecasting.forecasting.exp_smoothing.holt_winters import additive
+    from server.forecasting.statistical.holt_winters import additive
 
 
 

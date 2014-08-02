@@ -1,12 +1,15 @@
 import unittest
 import os
 import numpy
-from server.forecasting.forecasting.dataloader import DataLoader
+from server.forecasting.dataloader import DataLoader
 from server.settings import BASE_DIR, CYTHON_SUPPORT
-from server.forecasting.forecasting import StatisticalForecast
-from server.forecasting.forecasting.exp_smoothing.holt_winters import double_seasonal,multiplicative
+from server.forecasting.statistical import StatisticalForecast
+from server.forecasting.statistical.holt_winters import double_seasonal,multiplicative
 import time
 
+
+sep = os.path.sep
+DATA_PATH = BASE_DIR + sep + "server" + sep + "forecasting" + sep + "simulation" + sep + "demodata"
 
 
 @unittest.skipIf(not CYTHON_SUPPORT, "cython support not activated")
@@ -17,18 +20,18 @@ class ExtensionsTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         print "\ntesting cython extensions",
-        from server.forecasting.forecasting.exp_smoothing.build_extension import build_holtwinters_extension
+        from server.forecasting.statistical.build_extension import build_holtwinters_extension
         build_holtwinters_extension() #compile and link holtwinters_fast module
         global Cdouble_seasonal, Cmultiplicative #make them accessible everywhere
-        from server.forecasting.forecasting.exp_smoothing.holtwinters_fast import double_seasonal as Cdouble_seasonal
-        from server.forecasting.forecasting.exp_smoothing.holtwinters_fast import multiplicative as Cmultiplicative
+        from server.forecasting.statistical.holtwinters_fast import double_seasonal as Cdouble_seasonal
+        from server.forecasting.statistical.holtwinters_fast import multiplicative as Cmultiplicative
         
     
     
     def setUp(self):
         # dataset containing one year of data, sampled in 10 minute intervals
         DataLoader.cached_csv = {}  # really important to reset, because other devices could have added data which is unwanted
-        path = os.path.join(BASE_DIR, "server/forecasting/demodata/demo_electricity_2013.csv")
+        path = DATA_PATH + sep + "demo_electricity_2013.csv"
         raw_dataset = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)", "\t")
         # cast to float and convert to kW
         self.dataset = StatisticalForecast.make_hourly( [float(val) / 1000.0 for val in raw_dataset], 6)

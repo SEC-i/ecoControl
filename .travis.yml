@@ -19,7 +19,7 @@ before_install:
  - easy_install Cython
 install: 
   - pip install -r requirements_travis.txt
-  - cd server/forecasting/forecasting/exp_smoothing/  
+  - cd server.forecasting.statistical/  
   - python build_extension.py build_ext --inplace
   - cd ../../../../
 before_script:

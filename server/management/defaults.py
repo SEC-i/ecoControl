@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.core.management import call_command
 from django import db
 
-from server.forecasting.devices.data.old_demands import outside_temperatures_2013, outside_temperatures_2012
+from server.forecasting.simulation.demodata.old_demands import outside_temperatures_2013, outside_temperatures_2012
 from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum, WeatherValue
 from server.settings import TESTING
 

@@ -12,10 +12,10 @@ from server.helpers_thread import write_pidfile_or_fail
 from server.forecasting.measurementstorage import MeasurementStorage
 
 from server.devices.base import BaseEnvironment
-from server.forecasting.devices.producers import SimulatedCogenerationUnit, SimulatedPeakLoadBoiler
-from server.forecasting.devices.storages import SimulatedHeatStorage, SimulatedPowerMeter
-from server.forecasting.devices.consumers import SimulatedThermalConsumer, SimulatedElectricalConsumer
-from server.forecasting.forecasting.auto_optimization import auto_optimize
+from server.forecasting.simulation.devices.producers import SimulatedCogenerationUnit, SimulatedPeakLoadBoiler
+from server.forecasting.simulation.devices.storages import SimulatedHeatStorage, SimulatedPowerMeter
+from server.forecasting.simulation.devices.consumers import SimulatedThermalConsumer, SimulatedElectricalConsumer
+from server.forecasting.optimizing.auto_optimization import auto_optimize
 
 DEFAULT_FORECAST_INTERVAL = 14 * 24 * 3600.0
 DEFAULT_FORECAST_STEP_SIZE = 15 * 60.0

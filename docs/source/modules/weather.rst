@@ -2,6 +2,6 @@
 Weather
 =======
 
-.. automodule:: server.forecasting.forecasting.weather
+.. automodule:: server.forecasting.weather
     :members:
     :member-order: bysource
