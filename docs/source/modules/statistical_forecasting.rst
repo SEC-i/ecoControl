@@ -2,7 +2,7 @@
 Statistical Forecasting
 =======================
 
-.. automodule:: server.forecasting.forecasting
+.. automodule:: server.forecasting.statistical
 
 
     .. autoclass:: StatisticalForecast

@@ -1,7 +1,7 @@
 import unittest
 
 from server.devices.base import BaseEnvironment
-from server.forecasting.devices.storages import SimulatedHeatStorage, SimulatedPowerMeter
+from server.forecasting.simulation.devices.storages import SimulatedHeatStorage, SimulatedPowerMeter
 
 electrical_feed_in_reward_per_kwh = 0.0917
 electrical_costs_per_kwh = 0.283

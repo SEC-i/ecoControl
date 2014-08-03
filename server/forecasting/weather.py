@@ -15,8 +15,8 @@ import logging
 import calendar
 from datetime import datetime, timedelta
 
-from server.forecasting.devices.data.old_demands import outside_temperatures_2013, outside_temperatures_2012
-from server.forecasting.forecasting.helpers import cached_data,\
+from server.forecasting.simulation.demodata.old_demands import outside_temperatures_2013, outside_temperatures_2012
+from server.forecasting.helpers import cached_data,\
     approximate_index
 from server.models import WeatherValue, RealWeatherValue
 from django.utils.timezone import utc

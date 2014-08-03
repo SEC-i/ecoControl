@@ -1,9 +1,9 @@
 import numpy as np
 from server.forecasting.tools.plotting import show_plotting
-from server.forecasting.forecasting.dataloader import DataLoader
-from server.forecasting.forecasting.helpers import approximate_index
+from server.forecasting.dataloader import DataLoader
+from server.forecasting.helpers import approximate_index
 import calendar
-from server.forecasting.forecasting import StatisticalForecast
+from server.forecasting.statistical import StatisticalForecast
 from server.settings import BASE_DIR, CYTHON_SUPPORT
 
 import os
@@ -13,13 +13,13 @@ if this fails, the standard holtwinters is used. """
 fast_hw = False
 if (CYTHON_SUPPORT):
     try:
-        from server.forecasting.forecasting.exp_smoothing.build_extension import build_holtwinters_extension
+        from server.forecasting.statistical.build_extension import build_holtwinters_extension
         try:
             t0 = time.time()
             build_holtwinters_extension() #compile and link
             #if function takes less than 10 seconds, the module was probably already built before
             fresh_build = time.time() - t0 > 10 
-            from server.forecasting.forecasting.exp_smoothing.holtwinters_fast import double_seasonal, multiplicative
+            from server.forecasting.statistical.holtwinters_fast import double_seasonal, multiplicative
             fast_hw = True
             if fresh_build:
                 print "cython extension built and imported"
@@ -32,10 +32,10 @@ if (CYTHON_SUPPORT):
 if not fast_hw:
     if (CYTHON_SUPPORT):
         print "falling back to python holt-winters"
-    from server.forecasting.forecasting.exp_smoothing.holt_winters import double_seasonal, multiplicative, additive
+    from server.forecasting.statistical.holt_winters import double_seasonal, multiplicative, additive
 else:
     #!TODO: additive is not accelerated (yet)
-    from server.forecasting.forecasting.exp_smoothing.holt_winters import additive
+    from server.forecasting.statistical.holt_winters import additive
 
 
     

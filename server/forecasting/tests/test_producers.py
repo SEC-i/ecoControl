@@ -1,11 +1,11 @@
 import unittest
+from mock import Mock
 
 from server.devices.base import BaseEnvironment
-from server.forecasting.devices.producers import SimulatedCogenerationUnit
-from server.forecasting.devices.storages import SimulatedHeatStorage, SimulatedPowerMeter
+from server.forecasting.simulation.devices.producers import SimulatedCogenerationUnit
+from server.forecasting.simulation.devices.storages import SimulatedHeatStorage, SimulatedPowerMeter
 
-from helpers import values_comparison
-from mock import Mock
+from server.forecasting.helpers import values_comparison
 
 gas_price_per_kwh = 0.0655
 

@@ -1,22 +1,24 @@
+import os
 from time import gmtime
 from datetime import datetime
-import os
-
 from django.utils.timezone import utc
 
+
 from server.devices.consumers import ThermalConsumer, ElectricalConsumer
-from server.forecasting.devices.data.old_demands import warm_water_demand_workday, warm_water_demand_weekend
-from server.forecasting.forecasting.weather import get_temperature
-from server.forecasting.forecasting import StatisticalForecast, DayTypeForecast,\
+from server.forecasting.simulation.demodata.old_demands import warm_water_demand_workday, warm_water_demand_weekend
+from server.forecasting.weather import get_temperature
+from server.forecasting.statistical import StatisticalForecast, DayTypeForecast,\
     DSHWForecast
-from server.forecasting.forecasting.dataloader import DataLoader
-from server.forecasting.forecasting.helpers import approximate_index
+from server.forecasting.dataloader import DataLoader
+from server.forecasting.helpers import approximate_index, linear_interpolation
 from server.settings import BASE_DIR
-from helpers import linear_interpolation
 
 
 electrical_forecast = None
 all_data = None
+
+sep = os.path.sep
+DATA_PATH = BASE_DIR + sep + "server" + sep + "forecasting" + sep + "simulation" + sep + "demodata"
 
 class SimulatedThermalConsumer(ThermalConsumer):
     """The simulation of the thermal consume (heating and warm water) of a house
@@ -185,7 +187,7 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
 
     def get_all_data2014(self):
         sep = os.path.sep
-        path = os.path.join(BASE_DIR, "server" + sep +  "forecasting" + sep + "demodata" +sep+ "demo_electricity_2014.csv")
+        path = DATA_PATH + sep + "demo_electricity_2014.csv"
         raw_dataset = DataLoader.load_from_file(
             path, "Strom - Verbrauchertotal (Aktuell)", "\t")
         dates = DataLoader.load_from_file(path, "Datum", "\t")
@@ -218,20 +220,20 @@ class SimulatedElectricalConsumer(ElectricalConsumer):
 
     def get_data_until(self, timestamp, start_timestamp=None):
         date = datetime.utcfromtimestamp(timestamp).replace(tzinfo=utc)
+
         if self.__class__.dataset == [] or self.__class__.dates == []:
-            sep = os.path.sep
-            path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "demodata" +sep+ "demo_electricity_2012.csv")
+            path = DATA_PATH +sep+ "demo_electricity_2012.csv"
             raw_dataset = DataLoader.load_from_file(
                 path, "Strom - Verbrauchertotal (Aktuell)", "\t")
             dates = DataLoader.load_from_file(path, "Datum", "\t")
 
-            path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "demodata" +sep+ "demo_electricity_2013.csv")
+            path = DATA_PATH + sep+ "demo_electricity_2013.csv"
             raw_dataset += DataLoader.load_from_file(
                 path, "Strom - Verbrauchertotal (Aktuell)", "\t")
             dates += DataLoader.load_from_file(path, "Datum", "\t")
 
             if date.year == 2014:
-                path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "demodata" + sep+"demo_electricity_2014.csv")
+                path = DATA_PATH + sep +"demo_electricity_2014.csv"
                 raw_dataset += DataLoader.load_from_file(
                     path, "Strom - Verbrauchertotal (Aktuell)", "\t")
                 dates += DataLoader.load_from_file(path, "Datum", "\t")

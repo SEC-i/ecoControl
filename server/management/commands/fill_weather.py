@@ -12,11 +12,12 @@ import calendar
 import string
 from io import BytesIO
 
+
 class Command(BaseCommand):
     help = 'fill weather from files into the database'
 
     def handle(self, *args, **options):
-        directory  = join(BASE_DIR,"server","forecasting","demodata")
+        directory  = join(BASE_DIR,"server","forecasting","simulation","demodata")
         
         with open(join(directory,'demo_weather.csv'), "rb") as file_obj:
             reader = csv.reader(file_obj, delimiter="\t")

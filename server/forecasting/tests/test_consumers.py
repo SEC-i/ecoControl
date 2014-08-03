@@ -2,8 +2,8 @@ import unittest
 import time
 
 from server.devices.base import BaseEnvironment
-from server.forecasting.devices.consumers import SimulatedThermalConsumer
-from server.forecasting.devices.storages import SimulatedHeatStorage
+from server.forecasting.simulation.devices.consumers import SimulatedThermalConsumer
+from server.forecasting.simulation.devices.storages import SimulatedHeatStorage
 
 
 class SimulatedThermalConsumerTests(unittest.TestCase):
