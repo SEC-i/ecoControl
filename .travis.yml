@@ -26,7 +26,7 @@ before_install:
   - sudo rm -rf /dev/shm
   - sudo ln -s /run/shm /dev/shm
 install: 
-  - conda install numpy dateutil
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy dateutil
   - pip install -r requirements_travis.txt
   - cd server/forecasting/statistical/  
   - python build_extension.py build_ext --inplace
