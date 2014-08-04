@@ -1,7 +1,4 @@
-coverage==3.7.1
-coveralls==0.4.2
 Django==1.6.5
-mock==1.0.1
 numpy==1.8.1
 psycopg2==2.5.3
 python-dateutil==2.2

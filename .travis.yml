@@ -7,37 +7,23 @@ notifications:
     - ecocontrol@sec-i.org
 language: python
 python:
-  - "2.7"
+  - 2.7
 env:
   - DJANGO_VERSION=1.6
 addons:
   postgresql: "9.3"
-virtualenv:
-  system_site_packages: true
-before_install:
-  - sudo apt-get install -qq python-psycopg2 python-scipy python-dev
-  - easy_install Cython
-  # Install conda
-  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b
-  - export PATH=/home/travis/miniconda/bin:$PATH
-  - conda update --yes conda
-  - sudo rm -rf /dev/shm
-  - sudo ln -s /run/shm /dev/shm
-install: 
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy dateutil
-  - pip install -r requirements_travis.txt
+install:
+  - export PROJECT_HOME="$(pwd)"
+  - pip install -r requirements.txt
   - cd server/forecasting/statistical/  
   - python build_extension.py build_ext --inplace
-  - cd ../../../
+  - cd $PROJECT_HOME
 before_script:
   - psql -c "CREATE ROLE ecocontrol LOGIN PASSWORD 'sec-i' SUPERUSER CREATEDB CREATEROLE;" -U postgres
   - createdb ecocontrol
   - python manage.py syncdb --noinput
 script:
   - coverage run --source='.' manage.py test
-  - coverage report
 after_success:
   - coverage report
   - coveralls
