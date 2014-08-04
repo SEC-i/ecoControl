@@ -22,6 +22,7 @@ install:
   - deps='pip numpy scipy dateutil'
   - conda create -p $HOME/py --yes $deps "python=$TRAVIS_PYTHON_VERSION"
   - export PATH=$HOME/py/bin:$PATH
+  - pip freeze
 before_script:
   # Compile Holt Winters extension
   - export PROJECT_HOME="$(pwd)"
