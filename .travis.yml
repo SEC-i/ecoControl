@@ -13,12 +13,22 @@ env:
 addons:
   postgresql: "9.3"
 install:
+  - pip install -r requirements_travis.txt
+  # Install conda
+  - sudo pip install conda
+  - sudo conda init
+  - sudo conda update conda --yes
+  # Install some deps via conda
+  - deps='pip numpy scipy dateutil'
+  - conda create -p $HOME/py --yes $deps "python=$TRAVIS_PYTHON_VERSION"
+  - export PATH=$HOME/py/bin:$PATH
+before_script:
+  # Compile Holt Winters extension
   - export PROJECT_HOME="$(pwd)"
-  - pip install -r requirements.txt
   - cd server/forecasting/statistical/  
   - python build_extension.py build_ext --inplace
   - cd $PROJECT_HOME
-before_script:
+  # Set up database
   - psql -c "CREATE ROLE ecocontrol LOGIN PASSWORD 'sec-i' SUPERUSER CREATEDB CREATEROLE;" -U postgres
   - createdb ecocontrol
   - python manage.py syncdb --noinput
