@@ -1,3 +1,4 @@
+Cython==0.20.2
 Django==1.6.5
 numpy==1.8.1
 psycopg2==2.5.3
