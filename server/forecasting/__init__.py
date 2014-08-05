@@ -3,6 +3,7 @@ import logging
 import calendar
 from datetime import datetime
 from threading import Thread
+from collections import namedtuple
 
 from server.models import Device, DeviceConfiguration, Configuration, Sensor, SensorValue
 from server.devices import get_user_function, execute_user_function
@@ -35,6 +36,7 @@ def get_initialized_scenario(env, configurations):
                 if device.device_type == device_type:
                     device_class = globals()['Simulated%s' % class_name]
                     device_list.append(device_class(device.id, env))
+
 
         for device in device_list:
             # connect power devices
@@ -74,8 +76,10 @@ def get_initialized_scenario(env, configurations):
 
             # re-calculate values
             device.calculate()
-
-        return device_list
+        # create high performance tuple with classes as field names
+        device_tuple = namedtuple("Devices", [type(dev).__name__ for dev in device_list])(*device_list)
+        
+        return device_tuple
 
 
 class ForecastQueue():
@@ -130,7 +134,7 @@ class Forecast(Thread):
         execute_user_function(self.env,self.env.forecast,self.devices,self.user_function)
 
         if self.use_optimization and self.next_optimization <= 0.0:
-            auto_optimize(self.env, self.devices)
+            auto_optimize(self)
             self.next_optimization = 3600.0
 
         # call step function for all devices
@@ -162,6 +166,10 @@ class Forecast(Thread):
 
     def get(self):
         return self.result
+
+    def get_cu(self):
+        return self.devices.SimulatedCogenerationUnit
+
 
     def store_values(self):
         self.measurements.take_and_cache()
