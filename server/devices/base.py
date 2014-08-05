@@ -50,14 +50,12 @@ class BaseEnvironment(object):
         self.step_size = step_size
 
         self.demo_mode = demomode
-        """ ============  =============================================================
-                                ``demo_mode``
-            ============  =============================   =============================
-            ``forecast``        ``True``                           ``False``
-            ============  =============================   =============================
-            ``True``      forecast of simulated devices   forecast of real devices
-            ``False``     demo simulation                 real device (env not defined)
-            ============  =============================   =============================
+        """ =========================  =============================   =============================
+                                        ``demo_mode``  --``True``       ``demo_mode`` -- ``False``                                                                      
+            =========================  =============================   =============================
+            ``forecast``-- ``True``    forecast of simulated devices   forecast of real devices
+            ``forecast``-- ``False``   demo simulation                 real device (env not defined)
+            =========================  =============================   =============================
         """
         self.forecast = forecast
 

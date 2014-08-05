@@ -83,7 +83,7 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         self.consumer.temperature_warmwater = temperature
 
         heat_storage = SimulatedHeatStorage(0, env)
-        heat_storage.config['base_temperature'] = heat_storage_base
+        heat_storage.base_temperature = heat_storage_base
         self.consumer.heat_storage = heat_storage
 
         return self.consumer.get_warmwater_consumption_power()
