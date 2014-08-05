@@ -12,17 +12,19 @@ env:
   - DJANGO_VERSION=1.6
 addons:
   postgresql: "9.3"
+before_install:
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda/bin:$PATH
+  - conda update --yes conda
+  # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
+  - sudo rm -rf /dev/shm
+  - sudo ln -s /run/shm /dev/shm
 install:
+  - conda create --yes -n env_name python=$TRAVIS_PYTHON_VERSION pip numpy scipy dateutil
+  - source activate env_name
   - pip install -r requirements_travis.txt
-  # Install conda
-  - sudo pip install conda
-  - sudo conda init
-  - sudo conda update conda --yes
-  # Install some deps via conda
-  - deps='pip numpy scipy dateutil'
-  - conda create -p $HOME/py --yes $deps "python=$TRAVIS_PYTHON_VERSION"
-  - export PATH=$HOME/py/bin:$PATH
-  - pip freeze
 before_script:
   # Compile Holt Winters extension
   - export PROJECT_HOME="$(pwd)"
