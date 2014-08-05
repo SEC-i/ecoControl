@@ -1,27 +1,48 @@
-branches:
-  only:
-    - master
-    - dev
-notifications:
-  email:
-    - bp2013h1@lists.myhpi.de
 language: python
 python:
   - "2.7"
-env:
-  - DJANGO_VERSION=1.6
 addons:
+  # ecoControl requires postgreSQL 9.3 or higher
   postgresql: "9.3"
-virtualenv:
-  system_site_packages: true
 before_install:
- - sudo apt-get install -qq python-dateutil python-numpy python-psycopg2 python-scipy
-install: 
+  # Use conda to speed up builds
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
+  # Fix a crash with multiprocessing on Travis
+  - sudo rm -rf /dev/shm
+  - sudo ln -s /run/shm /dev/shm
+install:
+  # Create python environment with pre-installed numpy scipy dateutil cython
+  - conda create --yes -n test-environment python=$TRAVIS_PYTHON_VERSION pip numpy=1.8.1 scipy=0.14.0 cython=0.20.2 dateutil
+  - source activate test-environment
+  # Install all other dependencies via pip
   - pip install -r requirements_travis.txt
 before_script:
-  - psql -c "CREATE ROLE BP2013H1 LOGIN PASSWORD 'hirsch' SUPERUSER CREATEDB CREATEROLE;" -U postgres
-  - createdb bp2013h1
+  # Compile Holt Winters extension
+  - export PROJECT_HOME="$(pwd)"
+  - cd server/forecasting/statistical/  
+  - python build_extension.py build_ext --inplace
+  - cd $PROJECT_HOME
+  # Set up database
+  - psql -c "CREATE ROLE ecocontrol LOGIN PASSWORD 'sec-i' SUPERUSER CREATEDB CREATEROLE;" -U postgres
+  - createdb ecocontrol
   - python manage.py syncdb --noinput
 script:
+  # Run all tests
   - coverage run --source='.' manage.py test
+after_success:
+  # Print coverage report and send it to coveralls
   - coverage report
+  - coveralls
+notifications:
+  email:
+    recipients:
+      - ecocontrol@sec-i.org
+    on_success: change
+    on_failure: change

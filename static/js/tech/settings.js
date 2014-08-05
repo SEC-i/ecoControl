@@ -19,11 +19,12 @@ function technician_settings_ready() {
                         unit: config_data.unit,
                         value: config_data.value,
                     };
+
                     if (status_data['system_status'] == 'init') {
-                        var output = Mustache.render($('#snippet_settings_input').html(), view);
+                        var output = render_template($('#snippet_settings_input').html(), view);
                         item.append(output);
                     } else {
-                        var output = Mustache.render($('#snippet_settings_plain').html(), view);
+                        var output = render_template($('#snippet_settings_plain').html(), view);
                         item.append(output);
                     }
                 }
@@ -33,7 +34,7 @@ function technician_settings_ready() {
         $('#panels .setting_input').editable({
             url: api_base_url + 'configure/',
             params: function(params) {
-                var item = $('a[data-pk="' + params.pk + '"]');
+                var item = $('a[data-name="' + params.name + '"]');
                 var post_data = [{
                     device: item.attr('data-device'),
                     key: params.pk,
@@ -44,18 +45,21 @@ function technician_settings_ready() {
                 return JSON.stringify(post_data);
             },
             validate: function(value) {
-               if($.trim(value) == '') return 'This field is required';
+               if($.trim(value) === "") return 'This field is required';
             }
         });
 
         if (status_data['system_status'] == 'init') {
-            $('#container').prepend($('#snippet_settings_notice').html());
-            $('#panels').append($('#snippet_settings_buttons').html());
+
+            var rendered = render_template($('#snippet_settings_notice').html());
+            $('#container').prepend(rendered);
+            var rendered = render_template($('#snippet_settings_buttons').html());
+            $('#panels').append(rendered);
             $(".configure_button").click(function(event) {
                 var demo = $(this).attr('data-demo');
 
                 var post_data = [];
-                $( ' .configuration' ).each(function( index ) {
+                $('.configuration').each(function( index ) {
                     post_data.push({
                         device: $(this).attr('data-device'),
                         key: $(this).attr('data-key'),

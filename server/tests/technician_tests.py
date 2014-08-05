@@ -10,6 +10,7 @@ class TechnicianHooksTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        print "\ntesting technician hooks",
         # Create test user for all tests
         User.objects.create_user(
             username="test_user2", password="demo123", first_name="test_fn", last_name="test_ln")
@@ -17,7 +18,7 @@ class TechnicianHooksTestCase(TestCase):
     def setUp(self):
         self.client = Client()
 
-    def test_update_system_configurations(self):
+    def test_update_device_configurations(self):
         self.assertEqual(len(DeviceConfiguration.objects.all()), 15)
 
         data = [

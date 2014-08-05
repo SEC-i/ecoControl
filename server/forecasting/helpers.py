@@ -1,126 +1,99 @@
-from datetime import datetime
-from io import BytesIO
-import logging
-
-from django.utils.timezone import utc
-from django.db import connection
-
-from server.models import Sensor, DeviceConfiguration
-
-logger = logging.getLogger('simulation')
+""" helper methods for forecasting"""
+import os
+import pickle
+import time
+from datetime import date,datetime,timedelta
+from server.settings import BASE_DIR
+from math import cos, pi
 
 
-class MeasurementStorage():
+def interpolate_year(day):
+    """
+    input: int between 0,365
+    output: float between 0,1
+    interpolates a year day to 1=winter, 0=summer
+    """
+    # shift summer days at 180-365
+    # 1'April = 90th day
+    day_shift = day + 90
+    day_shift %= 365
+    day_float = float(day) / 365.0
+    interpolation = cos(day_float * pi * 2)
+    # shift to 0-1
+    return (interpolation / 2) + 0.5
 
-    def __init__(self, env, devices, demo=False):
-        self.env = env
-        self.devices = devices
-        self.sensors = Sensor.objects.filter(
-            device_id__in=[x.id for x in devices])
-        self.demo = demo
+def linear_interpolation(a, b, x):
+    return a * (1 - x) + b * x
 
-        # initialize for forecasting
-        self.forecast_data = []
-        for i in self.sensors:
-            self.forecast_data.append([])
-        # initialize for demo
-        self.device_map = []
-        self.sensor_values = []
-        for device in self.devices:
-            for sensor in self.sensors:
-                if device.id == sensor.device.id:
-                    self.device_map.append((sensor, device))
+def perdelta(start, end, delta):
+    """ generator function, which outputs dates.
+    works like `range(start, stop, step)` for dates
 
-    def take_and_save(self):
-        # save demo values every 15mins
-        if self.env.now % 60 * 60 != 0:
-            return
-        timestamp = datetime.utcfromtimestamp(
-            self.env.now).replace(tzinfo=utc)
-        for (sensor, device) in self.device_map:
-            value = getattr(device, sensor.key, None)
-            if value is not None:
-                # in case value is a function, call that function
-                if hasattr(value, '__call__'):
-                    value = value()
+    :param datetime start,end: dates between which to iterate
+    :param timedelta delta: the stepwidth
+    """
+    curr = start
+    while curr < end:
+        yield curr
+        curr += delta
 
-                self.sensor_values.append((sensor.id, value, timestamp))
+def approximate_index(dataset, findvalue):
+    """ Return index  value in dataset, with optimized find procedure.
+    This assumes a `dataset` with continuous, increasing values. Typically, these are timestamps.
 
-        if len(self.sensor_values) > 10000:
-            self.flush_data()
-
-    def take_and_cache(self):
-        if self.env.now % 3600 != 0:
-            return
-
-        for index, sensor in enumerate(self.sensors):
-            for device in self.devices:
-                if device.id == sensor.device.id and sensor.in_diagram:
-                    value = getattr(device, sensor.key, None)
-                    if value is not None:
-                        # in case value is a function, call that function
-                        if hasattr(value, '__call__'):
-                            value = value()
-
-                        self.forecast_data[index].append(
-                            [datetime.fromtimestamp(self.env.now).isoformat(), round(float(value), 2)])
-
-    def get(self):
-        output = []
-        for index, sensor in enumerate(self.sensors):
-            if sensor.in_diagram:
-                output.append({
-                    'id': sensor.id,
-                    'device_id': sensor.device_id,
-                    'device': sensor.device.name,
-                    'name': sensor.name,
-                    'unit': sensor.unit,
-                    'key': sensor.key,
-                    'data': self.forecast_data[index]
-                })
-        return output
-
-    def get_last(self, value):
-        index = self.sensors.index(value)
-        if len(self.forecast_data[index]) > 0:
-            return self.forecast_data[index][-1]  # return newest item
-        return None
-
-    def flush_data(self):
-        cursor = connection.cursor()
-        # Convert floating point numbers to text, write to COPY input
-
-        cpy = BytesIO()
-        for row in self.sensor_values:
-            vals = [
-                row[0], row[1], connection.ops.value_to_db_datetime(row[2])]
-            cpy.write('\t'.join([str(val) for val in vals]) + '\n')
-
-        # Insert forecast_data; database converts text back to floating point
-        # numbers
-        cpy.seek(0)
-        cursor.copy_from(cpy, 'server_sensorvalue',
-                         columns=('sensor_id', 'value', 'timestamp'))
-        connection.commit()
-
-        cursor.execute(
-            "SELECT setval('server_sensorvalue_id_seq',(select max(id) FROM server_sensorvalue)+1);")
-
-        self.sensor_values = []
-
-
-def parse_value(config):
-    try:
-        if config.value_type == DeviceConfiguration.STR:
-            return str(config.value)
-        elif config.value_type == DeviceConfiguration.INT:
-            return int(config.value)
-        elif config.value_type == DeviceConfiguration.FLOAT:
-            return float(config.value)
+    :param list dataset: a continuous list of values (f.e. timestamps)
+    :param int findvalue: the value, of which to find the index.
+    """
+    length = len(dataset)
+    #aproximate index
+    diff = (dataset[1] - dataset[0])
+    i = min(int((findvalue - dataset[0])/diff), length -1)
+    while i < length and i >= 0:
+        if i == length -1:
+            return i if dataset[i] == findvalue else -1
+        if  dataset[i] == findvalue or (dataset[i] < findvalue and dataset[i+1] > findvalue):
+            return i
+        elif dataset[i] > findvalue:
+            i-=1
         else:
-            logger.warning(
-                "Couldn't determine type of %s (%s)" % (config.value, config.value_type))
-    except ValueError:
-        logger.warning("ValueError parsing %s to %s" %
-                       (config.value, config.value_type))
-    return str(config.value)
+            i+=1
+    return -1
+
+def cached_data(name, data_function=None, max_age=0):
+    """ store and retrieve data from a cache on the filesystem.
+    The function will try to retrieve the cached data. If there is None or
+    the data is too old, `data_function` will be called and the result is stored in the cache. 
+
+
+    :param string name: name of cache file
+    :param function data_function: A function, which outputs the data to be stored. 
+        If the function is ``None`` and the cache is invalid, the funtion will return ``None``.
+    :param int max_age: The maximum age (real time) in seconds, the cache is allowed to have before turning invalid.
+    :returns: data or ``None``
+    """
+    cache_path = cachefile('%s.cache' % name)
+    age = cached_data_age(name)
+    if age != None and (age < max_age or max_age == 0):
+        with open(cache_path, 'rb') as f:
+            return pickle.load(f)
+    if not data_function:
+        return None
+    data = data_function()
+    with open(cache_path, 'wb') as f:
+        pickle.dump(data, f)
+    return data
+
+def cachefile(filename):
+        return os.path.join(BASE_DIR,'cache', filename)
+
+def cached_data_age(name):
+    cache_path = cachefile('%s.cache' % name)
+    if not os.path.exists(cache_path):
+        return None
+    return time.time() - os.stat(cache_path).st_mtime 
+
+def linear_interpolation(a,b,x):
+    return a * x + b * (1.0 - x)
+
+def values_comparison(actual_value, expected_value):
+    return "expected: {0}. got: {1}".format(expected_value, actual_value)

@@ -2,8 +2,10 @@ import sys
 
 from server.helpers import start_worker
 from server.forecasting import DemoSimulation
+from server.technician.hooks import initialize_globals
 
-# start demo simulation if neccessary
+
 if sys.argv[1] == 'runserver':
-    start_worker()
-    DemoSimulation.start_or_get(print_visible=True)
+    #initialize stuff like the demosimulation for access in hooks
+    initialize_globals()
+    #start_worker()

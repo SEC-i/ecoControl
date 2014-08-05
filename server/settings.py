@@ -27,6 +27,9 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# try to compile the cython (.pyx) version of a few, perfomance critical functions
+CYTHON_SUPPORT = True
+
 
 # Application definition
 
@@ -61,17 +64,19 @@ WSGI_APPLICATION = 'server.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'bp2013h1',
+        'NAME': 'ecocontrol',
         'HOST': 'localhost',
         'PORT': '5432',
-        'USER': 'bp2013h1',
-        'PASSWORD': 'hirsch'
+        'USER': 'ecocontrol',
+        'PASSWORD': 'sec-i'
      }
  }
 
 # Test runner with no database deletion
 
 TEST_RUNNER = 'server.tests.CustomTestSuiteRunner'
+#to know if this is a testing environment
+TESTING = 'test' in sys.argv 
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
@@ -111,6 +116,14 @@ LOGGING = {
         },
     },
     'handlers': {
+        'ecocontrol': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(os.path.dirname(__file__), '../logs/ecocontrol.log'),
+            'maxBytes': 1024 * 1024 * 4,
+            'backupCount': 5,
+            'formatter': 'verbose'
+        },
         'django': {
             'level': 'WARNING',
             'class': 'logging.handlers.RotatingFileHandler',
@@ -126,23 +139,20 @@ LOGGING = {
 
         },
         'simulation': {
-            'level': 'WARNING',
+            'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(os.path.dirname(__file__), '../logs/simulation.log'),
             'maxBytes': 1024 * 1024 * 4,
             'backupCount': 5,
             'formatter': 'verbose'
         },
-        'worker': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(os.path.dirname(__file__), '../logs/worker.log'),
-            'maxBytes': 1024 * 1024 * 4,
-            'backupCount': 5,
-            'formatter': 'verbose'
-        },
     },
     'loggers': {
+        'ecocontrol': {
+            'handlers': ['ecocontrol'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
         'django': {
             'handlers': ['django'],
             'propagate': True,
@@ -151,11 +161,6 @@ LOGGING = {
         'simulation': {
             'handlers': ['simulation'],
 
-            'propagate': True,
-            'level': 'WARNING',
-        },
-        'worker': {
-            'handlers': ['worker'],
             'propagate': True,
             'level': 'DEBUG',
         },

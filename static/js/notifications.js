@@ -11,17 +11,16 @@ function notifications_ready() {
 function update_notifications(start) {
     var url = api_base_url + 'notifications/start/' + start + '/end/' + (start + notifications_per_page) + '/';
     $.getJSON(url, function(data) {
-        $('#notification_list tbody').empty();
-        $.each(data['notifications'], function(index, notification) {
-            $('#notification_list tbody').append(
-                '<tr>\
-                    <td>' + notification['id'] + '</td>\
-                    <td>' + $.format.date(new Date(notification['sensor_value']['timestamp']), "HH:MM dd.MM.yyyy") + '</td>\
-                    <td>' + notification['threshold']['name'] + '</td>\
-                    <td>' + get_label(notification['threshold']['category']) + ' Sensor #' + notification['sensor_value']['sensor'] + ' was ' + Math.round(notification['sensor_value']['value'] * 100) / 100 + ' and should\'ve been ' + Math.round(notification['target'] * 100) / 100 + '.</td>\
-                </tr>'
-            );
+        var notification_list = data['notifications'];
+        $.each(notification_list, function(index, notification) {
+            notification.time = $.format.date(new Date(notification['sensor_value']['timestamp']), "HH:MM dd.MM.yyyy");
+            notification.message = get_label(notification['threshold']['category']) + ' Sensor #' + notification['sensor_value']['sensor'] + ' was ' + Math.round(notification['sensor_value']['value'] * 100) / 100 + ' and should\'ve been ' + Math.round(notification['target'] * 100) / 100 + '.';
         });
+
+        var rendered = render_template($('#snippet_notification_list').html(), {
+            notifications: notification_list
+        });
+        $('#notification_list').html(rendered);
 
         if (data['total'] > notifications_per_page) {
             update_pagination(start/notifications_per_page, data['total']);
@@ -33,16 +32,16 @@ function update_notifications(start) {
 function update_pagination(current, total) {
     $('#notification_pagination').html(
         '<ul class="pagination">\
-            <li' + (current == 0 ? ' class="disabled"': '') + '><a href="#" data-start="' + (current - 1) * notifications_per_page  + '">&laquo;</a></li>\
+            <li' + (current === 0 ? ' class="disabled"': '') + '><a href="#" data-start="' + (current - 1) * notifications_per_page  + '">&laquo;</a></li>\
         </ul>'
     );
 
     for (var i = 0; i < total/notifications_per_page; i++) {
-        $('#notification_pagination .pagination').append('<li' + (i == current ? ' class="active"' : '') + '><a href="#" data-start="' + i * notifications_per_page  + '">' + (i + 1) + (i == current ? ' <span class="sr-only">(current)</span>' : '') + '</a></li>');
+        $('#notification_pagination .pagination').append('<li' + (i === current ? ' class="active"' : '') + '><a href="#" data-start="' + i * notifications_per_page  + '">' + (i + 1) + (i === current ? ' <span class="sr-only">(current)</span>' : '') + '</a></li>');
     };
 
     $('#notification_pagination .pagination').append(
-        '<li' + (current + 1 == total/notifications_per_page ? ' class="disabled"': '') + '><a href="#" data-start="' + (current + 1) * notifications_per_page  + '">&raquo;</a></li>'
+        '<li' + (current + 1 === total/notifications_per_page ? ' class="disabled"': '') + '><a href="#" data-start="' + (current + 1) * notifications_per_page  + '">&raquo;</a></li>'
     );
 
     $('#notification_pagination .pagination li a').click(function(event) {
@@ -99,22 +98,18 @@ function initialize_sensor_list() {
 }
 
 function refresh_thresholds() {
-    $.getJSON(api_base_url + 'thresholds/', function(data) {
-        $('#threshold_list tbody').empty();
-        $.each(data, function(index, threshold) {
-            $('#threshold_list tbody').append(
-                '<tr>\
-                    <td>' + (index + 1) + '</td>\
-                    <td><a href="#" class="x_editable_name" data-type="text" data-pk="' + threshold.id + '" data-name="name" data-title="Enter threshold name">' + threshold.name + '</a></td>\
-                    <td><a href="#" class="x_editable_sensor_list editable editable-click editable-open" data-type="select" data-pk="' + threshold.id + '" data-name="sensor_id" data-value="' + threshold.sensor_id + '" data-title="Select sensor">' + threshold.sensor_name + '</a></td>\
-                    <td><a href="#" class="x_editable_values" data-type="text" data-pk="' + threshold.id + '" data-name="min_value" data-title="Enter minimal value">' + threshold.min_value + '</a></td>\
-                    <td><a href="#" class="x_editable_values" data-type="text" data-pk="' + threshold.id + '" data-name="max_value" data-title="Enter maximal value">' + threshold.max_value + '</a></td>\
-                    <td><a href="#" class="x_editable_category editable editable-click editable-open" data-type="select" data-pk="' + threshold.id + '" data-name="category" data-value="' + threshold.category + '" data-title="Select type of notification">' + get_label(threshold.category) + '</a></td>\
-                    <td><a href="#" class="x_editable_show_manager editable editable-click editable-open" data-type="select" data-pk="' + threshold.id + '" data-name="show_manager" data-value="' + (threshold.show_manager == true ? '1' : '0') + '" data-title="Show Managers?">' + (threshold.show_manager == true ? 'Yes' : 'No') + '</a></td>\
-                    <td><a href="#" class="edit_button"><a href="#" class="delete_button" data-threshold="' + threshold.id + '"><span class="glyphicon glyphicon-trash"></span></a></td>\
-                </tr>'
-            );
+    $.getJSON(api_base_url + 'thresholds/', function(threshold_list) {
+        $.each(threshold_list, function(index, threshold) {
+            threshold.index = index + 1;
+            threshold.category_html = get_label(threshold.category);
+            threshold.show_manager_value = (threshold.show_manager === true ? '1' : '0');
+            threshold.show_manager_text = (threshold.show_manager === true ? 'Yes' : 'No');
         });
+        var rendered = render_template($('#snippet_notification_threshold_list').html(), {
+            thresholds: threshold_list
+        });
+        $('#threshold_list').html(rendered);
+
         $('.x_editable_name').editable({
             url: api_base_url + 'manage/thresholds/',
             params: function(params) {
@@ -123,7 +118,7 @@ function refresh_thresholds() {
                 return JSON.stringify(post_data);
             },
             validate: function(value) {
-               if($.trim(value) == '') return 'This field is required';
+               if($.trim(value) === "") return 'This field is required';
             }
         });
         $('.x_editable_sensor_list').editable({

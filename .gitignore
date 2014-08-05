@@ -43,7 +43,9 @@ nosetests.xml
 
 *.sublime-workspace
 *.sublime-project
+*.settings
 
 
 
 sftp-config-alt2.json
+static/libs

@@ -3,11 +3,10 @@ import time
 
 from django.db import connection
 
-from server.systems import get_initialized_scenario
 from server.models import SensorValue, Threshold, Notification
 import functions
 
-logger = logging.getLogger('worker')
+logger = logging.getLogger('ecocontrol')
 
 
 def check_thresholds():
@@ -33,12 +32,6 @@ def check_thresholds():
         except SensorValue.DoesNotExist:
             logger.debug('No SensorValue found for Sensor #%s' %
                          threshold.sensor_id)
-
-
-def execute_user_code():
-    system_list = get_initialized_scenario()
-    # user_function = get_user_function(system_list)
-    # user_function(*system_list)
 
 
 def refresh_views():

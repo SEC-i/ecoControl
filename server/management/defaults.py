@@ -1,21 +1,27 @@
 # -*- coding: utf-8 -*-
 import datetime
+import logging
 
 from django.utils.timezone import utc
 from django.db import connection, ProgrammingError
 from django.contrib.auth.models import User
+from django.core.management import call_command
+from django import db
 
-from server.forecasting.systems.data import outside_temperatures_2013, outside_temperatures_2012
+from server.forecasting.simulation.demodata.old_demands import outside_temperatures_2013, outside_temperatures_2012
 from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum, WeatherValue
+from server.settings import TESTING
 
+logger = logging.getLogger('ecocontrol')
 
 def initialize_default_user():
     if len(User.objects.all()) == 0:
-        User.objects.create_superuser('technician', 'bp2013h1@lists.myhpi.de', 'techniker')
-        User.objects.create_user('manager', 'bp2013h1@lists.myhpi.de', 'verwaltung')
+        User.objects.create_superuser('technician', 'technician@example.com', 'techniker')
+        User.objects.create_user('manager', 'manager@example.com', 'verwaltung')
 
 def initialize_default_scenario():
-    if len(Device.objects.all()) == 0:
+    needs_initialization = len(Device.objects.all()) == 0
+    if needs_initialization:
         hs = Device(name='Heat Storage', device_type=Device.HS)
         hs.save()
         pm = Device(name='Power Meter', device_type=Device.PM)
@@ -28,7 +34,7 @@ def initialize_default_scenario():
         tc.save()
         ec = Device(name='Electrical Consumer', device_type=Device.EC)
         ec.save()
-        print "Default power systems initialized"
+        logger.debug("Default devices initialized")
 
         sensors = []
         sensors.append(
@@ -38,11 +44,11 @@ def initialize_default_scenario():
         sensors.append(
             Sensor(device=pm, name='Fed in Electricity', key='fed_in_electricity', unit='kWh', aggregate_sum=True))
         sensors.append(
-            Sensor(device=cu, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True, aggregate_avg=True))
+            Sensor(device=cu, name='Workload', key='workload_percent', setter='workload_percent', unit='%', in_diagram=True, aggregate_avg=True))
         sensors.append(
             Sensor(device=cu, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh', aggregate_sum=True))
         sensors.append(
-            Sensor(device=plb, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True, aggregate_avg=True))
+            Sensor(device=plb, name='Workload', key='workload_percent', setter='workload_percent', unit='%', in_diagram=True, aggregate_avg=True))
         sensors.append(
             Sensor(device=plb, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh', aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Thermal Consumption',
@@ -58,13 +64,18 @@ def initialize_default_scenario():
                        key='get_consumption_power', unit='kWh', in_diagram=True, aggregate_sum=True))
 
         Sensor.objects.bulk_create(sensors)
-        print "Default sensors initialized"
+
+    # if the configuration must be renewed, while the devices stay the same, init only the config again
+    if needs_initialization or len(Configuration.objects.all()) == 0:
+        logger.debug("Default sensors initialized")
 
         configurations = []
         configurations.append(Configuration(
             key='system_status', value='init', value_type=Configuration.STR, internal=True))
         configurations.append(Configuration(
             key='system_mode', value='', value_type=Configuration.STR, internal=True))
+        configurations.append(Configuration(
+            key='auto_optimization', value='0', value_type=Configuration.BOOL, internal=True))
         configurations.append(Configuration(
             key='apartments', value='12', value_type=Configuration.INT))
         configurations.append(Configuration(
@@ -101,17 +112,19 @@ def initialize_default_scenario():
             key='electrical_revenues', value='0.268', value_type=Configuration.FLOAT, unit='€'))
 
         Configuration.objects.bulk_create(configurations)
-        print "Default configurations initialized"
+
+    if needs_initialization:
+        logger.debug("Default configurations initialized")
 
         device_configurations = []
         device_configurations.append(
             DeviceConfiguration(device=cu, key='max_gas_input', value='19.0', value_type=DeviceConfiguration.FLOAT, unit='kWh'))
         device_configurations.append(
-            DeviceConfiguration(device=cu, key='thermal_efficiency', value='65.0', value_type=DeviceConfiguration.FLOAT, unit='%'))
+            DeviceConfiguration(device=cu, key='thermal_efficiency', value='0.65', value_type=DeviceConfiguration.FLOAT, unit='%'))
         device_configurations.append(
-            DeviceConfiguration(device=cu, key='electrical_efficiency', value='24.7', value_type=DeviceConfiguration.FLOAT, unit='%'))
+            DeviceConfiguration(device=cu, key='electrical_efficiency', value='0.247', value_type=DeviceConfiguration.FLOAT, unit='%'))
         device_configurations.append(
-            DeviceConfiguration(device=cu, key='minimal_workload', value='40.0', value_type=DeviceConfiguration.FLOAT, unit='%'))
+            DeviceConfiguration(device=cu, key='minimal_workload', value='0.40', value_type=DeviceConfiguration.FLOAT, unit='%'))
         device_configurations.append(
             DeviceConfiguration(device=cu, key='minimal_off_time', value='600', value_type=DeviceConfiguration.INT, unit='seconds', tunable=True))
         device_configurations.append(
@@ -126,7 +139,7 @@ def initialize_default_scenario():
         device_configurations.append(
             DeviceConfiguration(device=plb, key='max_gas_input', value='45.0', value_type=DeviceConfiguration.FLOAT, unit='kWh'))
         device_configurations.append(
-            DeviceConfiguration(device=plb, key='thermal_efficiency', value='91.0', value_type=DeviceConfiguration.FLOAT, unit='%'))
+            DeviceConfiguration(device=plb, key='thermal_efficiency', value='0.91', value_type=DeviceConfiguration.FLOAT, unit='%'))
 
         device_configurations.append(
             DeviceConfiguration(device=hs, key='capacity', value='2500.0', value_type=DeviceConfiguration.FLOAT, unit='l'))
@@ -138,38 +151,13 @@ def initialize_default_scenario():
             DeviceConfiguration(device=hs, key='critical_temperature', value='90.0', value_type=DeviceConfiguration.FLOAT, unit='°C', tunable=True))
 
         DeviceConfiguration.objects.bulk_create(device_configurations)
-        print "Default device configurations initialized"
+        logger.debug("Default device configurations initialized")
 
 
 def initialize_weathervalues():
-    if len(WeatherValue.objects.all()) == 0:
-        weather_values = []
-        base_time = datetime.datetime.strptime(
-            '2012-01-01 00:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
-        timestamp = datetime.datetime.strptime(
-            '2013-12-12 23:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
-        hours = 0
-        for temperature in outside_temperatures_2012:  # every day
-            target_time = base_time + datetime.timedelta(hours=hours)
-            weather_values.append(WeatherValue(timestamp=timestamp,
-                                               target_time=target_time,
-                                               temperature=temperature))
-            hours = hours + 1
-        base_time = datetime.datetime.strptime(
-            '2013-01-01 00:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
-        timestamp = datetime.datetime.strptime(
-            '2013-12-12 23:00:00 UTC', '%Y-%m-%d %X %Z').replace(tzinfo=utc)
-        hours = 0
-        for temperature in outside_temperatures_2013:  # every day
-            target_time = base_time + datetime.timedelta(hours=hours)
-            weather_values.append(WeatherValue(timestamp=timestamp,
-                                               target_time=target_time,
-                                               temperature=temperature))
-            hours = hours + 1
-
-        WeatherValue.objects.bulk_create(weather_values)
-
-        print "Default weather data for 2012 and 2013 initialized"
+    if len(WeatherValue.objects.all()) == 0 and not TESTING:#exclude tests
+        call_command('fill_weather', interactive=True)
+        logger.debug("Default weather data for 2012 and 2013 initialized")
 
 
 def initialize_views():

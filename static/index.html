@@ -5,19 +5,22 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
-    <meta name="author" content="BP2013H1">
+    <meta name="author" content="Smart Energy Control Initiative">
 
-    <title>Energy Management System</title>
+    <title>ecoControl</title>
 
     <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="libs/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="libs/bootstrap/dist/css/bootstrap.min.css">
      <!-- jQuery UI CSS core CSS -->
-    <link rel="stylesheet" href="libs/jquery-ui/css/jquery-ui.min.css">
-    <link rel="stylesheet" href="libs/jquery-ui/css/jquery.ui.slider.min.css">
+    <link rel="stylesheet" href="libs/jquery-ui/themes/ui-lightness/jquery-ui.min.css">
     <!-- X-editable -->
-    <link href="libs/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet">
+    <link href="libs/x-editable/dist/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet">
     <!-- Custom styles -->
     <link rel="stylesheet" href="css/basic.css">
+    <link rel="stylesheet" href="css/flags.css">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="img/favicon.png">
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -38,7 +41,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">BP2013H1</a>
+          <a class="navbar-brand" href="#">ecoControl</a>
         </div>
         <div class="collapse navbar-collapse" id="navbar_container"></div>
       </div>
@@ -51,38 +54,52 @@
 
       <hr>
       <footer>
-        <p>&copy; BP2013H1 2013-2014</p>
+        <div class="row">
+          <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+            <p>&copy; ecoControl 2013-2014</p>
+          </div>
+          <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 text-right">
+            <p>
+              <a class="language_selection" data-value="en" href="#"><img src="img/blank.gif" class="flag flag-um" alt="US"></a>
+              <a class="language_selection" data-value="de" href="#"><img src="img/blank.gif" class="flag flag-de" alt="DE"></a>
+            </p>
+          </div>
+        </div>
       </footer>
     </div> <!-- /container -->
 
     <div id="snippets" style="display: none;"></div>
 
-    <script src="libs/jquery/jquery.min.js"></script>
-    <script src="libs/jquery-address/jquery.address.js"></script>
-    <script src="libs/jquery-dateFormat/jquery-dateFormat.min.js"></script>
-    <script src="libs/jquery-table2csv/jquery.table2csv.js"></script>
+    <script src="libs/jquery/dist/jquery.min.js"></script>
+    <script src="libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="libs/jquery-ui/ui/minified/slider.min.js"></script>
+    <script src="libs/jquery-address/src/jquery.address.js"></script>
+    <script src="libs/jquery-cookie/jquery.cookie.js"></script>
+    <script src="libs/jquery-dateFormat/dist/jquery-dateFormat.min.js"></script>
+    <script src="libs/TableCSVExport/jquery.table2CSV.js"></script>
 
-    <script src="libs/bootstrap/js/bootstrap.min.js"></script>
-    <script src="libs/bootstrap3-editable/js/bootstrap-editable.js"></script>
+    <script src="libs/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="libs/x-editable/dist/bootstrap3-editable/js/bootstrap-editable.js"></script>
 
     <script src="libs/mustache/mustache.js"></script>
 
-    <script src="libs/highstock/highstock.js"></script>
-    <script src="libs/highstock/modules/no-data-to-display.js"></script>
-    <script src="libs/highstock/modules/exporting.js"></script>
+    <script src="libs/highstock-release/highstock.js"></script>
+    <script src="libs/highstock-release/modules/no-data-to-display.js"></script>
+    <script src="libs/highstock-release/modules/exporting.js"></script>
     <script src="js/libs/highcharts.csv-export.js"></script>
     <script src="js/libs/highcharts.theme.js"></script>
 
-    <script src="libs/ace/ace.js"></script>
-    <script src="libs/ace/ext-language_tools.js"></script>
-    <script src="libs/ace/mode-python.js"></script>
-    <script src="libs/ace/theme-github.js"></script>
-    <script src="libs/ace/snippets/text.js"></script>
-    <script src="libs/ace/snippets/snippets.js"></script>
-    <script src="libs/ace/snippets/python.js"></script>
+    <script src="libs/ace-builds/src-min-noconflict/ace.js"></script>
+    <script src="libs/ace-builds/src-min-noconflict/ext-language_tools.js"></script>
+    <script src="libs/ace-builds/src-min-noconflict/mode-python.js"></script>
+    <script src="libs/ace-builds/src-min-noconflict/theme-github.js"></script>
+    <script src="libs/ace-builds/src-min-noconflict/snippets/text.js"></script>
+    <script src="libs/ace-builds/src-min-noconflict/snippets/snippets.js"></script>
+    <script src="libs/ace-builds/src-min-noconflict/snippets/python.js"></script>
     
     <script src="js/core.js"></script>
-    <script src="js/lang.js"></script>
+    <script src="js/lang.en.js"></script>
+    <script src="js/lang.de.js"></script>
     <script src="js/login.js"></script>
     <script src="js/load_curves.js"></script>
     <script src="js/notifications.js"></script>
