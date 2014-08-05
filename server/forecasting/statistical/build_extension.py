@@ -11,8 +11,8 @@ import logging
 try:
     from Cython.Distutils import build_ext
 except ImportError:
-    print "Could not import Cython.Distutils. Install `cython` and rerun."
-    sys.exit(1)
+    raise Exception("Could not import Cython.Distutils. Install `cython` and rerun.")
+    #exit(1)
 #from server.settings import BASE_DIR
 compiler = "mingw32"
 
