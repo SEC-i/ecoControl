@@ -181,7 +181,7 @@ class DemoSimulation(Forecast):
     def start_or_get(cls, print_visible=False):
         """
         This method starts a new demo simulation
-        if neccessary and it makes sure that only
+        if necessary and it makes sure that only
         one demo simulation can runs at once.
 
         :returns: :class:`DemoSimulation` or ``None`` if system not in demo mode.
@@ -193,9 +193,9 @@ class DemoSimulation(Forecast):
 
         if cls.stored_simulation == None:
             if print_visible:
-                print 'Starting demo simulation...'
+                print "Starting demo simulation..."
             else:
-                logger.debug('Starting demo simulation...')
+                logger.debug("Starting demo simulation...")
 
             simulation = DemoSimulation(get_initial_time())
             simulation.use_optimization = get_configuration('auto_optimization')
