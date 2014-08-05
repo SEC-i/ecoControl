@@ -1,29 +1,28 @@
-branches:
-  only:
-    - master
-    - dev
-notifications:
-  email:
-    - ecocontrol@sec-i.org
 language: python
 python:
-  - 2.7
-env:
-  - DJANGO_VERSION=1.6
+  - "2.7"
+  - "3.4"
 addons:
+  # ecoControl requires postgreSQL 9.3 or higher
   postgresql: "9.3"
 before_install:
+  # Use conda to speed up builds
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b
-  - export PATH=/home/travis/miniconda/bin:$PATH
-  - conda update --yes conda
-  # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
+  # Fix a crash with multiprocessing on Travis
   - sudo rm -rf /dev/shm
   - sudo ln -s /run/shm /dev/shm
 install:
-  - conda create --yes -n env_name python=$TRAVIS_PYTHON_VERSION pip numpy scipy dateutil
-  - source activate env_name
+  # Create python environment with pre-installed numpy scipy dateutil cython
+  - conda create --yes -n test-environment python=$TRAVIS_PYTHON_VERSION pip numpy=1.8.1 scipy=0.14.0 cython=0.20.2 dateutil
+  - source activate test-environment
+  # Install all other dependencies via pip
   - pip install -r requirements_travis.txt
 before_script:
   # Compile Holt Winters extension
@@ -36,7 +35,15 @@ before_script:
   - createdb ecocontrol
   - python manage.py syncdb --noinput
 script:
+  # Run all tests
   - coverage run --source='.' manage.py test
 after_success:
+  # Print coverage report and send it to coveralls
   - coverage report
   - coveralls
+notifications:
+  email:
+    recipients:
+      - ecocontrol@sec-i.org
+    on_success: change
+    on_failure: change
