@@ -76,8 +76,8 @@ def get_initialized_scenario(env, configurations):
 
             # re-calculate values
             device.calculate()
-        # create high performance tuple with classes as field names
-        device_tuple = namedtuple("Devices", [type(dev).__name__ for dev in device_list])(*device_list)
+        # create high performance tuple with device acronyms as field names
+        device_tuple = namedtuple("Devices", [dev.acronym for dev in device_list])(*device_list)
         
         return device_tuple
 
@@ -164,15 +164,12 @@ class Forecast(Thread):
 
         return self
 
+    def store_values(self):
+        self.measurements.take_and_cache()
+
     def get(self):
         return self.result
 
-    def get_cu(self):
-        return self.devices.SimulatedCogenerationUnit
-
-
-    def store_values(self):
-        self.measurements.take_and_cache()
 
 
 class DemoSimulation(Forecast):
