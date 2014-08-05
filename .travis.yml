@@ -1,7 +1,6 @@
 language: python
 python:
   - "2.7"
-  - "3.4"
 addons:
   # ecoControl requires postgreSQL 9.3 or higher
   postgresql: "9.3"
