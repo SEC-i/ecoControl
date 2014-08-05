@@ -30,25 +30,25 @@ to adjust quickly.
 The interval of one hour lead to good results in our tests.
 """
 
-def auto_optimize(env, devices):
+def auto_optimize(forecast):
     """ Tries to optimize the cost and sets the ``cu.overwrite_workload``
 
     The method forecasts from ``env.now`` with different cu workloads and finds the one with the
     lowest cost. The length of the forecast is :attr:`DEFAULT_FORECAST_INTERVAL`.
     
-    :param list devices: a list with [|hs|, |pm|, |cu|, |plb|, |tc|, |ec|]. The order must be exactly this way. (Standard order of devices)
+    :param forecast: the forecast to be optimized
 
     """
-    optimized_config = find_optimal_config(env.now, devices)
-    [hs,pm,cu,plb,tc,ec] = devices
+    optimized_config = find_optimal_config(forecast)
     
+    cu = forecast.getCU()
     cu.overwrite_workload = float(optimized_config["cu_overwrite_workload"])
     
-    print "optimization round at time: ",datetime.fromtimestamp(env.now),":", optimized_config
+    print "optimization round at time: ",datetime.fromtimestamp(forecast.env.now),":", optimized_config
     
 
 
-def find_optimal_config(initial_time, devices):
+def find_optimal_config(initial_time, forecast):
     """ ``Internal Method`` Main method, which optimizes the costs by running a global
     approximation for the best configuration and then running a local minimization
     method on this approximation"""
@@ -62,14 +62,16 @@ def find_optimal_config(initial_time, devices):
     rewards["electrical_revenues"] = get_configuration('electrical_revenues')
     rewards["feed_in_reward"] = get_configuration('feed_in_reward')
 
-    arguments = (initial_time, devices, prices, rewards)
+    arguments = (initial_time, forecast, prices, rewards)
     #find initial approximation for parameters
     results = []
     for cu_load in range(0,100,10):
             config = [cu_load,]
-            results.append(BilanceResult(estimate_cost(config, *arguments), config))
+            cost = estimate_cost(config, *arguments)
+            results.append(BilanceResult(cost, config))
 
     boundaries = [(0.0,100.0)]
+    #take parameters with lowest cost
     initial_parameters = min(results,key=lambda result: result.cost).params
     
     parameters = fmin_l_bfgs_b(estimate_cost, x0 = array(initial_parameters), 
@@ -84,18 +86,18 @@ def estimate_cost(params, *args):
     """``Internal Method`` copies the devices and environment, forwards it and returns the costs.
 
     :param list params: parameter to be optimized (CU.workload for now)
-    :param args: (initial_time, devices, prices, rewards)
+    :param args: (initial_time, forecast, prices, rewards)
 
     """
-    (initial_time, devices, prices, rewards) = args
-    copied_device = copy.deepcopy(devices)
-    [hs,pm,cu,plb,tc,ec] = copied_device
-    
+    (initial_time, forecast, prices, rewards) = args
+    copied_devices = copy.deepcopy(forecast.devices)
+
+    cu = copied_devices.cu
     cu.overwrite_workload = params[0]
         
-    simplified_forecast(hs.env, initial_time,copied_device)
+    simplified_forecast(cu.env, initial_time, copied_devices)
     
-    return total_costs(copied_device, prices, rewards)
+    return total_costs(copied_devices, prices, rewards)
 
 def simplified_forecast(env, initial_time, devices):
     """runs the forward loop only executing the step function"""
@@ -116,7 +118,8 @@ def total_costs(devices, prices, rewards):
     :param devices: The devices after the forecast
     :param dict prices, rewards: Cached prices and rewards 
     """
-    [hs,pm,cu,plb,tc,ec] = devices
+    d = devices
+    cu,plb,ec,pm,tc,hs = d.cu,d.plb,d.ec,d.pm,d.tc,d.hs
     #maintenance_costs = cu.power_on_count
     gas_costs = (cu.total_gas_consumption + plb.total_gas_consumption) * prices["gas_costs"]
     own_el_consumption = ec.total_consumption -  pm.fed_in_electricity - pm.total_purchased

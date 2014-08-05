@@ -12,6 +12,7 @@ class HeatStorage(BaseDevice):
     :param float target_temperature: the HS schould always have this temperature
     :param float critical_temperature: above this temperature all production devices are turned off
     """
+    acronym = "hs"
 
     def __init__(self, device_id, env):
         super(HeatStorage, self).__init__(device_id, env)
@@ -47,6 +48,7 @@ class PowerMeter(BaseDevice):
     """Represents the power meter of the whole building.
     Measures the purchased and fed in electricity in kWh
     """
+    acronym = "pm"
 
     def __init__(self, device_id, env):
         super(PowerMeter, self).__init__(device_id, env)

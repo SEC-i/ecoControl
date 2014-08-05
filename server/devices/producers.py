@@ -16,6 +16,7 @@ class CogenerationUnit(BaseDevice):
     :param int maintenance_interval_hours: operating hours until maintenance is necessary
     :param int maintenance_interval_powerons: maximal power-ons until maintenance is necessary
     """
+    acronym = "cu"
 
     def __init__(self, device_id, env):
         super(CogenerationUnit, self).__init__(device_id, env)
@@ -99,6 +100,7 @@ class PeakLoadBoiler(BaseDevice):
     :param float max_gas_input: in kW
     :param float thermal_efficiency: in percent between 0 and 1 calculated by the maximal thermal power and gas input
     """
+    acronym = "plb"
 
     def __init__(self, device_id, env):
         super(PeakLoadBoiler, self).__init__(device_id, env)

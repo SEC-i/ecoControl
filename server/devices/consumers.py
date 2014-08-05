@@ -18,6 +18,7 @@ class ThermalConsumer(BaseDevice):
     :param int target_temperature: requested temperature of the rooms in degree Celsius
     :param int avg_thermal_consumption: in kWh
     """
+    acronym = "tc"
 
     def __init__(self, device_id, env):
         super(ThermalConsumer, self).__init__(device_id, env)
@@ -85,6 +86,7 @@ class ElectricalConsumer(BaseDevice):
     :param int type_of_residents: used to classify thermal demand MISSING RANGE
     :param int avg_electrical_consumption: in kWh
     """
+    acronym = "ec"
 
     def __init__(self, device_id, env):
         super(ElectricalConsumer, self).__init__(device_id, env)

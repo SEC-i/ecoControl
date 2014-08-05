@@ -4,6 +4,8 @@ from time import time, gmtime
 class BaseDevice(object):
     """Represents a general interface to the energy-systems."""
 
+    acronym = "b"
+
     def __init__(self, device_id, env):
         self.id = device_id #: `int` identifier
         self.env = env #: `:class:BaseEnvironment`
@@ -30,6 +32,8 @@ class BaseDevice(object):
         return True
 
 
+
+
 class BaseEnvironment(object):
     """This class manages the simulation of the energy-systems."""
 
@@ -44,9 +48,17 @@ class BaseEnvironment(object):
         self.initial_date = self.now
         #: `int` value of seconds how often the simulated devices calculate their state
         self.step_size = step_size
-        #: `bool` decides if demo modus is active
+
         self.demo_mode = demomode
-        #: `bool` seems to be irrelevant
+        """ ============  =============================================================
+                                ``demo_mode``
+            ============  =============================   =============================
+            ``forecast``        ``True``                           ``False``
+            ============  =============================   =============================
+            ``True``      forecast of simulated devices   forecast of real devices
+            ``False``     demo simulation                 real device (env not defined)
+            ============  =============================   =============================
+        """
         self.forecast = forecast
 
     def get_day_of_year(self):
