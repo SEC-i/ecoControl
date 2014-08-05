@@ -1,4 +1,8 @@
 coverage==3.7.1
+coveralls==0.4.2
 Django==1.6.5
 mock==1.0.1
+psycopg2==2.5.3
 pytz==2014.4
+# All other dependencies are installed using
+# conda. For more details, see .travis.yml
