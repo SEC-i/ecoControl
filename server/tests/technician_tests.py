@@ -54,6 +54,8 @@ class TechnicianHooksTestCase(TestCase):
         
         response = self.client.get('/api/statistics/')
         self.assertEqual(response.status_code, 200)
+        response = self.client.get('/api/statistics/monthly/')
+        self.assertEqual(response.status_code, 200)
 
     def test_update_device_configurations(self):
         self.assertEqual(len(DeviceConfiguration.objects.all()), 15)
