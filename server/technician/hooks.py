@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 import dateutil.relativedelta
 
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.http import require_POST
 from django.views.decorators.debug import sensitive_post_parameters
 from django.utils.timezone import utc
@@ -27,15 +26,16 @@ import functions
 
 logger = logging.getLogger('django')
 
-DEMO_SIMULATION = None
+DEMO_SIMULATION =  None
 """This runs in the background, but can be accessed globally in `technician.hooks`. If the system is not in demo-mode, DEMO_SIMULATION will be ``None``"""
 
 FORECAST_QUEUE = None
 """Running forecasts can be accessed by ID from here"""
 
-
-@user_passes_test(lambda u: u.is_superuser)
 def handle_snippets(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     if request.method == 'POST':
         data = json.loads(request.body)
         if 'name' in data:
@@ -47,8 +47,10 @@ def handle_snippets(request):
     return create_json_response(functions.get_snippet_list(), request)
 
 
-@user_passes_test(lambda u: u.is_superuser)
 def handle_code(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     if request.method == 'POST':
         data = json.loads(request.body)
         if 'code' in data:
@@ -57,9 +59,11 @@ def handle_code(request):
     return create_json_response(functions.get_current_snippet(), request)
 
 
-@user_passes_test(lambda u: u.is_superuser)
 @require_POST
 def configure(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     data = json.loads(request.body)
 
     if 'auto_optimization' in data:
@@ -74,9 +78,11 @@ def configure(request):
     return create_json_response({"status": "success"}, request)
 
 
-@user_passes_test(lambda u: u.is_superuser)
 @require_POST
 def start_device(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     data = json.loads(request.body)
 
     system_status = Configuration.objects.get(key='system_status')
@@ -89,7 +95,7 @@ def start_device(request):
             system_mode.value = 'demo'
             system_mode.save()
             DEMO_SIMULATION = DemoSimulation.start_or_get()
-            # if no values exist, fill database with one week
+            #if no values exist, fill database with one week
             if SensorValue.objects.count() == 0.0:
                 DEMO_SIMULATION.forward = 24 * 7 * 3600.0
 
@@ -101,15 +107,18 @@ def start_device(request):
     return create_json_response({"status": "device already running"}, request)
 
 
-@user_passes_test(lambda u: u.is_superuser)
 def get_tunable_device_configurations(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     output = dict(get_device_configurations(tunable=True))
     return create_json_response(output, request)
 
-
-@user_passes_test(lambda u: u.is_superuser)
 @gzip_page
 def forecast(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     try:
         latest_timestamp = get_past_time()
         initial_time = calendar.timegm(latest_timestamp.timetuple())
@@ -123,8 +132,7 @@ def forecast(request):
             if 'forecast_id' in data:
                 result = FORECAST_QUEUE.get_by_id(data['forecast_id'])
                 if result == None:
-                    output = {"forecast_id": data[
-                        'forecast_id'], 'sensors': [], 'status': "running"}
+                    output =  {"forecast_id" : data['forecast_id'], 'sensors' : [], 'status' : "running"}
                 else:
                     output = result
                     output["status"] = "finished"
@@ -136,22 +144,18 @@ def forecast(request):
 
             configurations = None
             if 'configurations' in data:
-                configurations = functions.get_modified_configurations(
-                    data['configurations'])
+                configurations = functions.get_modified_configurations(data['configurations'])
 
             if functions.get_configuration('auto_optimization'):
                 # schedule forecast and immediately return its id.
                 # The forecast result can be later retrieved by it
-                forecast_id = FORECAST_QUEUE.schedule_new(
-                    initial_time, configurations=configurations, code=code)
-                output = {"forecast_id":
-                          forecast_id, 'sensors': [], 'status': "running"}
+                forecast_id = FORECAST_QUEUE.schedule_new(initial_time, configurations=configurations, code=code)
+                output = {"forecast_id" : forecast_id, 'sensors' : [], 'status' : "running"}
             else:
-                output = get_forecast(
-                    initial_time, configurations=configurations, code=code)
+                output = get_forecast(initial_time, configurations=configurations, code=code)
         except ValueError as e:
             logger.error(e)
-            print e  # raise some awareness, because this ones pretty bad..
+            print e #raise some awareness, because this ones pretty bad..
             return create_json_response({"status": "failed"})
     else:
         output = get_forecast(initial_time)
@@ -159,9 +163,11 @@ def forecast(request):
     return create_json_response(output, request)
 
 
-@user_passes_test(lambda u: u.is_superuser)
 @require_POST
 def forward(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     data = json.loads(request.body)
     forward_time = float(data['forward_time']) * 24 * 3600
 
@@ -175,8 +181,10 @@ def forward(request):
     return create_json_response("ok", request)
 
 
-@user_passes_test(lambda u: u.is_superuser)
 def list_thresholds(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     thresholds = Threshold.objects.extra(select={
         'sensor_name': 'SELECT name FROM server_sensor WHERE id = sensor_id'
     }).order_by('id')
@@ -184,9 +192,11 @@ def list_thresholds(request):
     return create_json_response(list(thresholds.values()), request)
 
 
-@user_passes_test(lambda u: u.is_superuser)
 @require_POST
 def handle_threshold(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     data = json.loads(request.body)
     if 'id' in data:
 
@@ -234,17 +244,17 @@ def handle_threshold(request):
                 threshold.max_value = float(data['max_value'])
             except ValueError:
                 pass
-            threshold.show_manager = True if data[
-                'show_manager'] == '1' else False
+            threshold.show_manager = True if data['show_manager'] == '1' else False
             threshold.save()
             return create_json_response({"status": "success"}, request)
 
     return create_json_response({"status": "failed"}, request)
 
-
-@user_passes_test(lambda u: u.is_superuser)
 @gzip_page
 def list_sensor_values(request, interval='month'):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     output = []
     if interval == 'month':
         sensor_values = SensorValueHourly.objects.\
@@ -279,8 +289,10 @@ def list_sensor_values(request, interval='month'):
     return create_json_response(output.values(), request)
 
 
-@user_passes_test(lambda u: u.is_superuser)
 def get_statistics(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     end = get_past_time(use_view=True)
     start = end + dateutil.relativedelta.relativedelta(months=-1)
 
@@ -294,8 +306,10 @@ def get_statistics(request):
     return create_json_response(output, request)
 
 
-@user_passes_test(lambda u: u.is_superuser)
 def get_monthly_statistics(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     end = get_past_time(use_view=True)
     start = end + dateutil.relativedelta.relativedelta(years=-1)
 
@@ -326,12 +340,15 @@ def get_monthly_statistics(request):
     return create_json_response(output, request)
 
 
-@user_passes_test(lambda u: u.is_superuser)
 def live_data(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     return create_json_response(functions.get_live_data(), request)
+
 
 
 def initialize_globals():
     global DEMO_SIMULATION, FORECAST_QUEUE
-    DEMO_SIMULATION = DemoSimulation.start_or_get()
+    DEMO_SIMULATION =  DemoSimulation.start_or_get()
     FORECAST_QUEUE = ForecastQueue()
