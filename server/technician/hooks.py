@@ -38,7 +38,11 @@ def handle_snippets(request):
         raise PermissionDenied
 
     if request.method == 'POST':
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body)
+        except ValueError:
+            return create_json_response({"status": "failed"}, request)
+
         if 'name' in data:
             if 'code' in data:
                 return create_json_response(functions.save_snippet(data['name'], data['code']), request)
@@ -53,7 +57,11 @@ def handle_code(request):
         raise PermissionDenied
 
     if request.method == 'POST':
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body)
+        except ValueError:
+            return create_json_response({"status": "failed"}, request)
+
         if 'code' in data:
             return create_json_response(functions.apply_snippet(data['code']), request)
 
@@ -65,7 +73,10 @@ def configure(request):
     if not request.user.is_superuser:
         raise PermissionDenied
 
-    data = json.loads(request.body)
+    try:
+        data = json.loads(request.body)
+    except ValueError:
+        return create_json_response({"status": "failed"}, request)
 
     if 'auto_optimization' in data:
         auto_optimization = Configuration.objects.get(key='auto_optimization')
@@ -79,12 +90,16 @@ def configure(request):
     return create_json_response({"status": "success"}, request)
 
 
+
 @require_POST
 def start_device(request):
     if not request.user.is_superuser:
         raise PermissionDenied
 
-    data = json.loads(request.body)
+    try:
+        data = json.loads(request.body)
+    except ValueError:
+        return create_json_response({"status": "failed"}, request)
 
     system_status = Configuration.objects.get(key='system_status')
     system_mode = Configuration.objects.get(key='system_mode')
@@ -162,8 +177,7 @@ def forecast(request):
                     initial_time, configurations=configurations, code=code)
         except ValueError as e:
             logger.error(e)
-            print e  # raise some awareness, because this ones pretty bad..
-            return create_json_response({"status": "failed"})
+            return create_json_response({"status": "failed"}, request)
     else:
         output = get_forecast(initial_time)
 
@@ -175,17 +189,24 @@ def forward(request):
     if not request.user.is_superuser:
         raise PermissionDenied
 
-    data = json.loads(request.body)
-    forward_time = float(data['forward_time']) * 24 * 3600
+    try:
+        data = json.loads(request.body)
+    except ValueError:
+        return create_json_response({"status": "failed"}, request)
 
-    demo_sim = DemoSimulation.start_or_get()
+    if 'forward_time' in data:
+        forward_time = float(data['forward_time']) * 24 * 3600
 
-    if demo_sim.forward > 0:
-        return create_json_response("simulation is still forwarding", request)
+        demo_sim = DemoSimulation.start_or_get()
 
-    demo_sim.forward = forward_time
+        if demo_sim.forward > 0:
+            return create_json_response({"status": "ignored"}, request)
 
-    return create_json_response("ok", request)
+        demo_sim.forward = forward_time
+
+        return create_json_response({"status": "success"}, request)
+    
+    return create_json_response({"status": "failed"}, request)
 
 
 def list_thresholds(request):
@@ -204,7 +225,11 @@ def handle_threshold(request):
     if not request.user.is_superuser:
         raise PermissionDenied
 
-    data = json.loads(request.body)
+    try:
+        data = json.loads(request.body)
+    except ValueError:
+        return create_json_response({"status": "failed"}, request)
+
     if 'id' in data:
 
         threshold = Threshold.objects.get(id=data['id'])

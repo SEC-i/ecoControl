@@ -61,6 +61,10 @@ class APITestCase(TestCase):
                 '\((.)*', '', pattern.regex.pattern).replace('^', '/').replace('$', '')
             response = self.client.get(url)
             self.assertTrue(response.status_code in [200, 403, 405])
+            response = self.client.post(url)
+            self.assertTrue(response.status_code in [200, 403, 405])
+            response = self.client.post(url, data=json.dumps({}), content_type="application/json")
+            self.assertTrue(response.status_code in [200, 403, 405])
 
     def test_all_hooks_simple_authenticated(self):
         for pattern in urlpatterns:
@@ -71,4 +75,8 @@ class APITestCase(TestCase):
             self.client.login(username='test_admin', password='demo321')
 
             response = self.client.get(url)
+            self.assertTrue(response.status_code in [200, 403, 405])
+            response = self.client.post(url)
+            self.assertTrue(response.status_code in [200, 403, 405])
+            response = self.client.post(url, data=json.dumps({}), content_type="application/json")
             self.assertTrue(response.status_code in [200, 403, 405])
