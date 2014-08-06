@@ -17,7 +17,8 @@ class APITestCase(TestCase):
         User.objects.create_user(
             username="test_user", password="demo123", first_name="test_fn", last_name="test_ln")
 
-        User.objects.create_superuser('test_admin', 'admin@localhost', 'demo321')
+        User.objects.create_superuser(
+            'test_admin', 'admin@localhost', 'demo321')
 
     def setUp(self):
         self.client = Client()
@@ -57,6 +58,18 @@ class APITestCase(TestCase):
 
     def test_all_hooks_simple(self):
         for pattern in urlpatterns:
-            url = re.sub('\((.)*', '', pattern.regex.pattern).replace('^', '/').replace('$', '')
+            url = re.sub(
+                '\((.)*', '', pattern.regex.pattern).replace('^', '/').replace('$', '')
+            response = self.client.get(url)
+            self.assertTrue(response.status_code in [200, 403, 405])
+
+    def test_all_hooks_simple_authenticated(self):
+        for pattern in urlpatterns:
+            url = re.sub(
+                '\((.)*', '', pattern.regex.pattern).replace('^', '/').replace('$', '')
+
+            # Log in as admin. For some reason, this is only valid once.
+            self.client.login(username='test_admin', password='demo321')
+
             response = self.client.get(url)
             self.assertTrue(response.status_code in [200, 403, 405])
