@@ -49,3 +49,4 @@ nosetests.xml
 
 sftp-config-alt2.json
 static/libs
+htmlcov
