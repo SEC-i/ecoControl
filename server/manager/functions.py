@@ -1,8 +1,9 @@
 import logging
 import calendar
-from datetime import date
+from datetime import datetime
 
 from django.db.models import Sum
+from django.utils.timezone import utc
 
 from server.models import Device, Sensor, SensorValue, SensorValueMonthlySum
 from server.functions import get_configuration
@@ -12,8 +13,8 @@ logger = logging.getLogger('django')
 
 def get_total_balance_by_date(month, year):
 
-    start = date(year, month, 1)
-    end = date(year, month, calendar.mdays[month])
+    start = datetime(year, month, 1).replace(tzinfo=utc)
+    end = datetime(year, month, calendar.mdays[month]).replace(tzinfo=utc)
 
     # calculate costs
     sensor_ids = Sensor.objects.filter(
