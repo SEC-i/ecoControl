@@ -16,8 +16,10 @@ class MeasurementStorage():
     def __init__(self, env, devices):
         self.env = env
         self.devices = devices
-        self.sensors = Sensor.objects.filter(
-            device_id__in=[x.id for x in self.devices])
+        self.sensors = list(Sensor.objects.filter(
+            device_id__in=[x.id for x in self.devices]))
+        self.sensors_in_diagram = list(Sensor.objects.filter(
+            device_id__in=[x.id for x in self.devices], in_diagram=True))
 
         if env.is_demo_simulation():
             # initialize for demo
@@ -50,9 +52,9 @@ class MeasurementStorage():
             self.flush_data()
 
     def take_and_cache(self):
-        for index, sensor in enumerate(self.sensors):
+        for index, sensor in enumerate(self.sensors_in_diagram):
             for device in self.devices:
-                if device.id == sensor.device.id and sensor.in_diagram:
+                if device.id == sensor.device_id:
                     value = getattr(device, sensor.key, None)
                     if value is not None:
                         # in case value is a function, call that function
@@ -63,17 +65,16 @@ class MeasurementStorage():
 
     def get_cached(self,delete_after=False):
         output = []
-        for index, sensor in enumerate(self.sensors):
-            if sensor.in_diagram:
-                output.append({
-                    'id': sensor.id,
-                    'device_id': sensor.device_id,
-                    'device': sensor.device.name,
-                    'name': sensor.name,
-                    'unit': sensor.unit,
-                    'key': sensor.key,
-                    'data': self.forecast_data[index].tolist()
-                })
+        for index, sensor in enumerate(self.sensors_in_diagram):
+            output.append({
+                'id': sensor.id,
+                'device_id': sensor.device_id,
+                'device': sensor.device.name,
+                'name': sensor.name,
+                'unit': sensor.unit,
+                'key': sensor.key,
+                'data': self.forecast_data[index].tolist()
+            })
             if delete_after:
                 self.forecast_data[index] = []
         return output
