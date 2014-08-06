@@ -1,15 +1,14 @@
-import time
-from datetime import datetime
-from django.utils.timezone import utc
+from time import time, gmtime
+
 
 class BaseDevice(object):
+    """Represents a general interface to the energy-systems."""
+
+    acronym = "b"
 
     def __init__(self, device_id, env):
-        self.id = device_id
-        self.env = env
-                
-        
-
+        self.id = device_id #: `int` identifier
+        self.env = env #: `:class:BaseEnvironment`
 
     def calculate(self):
         pass
@@ -33,22 +32,36 @@ class BaseDevice(object):
         return True
 
 
+
+
 class BaseEnvironment(object):
+    """This class manages the simulation of the energy-systems."""
 
     def __init__(self, initial_time=None, step_size=120, demomode=False, forecast=False):
         """ demomode indicates, if running in demomode, not if this is the demo simulation"""
         if initial_time is None:
-            self.now = time.time()
+            self.now = time()
         else:
             self.now = initial_time
-
+        #: a unix timestamp representing the start of simulation
+        #: if initial_time is `None` the current time is used
+        self.initial_date = self.now
+        #: `int` value of seconds how often the simulated devices calculate their state
         self.step_size = step_size
+
         self.demo_mode = demomode
-        self.initial_date = datetime.fromtimestamp(self.now).replace(tzinfo=utc)
+        """ =========================  =============================   =============================
+                                        ``demo_mode``  --``True``       ``demo_mode`` -- ``False``                                                                      
+            =========================  =============================   =============================
+            ``forecast``-- ``True``    forecast of simulated devices   forecast of real devices
+            ``forecast``-- ``False``   demo simulation                 real device (env not defined)
+            =========================  =============================   =============================
+        """
         self.forecast = forecast
 
     def get_day_of_year(self):
-        return time.gmtime(self.now).tm_yday
-    
+        """Returns an `int` value of the current simulated day"""
+        return gmtime(self.now).tm_yday
+
     def is_demo_simulation(self):
         return self.demo_mode and not self.forecast

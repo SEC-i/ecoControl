@@ -15,8 +15,8 @@ import logging
 import calendar
 from datetime import datetime, timedelta
 
-from server.forecasting.devices.data.old_demands import outside_temperatures_2013, outside_temperatures_2012
-from server.forecasting.forecasting.helpers import cached_data,\
+from server.forecasting.simulation.demodata.old_demands import outside_temperatures_2013, outside_temperatures_2012
+from server.forecasting.helpers import cached_data,\
     approximate_index
 from server.models import WeatherValue, RealWeatherValue
 from django.utils.timezone import utc
@@ -27,11 +27,12 @@ demo_weather = None
 current_weather = None
 
 def get_temperature(env, date):
-    """ General function to retrieve forecasts. 
-    Will decide upon the `env` parameter, if :class:`DemoWeather` or :class:`CurrentWeatherForecast` should be used. 
-    
-    :param :class:`~server.devices.base.BaseEnvironment` env: the current environment
-    :param :py:`~datetime.datetime` date: the time of which to retrieve the weather(forecast)
+    """ General function to retrieve forecasts.
+    Will decide upon the `env` parameter, if :class:`DemoWeather` or :class:`CurrentWeatherForecast` should be used.
+
+
+    :param ``BaseEnvironment`` env: the current environment
+    :param ``datetime`` date: the time of which to retrieve the weather(forecast)
     """
     global demo_weather
     global current_weather
@@ -39,7 +40,7 @@ def get_temperature(env, date):
     if env.demo_mode:
         if demo_weather == None:
             demo_weather = DemoWeather(env)
-        
+
         if env.forecast:
             return demo_weather.get_temperature_estimate(date)
         else:
@@ -64,13 +65,13 @@ class DemoWeather:
         self.forecast_temperatures_3hourly = []
         self.forecast_temperatures_daily = []
         self.hourly = True
-        
+
         self.cache_day = {}
         self.cache_real_values = [[],[]]
         self.error_day_cache = {}
 
     def get_temperature(self,date):
-        """ Retrieve a temperature at a certain time. The class will cache the 
+        """ Retrieve a temperature at a certain time. The class will cache the
         values after the first query to speed up subsequent requests.
 
         :param datetime date: The time
@@ -82,44 +83,45 @@ class DemoWeather:
             for entry in real_temps:
                 self.cache_real_values[0].append(calendar.timegm(entry.timestamp.utctimetuple()))
                 self.cache_real_values[1].append(float(entry.temperature))
-        
+
         if len(self.cache_real_values[1]) < 2:
             raise Exception("not enough weather values in database")
         idx = approximate_index(self.cache_real_values[0], calendar.timegm(date.utctimetuple()))
         return  self.cache_real_values[1][idx]
-        
+
     def get_temperature_estimate(self, target_date):
         """Retrieve a forecasted temperature at a certain time. The target_date must be between 0 and 10 days away from the creation_date,
         as weather forecasts only cover 10 days.
 
-        The class will cache the 
-        values after the first query to speed up subsequent requests. 
+        The class will cache the
+        values after the first query to speed up subsequent requests.
 
         :param datetime date: The timepoint
 
         """
-        
-        time_passed = (target_date - self.env.initial_date).total_seconds() / (60.0 * 60.0 * 24)  # in days
-        
-        initial0 = self.env.initial_date.replace(minute=0,second=0)
+
+        time_passed = (target_date - datetime.fromtimestamp(self.env.initial_date)).total_seconds() / \
+                (60.0 * 60.0 * 24)  # in days
+
+        initial0 = datetime.fromtimestamp(self.env.initial_date).replace(minute=0,second=0)
         initial1 = initial0 + timedelta(hours=1)
-        
+
         target_date = target_date.replace(hour=0,minute=0,second=0)
         target_date_key = target_date.strftime("%Y-%m-%d")
-        
-        
-        
+
+
+
         if self.error_day_cache.has_key(target_date_key):
             return self.error_day_cache[target_date_key][target_date.hour]
-        
+
         if not self.cache_day.has_key(target_date_key):
             forecasts_until_now = WeatherValue.objects.filter(timestamp__lte=initial0)
             if len(forecasts_until_now) == 0:
                 #print "Warning, date_time not in weatherforecasts ", date_time, " getting real data" ,"initial", initial0
                 return self.get_temperature(target_date)
             newest_creation_timestamp = forecasts_until_now.latest('timestamp').timestamp
-            
-            
+
+
             values0 = WeatherValue.objects.filter(timestamp=newest_creation_timestamp).filter(target_time__range = [target_date.replace(hour=0), target_date.replace(hour=23,minute=59)])
             day_values0 =  values0.order_by("-timestamp")
 
@@ -127,20 +129,20 @@ class DemoWeather:
             if len(test_list) < 24:
                 self.error_day_cache[target_date_key] = self._fill_error_gaps(test_list, target_date)
                 return self.error_day_cache[target_date_key][target_date.hour]
-            
+
             self.cache_day[target_date_key] = [float(v.temperature) for v in day_values0]
-        
-        
+
+
         values0 =self.cache_day[target_date_key]
         return self.mix(values0[target_date.hour],values0[min(target_date.hour+1,23)], target_date.minute / 60.0)
-    
+
     def _fill_error_gaps(self, input_list, date):
         """ fill gaps of data, if missing or prediction are asked for intervals > 10 days"""
         logger.warning("not enough dates in list "+  len(input_list) + " " + date)
         output = [None for i in range(24)]
         for temp_date in input_list:
             output[temp_date[1]] = temp_date[0]
-        
+
         for i,v in enumerate(output):
             if v == None:
                 if len(self.cache_day) == 0:
@@ -220,7 +222,7 @@ class CurrentWeatherForecast:
 
     def find_city(self, name):
         """returns a dictionary with city id, names and country based on the given search name
-        the first search result is returned as 'default' too. 
+        the first search result is returned as 'default' too.
 
         :param string name: f.e. "Berlin"
         """
@@ -245,7 +247,7 @@ class CurrentWeatherForecast:
         return {'default':first_city, 'cities':cities}
 
     def get_weather_forecast(self, hourly=True):
-        """ retrieves an entire forecast. Tries to get forecast from internal list or filesystem cache. 
+        """ retrieves an entire forecast. Tries to get forecast from internal list or filesystem cache.
         If that fails or data is too old, the online service will be queried"""
         self.hourly = hourly
         # only permit forecast queries every 30min, to save some api requests
@@ -264,7 +266,7 @@ class CurrentWeatherForecast:
         for data_set in data["list"]:
             try:
                 forecast_temperatures.append(data_set["main"]["temp"])
-            except:   
+            except:
                 logger.warning("CurrentWeatherForecast: Problems while json parsing")
                 if "gdps" not in data_set:
                     logger.error("CurrentWeatherForecast: Couldn't read temperature values from openweathermap")
@@ -286,7 +288,7 @@ class CurrentWeatherForecast:
             result = []
             for i in range(0, 40):
                 result.append(
-                    self.get_average_outside_temperature(self.get_date(), i))
+                    self.get_average_outside_temperature(datetime.fromtimestamp(self.get_date()), i))
             return result
 
 

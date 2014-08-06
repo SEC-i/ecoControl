@@ -6,9 +6,11 @@ from django.utils.timezone import utc
 from django.db import connection, ProgrammingError
 from django.contrib.auth.models import User
 from django.core.management import call_command
+from django import db
 
-from server.forecasting.devices.data.old_demands import outside_temperatures_2013, outside_temperatures_2012
+from server.forecasting.simulation.demodata.old_demands import outside_temperatures_2013, outside_temperatures_2012
 from server.models import Device, Sensor, Configuration, DeviceConfiguration, SensorValueDaily, SensorValueHourly, SensorValueMonthlyAvg, SensorValueMonthlySum, WeatherValue
+from server.settings import TESTING
 
 logger = logging.getLogger('ecocontrol')
 
@@ -18,7 +20,7 @@ def initialize_default_user():
         User.objects.create_user('manager', 'manager@example.com', 'verwaltung')
 
 def initialize_default_scenario():
-    needs_initialization = len(Device.objects.all()) == 0 
+    needs_initialization = len(Device.objects.all()) == 0
     if needs_initialization:
         hs = Device(name='Heat Storage', device_type=Device.HS)
         hs.save()
@@ -42,11 +44,11 @@ def initialize_default_scenario():
         sensors.append(
             Sensor(device=pm, name='Fed in Electricity', key='fed_in_electricity', unit='kWh', aggregate_sum=True))
         sensors.append(
-            Sensor(device=cu, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True, aggregate_avg=True))
+            Sensor(device=cu, name='Workload', key='workload_percent', setter='workload_percent', unit='%', in_diagram=True, aggregate_avg=True))
         sensors.append(
             Sensor(device=cu, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh', aggregate_sum=True))
         sensors.append(
-            Sensor(device=plb, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True, aggregate_avg=True))
+            Sensor(device=plb, name='Workload', key='workload_percent', setter='workload_percent', unit='%', in_diagram=True, aggregate_avg=True))
         sensors.append(
             Sensor(device=plb, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh', aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Thermal Consumption',
@@ -66,12 +68,12 @@ def initialize_default_scenario():
     # if the configuration must be renewed, while the devices stay the same, init only the config again
     if needs_initialization or len(Configuration.objects.all()) == 0:
         logger.debug("Default sensors initialized")
-        
+
         configurations = []
         configurations.append(Configuration(
-            key='device_status', value='init', value_type=Configuration.STR, internal=True))
+            key='system_status', value='init', value_type=Configuration.STR, internal=True))
         configurations.append(Configuration(
-            key='device_mode', value='', value_type=Configuration.STR, internal=True))
+            key='system_mode', value='', value_type=Configuration.STR, internal=True))
         configurations.append(Configuration(
             key='auto_optimization', value='0', value_type=Configuration.BOOL, internal=True))
         configurations.append(Configuration(
@@ -110,7 +112,7 @@ def initialize_default_scenario():
             key='electrical_revenues', value='0.268', value_type=Configuration.FLOAT, unit='€'))
 
         Configuration.objects.bulk_create(configurations)
-    
+
     if needs_initialization:
         logger.debug("Default configurations initialized")
 
@@ -118,11 +120,11 @@ def initialize_default_scenario():
         device_configurations.append(
             DeviceConfiguration(device=cu, key='max_gas_input', value='19.0', value_type=DeviceConfiguration.FLOAT, unit='kWh'))
         device_configurations.append(
-            DeviceConfiguration(device=cu, key='thermal_efficiency', value='65.0', value_type=DeviceConfiguration.FLOAT, unit='%'))
+            DeviceConfiguration(device=cu, key='thermal_efficiency', value='0.65', value_type=DeviceConfiguration.FLOAT, unit='%'))
         device_configurations.append(
-            DeviceConfiguration(device=cu, key='electrical_efficiency', value='24.7', value_type=DeviceConfiguration.FLOAT, unit='%'))
+            DeviceConfiguration(device=cu, key='electrical_efficiency', value='0.247', value_type=DeviceConfiguration.FLOAT, unit='%'))
         device_configurations.append(
-            DeviceConfiguration(device=cu, key='minimal_workload', value='40.0', value_type=DeviceConfiguration.FLOAT, unit='%'))
+            DeviceConfiguration(device=cu, key='minimal_workload', value='0.40', value_type=DeviceConfiguration.FLOAT, unit='%'))
         device_configurations.append(
             DeviceConfiguration(device=cu, key='minimal_off_time', value='600', value_type=DeviceConfiguration.INT, unit='seconds', tunable=True))
         device_configurations.append(
@@ -137,7 +139,7 @@ def initialize_default_scenario():
         device_configurations.append(
             DeviceConfiguration(device=plb, key='max_gas_input', value='45.0', value_type=DeviceConfiguration.FLOAT, unit='kWh'))
         device_configurations.append(
-            DeviceConfiguration(device=plb, key='thermal_efficiency', value='91.0', value_type=DeviceConfiguration.FLOAT, unit='%'))
+            DeviceConfiguration(device=plb, key='thermal_efficiency', value='0.91', value_type=DeviceConfiguration.FLOAT, unit='%'))
 
         device_configurations.append(
             DeviceConfiguration(device=hs, key='capacity', value='2500.0', value_type=DeviceConfiguration.FLOAT, unit='l'))
@@ -153,7 +155,7 @@ def initialize_default_scenario():
 
 
 def initialize_weathervalues():
-    if len(WeatherValue.objects.all()) == 0:
+    if len(WeatherValue.objects.all()) == 0 and not TESTING:#exclude tests
         call_command('fill_weather', interactive=True)
         logger.debug("Default weather data for 2012 and 2013 initialized")
 

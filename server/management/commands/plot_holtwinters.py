@@ -9,16 +9,16 @@ from datetime import datetime
 import sys
 
 from server.models import SensorValue
-from server.forecasting.forecasting.auto_optimization import simulation_run
+from server.forecasting.optimizing.auto_optimization import simulation_run
 from server.forecasting import get_forecast
 from server.functions import get_past_time
 from server.forecasting.tools.plotting import show_plotting, plot_dataset
 from server.settings import BASE_DIR
-from server.forecasting.forecasting.holt_winters import multiplicative, linear,\
+from server.forecasting.statistical.holt_winters import multiplicative, linear,\
     double_seasonal
-from server.forecasting.forecasting.helpers import approximate_index
-from server.forecasting.forecasting.dataloader import DataLoader
-from server.forecasting.forecasting import StatisticalForecast, DayTypeForecast,\
+from server.forecasting.helpers import approximate_index
+from server.forecasting.dataloader import DataLoader
+from server.forecasting.statistical import StatisticalForecast, DayTypeForecast,\
     DSHWForecast
 from math import sqrt
 from server.devices.base import BaseEnvironment

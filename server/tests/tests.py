@@ -12,6 +12,7 @@ class APITestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        print "\ntesting general hooks",
         # Create test user for all tests
         User.objects.create_user(
             username="test_user", password="demo123", first_name="test_fn", last_name="test_ln")
@@ -40,7 +41,7 @@ class APITestCase(TestCase):
 
         # Check that the response equals {"login": "inactive"}
         self.assertDictContainsSubset(
-            {"login": "active", "user": "test_fn test_ln", "device_status": "init"}, json.loads(response.content))
+            {"login": "active", "user": "test_fn test_ln", "system_status": "init"}, json.loads(response.content))
 
         # Issue a request to logout
         response = self.client.get('/api/logout/')
@@ -52,7 +53,7 @@ class APITestCase(TestCase):
 
         # Check that the response equals {"login": "inactive"}
         self.assertDictContainsSubset(
-            {"login": "inactive", "device_status": "init"}, json.loads(response.content))
+            {"login": "inactive", "system_status": "init"}, json.loads(response.content))
 
     def test_all_hooks_simple(self):
         for pattern in urlpatterns:

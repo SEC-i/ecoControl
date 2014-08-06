@@ -2,11 +2,15 @@ import unittest
 import time
 
 from server.devices.base import BaseEnvironment
-from server.forecasting.devices.consumers import SimulatedThermalConsumer
-from server.forecasting.devices.storages import SimulatedHeatStorage
+from server.forecasting.simulation.devices.consumers import SimulatedThermalConsumer
+from server.forecasting.simulation.devices.storages import SimulatedHeatStorage
 
 
 class SimulatedThermalConsumerTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        print "\ntesting consumers",
 
     def setUp(self):
         env = BaseEnvironment(forecast=True)
@@ -14,12 +18,6 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         self.consumer.heat_storage = SimulatedHeatStorage(1, env)
 
 
-    '''def test_step(self):
-       # pass
-        verbrauch wird berechnet 
-        total_consumption wird erhoeht
-        energy wird aus dem SimulatedHeatstorage entnommen
-        '''
 
     def test_get_warmwater_consumption_power(self):
         ''' number of residents.
@@ -85,7 +83,7 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         self.consumer.temperature_warmwater = temperature
 
         heat_storage = SimulatedHeatStorage(0, env)
-        heat_storage.config['base_temperature'] = heat_storage_base
+        heat_storage.base_temperature = heat_storage_base
         self.consumer.heat_storage = heat_storage
 
         return self.consumer.get_warmwater_consumption_power()
