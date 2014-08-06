@@ -12,7 +12,6 @@ class APITestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print "\ntesting general hooks",
         # Create test user for all tests
         User.objects.create_user(
             username="test_user", password="demo123", first_name="test_fn", last_name="test_ln")

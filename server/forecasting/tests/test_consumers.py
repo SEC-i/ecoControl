@@ -8,16 +8,10 @@ from server.forecasting.simulation.devices.storages import SimulatedHeatStorage
 
 class SimulatedThermalConsumerTests(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        print "\ntesting consumers",
-
     def setUp(self):
         env = BaseEnvironment(forecast=True)
         self.consumer = SimulatedThermalConsumer(0, env)
         self.consumer.heat_storage = SimulatedHeatStorage(1, env)
-
-
 
     def test_get_warmwater_consumption_power(self):
         ''' number of residents.
@@ -78,7 +72,7 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         the temperature of warm water and 
         the base_temperatur of the heat_storage'''
         self.consumer.config['residents'] = residents
-        env = BaseEnvironment(initial_time=time_in_seconds,forecast=True)
+        env = BaseEnvironment(initial_time=time_in_seconds, forecast=True)
         self.consumer.env = env
         self.consumer.temperature_warmwater = temperature
 
@@ -125,7 +119,8 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         self.consumer.simulate_consumption()
 
         self.assertNotEqual(self.consumer.current_power, last_current_power)
-        self.assertLessEqual(self.consumer.current_power, self.consumer.max_power)
+        self.assertLessEqual(
+            self.consumer.current_power, self.consumer.max_power)
         self.assertGreaterEqual(self.consumer.current_power, 0)
 
     def test_heat_room_considers_current_power(self):
@@ -171,8 +166,8 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         self.consumer.current_power = current_power
         self.consumer.env.step_size = step_size
         self.consumer.temperature_room = temperature
-        for i in range(1,10):
-            #self.consumer.heat_room()
+        for i in range(1, 10):
+            # self.consumer.heat_room()
             self.consumer.simulate_consumption()
         return self.consumer.temperature_room
 
@@ -181,7 +176,8 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
         according to the daily demand'''
         daily_demand = [x for x in range(24)]
 
-        env = BaseEnvironment(initial_time=1388530800,forecast=True) # 2014-01-01 00:00:00
+        env = BaseEnvironment(initial_time=1388530800,
+                              forecast=True)  # 2014-01-01 00:00:00
         heat_storage = SimulatedHeatStorage(0, env)
         consumer = SimulatedThermalConsumer(1, env)
         consumer.heat_storage = heat_storage
@@ -191,10 +187,11 @@ class SimulatedThermalConsumerTests(unittest.TestCase):
             consumer.config['target_temperature'] = 0
             consumer.simulate_consumption()
 
-            self.assertEqual(consumer.config['target_temperature'], temperature,
-                             "current hour: {0} expected: {1} got: {2}".format(
-                                 index, consumer.config['target_temperature'],
-                                 temperature))
+            self.assertEqual(
+                consumer.config['target_temperature'], temperature,
+                "current hour: {0} expected: {1} got: {2}".format(
+                    index, consumer.config['target_temperature'],
+                    temperature))
 
             env.now += 60 * 60
 
