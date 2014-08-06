@@ -22,7 +22,7 @@ class TechnicianHooksTestCase(TestCase):
         User.objects.create_superuser(
             'test_tech', 'admin@localhost', 'testing')
 
-    def load_sensor_values(self):
+    def get_sensor_values(self):
         directory = join(
             BASE_DIR, "server", "tests", "data")
 
@@ -40,16 +40,18 @@ class TechnicianHooksTestCase(TestCase):
                 timestamp = datetime.strptime(row[t_index], "%Y-%m-%d %H:%M:%S+%f").replace(tzinfo=utc)
                 sensor_values.append(SensorValue(sensor_id=sensor, value=value, timestamp=timestamp))
 
-        SensorValue.objects.bulk_create(sensor_values)
-
-        refresh_views()
+        return sensor_values
 
     def setUp(self):
         self.client = Client()
         self.client.login(username='test_tech', password='testing')
 
     def test_statistics(self):
-        self.load_sensor_values()
+        sensor_values = self.get_sensor_values()
+        created = SensorValue.objects.bulk_create(sensor_values)
+        self.assertEqual(len(created), 500)
+        refresh_views()
+        
         response = self.client.get('/api/statistics/')
         self.assertEqual(response.status_code, 200)
 

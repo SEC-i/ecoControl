@@ -39,7 +39,7 @@ class CogenerationUnit(BaseDevice):
         self.running = True
         self.thermal_driven = True
 
-        self.workload = 0
+        self._workload = 0
         self.current_gas_consumption = 0.0  #: kW
         self.current_thermal_production = 0.0  #: kWh
         self.total_gas_consumption = 0  #: kWh
@@ -53,7 +53,7 @@ class CogenerationUnit(BaseDevice):
 
         self.gas_costs = 0.0655  #: default 0.0655 Euro per kWh
 
-    def workload_percent(self, workload=None):
+    def workload(self, workload=None):
         """Getter and setter for the workload.
 
         :param float workload: between 0-100, if None nothing is set
@@ -61,8 +61,8 @@ class CogenerationUnit(BaseDevice):
         :returns: current workload in percent [0,100]
         """
         if workload is not None:
-            self.workload = workload / 100.0
-        return self.workload * 100.0
+            self._workload = workload / 100.0
+        return self._workload * 100.0
 
     def find_dependent_devices_in(self, device_list):
         for device in device_list:
@@ -113,7 +113,7 @@ class PeakLoadBoiler(BaseDevice):
         self.heat_storage = None
         self.running = True
 
-        self.workload = 0
+        self._workload = 0
         self.current_gas_consumption = 0.0  #: kW
         self.current_thermal_production = 0.0  #: kWh
         self.total_gas_consumption = 0  #: kWh
@@ -132,8 +132,8 @@ class PeakLoadBoiler(BaseDevice):
         :returns: current workload in [0,100]
         """
         if workload is not None:
-            self.workload = workload / 100.0
-        return self.workload * 100.0
+            self._workload = workload / 100.0
+        return self._workload * 100.0
 
     def find_dependent_devices_in(self, device_list):
         for device in device_list:
