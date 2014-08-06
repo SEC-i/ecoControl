@@ -128,7 +128,6 @@ class Forecast(Thread):
         self.next_optimization = 0.0
         self.use_optimization = get_configuration('auto_optimization')
 
-
     def step(self):
 
         execute_user_function(self.env,self.env.forecast,self.devices,self.user_function)
