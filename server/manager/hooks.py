@@ -1,10 +1,11 @@
 import logging
 import calendar
-from datetime import date
+from datetime import datetime
 
 from django.db.models import Sum, Avg
 from django.db import connection
 from django.core.exceptions import PermissionDenied
+from django.utils.timezone import utc
 
 from server.models import Device, Sensor, SensorValue, SensorValueMonthlySum, SensorValueMonthlyAvg
 from server.functions import get_configuration, get_past_time
@@ -19,11 +20,11 @@ def get_sums(request, sensor_id=None, year=None):
         raise PermissionDenied
 
     if year is None:
-        start = date(date.today().year, 1, 1)
-        end = date(date.today().year, 12, 31)
+        start = datetime(datetime.today().year, 1, 1).replace(tzinfo=utc)
+        end = datetime(datetime.today().year, 12, 31).replace(tzinfo=utc)
     else:
-        start = date(int(year), 1, 1)
-        end = date(int(year), 12, 31)
+        start = datetime(int(year), 1, 1).replace(tzinfo=utc)
+        end = datetime(int(year), 12, 31).replace(tzinfo=utc)
 
     sensorvaluemonthlysum = SensorValueMonthlySum.objects.filter(
         timestamp__gte=start, timestamp__lte=end)
@@ -45,11 +46,11 @@ def get_avgs(request, sensor_id=None, year=None):
         raise PermissionDenied
 
     if year is None:
-        start = date(date.today().year, 1, 1)
-        end = date(date.today().year, 12, 31)
+        start = datetime(datetime.today().year, 1, 1).replace(tzinfo=utc)
+        end = datetime(datetime.today().year, 12, 31).replace(tzinfo=utc)
     else:
-        start = date(int(year), 1, 1)
-        end = date(int(year), 12, 31)
+        start = datetime(int(year), 1, 1).replace(tzinfo=utc)
+        end = datetime(int(year), 12, 31).replace(tzinfo=utc)
 
     sensorvaluemonthlyavg = SensorValueMonthlyAvg.objects.filter(
         timestamp__gte=start, timestamp__lte=end)
@@ -141,8 +142,8 @@ def get_total_balance(request, year=None, month=None):
 
     output = []
     for month in months:
-        start = date(year, month, 1)
-        end = date(year, month, calendar.mdays[month])
+        start = datetime(year, month, 1).replace(tzinfo=utc)
+        end = datetime(year, month, calendar.mdays[month]).replace(tzinfo=utc)
 
         output.append(functions.get_total_balance_by_date(month, year))
 

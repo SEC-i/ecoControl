@@ -44,11 +44,11 @@ def initialize_default_scenario():
         sensors.append(
             Sensor(device=pm, name='Fed in Electricity', key='fed_in_electricity', unit='kWh', aggregate_sum=True))
         sensors.append(
-            Sensor(device=cu, name='Workload', key='workload_percent', setter='workload_percent', unit='%', in_diagram=True, aggregate_avg=True))
+            Sensor(device=cu, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True, aggregate_avg=True))
         sensors.append(
             Sensor(device=cu, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh', aggregate_sum=True))
         sensors.append(
-            Sensor(device=plb, name='Workload', key='workload_percent', setter='workload_percent', unit='%', in_diagram=True, aggregate_avg=True))
+            Sensor(device=plb, name='Workload', key='workload', setter='workload', unit='%', in_diagram=True, aggregate_avg=True))
         sensors.append(
             Sensor(device=plb, name='Current Gas Consumption', key='current_gas_consumption', unit='kWh', aggregate_sum=True))
         sensors.append(Sensor(device=tc, name='Thermal Consumption',
@@ -186,7 +186,7 @@ def initialize_views():
         cursor.execute('''CREATE MATERIALIZED VIEW server_sensorvaluedaily AS
                     SELECT row_number() OVER (ORDER BY timestamp) AS id,
                         sensor_id,
-                        date_trunc('day', timestamp)::timestamp::date AS timestamp,
+                        date_trunc('day', timestamp)::timestamp::timestamptz AS timestamp,
                         avg(value) AS value
                     FROM ( SELECT server_sensorvalue.sensor_id,
                         '1970-01-01 00:00:00'::timestamp without time zone + '1 day'::interval * (date_part('epoch'::text, server_sensorvalue."timestamp")::integer / 86400)::double precision AS timestamp,

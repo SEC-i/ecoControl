@@ -27,7 +27,7 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
-# try to compile the cython (.pyx) version of a few, perfomance critical functions
+# Compile the cython (.pyx) version of a few, performance critical functions
 CYTHON_SUPPORT = True
 
 
@@ -69,14 +69,14 @@ DATABASES = {
         'PORT': '5432',
         'USER': 'ecocontrol',
         'PASSWORD': 'sec-i'
-     }
- }
+    }
+}
 
 # Test runner with no database deletion
-
 TEST_RUNNER = 'server.tests.CustomTestSuiteRunner'
-#to know if this is a testing environment
-TESTING = 'test' in sys.argv 
+
+# Flag to identify a testing environment
+TESTING = 'test' in sys.argv
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
@@ -132,7 +132,7 @@ LOGGING = {
             'backupCount': 5,
             'formatter': 'verbose'
         },
-        'console':{
+        'console': {
             'level': 'WARNING',
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
@@ -173,3 +173,10 @@ XS_SHARING_ALLOWED_ORIGINS = '*'
 XS_SHARING_ALLOWED_METHODS = ['POST', 'GET', 'OPTIONS']
 XS_SHARING_ALLOWED_HEADERS = ['Content-Type', '*']
 XS_SHARING_ALLOWED_CREDENTIALS = 'true'
+
+# Turn DateTimeField warnings into exceptions (for dev purpose only)
+if DEBUG:
+    import warnings
+    warnings.filterwarnings(
+        'error', r"DateTimeField",
+        RuntimeWarning, r'django\.db\.models\.fields')

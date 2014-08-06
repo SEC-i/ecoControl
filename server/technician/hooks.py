@@ -26,18 +26,23 @@ import functions
 
 logger = logging.getLogger('django')
 
-DEMO_SIMULATION =  None
+DEMO_SIMULATION = None
 """This runs in the background, but can be accessed globally in `technician.hooks`. If the system is not in demo-mode, DEMO_SIMULATION will be ``None``"""
 
 FORECAST_QUEUE = None
 """Running forecasts can be accessed by ID from here"""
+
 
 def handle_snippets(request):
     if not request.user.is_superuser:
         raise PermissionDenied
 
     if request.method == 'POST':
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body)
+        except ValueError:
+            return create_json_response({"status": "failed"}, request)
+
         if 'name' in data:
             if 'code' in data:
                 return create_json_response(functions.save_snippet(data['name'], data['code']), request)
@@ -52,7 +57,11 @@ def handle_code(request):
         raise PermissionDenied
 
     if request.method == 'POST':
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body)
+        except ValueError:
+            return create_json_response({"status": "failed"}, request)
+
         if 'code' in data:
             return create_json_response(functions.apply_snippet(data['code']), request)
 
@@ -64,7 +73,10 @@ def configure(request):
     if not request.user.is_superuser:
         raise PermissionDenied
 
-    data = json.loads(request.body)
+    try:
+        data = json.loads(request.body)
+    except ValueError:
+        return create_json_response({"status": "failed"}, request)
 
     if 'auto_optimization' in data:
         auto_optimization = Configuration.objects.get(key='auto_optimization')
@@ -78,12 +90,16 @@ def configure(request):
     return create_json_response({"status": "success"}, request)
 
 
+
 @require_POST
 def start_device(request):
     if not request.user.is_superuser:
         raise PermissionDenied
 
-    data = json.loads(request.body)
+    try:
+        data = json.loads(request.body)
+    except ValueError:
+        return create_json_response({"status": "failed"}, request)
 
     system_status = Configuration.objects.get(key='system_status')
     system_mode = Configuration.objects.get(key='system_mode')
@@ -95,7 +111,7 @@ def start_device(request):
             system_mode.value = 'demo'
             system_mode.save()
             DEMO_SIMULATION = DemoSimulation.start_or_get()
-            #if no values exist, fill database with one week
+            # if no values exist, fill database with one week
             if SensorValue.objects.count() == 0.0:
                 DEMO_SIMULATION.forward = 24 * 7 * 3600.0
 
@@ -113,6 +129,7 @@ def get_tunable_device_configurations(request):
 
     output = dict(get_device_configurations(tunable=True))
     return create_json_response(output, request)
+
 
 @gzip_page
 def forecast(request):
@@ -132,7 +149,8 @@ def forecast(request):
             if 'forecast_id' in data:
                 result = FORECAST_QUEUE.get_by_id(data['forecast_id'])
                 if result == None:
-                    output =  {"forecast_id" : data['forecast_id'], 'sensors' : [], 'status' : "running"}
+                    output = {"forecast_id": data[
+                        'forecast_id'], 'sensors': [], 'status': "running"}
                 else:
                     output = result
                     output["status"] = "finished"
@@ -144,19 +162,22 @@ def forecast(request):
 
             configurations = None
             if 'configurations' in data:
-                configurations = functions.get_modified_configurations(data['configurations'])
+                configurations = functions.get_modified_configurations(
+                    data['configurations'])
 
             if functions.get_configuration('auto_optimization'):
                 # schedule forecast and immediately return its id.
                 # The forecast result can be later retrieved by it
-                forecast_id = FORECAST_QUEUE.schedule_new(initial_time, configurations=configurations, code=code)
-                output = {"forecast_id" : forecast_id, 'sensors' : [], 'status' : "running"}
+                forecast_id = FORECAST_QUEUE.schedule_new(
+                    initial_time, configurations=configurations, code=code)
+                output = {"forecast_id":
+                          forecast_id, 'sensors': [], 'status': "running"}
             else:
-                output = get_forecast(initial_time, configurations=configurations, code=code)
+                output = get_forecast(
+                    initial_time, configurations=configurations, code=code)
         except ValueError as e:
             logger.error(e)
-            print e #raise some awareness, because this ones pretty bad..
-            return create_json_response({"status": "failed"})
+            return create_json_response({"status": "failed"}, request)
     else:
         output = get_forecast(initial_time)
 
@@ -168,17 +189,24 @@ def forward(request):
     if not request.user.is_superuser:
         raise PermissionDenied
 
-    data = json.loads(request.body)
-    forward_time = float(data['forward_time']) * 24 * 3600
+    try:
+        data = json.loads(request.body)
+    except ValueError:
+        return create_json_response({"status": "failed"}, request)
 
-    demo_sim = DemoSimulation.start_or_get()
+    if 'forward_time' in data:
+        forward_time = float(data['forward_time']) * 24 * 3600
 
-    if demo_sim.forward > 0:
-        return create_json_response("simulation is still forwarding", request)
+        demo_sim = DemoSimulation.start_or_get()
 
-    demo_sim.forward = forward_time
+        if demo_sim.forward > 0:
+            return create_json_response({"status": "ignored"}, request)
 
-    return create_json_response("ok", request)
+        demo_sim.forward = forward_time
+
+        return create_json_response({"status": "success"}, request)
+    
+    return create_json_response({"status": "failed"}, request)
 
 
 def list_thresholds(request):
@@ -197,7 +225,11 @@ def handle_threshold(request):
     if not request.user.is_superuser:
         raise PermissionDenied
 
-    data = json.loads(request.body)
+    try:
+        data = json.loads(request.body)
+    except ValueError:
+        return create_json_response({"status": "failed"}, request)
+
     if 'id' in data:
 
         threshold = Threshold.objects.get(id=data['id'])
@@ -244,11 +276,13 @@ def handle_threshold(request):
                 threshold.max_value = float(data['max_value'])
             except ValueError:
                 pass
-            threshold.show_manager = True if data['show_manager'] == '1' else False
+            threshold.show_manager = True if data[
+                'show_manager'] == '1' else False
             threshold.save()
             return create_json_response({"status": "success"}, request)
 
     return create_json_response({"status": "failed"}, request)
+
 
 @gzip_page
 def list_sensor_values(request, interval='month'):
@@ -347,8 +381,7 @@ def live_data(request):
     return create_json_response(functions.get_live_data(), request)
 
 
-
 def initialize_globals():
     global DEMO_SIMULATION, FORECAST_QUEUE
-    DEMO_SIMULATION =  DemoSimulation.start_or_get()
+    DEMO_SIMULATION = DemoSimulation.start_or_get()
     FORECAST_QUEUE = ForecastQueue()

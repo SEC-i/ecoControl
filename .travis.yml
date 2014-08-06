@@ -36,9 +36,10 @@ before_script:
 script:
   # Run all tests
   - coverage run --source='.' manage.py test
-after_success:
-  # Print coverage report and send it to coveralls
+  # Print coverage report
   - coverage report
+after_success:
+  #  Send coverage information to coveralls
   - coveralls
 notifications:
   email:
