@@ -35,7 +35,8 @@ class BaseDevice(object):
 
 
 class BaseEnvironment(object):
-    """This class manages the simulation of the energy-systems."""
+    """This class manages the environment of the devices holds the simulated time as well as the mode, the devices are running in.
+    All connected devices share one BaseEnvironment"""
 
     def __init__(self, initial_time=None, step_size=120, demomode=False, forecast=False):
         """ demomode indicates, if running in demomode, not if this is the demo simulation"""
@@ -50,18 +51,20 @@ class BaseEnvironment(object):
         self.step_size = step_size
 
         self.demo_mode = demomode
-        """ =========================  =============================   =============================
-                                        ``demo_mode``  --``True``       ``demo_mode`` -- ``False``                                                                      
-            =========================  =============================   =============================
-            ``forecast``-- ``True``    forecast of simulated devices   forecast of real devices
-            ``forecast``-- ``False``   demo simulation                 real device (env not defined)
-            =========================  =============================   =============================
+        """ ======================================  =============================   =============================
+            |dArr| `forecast` | `demo_mode` |rarr|           ``True``                         ``False``                                                                      
+            ======================================  =============================   =============================
+                ``True``                            forecast of simulated devices   forecast of real devices
+                ``False``                           demo simulation                 real device (env not defined)
+            ======================================  =============================   =============================
         """
+        #: see `demo_mode`
         self.forecast = forecast
 
     def get_day_of_year(self):
-        """Returns an `int` value of the current simulated day"""
+        """Returns an `int` value of the current simulated day of the year"""
         return gmtime(self.now).tm_yday
 
     def is_demo_simulation(self):
+        """ Returns, if this is the demo_simulation"""
         return self.demo_mode and not self.forecast

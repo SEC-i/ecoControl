@@ -2,6 +2,8 @@
 Devices
 =======
 
+.. include:: <isonum.txt>
+
 .. automodule:: server.devices
     :members:
 
