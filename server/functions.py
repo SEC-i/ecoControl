@@ -45,8 +45,6 @@ def get_device_configuration(device, key):
             return parse_value(config)
 
 
-
-
 def get_configurations():
     configurations = {}
     for config in Configuration.objects.filter(internal=False):
@@ -82,7 +80,7 @@ def get_device_configurations(tunable=None):
 
 
 def get_past_time(years=0, months=0, days=0, use_view=False):
-    output_time = datetime.now().replace(tzinfo=utc)
+    output_time = datetime.now()
 
     if use_view:
         _class = SensorValueDaily
@@ -94,7 +92,8 @@ def get_past_time(years=0, months=0, days=0, use_view=False):
     except _class.DoesNotExist:
         pass
 
-    return output_time + dateutil.relativedelta.relativedelta(years=-years, months=-months, days=-days)
+    output_time += dateutil.relativedelta.relativedelta(years=-years, months=-months, days=-days)
+    return output_time.replace(tzinfo=utc)
 
 
 def parse_value(config):

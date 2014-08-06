@@ -73,6 +73,9 @@ class TechnicianHooksTestCase(TestCase):
         self.assertEqual(len(DeviceConfiguration.objects.all()), 15)
 
     def test_notifications_hook(self):
+        sensor_value = SensorValue(sensor_id=1, value=56, timestamp=datetime.now().replace(tzinfo=utc))
+        sensor_value.save()
+
         threshold = Threshold(sensor_id=1)
         threshold.save()
 
@@ -82,8 +85,7 @@ class TechnicianHooksTestCase(TestCase):
         self.assertEqual(data['total'], 0)
         self.assertEqual(len(data['notifications']), 0)
 
-        notification = Notification(
-            threshold=threshold, category=Notification.Danger, show_manager=True)
+        notification = Notification(threshold=threshold, sensor_value=sensor_value, target=50)
         notification.save()
 
         response = self.client.get('/api/notifications/')
@@ -92,6 +94,4 @@ class TechnicianHooksTestCase(TestCase):
         self.assertEqual(data['total'], 1)
         self.assertEqual(len(data['notifications']), 1)
         self.assertEqual(
-            data['notifications'][0]['threshold_id'], threshold.id)
-        self.assertEqual(
-            data['notifications'][0]['category'], Notification.Danger)
+            data['notifications'][0]['threshold']['id'], threshold.id)
