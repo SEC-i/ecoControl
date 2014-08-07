@@ -6,8 +6,7 @@
 ecoControl Dokumentation
 ======================================
 
-HINWEIS: Die Dokumentation befindet sich aktuell in Bearbeitung.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+*HINWEIS: Die Dokumentation befindet sich aktuell in Bearbeitung.*
 
 Inhalt:
 
