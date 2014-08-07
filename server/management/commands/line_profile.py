@@ -53,7 +53,10 @@ class Command(BaseCommand):
         output = stdout_trap.getvalue()
         output = output.rstrip()
 
-        pfile = open("profile.txt", 'w')
+        pfile = open("profile.txt", 'a')
+        pfile.write("\n\n" + 20 * "=" + "*********====================== profile at time " + 
+            time.strftime("%b %d %Y %H:%M:%S", time.gmtime(time.time())) +
+             "==================================\n\n")
         pfile.write(output)
         pfile.close()
         print '\n*** Profile printout saved to text file profile.txt', message
