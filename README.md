@@ -6,6 +6,7 @@ ecoControl
 [![Code Climate](https://codeclimate.com/github/SEC-i/ecoControl.png)](https://codeclimate.com/github/SEC-i/ecoControl)
 [![Coverage Status](https://coveralls.io/repos/SEC-i/ecoControl/badge.png)](https://coveralls.io/r/SEC-i/ecoControl)
 [![Lizenz](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
+[![Sprache wechseln](http://img.shields.io/badge/lang-en--de-brightgreen.svg)](https://github.com/SEC-i/ecoControl)
 
 *Obwohl es es eine deutsche Version von ecoControl gibt, findet die Entwicklung überwiegend in Englisch statt. Aus diesem Grund handelt es sich bei dieser Webseite um eine reine Übersetzung.*
 
