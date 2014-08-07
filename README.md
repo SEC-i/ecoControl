@@ -1,59 +1,59 @@
 ecoControl
 ========
 [![Build Status](https://travis-ci.org/SEC-i/ecoControl.svg)](https://travis-ci.org/SEC-i/ecoControl)
-[![Documentation](https://readthedocs.org/projects/ecocontrol/badge/?version=latest)](https://ecocontrol.readthedocs.org/)
+[![Dokumentation](https://readthedocs.org/projects/ecocontrol/badge/?version=latest)](https://ecocontrol.readthedocs.org/)
 [![Dependency Status](https://gemnasium.com/SEC-i/ecoControl.svg)](https://gemnasium.com/SEC-i/ecoControl)
 [![Code Climate](https://codeclimate.com/github/SEC-i/ecoControl.png)](https://codeclimate.com/github/SEC-i/ecoControl)
 [![Coverage Status](https://coveralls.io/repos/SEC-i/ecoControl/badge.png)](https://coveralls.io/r/SEC-i/ecoControl)
-[![License](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
+[![Lizenz](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 
 
-What is ecoControl?
+Was ist ecoControl?
 -------------------
-**ecoControl** is a prototype that demonstrates how heterogeneous energy systems can be optimized in residential buildings. For this reason, **ecoControl** aims to provide a unifying programming interface as well as suitable forecasts. It makes it possible to execute, develop and share optimization algorithms which can be based on those forecasts.  
-However, **ecoControl** currently supports only a few energy systems such as cogeneration units, peak load boilers and heat storages. Since it is released under the [MIT license](http://opensource.org/licenses/MIT), it can easily be extended to support more energy systems by anyone who can write Python code.
+**ecoControl** ist ein Prototype, der demonstrieren soll, wie heterogene Energiesysteme wie Blockheizkraftwerke oder Photovoltaik-Anlagen effizient in Mehrfamilienhäusern betrieben werden können. Dazu stellt **ecoControl** eine einheitliche Programmierschnittstelle sowie geeignete Prognosen zur Verfügung. Es ist möglich, Optimierungsalgorithmen mithilfe von **ecoControl** auszuführen, zu entwickeln und miteinander zu teilen.  
+Allerdings unterstützt die Software momentan nur wenige Energiesysteme wie beispielsweise Blockheizkraftwerke, Spitzenlastkessel oder Wärmespeicher. Da sie unter der [MIT Lizenz](http://opensource.org/licenses/MIT) veröffentlich wurde, kann sie von jedem, der Python programmieren kann, um weitere Energiesysteme erweitert werden.
 
 
-Getting Started
+Erste Schritte
 --------------
-Install [PostgreSQL](http://www.postgresql.org/) 9.3 or later:
+Installieren Sie [PostgreSQL](http://www.postgresql.org/) 9.3 oder neuer:
 ```bash
 $ sudo apt-get update
 $ sudo apt-get install postgresql-9.3 postgresql-contrib-9.3
 ```
-Install all Python dependencies and download all Javascript dependencies:
+Installieren Sie alle benötigten Python Abhängigkeiten und laden Sie alle Javascript Bibliotheken:
 ```bash
 $ cd ecoControl/
 $ pip install requirements.txt
 $ bower install
 ```
-Creates the database tables for **ecoControl**:
+Legen Sie die Datenbanktabellen für **ecoControl** an:
 ```bash
 $ python manage.py syncdb
 ```
-Start a lightweight development web server on the local machine:
+Starten Sie einen Webserver lokal auf Ihrem Rechner:
 ```bash
 $ python manage.py runserver
 ```
-Open [http://localhost:8000/](http://localhost:8000/) in your browser and start **ecoControl**.
+Öffnen Sie [http://localhost:8000/](http://localhost:8000/) in Ihrem Browser und starten Sie **ecoControl**.
 
-If you want to deploy **ecoControl** and use it in production, please read the [development section](http://ecocontrol.readthedocs.org/en/latest/getting_started.html#how-to-deploy-ecocontrol) in the [documentation](http://ecocontrol.readthedocs.org/).
+Informationen wie **ecoControl** in Produktion eingesetzt werden kann, finden Sie im [Einrichtungskapitel](http://ecocontrol.readthedocs.org/en/latest/getting_started.html#how-to-deploy-ecocontrol) der [Dokumentation](http://ecocontrol.readthedocs.org/de/latest/).
 
 
-Documentation
+Dokumentation
 -------------
-A documentation is available at: https://ecocontrol.readthedocs.org/
+Eine deutsche Dokumentation findet sich unter: http://ecocontrol.readthedocs.org/de/latest/
 
 
-Join the Community
+Mitmachen
 ------------------
-If you are interested in supporting this project, feel free to join the [Smart Energy Control Initiative](http://www.sec-i.org/).
+Wenn Sie dieses Projekt unterstützen wollen, machen Sie bei der [Smart Energy Control Initiative](http://www.sec-i.org/) mit!
 
 
-Credits
+Herausgeber
 -------
-**ecoControl** was developed by [Eva-Maria Herbst](https://github.com/samifalcon), [Fabian Maschler](https://github.com/maschler), [Fabio Niephaus](https://github.com/fniephaus), [Max Reimann](https://github.com/MaxReimann) and [Julia Steier](https://github.com/steier) during a bachelor's project at [Hasso Plattner Institute](http://www.hpi.de/) in Potsdam. They were supported by [Tim Felgentreff](https://github.com/timfel), [Jens Lincke](https://github.com/JensLincke) and [Marcel Taeumel](https://github.com/marceltaeumel) from the [Software Architecture Group](http://www.hpi.uni-potsdam.de/hirschfeld/) led by [Prof. Hirschfeld](http://www.hirschfeld.org/).
+**ecoControl** wurde von [Eva-Maria Herbst](https://github.com/samifalcon), [Fabian Maschler](https://github.com/maschler), [Fabio Niephaus](https://github.com/fniephaus), [Max Reimann](https://github.com/MaxReimann) und [Julia Steier](https://github.com/steier) im Rahmen eines Bachelor-Projekts am [Hasso Plattner Institute](http://www.hpi.de/) in Potsdam entwickelt. Unterstützt wurden sie von [Tim Felgentreff](https://github.com/timfel), [Jens Lincke](https://github.com/JensLincke) und [Marcel Taeumel](https://github.com/marceltaeumel) vom Fachgebiet [Software-Architekturen](http://www.hpi.uni-potsdam.de/hirschfeld/) von [Prof. Hirschfeld](http://www.hirschfeld.org/).
 
-License
+Lizenz
 -------
-**ecoControl** is open-source and licensed under the [MIT license](http://opensource.org/licenses/MIT).
+**ecoControl** ist open-source und unter der [MIT Lizenz](http://opensource.org/licenses/MIT) veröffentlicht.

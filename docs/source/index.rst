@@ -3,33 +3,21 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to ecoControl's documentation!
+ecoControl Dokumentation
 ======================================
 
-NOTE: The documentation is work in progress.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+HINWEIS: Die Dokumentation befindet sich aktuell in Bearbeitung.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Contents:
+Inhalt:
 
 .. toctree::
     :maxdepth: 2
 
-    getting_started
-
-    api
-
-    modules/models
-    modules/devices
-    modules/forecasting
-
-    modules/autooptimization
-
-    frontend
+    erste_schritte.rst
 
 
-
-
-Indices and Tables
+Inhaltsverzeichnis und Suche
 ==================
 
 * :ref:`genindex`
