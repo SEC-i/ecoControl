@@ -2,7 +2,7 @@
 
 Getting Started
 =================
-ecoControl is based on open-source tools and frameworks such as Django and postgreSQL which makes it easy to deploy.
+ecoControl is based on open-source tools and frameworks such as Django and PostgreSQL which makes it easy to deploy.
 In order to be able to start ecoControl, all requirements need to be installed and a server needs to be configured.
 
 
