@@ -5,7 +5,8 @@ import os
 
 class DataLoader(object):
     """ This class reads data from CSV formatted in a specific way. 
-    The files are cached in memory to enable fast, re-reads"""
+    The files are cached in memory to enable fast, re-reads
+    """
     cached_csv = {}
     
     @classmethod
