@@ -2,8 +2,9 @@
 
 Erste Schritte
 =================
-ecoControl is based on open-source tools and frameworks such as Django and postgreSQL which makes it easy to deploy.
-In order to be able to start ecoControl, all requirements need to be installed and a server needs to be configured.
+ecoControl basiert auf Open-Source Werkzeugen and Frameworks wie beispielsweise Django und postgreSQL.
+Um die Software starten zu können, müssen alle Softwarevorraussetzungen erfüllt und ein Server entsprechend konfiguriert sein.
+Im Folgenden wird erklärt, wie man vorzugehen hat, um ecoControl einzurichten.
 
 
 Softwarevorraussetzungen
