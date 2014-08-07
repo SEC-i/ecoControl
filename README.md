@@ -1,6 +1,6 @@
 ecoControl
 ========
-[![Build Status](https://travis-ci.org/SEC-i/ecoControl.svg)](https://travis-ci.org/SEC-i/ecoControl)
+[![Build Status](https://travis-ci.org/SEC-i/ecoControl.svg?branch=master)](https://travis-ci.org/SEC-i/ecoControl)
 [![Dokumentation](https://readthedocs.org/projects/ecocontrol/badge/?version=latest)](https://ecocontrol.readthedocs.org/)
 [![Dependency Status](https://gemnasium.com/SEC-i/ecoControl.svg)](https://gemnasium.com/SEC-i/ecoControl)
 [![Code Climate](https://codeclimate.com/github/SEC-i/ecoControl.png)](https://codeclimate.com/github/SEC-i/ecoControl)
