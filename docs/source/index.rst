@@ -6,8 +6,7 @@
 Welcome to ecoControl's documentation!
 ======================================
 
-NOTE: The documentation is work in progress.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+*NOTE: The documentation is work in progress.*
 
 Contents:
 
