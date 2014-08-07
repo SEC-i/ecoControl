@@ -7,11 +7,18 @@ ecoControl
 [![Coverage Status](https://coveralls.io/repos/SEC-i/ecoControl/badge.png)](https://coveralls.io/r/SEC-i/ecoControl)
 [![Lizenz](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 
+*Obwohl es es eine deutsche Version von ecoControl gibt, findet die Entwicklung überwiegend in Englisch statt. Aus diesem Grund handelt es sich bei dieser Webseite um eine reine Übersetzung.*
 
 Was ist ecoControl?
 -------------------
 **ecoControl** ist ein Prototype, der demonstrieren soll, wie heterogene Energiesysteme wie Blockheizkraftwerke oder Photovoltaik-Anlagen effizient in Mehrfamilienhäusern betrieben werden können. Dazu stellt **ecoControl** eine einheitliche Programmierschnittstelle sowie geeignete Prognosen zur Verfügung. Es ist möglich, Optimierungsalgorithmen mithilfe von **ecoControl** auszuführen, zu entwickeln und miteinander zu teilen.  
 Allerdings unterstützt die Software momentan nur wenige Energiesysteme wie beispielsweise Blockheizkraftwerke, Spitzenlastkessel oder Wärmespeicher. Da sie unter der [MIT Lizenz](http://opensource.org/licenses/MIT) veröffentlich wurde, kann sie von jedem, der Python programmieren kann, um weitere Energiesysteme erweitert werden.
+
+
+Download
+--------
+Die aktuellste Version von **ecoControl** können Sie jederzeit unter folgendem Link downloaden:
+https://github.com/SEC-i/ecoControl/archive/master.zip
 
 
 Erste Schritte
