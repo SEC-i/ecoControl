@@ -53,7 +53,7 @@ If you are interested in supporting this project, feel free to join the [Smart E
 Credits
 -------
 **ecoControl** was developed by [Eva-Maria Herbst](https://github.com/samifalcon), [Fabian Maschler](https://github.com/maschler), [Fabio Niephaus](https://github.com/fniephaus), [Max Reimann](https://github.com/MaxReimann) and [Julia Steier](https://github.com/steier) during a bachelor's project at [Hasso Plattner Institute](http://www.hpi.de/) in Potsdam.  
-They were supported by [Carsten Witt](https://github.com/infoprofi) as well as [Tim Felgentreff](https://github.com/timfel), [Jens Lincke](https://github.com/JensLincke) and [Marcel Taeumel](https://github.com/marceltaeumel) from the [Software Architecture Group](http://www.hpi.uni-potsdam.de/hirschfeld/) led by [Prof. Hirschfeld](http://www.hirschfeld.org/).
+They were supported by [Carsten Witt](https://github.com/infoprofi) as well as by [Tim Felgentreff](https://github.com/timfel), [Jens Lincke](https://github.com/JensLincke) and [Marcel Taeumel](https://github.com/marceltaeumel) from the [Software Architecture Group](http://www.hpi.uni-potsdam.de/hirschfeld/) led by [Prof. Hirschfeld](http://www.hirschfeld.org/).
 
 License
 -------
