@@ -1,6 +1,6 @@
 .. index:: Getting Started
 
-Getting started
+Getting Started
 =================
 ecoControl is based on open-source tools and frameworks such as Django and postgreSQL which makes it easy to deploy.
 In order to be able to start ecoControl, all requirements need to be installed and a server needs to be configured.
@@ -14,5 +14,11 @@ pip install -r requirements.txt
 bower install
 
 
-Configure Apache
---------------------
+How to Run ecoControl Locally
+------------------------------
+This section is still in process.
+
+
+How to Deploy ecoControl
+-------------------------
+This section is still in process.
