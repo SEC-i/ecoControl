@@ -6,7 +6,7 @@ ecoControl
 [![Code Climate](https://codeclimate.com/github/SEC-i/ecoControl.png)](https://codeclimate.com/github/SEC-i/ecoControl)
 [![Coverage Status](https://coveralls.io/repos/SEC-i/ecoControl/badge.png)](https://coveralls.io/r/SEC-i/ecoControl)
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
-
+[![Switch Language](http://img.shields.io/badge/lang-en--de-brightgreen.svg)](https://github.com/SEC-i/ecoControl/tree/docs-de)
 
 What is ecoControl?
 -------------------
