@@ -103,6 +103,29 @@ class ForecastQueue():
 
 
 class Forecast(Thread):
+    """ Setup a Forecast Object. A new |env| and new Devices will be created.
+    Forecasting can either be ran synchronous or asynchronous (threaded).::
+
+        foocast = Forecast(time.time(), forward=10*24*3600)
+        barcast = Forecast(time.time(), forward=2*24*3600)
+
+        #run threaded
+        barcast.start() 
+        
+        #wait until foocast is finished, then get result
+        resultfoo = foocast.run().get() 
+        
+        # wait until barcast is finished
+        while resultbar == None:
+            resultbar = barcast.get()
+
+
+    :param int initial_time: timestamp of the time, at which the forecast starts
+    :param configurations: cached configurations, if ``None``, retrieve from database
+    :param code: code to be executed
+    :param int forward: Time to forecast. Will take `DEFAULT_FORECAST_INTERVAL` if ``None``
+    :param boolean forecast: Passed to |env| forecast.
+    """
     def __init__(self, initial_time, configurations=None, code=None, forward=None, forecast=True):
         Thread.__init__(self)
         self.daemon = True
@@ -147,6 +170,7 @@ class Forecast(Thread):
 
 
     def run(self):
+        """ run the main loop. Returns self after finishing"""
         time_remaining = self.forward
         while time_remaining > 0:
             self.step()
@@ -164,9 +188,13 @@ class Forecast(Thread):
         return self
 
     def store_values(self):
+        """ sample device values"""
         self.measurements.take_and_cache()
 
     def get(self):
+        """ return the result of the forecast. 
+        If the mainloop is still forecasting, ``None`` is returned
+        """
         return self.result
 
 
@@ -219,7 +247,10 @@ class DemoSimulation(Forecast):
                 time.sleep(1.0 / self.steps_per_second)
 
     def store_values(self):
-        #stores values in database. Overwrites parents saving method
+        """stores values in database. Overwrites parents saving method.
+        Values are only stored every (simulated) minute"""
+        if self.env.now % 60  != 0:
+            return
         self.measurements.take_and_save()
 
     def start(self):
