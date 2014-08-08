@@ -104,7 +104,7 @@ class ForecastQueue():
 
 class Forecast(Thread):
     """ Setup a Forecast Object. A new |env| and new Devices will be created.
-    Forecasting can either be ran synchronous or asynchronous (threaded).::
+    Forecasting can either be ran synchronous or asynchronous (threaded)::
 
         foocast = Forecast(time.time(), forward=10*24*3600)
         barcast = Forecast(time.time(), forward=2*24*3600)
@@ -152,7 +152,9 @@ class Forecast(Thread):
         self.use_optimization = get_configuration('auto_optimization')
 
     def step(self):
-
+        """ execute one step of the simulation.
+        This steps all devices, auto-optimizes if needed and store the values
+        """
         execute_user_function(self.env,self.env.forecast,self.devices,self.user_function)
 
         if self.use_optimization and self.next_optimization <= 0.0:
@@ -170,7 +172,8 @@ class Forecast(Thread):
 
 
     def run(self):
-        """ run the main loop. Returns self after finishing"""
+        """ run the main loop. Returns self after finishing.
+        Results are obtained with :meth:`get`"""
         time_remaining = self.forward
         while time_remaining > 0:
             self.step()
@@ -193,7 +196,15 @@ class Forecast(Thread):
 
     def get(self):
         """ return the result of the forecast. 
-        If the mainloop is still forecasting, ``None`` is returned
+        If the mainloop is still forecasting, ``None`` is returned.
+
+        outputs a dict with::
+
+            result = {start: datetime, 
+                       step: stepsize, 
+                        end: datetime, 
+                    sensors: list with values per sensor (see MeasurementStorage)}
+
         """
         return self.result
 
