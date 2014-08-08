@@ -41,7 +41,7 @@ def build_holtwinters_extension():
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
     #build extension and pass in modified envionment variables
     #filepath = os.path.realpath(os.path.join(BASE_DIR, "server.forecasting.statistical/build_extension.py"))
-    commandline_args = shlex.split("python " + "build_extension.py" + " build_ext --inplace" + extra_command,posix=(os.name == "posix"))
+    commandline_args = shlex.split("python build_extension.py build_ext --inplace" + extra_command,posix=(os.name == "posix"))
     proc = subprocess.Popen(commandline_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=dict(os.environ))
     out, err = proc.communicate()
     logger.debug(out)

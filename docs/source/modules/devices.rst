@@ -2,6 +2,7 @@
 Devices
 =======
 
+.. include unicode arrows 
 .. include:: <isonum.txt>
 
 .. automodule:: server.devices

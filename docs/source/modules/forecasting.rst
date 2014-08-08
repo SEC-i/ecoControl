@@ -10,3 +10,14 @@ This package contains the simulation and methods for creating forecasts. They ar
     holt_winters.rst
     weather.rst
     forecasting_helpers.rst
+
+
+Forecasts
+=========
+
+
+
+.. automodule:: server.forecasting
+	
+	.. autoclass:: Forecast
+		:members:

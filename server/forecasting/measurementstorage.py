@@ -12,7 +12,12 @@ logger = logging.getLogger('simulation')
 
 
 class MeasurementStorage():
+    """ This class continously the stores the values, 
+    which are measured during forecasting. The way the measurement are stored,
+    depends on the forecast type (demo_simulation or normal forecasting).
 
+    :param list devices: The devices, which will be sampled
+    """
     def __init__(self, env, devices):
         self.env = env
         self.devices = devices
@@ -42,8 +47,12 @@ class MeasurementStorage():
 
 
     def take_and_save(self):
-        if self.env.now % 60  != 0:
-            return
+        """ saves the sensor values in the database. 
+
+        Note that this function will take quite long, because of costly database inserts.
+        Sensor values will be flushed to database after a cache is full."""
+
+
         timestamp = datetime.utcfromtimestamp(
             self.env.now).replace(tzinfo=utc)
         for (sensor, device) in self.device_map:
@@ -59,6 +68,7 @@ class MeasurementStorage():
             self.flush_data()
 
     def take_and_cache(self):
+        """ cache values in `self.forecast_data` """
         for index, (sensor, device) in enumerate(self.device_map):
             value = getattr(device, sensor.key, None)
             if value is not None:
@@ -85,15 +95,19 @@ class MeasurementStorage():
         return output
 
     def get_last(self, value):
+        """ return newest item in `self.forecast_data`"""
         index = self.sensors.index(value)
         if len(self.forecast_data[index]) > 0:
-            return self.forecast_data[index][-1]  # return newest item
+            return self.forecast_data[index][-1] 
         return None
 
     def flush_data(self):
+        """ optimized flush of `self.sensor_values` to the database. 
+        This uses binary data csv table creation and insertion. 
+        Works for postgres, compatability with other databases not tested
+        """
         cursor = connection.cursor()
         # Convert floating point numbers to text, write to COPY input
-
         cpy = BytesIO()
         for row in self.sensor_values:
             vals = [

@@ -103,6 +103,29 @@ class ForecastQueue():
 
 
 class Forecast(Thread):
+    """ Setup a Forecast Object. A new |env| and new Devices will be created.
+    Forecasting can either be ran synchronous or asynchronous (threaded)::
+
+        foocast = Forecast(time.time(), forward=10*24*3600)
+        barcast = Forecast(time.time(), forward=2*24*3600)
+
+        #run threaded
+        barcast.start() 
+        
+        #wait until foocast is finished, then get result
+        resultfoo = foocast.run().get() 
+        
+        # wait until barcast is finished
+        while resultbar == None:
+            resultbar = barcast.get()
+
+
+    :param int initial_time: timestamp of the time, at which the forecast starts
+    :param configurations: cached configurations, if ``None``, retrieve from database
+    :param code: code to be executed
+    :param int forward: Time to forecast. Will take `DEFAULT_FORECAST_INTERVAL` if ``None``
+    :param boolean forecast: Passed to |env| forecast.
+    """
     def __init__(self, initial_time, configurations=None, code=None, forward=None, forecast=True):
         Thread.__init__(self)
         self.daemon = True
@@ -129,7 +152,9 @@ class Forecast(Thread):
         self.use_optimization = get_configuration('auto_optimization')
 
     def step(self):
-
+        """ execute one step of the simulation.
+        This steps all devices, auto-optimizes if needed and store the values
+        """
         execute_user_function(self.env,self.env.forecast,self.devices,self.user_function)
 
         if self.use_optimization and self.next_optimization <= 0.0:
@@ -147,6 +172,8 @@ class Forecast(Thread):
 
 
     def run(self):
+        """ run the main loop. Returns self after finishing.
+        Results are obtained with :meth:`get`"""
         time_remaining = self.forward
         while time_remaining > 0:
             self.step()
@@ -164,9 +191,21 @@ class Forecast(Thread):
         return self
 
     def store_values(self):
+        """ sample device values"""
         self.measurements.take_and_cache()
 
     def get(self):
+        """ return the result of the forecast. 
+        If the mainloop is still forecasting, ``None`` is returned.
+
+        outputs a dict with::
+
+            result = {start: datetime, 
+                       step: stepsize, 
+                        end: datetime, 
+                    sensors: list with values per sensor (see MeasurementStorage)}
+
+        """
         return self.result
 
 
@@ -219,7 +258,10 @@ class DemoSimulation(Forecast):
                 time.sleep(1.0 / self.steps_per_second)
 
     def store_values(self):
-        #stores values in database. Overwrites parents saving method
+        """stores values in database. Overwrites parents saving method.
+        Values are only stored every (simulated) minute"""
+        if self.env.now % 60  != 0:
+            return
         self.measurements.take_and_save()
 
     def start(self):
@@ -228,6 +270,7 @@ class DemoSimulation(Forecast):
 
 
 def get_initial_time():
+    "Return the time of the newest `SensorValue` in the database"
     try:
         latest_value = SensorValue.objects.latest('timestamp')
         return calendar.timegm(latest_value.timestamp.timetuple())
