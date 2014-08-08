@@ -21,3 +21,6 @@ Forecasts
 	
 	.. autoclass:: Forecast
 		:members:
+
+	.. autoclass:: DemoSimulation
+		:members:

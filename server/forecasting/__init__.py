@@ -123,7 +123,7 @@ class Forecast(Thread):
     :param int initial_time: timestamp of the time, at which the forecast starts
     :param configurations: cached configurations, if ``None``, retrieve from database
     :param code: code to be executed
-    :param int forward: Time to forecast. Will take `DEFAULT_FORECAST_INTERVAL` if ``None``
+    :param int forward: Time to forecast. Uses `DEFAULT_FORECAST_INTERVAL` if ``None``
     :param boolean forecast: Passed to |env| forecast.
     """
     def __init__(self, initial_time, configurations=None, code=None, forward=None, forecast=True):
@@ -211,6 +211,19 @@ class Forecast(Thread):
 
 
 class DemoSimulation(Forecast):
+    """ A Forecast, which writes the values to the database. 
+    It replaces the real devices and is used to develop and show the capabilities of ecoControl.
+    It uses real electrical and weather values instead of forecasts, 
+    the device simulation on the other hand is the same as in :class:`Forecast`.
+
+    After calling start(), the simulation will currently run at 30 steps per second (or 30x speed).
+    This is controlled by the `step_size` in |env|. 
+
+    The simulation can be forwarded to a certain point by setting the `forward` variable in seconds > 0.
+    It will then run at maximum speed. The simulation runs until the variable `running` is set to False.
+
+    .. note:: DemoSimulations should generally be started with :meth:`start_or_get`
+    """
     stored_simulation = None
 
 
@@ -225,7 +238,8 @@ class DemoSimulation(Forecast):
         """
         This method starts a new demo simulation
         if necessary and it makes sure that only
-        one demo simulation can runs at once.
+        one demo simulation can run at once.
+        This is the preferred way to start the demo simulation.
 
         :returns: :class:`DemoSimulation` or ``None`` if system not in demo mode.
         """
@@ -249,6 +263,8 @@ class DemoSimulation(Forecast):
 
 
     def run(self):
+        """ run while `running` is true, call the parent :meth:`step` method.
+        This method must be called by :meth:`start`, otherwise it immediately returns"""
         while self.running:
             self.step()
 
@@ -265,12 +281,13 @@ class DemoSimulation(Forecast):
         self.measurements.take_and_save()
 
     def start(self):
+        "start the simulation in a seperate thread"
         self.running = True
         Thread.start(self)
 
 
 def get_initial_time():
-    "Return the time of the newest `SensorValue` in the database"
+    "Return the time of the newest |SensorValue| in the database"
     try:
         latest_value = SensorValue.objects.latest('timestamp')
         return calendar.timegm(latest_value.timestamp.timetuple())

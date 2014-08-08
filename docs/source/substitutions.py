@@ -7,4 +7,6 @@ substitutions = """
 .. |plb| replace:: :class:`~server.forecasting.simulation.devices.producers.SimulatedPeakLoadBoiler`
 .. |tc| replace:: :class:`~server.forecasting.simulation.devices.consumers.SimulatedThermalConsumer`
 .. |ec| replace:: :class:`~server.forecasting.simulation.devices.consumers.SimulatedElectricalConsumer`
+
+.. |SensorValue| replace:: :class:`~server.models.SensorValue`
 """
