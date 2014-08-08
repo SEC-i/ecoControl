@@ -270,6 +270,7 @@ class DemoSimulation(Forecast):
 
 
 def get_initial_time():
+    "Return the time of the newest `SensorValue` in the database"
     try:
         latest_value = SensorValue.objects.latest('timestamp')
         return calendar.timegm(latest_value.timestamp.timetuple())
