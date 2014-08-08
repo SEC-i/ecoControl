@@ -15,7 +15,7 @@ This package contains the simulation and methods for creating forecasts. They ar
 Forecasts
 =========
 
-.. |env| replace:: :class:`~server.devices.base.BaseEnvironment`
+
 
 .. automodule:: server.forecasting
 	
