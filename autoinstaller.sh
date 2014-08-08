@@ -82,9 +82,9 @@ echo "Installing JavaScript dependencies..."
 bower install
 
 # Make sure LD_LIBRARY_PATH is available
-# This is required to compile the Holt Winters extension
+# This is required to be able to compile the Holt Winters extension
 if [ ! $LD_LIBRARY_PATH ]; then
-    export LD_LIBRARY_PATH=/usr/lib
+    export LD_LIBRARY_PATH=/usr/lib/openblase-base
 fi
 
 # Setup database
@@ -109,7 +109,7 @@ cat <<EOF
  However, don't forget to change all passwords
  if you want to use it in production!
 
- You should now be able to run a server by
+ You should now be able to start a server by
  executing:
 
     $ python manage.py runserver
