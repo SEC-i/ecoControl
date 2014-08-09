@@ -19,6 +19,8 @@ Forecasts
 
 .. automodule:: server.forecasting
 	
+	.. autofunction:: get_initialized_scenario
+	
 	.. autoclass:: Forecast
 		:members:
 

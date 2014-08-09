@@ -9,4 +9,5 @@ substitutions = """
 .. |ec| replace:: :class:`~server.forecasting.simulation.devices.consumers.SimulatedElectricalConsumer`
 
 .. |SensorValue| replace:: :class:`~server.models.SensorValue`
+.. |DeviceConfiguration| replace:: :class:`~server.models.DeviceConfiguration`
 """
