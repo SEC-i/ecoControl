@@ -25,7 +25,9 @@ Forecasts
 		:members:
 	
 	.. autoclass:: Forecast
+		:show-inheritance:
 		:members:
 
 	.. autoclass:: DemoSimulation
+		:show-inheritance:
 		:members:
