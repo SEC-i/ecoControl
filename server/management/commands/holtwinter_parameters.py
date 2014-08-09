@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-from server.forecasting.optimizing.auto_optimization import simulation_run
 from server.forecasting import DemoSimulation
 import time
 from datetime import datetime
