@@ -98,10 +98,23 @@ def get_initialized_scenario(env, configurations):
 
 
 class ForecastQueue():
+    """ A container, holding the running forecasts. Each forecast gets an id.
+
+    Usage::
+
+        q = ForecastQueue()
+        f_id = q.schedule_new(initial_time=time.time())
+        #... do other stuff, then retrieve forecast
+        result = q.get_by_id(f_id)
+
+    """
     forecasts = []
     id = 0
 
     def schedule_new(self, initial_time, **kwargs):
+        """ start a new forecast and return its id.
+        :param dict kwargs: the parameters for the :class:`Forecast`
+        """
         self.id += 1
         forecast = Forecast(initial_time, **kwargs)
         self.forecasts.append((self.id,forecast))
@@ -109,6 +122,11 @@ class ForecastQueue():
         return self.id
 
     def get_by_id(self, forecast_id):
+        """ get a forecast by its id. 
+        Will return ``None``, if forecast is not completed.
+        If the forecast is finished, the result is returned and deleted 
+        from the ForecastQueue.
+        """
         for index, (_id, forecast) in enumerate(self.forecasts):
             if _id == forecast_id:
                 result = forecast.get()

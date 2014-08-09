@@ -20,6 +20,9 @@ Forecasts
 .. automodule:: server.forecasting
 	
 	.. autofunction:: get_initialized_scenario
+
+	.. autoclass:: ForecastQueue
+		:members:
 	
 	.. autoclass:: Forecast
 		:members:
