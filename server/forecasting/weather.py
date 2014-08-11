@@ -100,13 +100,13 @@ class DemoWeather:
 
         """
 
-        time_passed = (target_date - datetime.fromtimestamp(self.env.initial_date)).total_seconds() / \
+        time_passed = (target_date - datetime.fromtimestamp(self.env.initial_date).replace(tzinfo=utc)).total_seconds() / \
                 (60.0 * 60.0 * 24)  # in days
 
-        initial0 = datetime.fromtimestamp(self.env.initial_date).replace(minute=0,second=0)
+        initial0 = datetime.fromtimestamp(self.env.initial_date).replace(tzinfo=utc, minute=0,second=0)
         initial1 = initial0 + timedelta(hours=1)
 
-        target_date = target_date.replace(hour=0,minute=0,second=0)
+        target_date = target_date.replace(tzinfo=utc, hour=0,minute=0,second=0)
         target_date_key = target_date.strftime("%Y-%m-%d")
 
 
