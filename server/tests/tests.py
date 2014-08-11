@@ -41,7 +41,7 @@ class APITestCase(TestCase):
 
         # Check that the response equals {"login": "inactive"}
         self.assertDictContainsSubset(
-            {"login": "active", "user": "test_fn test_ln", "system_status": "init"}, json.loads(response.content))
+            {"login": True, "user": "test_fn test_ln", "system_status": "init"}, json.loads(response.content))
 
         # Issue a request to logout
         response = self.client.get('/api/logout/')
@@ -53,18 +53,18 @@ class APITestCase(TestCase):
 
         # Check that the response equals {"login": "inactive"}
         self.assertDictContainsSubset(
-            {"login": "inactive", "system_status": "init"}, json.loads(response.content))
+            {"login": False, "system_status": "init"}, json.loads(response.content))
 
     def test_all_hooks_simple(self):
         for pattern in urlpatterns:
             url = re.sub(
                 '\((.)*', '', pattern.regex.pattern).replace('^', '/').replace('$', '')
             response = self.client.get(url)
-            self.assertTrue(response.status_code in [200, 403, 405])
+            self.assertTrue(response.status_code in [200, 301, 403, 405])
             response = self.client.post(url)
-            self.assertTrue(response.status_code in [200, 403, 405])
+            self.assertTrue(response.status_code in [200, 301, 403, 405])
             response = self.client.post(url, data=json.dumps({}), content_type="application/json")
-            self.assertTrue(response.status_code in [200, 403, 405])
+            self.assertTrue(response.status_code in [200, 301, 403, 405])
 
     def test_all_hooks_simple_authenticated(self):
         for pattern in urlpatterns:
@@ -75,8 +75,8 @@ class APITestCase(TestCase):
             self.client.login(username='test_admin', password='demo321')
 
             response = self.client.get(url)
-            self.assertTrue(response.status_code in [200, 403, 405])
+            self.assertTrue(response.status_code in [200, 301, 403, 405])
             response = self.client.post(url)
-            self.assertTrue(response.status_code in [200, 403, 405])
+            self.assertTrue(response.status_code in [200, 301, 403, 405])
             response = self.client.post(url, data=json.dumps({}), content_type="application/json")
-            self.assertTrue(response.status_code in [200, 403, 405])
+            self.assertTrue(response.status_code in [200, 301, 403, 405])
