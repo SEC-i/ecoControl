@@ -11,7 +11,7 @@ set -e
 
 cat <<EOF
 ===============================================
-   Welcome to the ecoControl Autoinstaller!
+    Welcome to the ecoControl Autoinstaller
 
   Note: This script uses sudo at some points.
 ===============================================
@@ -23,24 +23,20 @@ sudo true || exit 1
 # Prepare system to support PostgreSQL 9.3 or higher
 if ! hash psql 2>/dev/null; then
     CODENAME=$(lsb_release -cs 2>/dev/null)
-    # parse os-release (unreliable, does not work on Ubuntu)
+    # Parse os-release (unreliable, does not work on Ubuntu)
     if [ -z "$CODENAME" -a -f /etc/os-release ]; then
         . /etc/os-release
         # Debian: VERSION="7.0 (wheezy)"
         # Ubuntu: VERSION="13.04, Raring Ringtail"
         CODENAME=$(echo $VERSION | sed -ne 's/.*(\(.*\)).*/\1/')
     fi
-    # guess from sources.list
+    # Guess from sources.list
     if [ -z "$CODENAME" ]; then
         CODENAME=$(grep '^deb ' /etc/apt/sources.list | head -n1 | awk '{ print $3 }')
     fi
-    # complain if no result yet
+    # Complain if no result yet
     if [ -z "$CODENAME" ]; then
-        cat <<EOF
-    Could not determine the distribution codename. Please report this as a bug to
-    pgsql-pkg-debian@postgresql.org. As a workaround, you can call this script with
-    the proper codename as parameter, e.g. "$0 squeeze".
-EOF
+        echo "Could not determine the distribution codename."
         exit 1
     fi
 
@@ -58,7 +54,7 @@ if ! hash npm 2>/dev/null; then
 fi
 
 # Install packages
-sudo apt-get install -y git python-pip python-dev libpq-dev npm postgresql-9.3 gfortran libopenblas-dev liblapack-dev
+sudo apt-get install -y git python-pip python-dev libpq-dev npm postgresql-9.3 gfortran libatlas-dev libatlas3gf-base liblapack-dev
 
 # Install bower
 if ! hash bower 2>/dev/null; then
@@ -79,7 +75,7 @@ sudo pip install -r requirements.txt
 
 # Install all JavaScript dependencies
 echo "Installing JavaScript dependencies..."
-bower install
+bower install || exit 0 # ignore bower warnings
 
 # Make sure LD_LIBRARY_PATH is available
 # This is required to be able to compile the Holt Winters extension
@@ -110,8 +106,9 @@ cat <<EOF
  if you want to use it in production!
 
  You should now be able to start a server by
- executing:
+ executing the following commands:
 
+    $ cd ecoControl/
     $ python manage.py runserver
 ===============================================
 
