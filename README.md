@@ -16,12 +16,25 @@ What is ecoControl?
 
 Getting Started
 --------------
-Install [PostgreSQL](http://www.postgresql.org/) 9.3 or later, [pip](https://pypi.python.org/pypi/pip/) to easily install python requirements and npm to install bower:
+#### ecoControl Autoinstaller for Debian
+If you are running Debian 7.6, you can execute the following line in your terminal. This will run the autoinstaller which will install all requirements and ecoControl automatically.
+```bash
+$ curl -sL https://raw.github.com/SEC-i/ecoControl/master/autoinstaller.sh | bash
+```
+
+#### How to Manually Install
+Install [pip](https://pypi.python.org/pypi/pip/), [npm](http://nodejs.org/) and [bower](http://bower.io/):
 ```bash
 $ sudo apt-get update
-$ sudo apt-get install postgresql-9.3 postgresql-contrib-9.3, python-pip, npm
+$ sudo apt-get install python-pip npm
 $ sudo npm install -g bower
 ```
+Install [PostgreSQL](https://postgresql.org/) 9.3 or later:
+```bash
+$ sudo apt-get install postgresql-9.3 postgresql-contrib-9.3
+```
+*If this command fails, you may want to [check how PostgreSQL can be installed on your system](http://www.postgresql.org/download/).*
+
 Install all Python dependencies and download all Javascript dependencies:
 ```bash
 $ cd ecoControl/
