@@ -60,12 +60,12 @@ $ python manage.py runserver
 ```
 Öffnen Sie [http://localhost:8000/](http://localhost:8000/) in Ihrem Browser und starten Sie **ecoControl**.
 
-Informationen wie **ecoControl** in Produktion eingesetzt werden kann, finden Sie im [Einrichtungskapitel](http://ecocontrol.readthedocs.org/en/latest/getting_started.html#how-to-deploy-ecocontrol) der [Dokumentation](http://ecocontrol.readthedocs.org/de/latest/).
+Informationen wie **ecoControl** in Produktion eingesetzt werden kann, finden Sie im [Einrichtungskapitel](http://ecocontrol.readthedocs.org/en/latest/getting_started.html#how-to-deploy-ecocontrol) der [Dokumentation](http://ecocontrol.readthedocs.org/latest/).
 
 
 Dokumentation
 -------------
-Eine deutsche Dokumentation findet sich unter: http://ecocontrol.readthedocs.org/de/latest/
+Eine englische Dokumentation findet sich unter: http://ecocontrol.readthedocs.org/latest/
 
 
 Mitmachen
