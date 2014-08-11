@@ -25,8 +25,8 @@ https://github.com/SEC-i/ecoControl/archive/master.zip
 Erste Schritte
 --------------
 
-#### ecoControl Autoinstaller für Debian
-Wenn Sie Debian 7.6 verwenden, können Sie einfach die folgende Zeile im Terminal auführen. Dies wird den Autoinstaller ausführen, der alle Softwarevoraussetzungen und ecoControl automatisch für Sie einrichtet.
+#### ecoControl Autoinstaller für Debian / Ubuntu
+Wenn Sie Debian 7.6 oder Ubuntu 14.04 verwenden, können Sie einfach die folgende Zeile im Terminal auführen. Dies wird den Autoinstaller ausführen, der alle Softwarevoraussetzungen und ecoControl automatisch für Sie einrichtet.
 ```bash
 $ curl -sL https://raw.github.com/SEC-i/ecoControl/master/autoinstaller.sh | bash
 ```
