@@ -19,10 +19,7 @@ Forecasts
 
 .. automodule:: server.forecasting
 	
-	.. autofunction:: get_initialized_scenario
-
-	.. autoclass:: ForecastQueue
-		:members:
+	.. autofunction:: get_forecast
 	
 	.. autoclass:: Forecast
 		:show-inheritance:
@@ -31,3 +28,8 @@ Forecasts
 	.. autoclass:: DemoSimulation
 		:show-inheritance:
 		:members:
+	
+	.. autoclass:: ForecastQueue
+		:members:
+
+	.. autofunction:: get_initialized_scenario
