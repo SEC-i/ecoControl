@@ -24,10 +24,25 @@ https://github.com/SEC-i/ecoControl/archive/master.zip
 
 Erste Schritte
 --------------
-Installieren Sie [PostgreSQL](http://www.postgresql.org/) 9.3 oder neuer:
+
+#### ecoControl Autoinstaller für Debian
+Wenn Sie Debian 7.6 verwenden, können Sie einfach die folgende Zeile im Terminal auführen. Dies wird den Autoinstaller ausführen, der alle Softwarevoraussetzungen und ecoControl automatisch für Sie einrichtet.
+```bash
+$ curl -sL https://raw.github.com/SEC-i/ecoControl/master/autoinstaller.sh | bash
+```
+
+#### Manuelle Installation
+Installieren Sie [pip](https://pypi.python.org/pypi/pip/), [npm](http://nodejs.org/) und [bower](http://bower.io/):
 ```bash
 $ sudo apt-get update
+$ sudo apt-get install python-pip npm
+$ sudo npm install -g bower
+```
+Installieren Sie [PostgreSQL](http://www.postgresql.org/) 9.3 oder neuer:
+```bash
 $ sudo apt-get install postgresql-9.3 postgresql-contrib-9.3
+```
+*Sollte der letzte Befehl fehlschlagen, lesen Sie bitte nach, wie Sie [PostgreSQL auf Ihrem System installieren können](http://www.postgresql.org/download/).*
 ```
 Installieren Sie alle benötigten Python Abhängigkeiten und laden Sie alle Javascript Bibliotheken:
 ```bash
