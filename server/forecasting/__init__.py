@@ -55,7 +55,7 @@ def get_initialized_scenario(env, configurations):
 
         for device in device_list:
             # connect power devices
-            device.find_dependent_devices_in(device_list)
+            device.attach_dependent_devices_in(device_list)
             if not device.connected():
                 logger.error(
                     "Simulation: Device %s is not connected" % device.name)

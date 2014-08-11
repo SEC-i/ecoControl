@@ -28,13 +28,7 @@ class HeatStorage(BaseDevice):
         self.base_temperature = 20.0 #: assume no lower temperature
 
 
-    def attach_to_cogeneration_unit(self, device):
-        device.heat_storage = self
-
-    def attach_to_peak_load_boiler(self, device):
-        device.heat_storage = self
-
-    def attach_to_thermal_consumer(self, device):
+    def attach(self, device):
         device.heat_storage = self
 
     def get_temperature(self):
@@ -68,10 +62,7 @@ class PowerMeter(BaseDevice):
         #: reward in Euro for feed in 1 kW/h to public grid (default 0.0917)
         self.feed_in_reward = 0.0917
 
-    def attach_to_cogeneration_unit(self, device):
-        device.power_meter = self
-
-    def attach_to_electrical_consumer(self, device):
+    def attach(self, device):
         device.power_meter = self
 
     def add_energy(self, energy):

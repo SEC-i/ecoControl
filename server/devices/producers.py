@@ -1,4 +1,5 @@
 from server.devices.base import BaseDevice
+from server.devices.storages import HeatStorage, PowerMeter
 
 
 class CogenerationUnit(BaseDevice):
@@ -64,9 +65,10 @@ class CogenerationUnit(BaseDevice):
             self._workload = workload / 100.0
         return self._workload * 100.0
 
-    def find_dependent_devices_in(self, device_list):
+    def attach_dependent_devices_in(self, device_list):
         for device in device_list:
-            device.attach_to_cogeneration_unit(self)
+            if isinstance(device, HeatStorage) or isinstance(device, PowerMeter):
+                device.attach(self)
 
     def connected(self):
         """The device needs a `PowerMeter` and a `HeatStorage` to operate properly."""
@@ -135,9 +137,10 @@ class PeakLoadBoiler(BaseDevice):
             self._workload = workload / 100.0
         return self._workload * 100.0
 
-    def find_dependent_devices_in(self, device_list):
+    def attach_dependent_devices_in(self, device_list):
         for device in device_list:
-            device.attach_to_peak_load_boiler(self)
+            if isinstance(device, HeatStorage):
+                device.attach(self)
 
     def connected(self):
         """The device needs a `HeatStorage` to operate properly."""
@@ -155,3 +158,6 @@ class PeakLoadBoiler(BaseDevice):
     def get_operating_costs(self):
         """Calculated by the consumed gas. """
         return self.total_gas_consumption * self.gas_costs
+
+
+

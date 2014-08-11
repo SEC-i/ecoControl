@@ -4,7 +4,7 @@ from time import time, gmtime
 class BaseDevice(object):
     """Represents a general interface to the energy-systems."""
 
-    acronym = "b"
+    acronym = "base"
 
     def __init__(self, device_id, env):
         self.id = device_id #: `int` identifier
@@ -13,19 +13,10 @@ class BaseDevice(object):
     def calculate(self):
         pass
 
-    def find_dependent_devices_in(self, device_list):
+    def attach_dependent_devices_in(self, device_list):
         pass
 
-    def attach_to_cogeneration_unit(self, device):
-        pass
-
-    def attach_to_peak_load_boiler(self, device):
-        pass
-
-    def attach_to_thermal_consumer(self, device):
-        pass
-
-    def attach_to_electrical_consumer(self, device):
+    def attach(self, device):
         pass
 
     def connected(self):

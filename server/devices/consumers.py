@@ -57,9 +57,10 @@ class ThermalConsumer(BaseDevice):
         self.consumed = 0
         self.current_power = 0
 
-    def find_dependent_devices_in(self, device_list):
+    def attach_dependent_devices_in(self, device_list):
         for device in device_list:
-            device.attach_to_thermal_consumer(self)
+            if isinstance(device, HeatStorage):
+                device.attach(self)
 
     def connected(self):
         """The device needs a `HeatStorage` to operate properly."""
@@ -101,9 +102,10 @@ class ElectricalConsumer(BaseDevice):
         self.power_meter = None
         self.total_consumption = 0.0
 
-    def find_dependent_devices_in(self, device_list):
+    def attach_dependent_devices_in(self, device_list):
         for device in device_list:
-            device.attach_to_electrical_consumer(self)
+            if isinstance(device, PowerMeter):
+                device.attach(self)
 
     def connected(self):
         """The device needs a `PowerMeter` to operate properly."""
