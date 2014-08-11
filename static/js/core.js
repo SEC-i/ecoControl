@@ -86,11 +86,11 @@ function get_current_page() {
 }
 
 function is_logged_in() {
-    return status_data['login'] === "active";
+    return status_data['login'] === true;
 }
 
 function is_technician() {
-    return status_data['admin'] === "1";
+    return status_data['admin'] === true;
 }
 
 function load_page(target) {

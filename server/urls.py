@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, include, url
-
 from django.contrib import admin
+
 admin.autodiscover()
 
 import hooks
@@ -10,7 +10,7 @@ import technician.hooks
 urlpatterns = patterns('',
     # general hooks
     (r'^$', hooks.index),
-    (r'^api/$', hooks.index),
+    (r'^api/$', hooks.api_index),
     (r'^api/export/$', hooks.export_csv),
     (r'^api/login/$', hooks.login_user),
     (r'^api/logout/$', hooks.logout_user),
