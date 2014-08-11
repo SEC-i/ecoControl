@@ -10,16 +10,17 @@ ecoControl
 
 What is ecoControl?
 -------------------
-**ecoControl** is a prototype that demonstrates how heterogeneous energy systems can be optimized in residential buildings. For this reason, **ecoControl** aims to provide a unifying programming interface as well as suitable forecasts. It makes it possible to execute, develop and share optimization algorithms which can be based on those forecasts.  
-However, **ecoControl** currently supports only a few energy systems such as cogeneration units, peak load boilers and heat storages. Since it is released under the [MIT license](http://opensource.org/licenses/MIT), it can easily be extended to support more energy systems by anyone who can write Python code.
+**ecoControl** is a prototype that demonstrates how heterogeneous energy systems can be optimized in residential buildings. For this reason, **ecoControl** provides basic settings, a unifying programming interface as well as suitable forecasts. It makes it possible to develop and execute optimization algorithms which can be based on those forecasts.
+**ecoControl** currently supports the following energy systems: cogeneration units, peak load boilers and heat storages. Since it is released under the [MIT license](http://opensource.org/licenses/MIT), it can easily be extended to support more energy systems by anyone who can write Python code.
 
 
 Getting Started
 --------------
-Install [PostgreSQL](http://www.postgresql.org/) 9.3 or later:
+Install [PostgreSQL](http://www.postgresql.org/) 9.3 or later, [pip](https://pypi.python.org/pypi/pip/) to easily install python requirements and npm to install bower:
 ```bash
 $ sudo apt-get update
-$ sudo apt-get install postgresql-9.3 postgresql-contrib-9.3
+$ sudo apt-get install postgresql-9.3 postgresql-contrib-9.3, python-pip, npm
+$ sudo npm install -g bower
 ```
 Install all Python dependencies and download all Javascript dependencies:
 ```bash
@@ -52,7 +53,7 @@ If you are interested in supporting this project, feel free to join the [Smart E
 
 Credits
 -------
-**ecoControl** was developed by [Eva-Maria Herbst](https://github.com/samifalcon), [Fabian Maschler](https://github.com/maschler), [Fabio Niephaus](https://github.com/fniephaus), [Max Reimann](https://github.com/MaxReimann) and [Julia Steier](https://github.com/steier) during a bachelor's project at [Hasso Plattner Institute](http://www.hpi.de/) in Potsdam.  
+**ecoControl** was developed by [Eva-Maria Herbst](https://github.com/samifalcon), [Fabian Maschler](https://github.com/maschler), [Fabio Niephaus](https://github.com/fniephaus), [Max Reimann](https://github.com/MaxReimann) and [Julia Steier](https://github.com/steier) during a bachelor's project at [Hasso Plattner Institute](http://www.hpi.de/) in Potsdam.
 They were supported by [Carsten Witt](https://github.com/infoprofi) as well as by [Tim Felgentreff](https://github.com/timfel), [Jens Lincke](https://github.com/JensLincke) and [Marcel Taeumel](https://github.com/marceltaeumel) from the [Software Architecture Group](http://www.hpi.uni-potsdam.de/hirschfeld/) led by [Prof. Hirschfeld](http://www.hirschfeld.org/).
 
 License
