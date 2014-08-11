@@ -22,13 +22,28 @@ DEFAULT_FORECAST_INTERVAL = 14 * 24 * 3600.0
 DEFAULT_FORECAST_STEP_SIZE = 15 * 60.0
 logger = logging.getLogger('simulation')
 
-""" for short-lived forecasts, call this. It will block and deliver the forecast"""
+""" Return the result of a forecast.
+    For short-lived forecasts, call this. It will create a :class:`Forecast` 
+    and block, until the forecast is finished. 
+    For parameters see :class:`Forecast`"""
 def get_forecast(initial_time, configurations=None, code=None, forward=None):
     forecast_object = Forecast(initial_time, configurations, code=code,
                                forecast=True, forward=forward)
     return forecast_object.run().get() #dont start in thread
 
 def get_initialized_scenario(env, configurations):
+        """ this function returns an initialized scenario. 
+        It creates new simulated devices and connects the right devices.
+
+        The devices are restored to the latest state of the |SensorValue|'s in the db,
+        if there are no Values, a warning will be logged and the standard values are used.
+
+        :param env: |env| for all Devices
+        :param list configurations: the device configurations, which to set in the devices. 
+            These are typically |DeviceConfiguration| objects.
+
+        :returns: a :py:class:`namedtuple` of devices, with the acronym (f.e plb), as key
+        """
         devices = list(Device.objects.all())
         device_list = []
         for device in devices:
@@ -83,10 +98,23 @@ def get_initialized_scenario(env, configurations):
 
 
 class ForecastQueue():
+    """ A container, holding the running forecasts. Each forecast gets an id.
+
+    Usage::
+
+        q = ForecastQueue()
+        f_id = q.schedule_new(initial_time=time.time())
+        #... do other stuff, then retrieve forecast
+        result = q.get_by_id(f_id)
+
+    """
     forecasts = []
     id = 0
 
     def schedule_new(self, initial_time, **kwargs):
+        """ start a new forecast and return its id.
+        :param dict kwargs: the parameters for the :class:`Forecast`
+        """
         self.id += 1
         forecast = Forecast(initial_time, **kwargs)
         self.forecasts.append((self.id,forecast))
@@ -94,6 +122,11 @@ class ForecastQueue():
         return self.id
 
     def get_by_id(self, forecast_id):
+        """ get a forecast by its id. 
+        Will return ``None``, if forecast is not completed.
+        If the forecast is finished, the result is returned and deleted 
+        from the ForecastQueue.
+        """
         for index, (_id, forecast) in enumerate(self.forecasts):
             if _id == forecast_id:
                 result = forecast.get()

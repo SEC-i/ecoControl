@@ -7,6 +7,7 @@ from server.forecasting.statistical import StatisticalForecast
 from server.settings import BASE_DIR, CYTHON_SUPPORT
 
 import os
+import time
 
 """"try to import compiled holtwinters (double seasonal) extension by building it. 
 if this fails, the standard holtwinters is used. """
@@ -88,7 +89,7 @@ def value_changer():
     except:
         print "ljdlj"
     sep = os.path.sep
-    path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "devices" + sep + "data" + sep + "Electricity_1.1-12.6.2014.csv")
+    path = os.path.join(BASE_DIR, "server" + sep + "forecasting" + sep + "simulation" + sep + "demodata" + sep + "demo_electricity_2014.csv")
     raw_data = DataLoader.load_from_file(path, "Strom - Verbrauchertotal (Aktuell)",delim="\t")
     ind = len(raw_data) / 2
     kW_data = StatisticalForecast.make_hourly([float(val) / 1000.0 for val in raw_data],6) #cast to float and convert to kW
