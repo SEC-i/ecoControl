@@ -1,4 +1,5 @@
 from base import BaseDevice
+from storages import HeatStorage, PowerMeter
 
 
 class ThermalConsumer(BaseDevice):
