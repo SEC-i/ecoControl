@@ -3,7 +3,7 @@
 #
 # Script to install ecoControl onto a Debian 7.6 system.
 #
-# curl -sL https://raw.githubusercontent.com/SEC-i/ecoControl/master/autoinstall.sh | bash
+# curl -sL https://raw.github.com/SEC-i/ecoControl/master/autoinstaller.sh | bash
 #
 
 # Exit in case one command fails
