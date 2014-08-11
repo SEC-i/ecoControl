@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Script to install ecoControl onto a Debian 7.6 system.
+# Script to install ecoControl onto a Debian 7.6 or Ubuntu 14.04 system.
 #
 # curl -sL https://raw.github.com/SEC-i/ecoControl/master/autoinstaller.sh | bash
 #
@@ -20,7 +20,7 @@ EOF
 # Trigger password dialog
 sudo true || exit 1
 
-IS_DEBIAN = $(cat /etc/issue | grep "Debian" | wc -l) > 0
+IS_DEBIAN=$(cat /etc/issue | grep "Debian" | wc -l) > 0
 
 # Prepare system to support PostgreSQL 9.3 or higher
 if ! hash psql 2>/dev/null; then
@@ -77,7 +77,7 @@ sudo pip install -r requirements.txt
 
 # Install all JavaScript dependencies
 echo "Installing JavaScript dependencies..."
-bower install -q || exit 0 # ignore bower warnings
+bower install --config.interactive=false -q || exit 0 # ignore bower warnings
 
 # Make sure LD_LIBRARY_PATH is available
 # This is required to be able to compile the Holt Winters extension

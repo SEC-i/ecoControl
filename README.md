@@ -16,8 +16,8 @@ What is ecoControl?
 
 Getting Started
 --------------
-#### ecoControl Autoinstaller for Debian
-If you are running Debian 7.6, you can execute the following line in your terminal. This will run the autoinstaller which will install all requirements and ecoControl automatically.
+#### ecoControl Autoinstaller for Debian / Ubuntu
+If you are running Debian 7.6 or Ubuntu 14.04, you can execute the following line in your terminal. This will run the autoinstaller which will install all requirements and ecoControl automatically.
 ```bash
 $ curl -sL https://raw.github.com/SEC-i/ecoControl/master/autoinstaller.sh | bash
 ```
