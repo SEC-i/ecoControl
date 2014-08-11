@@ -20,6 +20,8 @@ EOF
 # Trigger password dialog
 sudo true || exit 1
 
+IS_DEBIAN = $(cat /etc/issue | grep "Debian" | wc -l) > 0
+
 # Prepare system to support PostgreSQL 9.3 or higher
 if ! hash psql 2>/dev/null; then
     CODENAME=$(lsb_release -cs 2>/dev/null)
@@ -48,13 +50,13 @@ if ! hash psql 2>/dev/null; then
     sudo apt-get update
 fi
 
-# Prepare system to support Node.js
-if ! hash npm 2>/dev/null; then
+# Prepare Debian system to support Node.js
+if $IS_DEBIAN && ! hash npm 2>/dev/null; then
     curl -sL https://deb.nodesource.com/setup | sudo bash
 fi
 
 # Install packages
-sudo apt-get install -y git python-pip python-dev libpq-dev npm postgresql-9.3 gfortran libatlas-dev libatlas3gf-base liblapack-dev
+sudo apt-get install -y git python-pip python-dev libpq-dev nodejs postgresql-9.3 gfortran libatlas-dev libatlas3gf-base liblapack-dev
 
 # Install bower
 if ! hash bower 2>/dev/null; then
