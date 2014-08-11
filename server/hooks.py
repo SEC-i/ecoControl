@@ -2,17 +2,18 @@ import sys
 import logging
 from time import time
 import json
-from django.forms.models import model_to_dict
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse
-from django.views.decorators.http import require_POST
-from django.views.decorators.debug import sensitive_post_parameters
-from django.utils.timezone import utc
-from django.db.models import Count, Min, Sum, Avg
-from django.db import connection
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import PermissionDenied
+from django.db import connection
+from django.db.models import Count, Min, Sum, Avg
+from django.forms.models import model_to_dict
+from django.http import HttpResponse
+from django.shortcuts import redirect
+from django.utils.timezone import utc
+from django.views.decorators.debug import sensitive_post_parameters
+from django.views.decorators.http import require_POST
 
 import functions
 from models import Device, Configuration, DeviceConfiguration, Sensor, Notification
@@ -23,6 +24,10 @@ logger = logging.getLogger('django')
 
 
 def index(request):
+    return redirect('/static/index.html', permanent=True)
+
+
+def api_index(request):
     return create_json_response({'version': 0.2}, request)
 
 
@@ -50,16 +55,17 @@ def logout_user(request):
 
 
 def status(request):
-    output = [("system_status", functions.get_configuration("system_status", False))]
-    output.append(("system_mode", functions.get_configuration("system_mode", False)))
+    output = [
+        ("system_status", functions.get_configuration("system_status", False))]
+    output.append(
+        ("system_mode", functions.get_configuration("system_mode", False)))
+    output.append(("login", request.user.is_authenticated()))
 
     if request.user.is_authenticated():
-        output.append(("login", "active"))
         output.append(("user", request.user.get_full_name()))
         output.append(("admin", request.user.is_superuser))
-        output.append(("auto_optimization", functions.get_configuration("auto_optimization", False)))
-    else:
-        output.append(("login", "inactive"))
+        output.append(
+            ("auto_optimization", functions.get_configuration("auto_optimization", False)))
 
     return create_json_response(dict(output), request)
 
@@ -113,7 +119,8 @@ def list_notifications(request, start, end):
     if request.user.is_superuser:
         notifications = Notification.objects.all()
     else:
-        notifications = Notification.objects.filter(threshold__show_manager=True)
+        notifications = Notification.objects.filter(
+            threshold__show_manager=True)
 
     notifications = notifications.select_related()
 
@@ -130,6 +137,5 @@ def list_notifications(request, start, end):
             'read': notification.read,
             'target': notification.target,
         })
-
 
     return create_json_response(output, request)
