@@ -1,4 +1,4 @@
-from server.devices.producers import CogenerationUnit, PeakLoadBoiler
+from server.devices.producers import CogenerationUnit, PeakLoadBoiler, SolarPowerUnit
 
 
 class SimulatedCogenerationUnit(CogenerationUnit):
@@ -166,3 +166,21 @@ class SimulatedPeakLoadBoiler(PeakLoadBoiler):
     def get_thermal_energy_production(self):
         """Returns produced thermal energy in kWh during current time-step"""
         return self.current_thermal_production * (self.env.step_size / 3600.0)
+
+
+class SimulatedSolarPowerUnit(SolarPowerUnit):
+
+    def __init__(self, device_id, env):
+        super(SimulatedSolarPowerUnit, self).__init__(device_id, env)
+
+
+    def step(self):
+        #convert sun hours to electrical power
+        self.current_electrical_production = 1.23 #!: TODO
+        self.total_electrical_production += self.current_electrical_production * \
+            (self.env.step_size / 3600.0)
+        self.power_meter.add_energy(self.get_electrical_energy_production())
+
+    def get_electrical_energy_production(self):
+        """Returns produced electrical energy in kWh during current time-step"""
+        return self.current_electrical_production * (self.env.step_size / 3600.0)

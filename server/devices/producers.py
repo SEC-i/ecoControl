@@ -161,3 +161,25 @@ class PeakLoadBoiler(BaseDevice):
 
 
 
+class SolarPowerUnit(BaseDevice):
+    acronym = "spu"
+
+    def __init__(self, device_id, env):
+        super(SolarPowerUnit, self).__init__(device_id, env)
+
+        self.power_meter = None
+        self.current_electrical_production = 0.0  #: kW
+        self.total_electrical_production = 0.0  #: kWh
+
+
+    def connected(self):
+        """The device needs a |PowerMeter| to operate properly."""
+        return self.power_meter is not None
+
+
+    def attach_dependent_devices_in(self, device_list):
+        for device in device_list:
+            if isinstance(device, PowerMeter):
+                device.attach(self)
+
+    

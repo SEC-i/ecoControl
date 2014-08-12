@@ -34,6 +34,8 @@ def initialize_default_scenario():
         tc.save()
         ec = Device(name='Electrical Consumer', device_type=Device.EC)
         ec.save()
+        spu = Device(name="Solar-Power Unit", device_type=Device.SPU)
+        spu.save()
         logger.debug("Default devices initialized")
 
         sensors = []
@@ -62,10 +64,13 @@ def initialize_default_scenario():
                        key='get_outside_temperature', unit='°C', in_diagram=True, aggregate_avg=True))
         sensors.append(Sensor(device=ec, name='Electrical Consumption',
                        key='get_consumption_power', unit='kWh', in_diagram=True, aggregate_sum=True))
+        sensors.append(Sensor(device=spu, name='Electrical Production',
+                       key='get_electrical_energy_production', unit='kWh', in_diagram=True, aggregate_sum=True))
 
         Sensor.objects.bulk_create(sensors)
 
-    # if the configuration must be renewed, while the devices stay the same, init only the config again
+    # if the configuration must be renewed, while the devices stay the same, 
+    # init only the config again
     if needs_initialization or len(Configuration.objects.all()) == 0:
         logger.debug("Default sensors initialized")
 

@@ -8,6 +8,7 @@ class Device(models.Model):
     PLB = 3  # PeakLoadBoiler(self.env, self.hs)
     TC = 4  # ThermalConsumer(self.env, self.hs)
     EC = 5  # ElectricalConsumer(self.env, self.pm)
+    SPU = 6 # SolarPowerUnit(self.env, self.hs)
     DEVICE_TYPES = (
         (HS, 'HeatStorage'),
         (PM, 'PowerMeter'),
@@ -15,6 +16,8 @@ class Device(models.Model):
         (PLB, 'PeakLoadBoiler'),
         (TC, 'ThermalConsumer'),
         (EC, 'ElectricalConsumer'),
+        (SPU, 'SolarPowerUnit')
+
     )
 
     name = models.CharField(max_length=100)

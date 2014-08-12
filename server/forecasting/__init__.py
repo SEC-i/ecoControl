@@ -13,7 +13,7 @@ from server.helpers_thread import write_pidfile_or_fail
 from server.forecasting.measurementstorage import MeasurementStorage
 
 from server.devices.base import BaseEnvironment
-from server.forecasting.simulation.devices.producers import SimulatedCogenerationUnit, SimulatedPeakLoadBoiler
+from server.forecasting.simulation.devices.producers import SimulatedCogenerationUnit, SimulatedPeakLoadBoiler, SimulatedSolarPowerUnit
 from server.forecasting.simulation.devices.storages import SimulatedHeatStorage, SimulatedPowerMeter
 from server.forecasting.simulation.devices.consumers import SimulatedThermalConsumer, SimulatedElectricalConsumer
 from server.forecasting.optimizing.auto_optimization import auto_optimize
@@ -22,11 +22,13 @@ DEFAULT_FORECAST_INTERVAL = 14 * 24 * 3600.0
 DEFAULT_FORECAST_STEP_SIZE = 15 * 60.0
 logger = logging.getLogger('simulation')
 
-""" Return the result of a forecast.
+def get_forecast(initial_time, configurations=None, code=None, forward=None):
+    """ Return the result of a forecast.
+
     For short-lived forecasts, call this. It will create a :class:`Forecast` 
     and block, until the forecast is finished. 
-    For parameters see :class:`Forecast`"""
-def get_forecast(initial_time, configurations=None, code=None, forward=None):
+    For parameters see :class:`Forecast`
+    """
     forecast_object = Forecast(initial_time, configurations, code=code,
                                forecast=True, forward=forward)
     return forecast_object.run().get() #dont start in thread
