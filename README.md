@@ -13,6 +13,11 @@ What is ecoControl?
 **ecoControl** is a prototype that demonstrates how heterogeneous energy systems can be optimized in residential buildings. For this reason, **ecoControl** provides basic settings, a unifying programming interface as well as suitable forecasts. It makes it possible to develop and execute optimization algorithms which can be based on those forecasts.
 **ecoControl** currently supports the following energy systems: cogeneration units, peak load boilers and heat storages. Since it is released under the [MIT license](http://opensource.org/licenses/MIT), it can easily be extended to support more energy systems by anyone who can write Python code.
 
+Download
+--------
+You can download the latest version of **ecoControl** here:
+https://github.com/SEC-i/ecoControl/archive/master.zip
+
 
 Getting Started
 --------------
