@@ -88,12 +88,12 @@ fi
 # Setup database
 if [ $(sudo -u postgres psql template1 -c '\du' | grep ecocontrol | wc -l) -eq 0 ]; then
     echo "Creating database user"
-    sudo -u postgres psql -c "CREATE ROLE ecocontrol LOGIN PASSWORD 'sec-i' SUPERUSER CREATEDB CREATEROLE;" -U postgres
+    sudo -u postgres psql -c "CREATE ROLE ecocontrol LOGIN PASSWORD 'sec-i';"
 fi
 
 if [ $(sudo -u postgres psql -l | grep ecocontrol | wc -l) -eq 0 ]; then
     echo "Creating database user"
-    sudo -u postgres createdb ecocontrol
+    sudo -u postgres createdb --owner=ecocontrol ecocontrol
 fi
 
 echo "Creating all database tables for ecoControl..."
