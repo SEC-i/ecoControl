@@ -18,7 +18,7 @@ Was ist ecoControl?
 
 Download
 --------
-Die aktuellste Version von **ecoControl** können Sie jederzeit unter folgendem Link downloaden:
+Die aktuellste Version von **ecoControl** können Sie jederzeit unter folgendem Link downloaden:  
 https://github.com/SEC-i/ecoControl/archive/master.zip
 
 
