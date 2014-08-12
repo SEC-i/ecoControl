@@ -47,14 +47,20 @@ Install all Python dependencies and download all Javascript dependencies:
 $ pip install requirements.txt
 $ bower install
 ```
-Creates the database tables for **ecoControl**:
+
+Set up database and tables for **ecoControl**:
 ```bash
+$ sudo -u postgres psql -c "CREATE ROLE ecocontrol LOGIN PASSWORD 'sec-i';"
+$ sudo -u postgres createdb --owner=ecocontrol ecocontrol
 $ python manage.py syncdb
 ```
+*You should change the default password 'sec-i' for security purposes. Don't forget to also change the password in the [settings.py](https://github.com/SEC-i/ecoControl/blob/master/server/settings.py) file.*
+
 Start a lightweight development web server on the local machine:
 ```bash
 $ python manage.py runserver
 ```
+
 Open [http://localhost:8000/](http://localhost:8000/) in your browser and start **ecoControl**.
 
 If you want to deploy **ecoControl** and use it in production, please read the [development section](http://ecocontrol.readthedocs.org/en/latest/getting_started.html#how-to-deploy-ecocontrol) in the [documentation](http://ecocontrol.readthedocs.org/).
