@@ -12,7 +12,7 @@ ecoControl
 
 Was ist ecoControl?
 -------------------
-**ecoControl** ist ein Prototype, der demonstrieren soll, wie heterogene Energiesysteme wie Blockheizkraftwerke oder Photovoltaik-Anlagen effizient in Mehrfamilienhäusern betrieben werden können. Dazu ermöglicht **ecoControl** zentral die Einstellung von einzelnen Parametern bis hin zu einer einheitlichen Programmierschnittstelle über die mit geeignete Prognosen erweiterte Konfigurationen möglich sind. Mit den Vorhersagen können Optimierungsalgorithmen entwickelt und ausgeführt werden.
+**ecoControl** ist ein Prototype, der demonstrieren soll, wie heterogene Energiesysteme wie Blockheizkraftwerke oder Photovoltaik-Anlagen effizient in Mehrfamilienhäusern betrieben werden können. Dazu ermöglicht **ecoControl** das zentrale Einstellen von einzelnen Parametern und stellt eine einheitliche Programmierschnittstelle zur Verfügung. Über diese Schnittstelle ist es möglich, auf geeignete Prognosen zurückzugreifen und Optimierungsalgorithmen zu entwickelt und auszuführen.  
 **ecoControl** unterstützt momentan folgende Energiesysteme: Blockheizkraftwerke, Spitzenlastkessel und Wärmespeicher. Da die Software unter der [MIT Lizenz](http://opensource.org/licenses/MIT) veröffentlich wurde, kann sie von jedem, der Python programmieren kann, um weitere Energiesysteme erweitert werden.
 
 
