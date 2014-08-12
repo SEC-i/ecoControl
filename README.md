@@ -38,6 +38,7 @@ $ sudo apt-get update
 $ sudo apt-get install python-pip npm
 $ sudo npm install -g bower
 ```
+
 Installieren Sie [PostgreSQL](http://www.postgresql.org/) 9.3 oder neuer:
 ```bash
 $ sudo apt-get install postgresql-9.3 postgresql-contrib-9.3
@@ -50,19 +51,26 @@ $ wget -O ecoControl.zip https://github.com/SEC-i/ecoControl/archive/master.zip
 $ unzip ecoControl.zip
 $ cd ecoControl/
 ```
+
 Installieren Sie alle benötigten Python Abhängigkeiten und laden Sie alle Javascript Bibliotheken:
 ```bash
 $ pip install requirements.txt
 $ bower install
 ```
-Legen Sie die Datenbanktabellen für **ecoControl** an:
+
+Richten Sie eine Datenbank für **ecoControl** ein:
 ```bash
+$ sudo -u postgres psql -c "CREATE ROLE ecocontrol LOGIN PASSWORD 'sec-i';"
+$ sudo -u postgres createdb --owner=ecocontrol ecocontrol
 $ python manage.py syncdb
 ```
+*Sie sollten das Standardpasswort aus Sicherheitsgründen ändern. Vergessen Sie nicht, die Änderungen auch in der [settings.py](https://github.com/SEC-i/ecoControl/blob/master/server/settings.py) Datei vorzunehmen.*
+
 Starten Sie einen Webserver lokal auf Ihrem Rechner:
 ```bash
 $ python manage.py runserver
 ```
+
 Öffnen Sie [http://localhost:8000/](http://localhost:8000/) in Ihrem Browser und starten Sie **ecoControl**.
 
 Informationen wie **ecoControl** in Produktion eingesetzt werden kann, finden Sie im [Einrichtungskapitel](http://ecocontrol.readthedocs.org/en/latest/getting_started.html#how-to-deploy-ecocontrol) der [Dokumentation](http://ecocontrol.readthedocs.org/latest/).
