@@ -13,11 +13,6 @@ What is ecoControl?
 **ecoControl** is a prototype that demonstrates how heterogeneous energy systems can be optimized in residential buildings. For this reason, **ecoControl** provides basic settings, a unifying programming interface as well as suitable forecasts. It makes it possible to develop and execute optimization algorithms which can be based on those forecasts.
 **ecoControl** currently supports the following energy systems: cogeneration units, peak load boilers and heat storages. Since it is released under the [MIT license](http://opensource.org/licenses/MIT), it can easily be extended to support more energy systems by anyone who can write Python code.
 
-Download
---------
-You can download the latest version of **ecoControl** here:
-https://github.com/SEC-i/ecoControl/archive/master.zip
-
 
 Getting Started
 --------------
@@ -40,9 +35,15 @@ $ sudo apt-get install postgresql-9.3 postgresql-contrib-9.3
 ```
 *If this command fails, you may want to [check how PostgreSQL can be installed on your system](http://www.postgresql.org/download/).*
 
+Download and unzip **ecoControl**:
+```bash
+$ wget -O ecoControl.zip https://github.com/SEC-i/ecoControl/archive/master.zip
+$ unzip ecoControl.zip
+$ cd ecoControl/
+```
+
 Install all Python dependencies and download all Javascript dependencies:
 ```bash
-$ cd ecoControl/
 $ pip install requirements.txt
 $ bower install
 ```
