@@ -12,13 +12,13 @@ ecoControl
 
 Was ist ecoControl?
 -------------------
-**ecoControl** ist ein Prototype, der demonstrieren soll, wie heterogene Energiesysteme wie Blockheizkraftwerke oder Photovoltaik-Anlagen effizient in Mehrfamilienhäusern betrieben werden können. Dazu stellt **ecoControl** eine einheitliche Programmierschnittstelle sowie geeignete Prognosen zur Verfügung. Es ist möglich, Optimierungsalgorithmen mithilfe von **ecoControl** auszuführen, zu entwickeln und miteinander zu teilen.  
-Allerdings unterstützt die Software momentan nur wenige Energiesysteme wie beispielsweise Blockheizkraftwerke, Spitzenlastkessel oder Wärmespeicher. Da sie unter der [MIT Lizenz](http://opensource.org/licenses/MIT) veröffentlich wurde, kann sie von jedem, der Python programmieren kann, um weitere Energiesysteme erweitert werden.
+**ecoControl** ist ein Prototype, der demonstrieren soll, wie heterogene Energiesysteme wie Blockheizkraftwerke oder Photovoltaik-Anlagen effizient in Mehrfamilienhäusern betrieben werden können. Dazu ermöglicht **ecoControl** zentral die Einstellung von einzelnen Parametern bis hin zu einer einheitlichen Programmierschnittstelle über die mit geeignete Prognosen erweiterte Konfigurationen möglich sind. Mit den Vorhersagen können Optimierungsalgorithmen entwickelt und ausgeführt werden.
+**ecoControl** unterstützt momentan folgende Energiesysteme: Blockheizkraftwerke, Spitzenlastkessel und Wärmespeicher. Da die Software unter der [MIT Lizenz](http://opensource.org/licenses/MIT) veröffentlich wurde, kann sie von jedem, der Python programmieren kann, um weitere Energiesysteme erweitert werden.
 
 
 Download
 --------
-Die aktuellste Version von **ecoControl** können Sie jederzeit unter folgendem Link downloaden:  
+Die aktuellste Version von **ecoControl** können Sie jederzeit unter folgendem Link downloaden:
 https://github.com/SEC-i/ecoControl/archive/master.zip
 
 
@@ -26,7 +26,7 @@ Erste Schritte
 --------------
 
 #### ecoControl Autoinstaller für Debian / Ubuntu
-Wenn Sie Debian 7.6 oder Ubuntu 14.04 verwenden, können Sie einfach die folgende Zeile im Terminal auführen. Dies wird den Autoinstaller ausführen, der alle Softwarevoraussetzungen und ecoControl automatisch für Sie einrichtet.
+Wenn Sie Debian 7.6 oder Ubuntu 14.04 verwenden, können Sie einfach die folgende Zeile im Terminal auführen. Dies wird den Autoinstaller ausführen, der **ecoControl** und alle Softwarevoraussetzungen automatisch einrichtet.
 ```bash
 $ curl -sL https://raw.github.com/SEC-i/ecoControl/master/autoinstaller.sh | bash
 ```
@@ -75,7 +75,7 @@ Wenn Sie dieses Projekt unterstützen wollen, machen Sie bei der [Smart Energy C
 
 Herausgeber
 -------
-**ecoControl** wurde von [Eva-Maria Herbst](https://github.com/samifalcon), [Fabian Maschler](https://github.com/maschler), [Fabio Niephaus](https://github.com/fniephaus), [Max Reimann](https://github.com/MaxReimann) und [Julia Steier](https://github.com/steier) im Rahmen eines Bachelor-Projekts am [Hasso Plattner Institute](http://www.hpi.de/) in Potsdam entwickelt.  
+**ecoControl** wurde von [Eva-Maria Herbst](https://github.com/samifalcon), [Fabian Maschler](https://github.com/maschler), [Fabio Niephaus](https://github.com/fniephaus), [Max Reimann](https://github.com/MaxReimann) und [Julia Steier](https://github.com/steier) im Rahmen eines Bachelor-Projekts am [Hasso Plattner Institut](http://www.hpi.de/) in Potsdam entwickelt.
 Unterstützt wurden sie von [Carsten Witt](https://github.com/infoprofi) sowie von [Tim Felgentreff](https://github.com/timfel), [Jens Lincke](https://github.com/JensLincke) und [Marcel Taeumel](https://github.com/marceltaeumel) vom Fachgebiet [Software-Architekturen](http://www.hpi.uni-potsdam.de/hirschfeld/) von [Prof. Hirschfeld](http://www.hirschfeld.org/).
 
 Lizenz
