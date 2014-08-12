@@ -43,10 +43,15 @@ Installieren Sie [PostgreSQL](http://www.postgresql.org/) 9.3 oder neuer:
 $ sudo apt-get install postgresql-9.3 postgresql-contrib-9.3
 ```
 *Sollte der letzte Befehl fehlschlagen, lesen Sie bitte nach, wie Sie [PostgreSQL auf Ihrem System installieren können](http://www.postgresql.org/download/).*
+
+Laden und entpacken Sie **ecoControl**:
+```bash
+$ wget -O ecoControl.zip https://github.com/SEC-i/ecoControl/archive/master.zip
+$ unzip ecoControl.zip
+$ cd ecoControl/
 ```
 Installieren Sie alle benötigten Python Abhängigkeiten und laden Sie alle Javascript Bibliotheken:
 ```bash
-$ cd ecoControl/
 $ pip install requirements.txt
 $ bower install
 ```
