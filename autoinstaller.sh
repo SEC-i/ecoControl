@@ -20,7 +20,7 @@ EOF
 # Trigger password dialog
 sudo true || exit 1
 
-IS_DEBIAN=$(cat /etc/issue | grep "Debian" | wc -l) > 0
+IS_DEBIAN=$(( $(cat /etc/issue | grep "Debian" | wc -l) > 0 ))
 
 # Prepare system to support PostgreSQL 9.3 or higher
 if ! hash psql 2>/dev/null; then
