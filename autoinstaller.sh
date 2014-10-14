@@ -77,7 +77,9 @@ sudo pip install -r requirements.txt
 
 # Install all JavaScript dependencies
 echo "Installing JavaScript dependencies..."
-bower install --config.interactive=false -q || exit 0 # ignore bower warnings
+git config --global url."https://".insteadOf git:// #prevent firewall errors by using https
+bower install --config.interactive=false -q --allow-root || exit 0 # ignore bower warnings
+git config --global --unset url."https://".insteadOf #and change back
 
 # Make sure LD_LIBRARY_PATH is available
 # This is required to be able to compile the Holt Winters extension
