@@ -20,10 +20,10 @@ EOF
 # Trigger password dialog
 sudo true || exit 1
 
-IS_DEBIAN=$(cat /etc/issue | grep "Debian" | wc -l) > 0
+IS_DEBIAN=$(( $(cat /etc/issue | grep "Debian" | wc -l) > 0 ))
 
 # Prepare system to support PostgreSQL 9.3 or higher
-if ! hash psql 2>/dev/null; then
+if (( $( psql --version 2>/dev/null | grep '9.3\|9.4\|9.5\|9.6' | wc -l ) > 0 )); then
     CODENAME=$(lsb_release -cs 2>/dev/null)
     # Parse os-release (unreliable, does not work on Ubuntu)
     if [ -z "$CODENAME" -a -f /etc/os-release ]; then
@@ -51,7 +51,7 @@ if ! hash psql 2>/dev/null; then
 fi
 
 # Prepare Debian system to support Node.js
-if $IS_DEBIAN && ! hash npm 2>/dev/null; then
+if  [ $IS_DEBIAN ] && [ ! $( command -v npm >/dev/null 2>&1 ) ] ; then
     curl -sL https://deb.nodesource.com/setup | sudo bash
 fi
 
@@ -59,7 +59,7 @@ fi
 sudo apt-get install -y git python-pip python-dev libpq-dev nodejs postgresql-9.3 gfortran libatlas-dev libatlas3gf-base liblapack-dev
 
 # Install bower
-if ! hash bower 2>/dev/null; then
+if ! command -v bower >/dev/null 2>&1; then
     sudo npm install -g bower
 fi
 
@@ -77,7 +77,9 @@ sudo pip install -r requirements.txt
 
 # Install all JavaScript dependencies
 echo "Installing JavaScript dependencies..."
-bower install --config.interactive=false -q || exit 0 # ignore bower warnings
+git config --global url."https://".insteadOf git:// #prevent firewall errors by using https
+bower install --config.interactive=false -q --allow-root || exit 0 # ignore bower warnings
+git config --global --unset url."https://".insteadOf #and change back
 
 # Make sure LD_LIBRARY_PATH is available
 # This is required to be able to compile the Holt Winters extension
