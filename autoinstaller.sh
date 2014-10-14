@@ -51,7 +51,7 @@ if ! hash psql 2>/dev/null; then
 fi
 
 # Prepare Debian system to support Node.js
-if $IS_DEBIAN && ! hash npm 2>/dev/null; then
+if  [ $IS_DEBIAN ] && [ ! $( command -v npm >/dev/null 2>&1 ) ] ; then
     curl -sL https://deb.nodesource.com/setup | sudo bash
 fi
 
@@ -59,7 +59,7 @@ fi
 sudo apt-get install -y git python-pip python-dev libpq-dev nodejs postgresql-9.3 gfortran libatlas-dev libatlas3gf-base liblapack-dev
 
 # Install bower
-if ! hash bower 2>/dev/null; then
+if ! command -v bower >/dev/null 2>&1; then
     sudo npm install -g bower
 fi
 
