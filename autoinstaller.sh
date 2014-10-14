@@ -23,7 +23,7 @@ sudo true || exit 1
 IS_DEBIAN=$(( $(cat /etc/issue | grep "Debian" | wc -l) > 0 ))
 
 # Prepare system to support PostgreSQL 9.3 or higher
-if ! hash psql 2>/dev/null; then
+if (( $( psql --version 2>/dev/null | grep '9.3\|9.4\|9.5\|9.6' | wc -l ) > 0 )); then
     CODENAME=$(lsb_release -cs 2>/dev/null)
     # Parse os-release (unreliable, does not work on Ubuntu)
     if [ -z "$CODENAME" -a -f /etc/os-release ]; then
