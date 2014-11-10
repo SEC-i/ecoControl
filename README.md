@@ -39,12 +39,12 @@ Download and unzip **ecoControl**:
 ```bash
 $ wget -O ecoControl.zip https://github.com/SEC-i/ecoControl/archive/master.zip
 $ unzip ecoControl.zip
-$ cd ecoControl/
+$ cd ecoControl-master/
 ```
 
 Install all Python dependencies and download all Javascript dependencies:
 ```bash
-$ pip install requirements.txt
+$ pip install -r requirements.txt
 $ bower install
 ```
 
