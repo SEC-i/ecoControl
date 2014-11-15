@@ -1,12 +1,12 @@
 ecoControl
 ========
-[![Build Status](https://travis-ci.org/SEC-i/ecoControl.svg?branch=master)](https://travis-ci.org/SEC-i/ecoControl)
-[![Documentation](https://readthedocs.org/projects/ecocontrol/badge/?version=latest)](https://ecocontrol.readthedocs.org/)
-[![Dependency Status](https://gemnasium.com/SEC-i/ecoControl.svg)](https://gemnasium.com/SEC-i/ecoControl)
-[![Code Climate](https://codeclimate.com/github/SEC-i/ecoControl.png)](https://codeclimate.com/github/SEC-i/ecoControl)
-[![Coverage Status](https://coveralls.io/repos/SEC-i/ecoControl/badge.png)](https://coveralls.io/r/SEC-i/ecoControl)
-[![License](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
-[![Switch Language](http://img.shields.io/badge/lang-en--de-brightgreen.svg)](https://github.com/SEC-i/ecoControl/tree/de)
+[![Build Status](http://img.shields.io/travis/SEC-i/ecoControl/master.svg?style=flat-square)](https://travis-ci.org/SEC-i/ecoControl)
+[![Documentation](http://img.shields.io/badge/docs-latest-blue.svg?style=flat-square)](https://ecocontrol.readthedocs.org/)
+[![Dependency Status](http://img.shields.io/gemnasium/SEC-i/ecoControl.svg?style=flat-square)](https://gemnasium.com/SEC-i/ecoControl)
+[![Code Climate](http://img.shields.io/codeclimate/github/SEC-i/ecoControl.svg?style=flat-square)](https://codeclimate.com/github/SEC-i/ecoControl)
+[![Coverage Status](http://img.shields.io/coveralls/SEC-i/ecoControl.svg?style=flat-square)](https://coveralls.io/r/SEC-i/ecoControl)
+[![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](http://opensource.org/licenses/MIT)
+[![Switch Language](http://img.shields.io/badge/lang-en--de-brightgreen.svg?style=flat-square)](https://github.com/SEC-i/ecoControl)
 
 What is ecoControl?
 -------------------
