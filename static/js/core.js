@@ -7,6 +7,8 @@ var colors_modified = ['#225999', '#000000', '#5c7d16', '#520000', '#13788f', '#
 var namespaces = ['general', 'hs', 'pm', 'cu', 'plb'];
 var categories = ['default', 'primary', 'success', 'info', 'warning', 'danger'];
 
+var sensor_list = null;
+
 function get_text(key) {
     if (key in get_language()) {
         return get_language()[key];
@@ -25,6 +27,21 @@ function get_language() {
 
 function get_label(category_id) {
     return '<span class="label label-' + categories[category_id] + '">' + categories[category_id] + '</span>';
+}
+
+function get_sensor(sensor_id, sensor_list) {
+    if (sensor_list === null) {
+        return null;
+    }
+
+    var output = null;
+    $.each(sensor_list, function (index, sensor) {
+        if (sensor.id === sensor_id) {
+            output = sensor;
+            return false;
+        }
+    });
+    return output;
 }
 
 jQuery.extend({

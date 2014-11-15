@@ -1,5 +1,3 @@
-var sensor_list = null;
-
 // READY
 function load_curves_ready() {
     $.getJSON(api_base_url + "sensors/", function(sensor_data) {
@@ -56,7 +54,8 @@ function get_diagram_data(type, input_data) {
         'yaxis' : []
     };
     $.each(input_data, function (sensor_id, sensor_data){
-        var sensor = get_sensor(sensor_id);
+        var sensor = get_sensor(parseInt(sensor_id), sensor_list);
+        console.log(sensor);
         
         $.each(sensor_data, function(index, value){
             value[0] = new Date(value[0]).getTime();
@@ -78,20 +77,5 @@ function get_diagram_data(type, input_data) {
         });
     });
     
-    return output;
-}
-
-function get_sensor(sensor_id) {
-    if (sensor_list === null) {
-        return null;
-    }
-
-    var output = null;
-    $.each(sensor_list, function (index, sensor) {
-        if (sensor.id === sensor_id) {
-            output = sensor;
-            return false;
-        }
-    });
     return output;
 }

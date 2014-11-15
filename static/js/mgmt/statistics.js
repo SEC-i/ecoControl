@@ -1,4 +1,3 @@
-var sensor_list = null;
 var headlines = ['Month', '', ''];
 var table_data = [];
 
@@ -33,7 +32,7 @@ function manager_statistics_ready() {
             initialize_diagram();
             $('.series_list').change(function () {
                 var sensor_id = $(this).val();
-                var sensor = get_sensor(sensor_id);
+                var sensor = get_sensor(sensor_id, sensor_list);
                 var target = $(this).attr('data-target');
                 var year = $('#years_' + target).val();
                 var aggregation_type = $(this).find(":selected").attr('data-aggregation');
@@ -93,21 +92,6 @@ function manager_statistics_ready() {
         event.preventDefault();
         export_table($('#mgmt_statistics_table_container'));
     });
-}
-
-function get_sensor(sensor_id) {
-    if (sensor_list === null) {
-        return null;
-    }
-
-    var output = null;
-    $.each(sensor_list, function (index, sensor) {
-        if (sensor.id === sensor_id) {
-            output = sensor;
-            return false;
-        }
-    });
-    return output;
 }
 
 function initialize_diagram() {
