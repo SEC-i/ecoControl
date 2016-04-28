@@ -1,7 +1,7 @@
 ecoControl
 ========
 [![Build Status](http://img.shields.io/travis/SEC-i/ecoControl/master.svg?style=flat-square)](https://travis-ci.org/SEC-i/ecoControl)
-[![Documentation](http://img.shields.io/badge/docs-latest-blue.svg?style=flat-square)](https://ecocontrol.readthedocs.org/)
+[![Documentation](http://img.shields.io/badge/docs-latest-blue.svg?style=flat-square)](https://ecocontrol.readthedocs.io/)
 [![Dependency Status](http://img.shields.io/gemnasium/SEC-i/ecoControl.svg?style=flat-square)](https://gemnasium.com/SEC-i/ecoControl)
 [![Code Climate](http://img.shields.io/codeclimate/github/SEC-i/ecoControl.svg?style=flat-square)](https://codeclimate.com/github/SEC-i/ecoControl)
 [![Coverage Status](http://img.shields.io/coveralls/SEC-i/ecoControl.svg?style=flat-square)](https://coveralls.io/r/SEC-i/ecoControl)
@@ -63,12 +63,12 @@ $ python manage.py runserver
 
 Open [http://localhost:8000/](http://localhost:8000/) in your browser and start **ecoControl**.
 
-If you want to deploy **ecoControl** and use it in production, please read the [development section](http://ecocontrol.readthedocs.org/en/latest/getting_started.html#how-to-deploy-ecocontrol) in the [documentation](http://ecocontrol.readthedocs.org/).
+If you want to deploy **ecoControl** and use it in production, please read the [development section](http://ecocontrol.readthedocs.io/en/latest/getting_started.html#how-to-deploy-ecocontrol) in the [documentation](http://ecocontrol.readthedocs.io/).
 
 
 Documentation
 -------------
-A documentation is available at: https://ecocontrol.readthedocs.org/
+A documentation is available at: https://ecocontrol.readthedocs.io/
 
 
 Join the Community
